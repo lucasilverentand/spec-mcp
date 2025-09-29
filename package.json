@@ -1,0 +1,43 @@
+{
+	"name": "@spec-mcp/workspace",
+	"private": true,
+	"description": "Monorepo for MCP specifications server with intelligent tooling",
+	"type": "module",
+	"workspaces": [
+		"packages/*",
+		"apps/*"
+	],
+	"scripts": {
+		"build": "turbo run build",
+		"dev": "turbo run dev",
+		"clean": "turbo run clean",
+		"typecheck": "turbo run typecheck",
+		"lint": "biome lint .",
+		"lint:fix": "biome lint --write .",
+		"format": "biome format --write .",
+		"format:check": "biome format .",
+		"check": "biome check .",
+		"check:fix": "biome check --write .",
+		"test": "turbo run test",
+		"test:watch": "turbo run test:watch",
+		"test:coverage": "turbo run test:coverage",
+		"inspector": "cd packages/server && pnpm inspector",
+		"workspace:list": "pnpm list -r --depth=-1",
+		"workspace:graph": "pnpm list -r --depth=-1 --json"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.2.4",
+		"@types/node": "^24.5.2",
+		"@vitest/coverage-v8": "^3.2.4",
+		"@vitest/ui": "^3.2.4",
+		"tsx": "^4.20.6",
+		"turbo": "^2.5.8",
+		"typescript": "^5.9.2",
+		"vitest": "^3.2.4"
+	},
+	"engines": {
+		"node": ">=18.0.0",
+		"pnpm": ">=8.0.0"
+	},
+	"packageManager": "pnpm@8.15.0"
+}

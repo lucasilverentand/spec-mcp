@@ -1,0 +1,73 @@
+# Dependencies
+node_modules/
+*.lock
+.yarn/
+
+# Build outputs
+dist/
+build/
+*.tsbuildinfo
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+!.env.example
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Coverage
+coverage/
+.nyc_output/
+
+# Cache
+.cache/
+.turbo/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Test artifacts (ensure test-generated files don't get committed)
+test-specs/
+**/test-specs/
+test-output/
+**/test-output/
+packages/*/specs/
+packages/*/.specs/
+
+# Package manager
+.pnpm-debug.log*
+.pnpm-lock.yaml
+pnpm-debug.log*
+.yarn-integrity
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+
+# pnpm workspace
+.pnpm-store/
+node_modules/.pnpm/
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock

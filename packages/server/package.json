@@ -1,0 +1,56 @@
+{
+	"name": "@spec-mcp/server",
+	"version": "0.1.0",
+	"description": "Model Context Protocol server for managing software project specifications",
+	"type": "module",
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"bin": {
+		"spec-mcp": "./dist/index.js"
+	},
+	"exports": {
+		".": {
+			"import": "./dist/index.js",
+			"types": "./dist/index.d.ts"
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "tsc",
+		"dev": "tsc --watch",
+		"clean": "rm -rf dist",
+		"typecheck": "tsc --noEmit",
+		"test": "vitest run",
+		"test:watch": "vitest",
+		"test:coverage": "vitest run --coverage",
+		"inspector": "pnpm build && NPM_CONFIG_LOGLEVEL=error npx --yes @modelcontextprotocol/inspector node dist/index.js"
+	},
+	"dependencies": {
+		"@modelcontextprotocol/sdk": "^1.18.2",
+		"@spec-mcp/core": "workspace:*",
+		"@spec-mcp/data": "workspace:*",
+		"pino": "^9.12.0",
+		"pino-pretty": "^13.1.1",
+		"zod": "^3.22.0"
+	},
+	"devDependencies": {
+		"@modelcontextprotocol/inspector": "^0.16.8",
+		"@spec-mcp/tsconfig": "workspace:*",
+		"@types/node": "^24.5.2",
+		"typescript": "^5.9.2",
+		"vitest": "^3.2.4"
+	},
+	"engines": {
+		"node": ">=18.0.0"
+	},
+	"keywords": [
+		"mcp",
+		"model-context-protocol",
+		"specifications",
+		"project-management",
+		"requirements",
+		"planning"
+	]
+}

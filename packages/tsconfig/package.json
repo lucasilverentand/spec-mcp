@@ -1,0 +1,18 @@
+{
+	"name": "@spec-mcp/tsconfig",
+	"version": "0.0.1",
+	"description": "Shared TypeScript configurations for the Spec MCP monorepo",
+	"main": "package.json",
+	"files": [
+		"*.json"
+	],
+	"keywords": [
+		"typescript",
+		"tsconfig",
+		"configuration",
+		"shared"
+	],
+	"engines": {
+		"node": ">=18.0.0"
+	}
+}
