@@ -288,17 +288,17 @@ export function registerPlanTools(
 
 				const planResult = await operations.getPlan(validatedPlanId);
 				if (!planResult.success || !planResult.data) {
-					return planResult;
+					return formatResult(planResult);
 				}
 
 				const task = planResult.data.tasks?.find(
 					(t) => t.id === validatedTaskId,
 				);
 				if (!task) {
-					return {
+					return formatResult({
 						success: false,
 						error: `Task '${validatedTaskId}' not found in plan '${validatedPlanId}'`,
-					};
+					});
 				}
 
 				return formatResult({ success: true, data: task });
@@ -329,17 +329,17 @@ export function registerPlanTools(
 
 				const planResult = await operations.getPlan(validatedPlanId);
 				if (!planResult.success || !planResult.data) {
-					return planResult;
+					return formatResult(planResult);
 				}
 
 				const testCase = planResult.data.test_cases?.find(
 					(tc) => tc.id === validatedTestCaseId,
 				);
 				if (!testCase) {
-					return {
+					return formatResult({
 						success: false,
 						error: `Test case '${validatedTestCaseId}' not found in plan '${validatedPlanId}'`,
-					};
+					});
 				}
 
 				return formatResult({ success: true, data: testCase });
@@ -367,17 +367,17 @@ export function registerPlanTools(
 
 				const planResult = await operations.getPlan(validatedPlanId);
 				if (!planResult.success || !planResult.data) {
-					return planResult;
+					return formatResult(planResult);
 				}
 
 				const flow = planResult.data.flows?.find(
 					(f) => f.id === validatedFlowId,
 				);
 				if (!flow) {
-					return {
+					return formatResult({
 						success: false,
 						error: `Flow '${validatedFlowId}' not found in plan '${validatedPlanId}'`,
-					};
+					});
 				}
 
 				return formatResult({ success: true, data: flow });
@@ -408,17 +408,17 @@ export function registerPlanTools(
 
 				const planResult = await operations.getPlan(validatedPlanId);
 				if (!planResult.success || !planResult.data) {
-					return planResult;
+					return formatResult(planResult);
 				}
 
 				const apiContract = planResult.data.api_contracts?.find(
 					(ac) => ac.id === validatedApiContractId,
 				);
 				if (!apiContract) {
-					return {
+					return formatResult({
 						success: false,
 						error: `API contract '${validatedApiContractId}' not found in plan '${validatedPlanId}'`,
-					};
+					});
 				}
 
 				return formatResult({ success: true, data: apiContract });
@@ -449,17 +449,17 @@ export function registerPlanTools(
 
 				const planResult = await operations.getPlan(validatedPlanId);
 				if (!planResult.success || !planResult.data) {
-					return planResult;
+					return formatResult(planResult);
 				}
 
 				const dataModel = planResult.data.data_models?.find(
 					(dm) => dm.id === validatedDataModelId,
 				);
 				if (!dataModel) {
-					return {
+					return formatResult({
 						success: false,
 						error: `Data model '${validatedDataModelId}' not found in plan '${validatedPlanId}'`,
-					};
+					});
 				}
 
 				return formatResult({ success: true, data: dataModel });

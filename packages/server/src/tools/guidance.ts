@@ -6,7 +6,10 @@ import { formatResult } from "../utils/result-formatter.js";
 import { wrapToolHandler } from "../utils/tool-wrapper.js";
 import type { ToolContext } from "./index.js";
 
-type Component = Extract<AnyEntity, { type: "app" | "service" | "library" | "tool" }>;
+type Component = Extract<
+	AnyEntity,
+	{ type: "app" | "service" | "library" | "tool" }
+>;
 
 // Input schemas for guidance tools (ZodRawShape format for MCP SDK)
 const AnalyzeRequirementInputSchema = {
@@ -163,8 +166,9 @@ function analyzeRequirement(req: Requirement): AnalysisResult {
 
 	// Step 6: Criteria linking to plans
 	if (req.criteria && req.criteria.length > 0) {
-		const unlinkedCriteria = req.criteria.filter((c: { id: string; description: string; plan_id?: string }) =>
-			!("plan_id" in c) || !c.plan_id,
+		const unlinkedCriteria = req.criteria.filter(
+			(c: { id: string; description: string; plan_id?: string }) =>
+				!("plan_id" in c) || !c.plan_id,
 		);
 		if (unlinkedCriteria.length > 0) {
 			suggestions.push(
