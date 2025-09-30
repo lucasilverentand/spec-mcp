@@ -38,7 +38,7 @@ jobs:
       - name: Update package version
         run: |
           cd packages/server
-          pnpm version ${{ steps.get_version.outputs.VERSION }} --no-git-tag-version
+          npm pkg set version=${{ steps.get_version.outputs.VERSION }}
 
       - name: Publish @spec-mcp/server to npm
         run: cd packages/server && pnpm publish --access public --no-git-checks
