@@ -43,16 +43,16 @@ Spec MCP Server provides a structured approach to managing software specificatio
 npm install -g @spec-mcp/server
 ```
 
-### From GitHub Packages
-
-```bash
-npm install -g @spec-mcp/server --registry=https://npm.pkg.github.com
-```
-
 ### Using pnpm
 
 ```bash
 pnpm add -g @spec-mcp/server
+```
+
+### Using yarn
+
+```bash
+yarn global add @spec-mcp/server
 ```
 
 ## Quick Start
