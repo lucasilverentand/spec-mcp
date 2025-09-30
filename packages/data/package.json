@@ -24,7 +24,7 @@
 	"dependencies": {
 		"glob": "^11.0.0",
 		"yaml": "^2.5.1",
-		"zod": "^4.1.11"
+		"zod": "^3.22.0"
 	},
 	"devDependencies": {
 		"@spec-mcp/tsconfig": "workspace:*",
