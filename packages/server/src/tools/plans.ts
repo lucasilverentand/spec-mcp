@@ -17,7 +17,13 @@ import type { ToolContext } from "./index.js";
 
 // TaskSchema - matches TaskSchema from data package
 const TaskIdSchema = z.string().regex(/^task-\d{3}$/);
-const TaskPrioritySchema = z.enum(["critical", "high", "normal", "low", "optional"]);
+const TaskPrioritySchema = z.enum([
+	"critical",
+	"high",
+	"normal",
+	"low",
+	"optional",
+]);
 const TaskSchema = z.object({
 	id: TaskIdSchema,
 	priority: TaskPrioritySchema.default("normal"),
@@ -65,9 +71,8 @@ export function registerPlanTools(
 				criteria_id: AcceptanceCriteriaIdSchema.optional().describe(
 					"The acceptance criteria ID this plan fulfills (e.g., 'req-001-auth/crit-001'). Optional for orchestration/milestone plans.",
 				),
-				priority: PlanPrioritySchema
-					.default("medium")
-					.describe("Priority level"),
+				priority:
+					PlanPrioritySchema.default("medium").describe("Priority level"),
 				acceptance_criteria: z
 					.string()
 					.describe("Conditions that must be met for the plan to be complete"),
@@ -75,10 +80,7 @@ export function registerPlanTools(
 					.array(PlanIdSchema)
 					.optional()
 					.describe("Other plan IDs this depends on"),
-				tasks: z
-					.array(TaskSchema)
-					.optional()
-					.describe("Implementation tasks"),
+				tasks: z.array(TaskSchema).optional().describe("Implementation tasks"),
 			},
 		},
 		wrapToolHandler(
@@ -237,9 +239,7 @@ export function registerPlanTools(
 			title: "List Plans",
 			description: "List all plans with optional filtering",
 			inputSchema: {
-				priority: PlanPrioritySchema
-					.optional()
-					.describe("Filter by priority"),
+				priority: PlanPrioritySchema.optional().describe("Filter by priority"),
 				completed: z
 					.boolean()
 					.optional()
@@ -291,7 +291,9 @@ export function registerPlanTools(
 					return planResult;
 				}
 
-				const task = planResult.data.tasks?.find((t) => t.id === validatedTaskId);
+				const task = planResult.data.tasks?.find(
+					(t) => t.id === validatedTaskId,
+				);
 				if (!task) {
 					return {
 						success: false,

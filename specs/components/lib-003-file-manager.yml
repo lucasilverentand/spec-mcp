@@ -1,0 +1,26 @@
+type: library
+number: 3
+slug: file-manager
+name: File Manager Library
+description: Handles YAML file I/O operations including atomic writes, directory management, and
+  file scanning. Provides safe concurrent access and error handling for filesystem operations.
+created_at: 2025-09-29T23:34:01.059Z
+updated_at: 2025-09-29T23:34:01.059Z
+folder: packages/data/src/managers
+setup_tasks: []
+depends_on: []
+external_dependencies:
+  - yaml@^2.5.1
+  - glob@^11.0.0
+capabilities:
+  - Atomic file writes
+  - YAML serialization/deserialization
+  - Directory auto-creation
+  - File scanning and glob patterns
+constraints:
+  - Must use atomic writes to prevent corruption
+  - Must handle file permissions gracefully
+tech_stack:
+  - TypeScript
+  - Node.js fs
+  - yaml

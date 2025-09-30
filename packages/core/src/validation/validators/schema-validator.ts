@@ -348,8 +348,6 @@ function createBaseEntity(entityType: string): AnyEntity {
 					{
 						id: "req-001-test-entity/crit-001",
 						description: "Test criteria",
-						plan_id: "pln-001-test",
-						completed: false,
 					},
 				],
 			} as Requirement;
@@ -358,6 +356,7 @@ function createBaseEntity(entityType: string): AnyEntity {
 			return {
 				...baseFields,
 				type: "plan",
+				criteria_id: "req-001-test-entity/crit-001",
 				priority: "medium",
 				acceptance_criteria: "Test criteria",
 				depends_on: [],

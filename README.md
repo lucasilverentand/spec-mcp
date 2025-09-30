@@ -11,7 +11,8 @@ An open-source Model Context Protocol (MCP) server for managing software project
 - ⚠️ **Error Handling**: Define and track error scenarios and recovery strategies
 - 🔗 **Cross-References**: Link flows to tasks, tests to flows, with validation
 - 📊 **Analysis Tools**: Dependency graphs, coverage reports, orphan detection
-- 🤖 **AI Prompts**: Intelligent prompts for guided implementation and planning
+- ✅ **Validation & Guidance**: Built-in tools that analyze specs against best practices
+- 🤖 **AI Prompts**: Interactive prompts for guided spec creation using proven methodologies
 
 ## Quick Start
 

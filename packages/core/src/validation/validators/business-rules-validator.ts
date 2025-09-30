@@ -70,19 +70,20 @@ export class BusinessRulesValidator {
 				}
 			}
 
-			// Validate requirement-plan linkage
-			for (const requirement of entities.requirements) {
-				if ("criteria" in requirement && Array.isArray(requirement.criteria)) {
-					const linkedPlans = requirement.criteria.map(
-						(c: { plan_id: string }) => c.plan_id,
-					);
-					const missingPlans = linkedPlans.filter(
-						(planId: string) => !entities.plans.some((p) => p.id === planId),
+			// Validate plan-criteria linkage
+			for (const plan of entities.plans) {
+				if ("criteria_id" in plan && plan.criteria_id) {
+					const criteriaExists = entities.requirements.some((req) =>
+						"criteria" in req
+							? req.criteria.some(
+									(crit: { id: string }) => crit.id === plan.criteria_id,
+								)
+							: false,
 					);
 
-					if (missingPlans.length > 0) {
+					if (!criteriaExists) {
 						errors.push(
-							`Requirement '${requirement.slug}' references non-existent plans: ${missingPlans.join(", ")}`,
+							`Plan '${plan.slug}' references non-existent criteria: ${plan.criteria_id}`,
 						);
 					}
 				}

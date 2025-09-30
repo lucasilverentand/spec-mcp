@@ -1,0 +1,11 @@
+{
+	"mcpServers": {
+		"spec-mcp": {
+			"command": "node",
+			"args": ["packages/server/dist/index.js"],
+			"env": {
+				"SPECS_ROOT": ".specs"
+			}
+		}
+	}
+}

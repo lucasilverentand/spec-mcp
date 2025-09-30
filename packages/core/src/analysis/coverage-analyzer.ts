@@ -48,14 +48,27 @@ export class CoverageAnalyzer
 
 			// Analyze requirement coverage
 			const requirementCoverage = await this.analyzeRequirementCoverage(
-				requirements,
-				plans,
+				requirements as Array<{
+					criteria: Array<{ id: string }>;
+					number: number;
+					slug: string;
+				}>,
+				plans as Array<{ number: number; slug: string; criteria_id?: string }>,
 			);
 			coveredSpecs += requirementCoverage.covered;
 			uncoveredSpecs.push(...requirementCoverage.uncovered);
 
 			// Analyze plan coverage
-			const planCoverage = await this.analyzePlanCoverage(requirements, plans);
+			const planCoverage = await this.analyzePlanCoverage(
+				requirements as Array<{ criteria: Array<{ id: string }> }>,
+				plans as Array<{
+					number: number;
+					slug: string;
+					id: string;
+					criteria_id?: string;
+					depends_on?: string[];
+				}>,
+			);
 			coveredSpecs += planCoverage.covered;
 			orphanedSpecs.push(...planCoverage.orphaned);
 
@@ -135,22 +148,18 @@ export class CoverageAnalyzer
 
 	private async analyzeRequirementCoverage(
 		requirements: Array<{
-			criteria: Array<{ plan_id: string }>;
+			criteria: Array<{ id: string }>;
 			number: number;
 			slug: string;
 		}>,
-		plans: Array<{ number: number; slug: string }>,
+		plans: Array<{ number: number; slug: string; criteria_id?: string }>,
 	) {
 		let covered = 0;
 		const uncovered: string[] = [];
 
 		for (const requirement of requirements) {
 			const hasLinkedPlans = requirement.criteria.some((criteria) => {
-				return plans.some(
-					(plan) =>
-						`pln-${plan.number.toString().padStart(3, "0")}-${plan.slug}` ===
-						criteria.plan_id,
-				);
+				return plans.some((plan) => plan.criteria_id === criteria.id);
 			});
 
 			if (hasLinkedPlans) {
@@ -166,29 +175,31 @@ export class CoverageAnalyzer
 	}
 
 	private async analyzePlanCoverage(
-		requirements: Array<{ criteria: Array<{ plan_id: string }> }>,
+		requirements: Array<{ criteria: Array<{ id: string }> }>,
 		plans: Array<{
 			number: number;
 			slug: string;
 			id: string;
+			criteria_id?: string;
 			depends_on?: string[];
 		}>,
 	) {
 		let covered = 0;
 		const orphaned: string[] = [];
 
-		// Get all plan IDs referenced by requirements
-		const referencedPlanIds = new Set<string>();
+		// Get all criteria IDs from requirements
+		const criteriaIds = new Set<string>();
 		for (const requirement of requirements) {
 			for (const criteria of requirement.criteria) {
-				referencedPlanIds.add(criteria.plan_id);
+				criteriaIds.add(criteria.id);
 			}
 		}
 
 		for (const plan of plans) {
 			const planId = `pln-${plan.number.toString().padStart(3, "0")}-${plan.slug}`;
 
-			if (referencedPlanIds.has(planId)) {
+			// Plan is covered if it references a valid criteria_id
+			if (plan.criteria_id && criteriaIds.has(plan.criteria_id)) {
 				covered++;
 			} else {
 				// Check if plan is referenced by other plans as dependency

@@ -1,0 +1,24 @@
+type: library
+number: 2
+slug: entity-manager
+name: Entity Manager Library
+description: Provides CRUD operations for all entity types with automatic ID generation, validation,
+  and persistence. Manages entity lifecycle, ensures data integrity, and provides query
+  capabilities.
+created_at: 2025-09-29T23:34:00.960Z
+updated_at: 2025-09-29T23:34:00.960Z
+folder: packages/data/src/managers
+setup_tasks: []
+depends_on:
+  - lib-001-data-schemas
+external_dependencies: []
+capabilities:
+  - Create/Read/Update/Delete operations
+  - Auto-generated sequential IDs
+  - Entity validation before persistence
+  - Query and filter capabilities
+constraints:
+  - Must validate all entities before saving
+  - ID generation must be thread-safe
+tech_stack:
+  - TypeScript

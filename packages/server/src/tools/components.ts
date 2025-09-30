@@ -19,7 +19,9 @@ import type { ToolContext } from "./index.js";
 const ComponentTypeSchema = z.enum(["app", "service", "library", "tool"]);
 
 // ComponentIdSchema - matches ComponentIdSchema from data package
-const ComponentIdSchema = z.string().regex(/^(app|svc|lib|tol)-\d{3}-[a-z0-9-]+$/);
+const ComponentIdSchema = z
+	.string()
+	.regex(/^(app|svc|lib|tol)-\d{3}-[a-z0-9-]+$/);
 
 /**
  * Register all component-related tools
@@ -36,8 +38,7 @@ export function registerComponentTools(
 			title: "Create Component",
 			description: "Create a new component specification",
 			inputSchema: {
-				type: ComponentTypeSchema
-					.describe("Type of component"),
+				type: ComponentTypeSchema.describe("Type of component"),
 				slug: z.string().describe("URL-friendly identifier"),
 				name: z.string().describe("Display name of the component"),
 				description: z.string().describe("Detailed description"),
@@ -241,9 +242,9 @@ export function registerComponentTools(
 			title: "List Components",
 			description: "List all components with optional filtering",
 			inputSchema: {
-				type: ComponentTypeSchema
-					.optional()
-					.describe("Filter by component type"),
+				type: ComponentTypeSchema.optional().describe(
+					"Filter by component type",
+				),
 				tech_stack: z.string().optional().describe("Filter by technology"),
 				search: z
 					.string()

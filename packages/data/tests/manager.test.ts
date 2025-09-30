@@ -328,12 +328,7 @@ describe("SpecsManager", () => {
 			expect(criticalReqs).toHaveLength(1);
 			expect(criticalReqs[0].priority).toBe("critical");
 
-			// Filter by completion status
-			const completedReqs = await manager.listRequirements({
-				completed: true,
-			});
-			expect(completedReqs).toHaveLength(1);
-			expect(completedReqs[0].criteria.every((c) => c.completed)).toBe(true);
+			// Note: 'completed' field no longer exists on criteria after refactoring
 		});
 	});
 
@@ -764,8 +759,6 @@ describe("SpecsManager", () => {
 					{
 						id: "req-002-required-complete/crit-001",
 						description: "Test criteria",
-						plan_id: "pln-001-test",
-						completed: true,
 					},
 				],
 			});
@@ -776,12 +769,7 @@ describe("SpecsManager", () => {
 			});
 			expect(multiPriorityReqs).toHaveLength(2);
 
-			// Test incomplete requirements
-			const incompleteReqs = await manager.listRequirements({
-				completed: false,
-			});
-			expect(incompleteReqs).toHaveLength(1);
-			expect(incompleteReqs[0].priority).toBe("critical");
+			// Note: 'completed' filter no longer exists after refactoring
 		});
 
 		it("should handle complex plan filtering", async () => {

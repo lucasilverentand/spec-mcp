@@ -32,10 +32,13 @@ export class OrphanDetector
 			// Find orphaned plans (not referenced by requirements or other plans)
 			const referencedPlanIds = new Set<string>();
 
-			// Plans referenced by requirements
-			for (const requirement of requirements) {
-				for (const criteria of requirement.criteria) {
-					referencedPlanIds.add(criteria.plan_id);
+			// Plans that reference requirement criteria via criteria_id
+			// (these plans are not orphaned)
+			for (const plan of plans) {
+				if (plan.criteria_id) {
+					referencedPlanIds.add(
+						`pln-${plan.number.toString().padStart(3, "0")}-${plan.slug}`,
+					);
 				}
 			}
 
@@ -90,11 +93,7 @@ export class OrphanDetector
 			// Find orphaned requirements (requirements without linked plans)
 			for (const requirement of requirements) {
 				const hasLinkedPlans = requirement.criteria.some((criteria) => {
-					return plans.some(
-						(plan) =>
-							`pln-${plan.number.toString().padStart(3, "0")}-${plan.slug}` ===
-							criteria.plan_id,
-					);
+					return plans.some((plan) => plan.criteria_id === criteria.id);
 				});
 
 				if (!hasLinkedPlans) {

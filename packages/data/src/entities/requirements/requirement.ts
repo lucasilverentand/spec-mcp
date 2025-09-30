@@ -1,6 +1,5 @@
 import z from "zod";
 import { BaseSchema, computeEntityId } from "../../core/base-entity.js";
-import { PlanIdSchema } from "../plans/plan.js";
 
 export const RequirementIdSchema = z.string().regex(/^req-\d{3}-[a-z0-9-]+$/, {
 	message: "Requirement ID must follow format: req-XXX-slug-here",
@@ -19,11 +18,6 @@ export const AcceptanceCriteriaSchema = z.object({
 		.string()
 		.min(1)
 		.describe("Description of the acceptance criteria"),
-	plan_id: PlanIdSchema,
-	completed: z
-		.boolean()
-		.default(false)
-		.describe("Whether the criteria has been completed"),
 });
 
 // Schema for stored requirements (no ID field)

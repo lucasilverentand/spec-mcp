@@ -73,32 +73,18 @@ describe("AcceptanceCriteriaSchema", () => {
 		const validCriteria: AcceptanceCriteria = {
 			id: "req-001-test-requirement/crit-001",
 			description: "User can log in successfully",
-			plan_id: "pln-001-authentication-plan",
-			completed: false,
 		};
 
 		expect(() => AcceptanceCriteriaSchema.parse(validCriteria)).not.toThrow();
 	});
 
-	it("should default completed to false", () => {
-		const criteria = {
-			id: "req-001-test-requirement/crit-001",
-			description: "User can log in successfully",
-			plan_id: "pln-001-authentication-plan",
-		};
-
-		const parsed = AcceptanceCriteriaSchema.parse(criteria);
-		expect(parsed.completed).toBe(false);
-	});
-
 	it("should require all mandatory fields", () => {
-		const requiredFields = ["id", "description", "plan_id"];
+		const requiredFields = ["id", "description"];
 
 		for (const field of requiredFields) {
 			const invalidCriteria = {
 				id: "req-001-test-requirement/crit-001",
 				description: "Test description",
-				plan_id: "pln-001-test-plan",
 			};
 			delete (invalidCriteria as Record<string, unknown>)[field];
 
@@ -110,7 +96,6 @@ describe("AcceptanceCriteriaSchema", () => {
 		const criteria = {
 			id: "req-001-test-requirement/crit-001",
 			description: "",
-			plan_id: "pln-001-authentication-plan",
 		};
 
 		expect(() => AcceptanceCriteriaSchema.parse(criteria)).toThrow();
@@ -132,8 +117,6 @@ describe("RequirementSchema", () => {
 				{
 					id: "req-001-user-authentication/crit-001",
 					description: "User can log in with valid credentials",
-					plan_id: "pln-001-auth-plan",
-					completed: false,
 				},
 			],
 		};
@@ -155,8 +138,6 @@ describe("RequirementSchema", () => {
 				{
 					id: "req-001-test-req/crit-001",
 					description: "Test criteria",
-					plan_id: "pln-001-test-plan",
-					completed: false,
 				},
 			],
 		};
@@ -187,8 +168,6 @@ describe("RequirementSchema", () => {
 					{
 						id: "req-001-test-req/crit-001",
 						description: "Test criteria",
-						plan_id: "pln-001-test-plan",
-						completed: false,
 					},
 				],
 			};
@@ -211,8 +190,6 @@ describe("RequirementSchema", () => {
 				{
 					id: "req-001-test-req/crit-001",
 					description: "Test criteria",
-					plan_id: "pln-001-test-plan",
-					completed: false,
 				},
 			],
 		};
@@ -248,8 +225,6 @@ describe("RequirementSchema", () => {
 				{
 					id: "req-002-test-req/crit-001", // Wrong number (002 instead of 001)
 					description: "Test criteria",
-					plan_id: "pln-001-test-plan",
-					completed: false,
 				},
 			],
 		};

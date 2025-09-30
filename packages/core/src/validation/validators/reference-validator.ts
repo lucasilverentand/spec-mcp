@@ -57,6 +57,7 @@ export class ReferenceValidator {
 					if (entity.type === "plan") {
 						await this.validatePlanReferences(
 							entity,
+							requirements,
 							plans,
 							components,
 							{ checkExistence, checkCycles, allowSelfReferences },
@@ -157,19 +158,14 @@ export class ReferenceValidator {
 			components: [] as Array<{ id: string; brokenRefs: string[] }>,
 		};
 
-		// Check requirement references
+		// Check requirement references - verify that criteria are referenced by plans
 		for (const requirement of requirements) {
 			const reqId = this.getRequirementId(requirement);
 			const broken: string[] = [];
 
-			for (const criteria of requirement.criteria) {
-				const planExists = plans.some(
-					(p) => this.getPlanId(p) === criteria.plan_id,
-				);
-				if (!planExists) {
-					broken.push(criteria.plan_id);
-				}
-			}
+			// Note: In the new model, requirements don't directly reference plans
+			// Instead, plans reference criteria via criteria_id
+			// No broken references to check here for requirements
 
 			if (broken.length > 0) {
 				brokenRefs.requirements.push({ id: reqId, brokenRefs: broken });
@@ -180,6 +176,16 @@ export class ReferenceValidator {
 		for (const plan of plans) {
 			const planId = this.getPlanId(plan);
 			const broken: string[] = [];
+
+			// Check criteria_id reference to requirement criteria
+			if (plan.criteria_id) {
+				const criteriaExists = requirements.some((req) =>
+					req.criteria.some((crit) => crit.id === plan.criteria_id),
+				);
+				if (!criteriaExists) {
+					broken.push(plan.criteria_id);
+				}
+			}
 
 			// Check plan dependencies
 			for (const depId of plan.depends_on) {
@@ -249,18 +255,9 @@ export class ReferenceValidator {
 
 		// Find missing references and suggest alternatives
 		if (entity.type === "requirement") {
-			for (const criteria of entity.criteria) {
-				const planExists = plans.some(
-					(p) => this.getPlanId(p) === criteria.plan_id,
-				);
-				if (!planExists) {
-					const suggestions = this.findSimilarPlanIds(criteria.plan_id, plans);
-					fixes.missingReferences.push({
-						reference: criteria.plan_id,
-						suggestions,
-					});
-				}
-			}
+			// Note: In the new model, requirements don't directly reference plans
+			// Instead, plans reference criteria via criteria_id
+			// No missing references to check here for requirements
 		}
 
 		if (entity.type === "plan") {
@@ -332,28 +329,20 @@ export class ReferenceValidator {
 	}
 
 	private async validateRequirementReferences(
-		requirement: Requirement,
-		plans: Plan[],
-		options: { checkExistence: boolean; allowSelfReferences: boolean },
-		errors: string[],
+		_requirement: Requirement,
+		_plans: Plan[],
+		_options: { checkExistence: boolean; allowSelfReferences: boolean },
+		_errors: string[],
 		_warnings: string[],
 	): Promise<void> {
-		if (!options.checkExistence) return;
-
-		for (const criteria of requirement.criteria) {
-			const planExists = plans.some(
-				(p) => this.getPlanId(p) === criteria.plan_id,
-			);
-			if (!planExists) {
-				errors.push(
-					`Criteria '${criteria.id}' references non-existent plan '${criteria.plan_id}'`,
-				);
-			}
-		}
+		// Note: In the new model, requirements don't directly reference plans
+		// Instead, plans reference criteria via criteria_id
+		// No references to validate here for requirements
 	}
 
 	private async validatePlanReferences(
 		plan: Plan,
+		requirements: Requirement[],
 		plans: Plan[],
 		components: AnyComponent[],
 		options: {
@@ -365,6 +354,18 @@ export class ReferenceValidator {
 		_warnings: string[],
 	): Promise<void> {
 		const planId = this.getPlanId(plan);
+
+		// Check criteria_id reference
+		if (options.checkExistence && plan.criteria_id) {
+			const criteriaExists = requirements.some((req) =>
+				req.criteria.some((crit) => crit.id === plan.criteria_id),
+			);
+			if (!criteriaExists) {
+				errors.push(
+					`Plan '${planId}' references non-existent criteria '${plan.criteria_id}'`,
+				);
+			}
+		}
 
 		// Check plan dependencies
 		if (options.checkExistence) {
@@ -491,13 +492,16 @@ export class ReferenceValidator {
 
 		if (entity.type === "plan") {
 			const isReferenced =
-				requirements.some((req) =>
-					req.criteria.some((c) => c.plan_id === entityId),
-				) || plans.some((p) => p.depends_on.includes(entityId));
+				plans.some((p) => p.depends_on.includes(entityId)) ||
+				(entity.type === "plan" &&
+					entity.criteria_id &&
+					requirements.some((req) =>
+						req.criteria.some((c) => c.id === entity.criteria_id),
+					));
 
 			if (!isReferenced) {
 				warnings.push(
-					"This plan is not referenced by any requirement or other plan",
+					"This plan is not referenced by any other plan and does not fulfill any criteria",
 				);
 			}
 		}

@@ -1,5 +1,6 @@
 import z from "zod";
 import { BaseSchema, computeEntityId } from "../../core/base-entity.js";
+import { AcceptanceCriteriaIdSchema } from "../requirements/requirement.js";
 import { ApiContractSchema } from "../shared/api-contract-schema.js";
 import { DataModelSchema } from "../shared/data-model-schema.js";
 import { FlowSchema } from "../shared/flow-schema.js";
@@ -17,6 +18,9 @@ export const PlanPrioritySchema = z.enum(["critical", "high", "medium", "low"]);
 // Schema for stored plans (no ID field)
 export const PlanStorageSchema = BaseSchema.extend({
 	type: z.literal("plan").describe("Entity type is always 'plan'"),
+	criteria_id: AcceptanceCriteriaIdSchema.optional().describe(
+		"The acceptance criteria ID this plan fulfills (one plan per criteria). Optional for orchestration/milestone plans.",
+	),
 	priority: PlanPrioritySchema.default("medium").describe(
 		"Priority level of the plan. 'critical' plans must be completed before 'high', 'high' before 'medium', and 'medium' before 'low'.",
 	),

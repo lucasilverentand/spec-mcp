@@ -10,8 +10,6 @@ import { z } from "zod";
 export const CriterionSchema = z.object({
 	id: z.string().regex(/^req-\d{3}-[a-z0-9-]+\/crit-\d{3}$/),
 	description: z.string(),
-	plan_id: z.string().regex(/^pln-\d{3}-[a-z0-9-]+$/),
-	completed: z.boolean().default(false),
 });
 
 // Create requirement input schema (as ZodRawShape for MCP SDK)
@@ -46,10 +44,7 @@ export const UpdateRequirementInputSchema = {
 		.enum(["critical", "required", "ideal", "optional"])
 		.optional()
 		.describe("Updated priority"),
-	criteria: z
-		.array(CriterionSchema)
-		.optional()
-		.describe("Updated criteria"),
+	criteria: z.array(CriterionSchema).optional().describe("Updated criteria"),
 };
 export const UpdateRequirementSchema = z.object(UpdateRequirementInputSchema);
 

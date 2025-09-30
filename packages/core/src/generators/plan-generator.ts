@@ -105,6 +105,7 @@ function createPlanFromCriteria(
 
 	const plan: Omit<Plan, "number" | "id" | "created_at" | "updated_at"> = {
 		type: "plan",
+		criteria_id: criteria.id,
 		name: `Implementation: ${criteria.description}`,
 		slug: planSlug,
 		description: `Implementation plan for acceptance criteria: ${criteria.description}`,

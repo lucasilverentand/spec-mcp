@@ -884,15 +884,13 @@ describe("EntityManager", () => {
 						{
 							id: "req-002-complete/crit-001",
 							description: "Test",
-							plan_id: "pln-001-test",
-							completed: true,
 						},
 					],
 				});
 
-				const completed = await manager.listRequirements({ completed: true });
-				expect(completed).toHaveLength(1);
-				expect(completed[0].slug).toBe("complete");
+				// Note: 'completed' filter no longer exists after refactoring
+				const allReqs = await manager.listRequirements({});
+				expect(allReqs).toHaveLength(2);
 			});
 		});
 

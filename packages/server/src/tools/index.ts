@@ -5,6 +5,7 @@ import type { InputValidator } from "../middleware/input-validator.js";
 import type { RateLimiter } from "../middleware/rate-limiter.js";
 import { registerAnalysisTools } from "./analysis.js";
 import { registerComponentTools } from "./components.js";
+import { registerGuidanceTools } from "./guidance.js";
 import { registerPlanTools } from "./plans.js";
 import { registerReportingTools } from "./reporting.js";
 import { registerRequirementTools } from "./requirements.js";
@@ -32,4 +33,5 @@ export function registerAllTools(
 	registerReportingTools(server, operations, context);
 	registerSearchTools(server, operations, context);
 	registerValidationTools(server, operations, context);
+	registerGuidanceTools(server, operations, context);
 }

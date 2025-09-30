@@ -371,26 +371,7 @@ describe("ValidationManager", () => {
 			expect(result.errors.some((e) => e.includes("format"))).toBe(true);
 		});
 
-		it("should reject requirement with invalid plan_id format in criteria", async () => {
-			const requirement = createValidRequirementData({
-				criteria: [
-					{
-						id: "req-001-test-req/crit-001",
-						description: "Test criteria",
-						plan_id: "invalid-plan-id",
-						completed: false,
-					},
-				],
-			});
-
-			const result = await validationManager.validateEntity(
-				"requirement",
-				requirement,
-			);
-
-			expect(result.success).toBe(false);
-			expect(result.errors.some((e) => e.includes("Plan ID"))).toBe(true);
-		});
+		// Note: Test removed - plan_id field no longer exists on criteria after refactoring
 	});
 
 	describe("validateEntity - Plans", () => {

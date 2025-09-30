@@ -1,0 +1,25 @@
+type: requirement
+number: 5
+slug: schema-validation
+name: Schema Validation
+description: "The system must enforce strict schema validation using Zod for all specification
+  types. Validation must occur at multiple layers: input validation for tool parameters, entity
+  validation during CRUD operations, and business rules validation for domain-specific constraints.
+  Validation errors must be clear, actionable, and indicate exactly which fields failed validation
+  and why, including suggestions for correction when possible."
+created_at: 2025-09-29T23:34:55.022Z
+updated_at: 2025-09-29T23:34:55.022Z
+priority: required
+criteria:
+  - id: req-005-schema-validation/crit-001
+    description: All Zod schemas defined for requirements, components, plans, and nested entities
+    plan_id: pln-001-core-foundation
+    completed: false
+  - id: req-005-schema-validation/crit-002
+    description: Input validation catches malformed tool parameters before processing
+    plan_id: pln-002-mcp-server-implementation
+    completed: false
+  - id: req-005-schema-validation/crit-003
+    description: Validation errors include field paths, expected formats, and suggested corrections
+    plan_id: pln-001-core-foundation
+    completed: false

@@ -863,21 +863,16 @@ export class EntityManager {
 			}
 		}
 
-		// Validate requirement criteria plan references
-		for (const requirement of requirements) {
-			if (requirement.criteria && requirement.criteria.length > 0) {
-				for (const criteria of requirement.criteria) {
-					if (criteria.plan_id) {
-						const planExists = plans.some((p) => {
-							const planId = `pln-${p.number.toString().padStart(3, "0")}-${p.slug}`;
-							return planId === criteria.plan_id;
-						});
-						if (!planExists) {
-							errors.push(
-								`Requirement '${requirement.slug}' criteria references non-existent plan '${criteria.plan_id}'`,
-							);
-						}
-					}
+		// Validate plan criteria_id references to requirement criteria
+		for (const plan of plans) {
+			if (plan.criteria_id) {
+				const criteriaExists = requirements.some((req) =>
+					req.criteria.some((crit) => crit.id === plan.criteria_id),
+				);
+				if (!criteriaExists) {
+					errors.push(
+						`Plan '${plan.slug}' references non-existent criteria '${plan.criteria_id}'`,
+					);
 				}
 			}
 		}

@@ -147,12 +147,8 @@ export class ValidationEngine implements IValidationEngine {
 			// Validate requirement coverage
 			for (const requirement of requirements) {
 				const hasLinkedPlans = requirement.criteria.some(
-					(criteria: { plan_id: string }) => {
-						return plans.some(
-							(plan) =>
-								`pln-${plan.number.toString().padStart(3, "0")}-${plan.slug}` ===
-								criteria.plan_id,
-						);
+					(criteria: { id: string }) => {
+						return plans.some((plan) => plan.criteria_id === criteria.id);
 					},
 				);
 
