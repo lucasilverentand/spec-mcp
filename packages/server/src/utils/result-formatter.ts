@@ -42,7 +42,8 @@ export function formatResult<T>(result: OperationResult<T>): CallToolResult {
 }
 
 /**
- * Formats a list result with count information
+ * Formats a list result with count information and summary data
+ * Returns only essential fields (id, type, name, description) to reduce token usage
  */
 export function formatListResult<T>(
 	result: OperationResult<T[]>,
@@ -50,6 +51,18 @@ export function formatListResult<T>(
 ): CallToolResult {
 	if (result.success) {
 		const count = result.data?.length ?? 0;
+
+		// Create summary objects with only essential fields
+		const summaryData = result.data?.map((item: T) => {
+			const entity = item as Record<string, unknown>;
+			return {
+				id: entity.id,
+				type: entity.type,
+				name: entity.name,
+				description: entity.description,
+			};
+		});
+
 		return {
 			content: [
 				{
@@ -57,7 +70,7 @@ export function formatListResult<T>(
 					text: JSON.stringify(
 						{
 							success: true,
-							data: result.data,
+							data: summaryData,
 							count,
 							entityType,
 						},
