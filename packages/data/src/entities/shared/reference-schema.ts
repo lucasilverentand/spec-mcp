@@ -26,7 +26,7 @@ export const ReferenceBaseSchema = z.object({
 
 const _UrlReferenceSchema = ReferenceBaseSchema.extend({
 	type: z.literal("url"),
-	url: z.url(),
+	url: z.string().url(),
 	mime_type: z.string().optional(),
 });
 
