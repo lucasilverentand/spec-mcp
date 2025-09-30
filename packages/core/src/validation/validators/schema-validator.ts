@@ -383,7 +383,7 @@ function createBaseEntity(entityType: string): AnyEntity {
 				tech_stack: [],
 				deployment_targets: [],
 				environments: ["development"],
-			} as unknown as AppComponent;
+			} as AppComponent;
 
 		case "service":
 			return {
@@ -396,7 +396,8 @@ function createBaseEntity(entityType: string): AnyEntity {
 				capabilities: [],
 				constraints: [],
 				tech_stack: [],
-			} as unknown as ServiceComponent;
+				// Add any other required ServiceComponent properties here if missing
+			} as ServiceComponent;
 
 		case "library":
 			return {
@@ -409,7 +410,8 @@ function createBaseEntity(entityType: string): AnyEntity {
 				capabilities: [],
 				constraints: [],
 				tech_stack: [],
-			} as unknown as LibraryComponent;
+				environments: ["development"],
+			} as LibraryComponent;
 
 		case "tool":
 			return {
@@ -422,7 +424,8 @@ function createBaseEntity(entityType: string): AnyEntity {
 				capabilities: [],
 				constraints: [],
 				tech_stack: [],
-			} as unknown as ToolComponent;
+				// Add any required fields for ToolComponent that are missing here.
+			} as ToolComponent;
 
 		default:
 			throw new Error(`Unknown entity type: ${entityType}`);
