@@ -224,13 +224,11 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   publish-github:
-    name: Publish to GitHub Packages
+    name: Publish GitHub Release Assets
     runs-on: ubuntu-latest
     needs: test
     permissions:
-      contents: read
-      packages: write
-      id-token: write
+      contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -239,8 +237,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          registry-url: 'https://npm.pkg.github.com'
-          scope: '@spec-mcp'
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -253,14 +249,16 @@ jobs:
       - name: Build packages
         run: pnpm build
 
-      - name: Configure package for GitHub registry
+      - name: Create release archive
         run: |
+          mkdir -p release-assets
           cd packages/server
-          # Create or update .npmrc for GitHub Packages
-          echo "@spec-mcp:registry=https://npm.pkg.github.com" > .npmrc
-          echo "//npm.pkg.github.com/:_authToken=\${NODE_AUTH_TOKEN}" >> .npmrc
+          npm pack
+          mv spec-mcp-server-*.tgz ../../release-assets/
 
-      - name: Publish @spec-mcp/server to GitHub Packages
-        run: cd packages/server && pnpm publish --access public --no-git-checks
+      - name: Upload release assets
+        uses: softprops/action-gh-release@v1
+        with:
+          files: release-assets/*.tgz
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
