@@ -1,5 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { SpecOperations } from "@spec-mcp/core";
+import type { Component, Plan, Requirement } from "@spec-mcp/data/entities";
 import { z } from "zod";
 import { formatResult } from "../utils/result-formatter.js";
 import { wrapToolHandler } from "../utils/tool-wrapper.js";
@@ -39,10 +40,20 @@ const AnalyzeComponentSchema = z.object(AnalyzeComponentInputSchema);
 const AnalyzePlanSchema = z.object(AnalyzePlanInputSchema);
 const ValidateSpecSchema = z.object(ValidateSpecInputSchema);
 
+interface AnalysisResult {
+	id: string;
+	type: string;
+	overall_quality: "good" | "needs_improvement";
+	issues: string[];
+	suggestions: string[];
+	strengths: string[];
+	guide_reference: string;
+}
+
 /**
  * Analyze a requirement against the 7-step reasoning process
  */
-function analyzeRequirement(req: any): any {
+function analyzeRequirement(req: Requirement): AnalysisResult {
 	const issues: string[] = [];
 	const suggestions: string[] = [];
 	const strengths: string[] = [];
@@ -150,7 +161,9 @@ function analyzeRequirement(req: any): any {
 
 	// Step 6: Criteria linking to plans
 	if (req.criteria && req.criteria.length > 0) {
-		const unlinkedCriteria = req.criteria.filter((c: any) => !c.plan_id);
+		const unlinkedCriteria = req.criteria.filter(
+			(c) => !("plan_id" in c) || !c.plan_id,
+		);
 		if (unlinkedCriteria.length > 0) {
 			suggestions.push(
 				`${unlinkedCriteria.length} criteria not linked to plans - link them once plans are created`,
@@ -181,7 +194,7 @@ function analyzeRequirement(req: any): any {
 /**
  * Analyze a component against the 10-step reasoning process
  */
-function analyzeComponent(comp: any): any {
+function analyzeComponent(comp: Component): AnalysisResult {
 	const issues: string[] = [];
 	const suggestions: string[] = [];
 	const strengths: string[] = [];
@@ -233,7 +246,7 @@ function analyzeComponent(comp: any): any {
 	}
 
 	// Step 4: Circular dependency detection
-	if (comp.depends_on && comp.depends_on.includes(comp.id)) {
+	if (comp.depends_on?.includes(comp.id)) {
 		issues.push("Component depends on itself - circular dependency detected");
 	}
 
@@ -266,7 +279,7 @@ function analyzeComponent(comp: any): any {
 
 		// Check task dependencies
 		const tasksWithDeps = comp.setup_tasks.filter(
-			(t: any) => t.depends_on && t.depends_on.length > 0,
+			(t) => t.depends_on && t.depends_on.length > 0,
 		);
 		if (tasksWithDeps.length === 0 && comp.setup_tasks.length > 1) {
 			suggestions.push(
@@ -308,7 +321,7 @@ function analyzeComponent(comp: any): any {
 /**
  * Analyze a plan against the 12-step reasoning process
  */
-function analyzePlan(plan: any): any {
+function analyzePlan(plan: Plan): AnalysisResult {
 	const issues: string[] = [];
 	const suggestions: string[] = [];
 	const strengths: string[] = [];
@@ -356,7 +369,7 @@ function analyzePlan(plan: any): any {
 
 		// Check task size (description length as proxy)
 		const largeTasks = plan.tasks.filter(
-			(t: any) => t.description && t.description.length > 500,
+			(t) => t.description && t.description.length > 500,
 		);
 		if (largeTasks.length > 0) {
 			suggestions.push(
@@ -366,7 +379,7 @@ function analyzePlan(plan: any): any {
 
 		// Check task priorities
 		const withoutPriority = plan.tasks.filter(
-			(t: any) => !t.priority || t.priority === "normal",
+			(t) => !t.priority || t.priority === "normal",
 		);
 		if (withoutPriority.length === plan.tasks.length) {
 			suggestions.push(
@@ -376,7 +389,7 @@ function analyzePlan(plan: any): any {
 
 		// Check task dependencies
 		const tasksWithDeps = plan.tasks.filter(
-			(t: any) => t.depends_on && t.depends_on.length > 0,
+			(t) => t.depends_on && t.depends_on.length > 0,
 		);
 		if (tasksWithDeps.length === 0 && plan.tasks.length > 3) {
 			issues.push(
@@ -389,7 +402,7 @@ function analyzePlan(plan: any): any {
 
 		// Check task acceptance criteria (considerations)
 		const tasksWithoutCriteria = plan.tasks.filter(
-			(t: any) => !t.considerations || t.considerations.length === 0,
+			(t) => !t.considerations || t.considerations.length === 0,
 		);
 		if (tasksWithoutCriteria.length > plan.tasks.length * 0.5) {
 			suggestions.push(
@@ -399,7 +412,7 @@ function analyzePlan(plan: any): any {
 
 		// Check file actions
 		const tasksWithFiles = plan.tasks.filter(
-			(t: any) => t.files && t.files.length > 0,
+			(t) => t.files && t.files.length > 0,
 		);
 		if (tasksWithFiles.length === 0) {
 			suggestions.push(
@@ -552,22 +565,24 @@ export function registerGuidanceTools(
 			async ({ type, id }) => {
 				const validatedId = context.inputValidator.validateId(id);
 
-				let spec: any;
-				let analysis: any;
+				let analysis: AnalysisResult;
 
 				switch (type) {
-					case "requirement":
-						spec = await operations.getRequirement(validatedId);
+					case "requirement": {
+						const spec = await operations.getRequirement(validatedId);
 						analysis = analyzeRequirement(spec);
 						break;
-					case "component":
-						spec = await operations.getComponent(validatedId);
+					}
+					case "component": {
+						const spec = await operations.getComponent(validatedId);
 						analysis = analyzeComponent(spec);
 						break;
-					case "plan":
-						spec = await operations.getPlan(validatedId);
+					}
+					case "plan": {
+						const spec = await operations.getPlan(validatedId);
 						analysis = analyzePlan(spec);
 						break;
+					}
 					default:
 						throw new Error(`Unknown spec type: ${type}`);
 				}
