@@ -60,7 +60,7 @@ The inspector will:
 
 2. **Browse tools:**
    - Click on "Tools" tab
-   - Find "create-requirement"
+   - Find "analyze" tool
    - View the input schema
 
 3. **Test the tool:**
@@ -68,20 +68,29 @@ The inspector will:
    - Fill in parameters:
      ```json
      {
+       "analysis_type": "full-report"
+     }
+     ```
+   - Click "Execute"
+   - View the comprehensive system report
+
+   Or test entity management:
+   ```json
+   {
+     "name": "requirement",
+     "arguments": {
+       "operation": "create",
        "slug": "test-feature",
        "name": "Test Feature",
        "description": "A test feature",
        "priority": "required",
        "criteria": [{
          "id": "req-001-test-feature/crit-001",
-         "description": "Must work",
-         "plan_id": "pln-001-implementation",
-         "completed": false
+         "description": "Must work"
        }]
      }
-     ```
-   - Click "Execute"
-   - View the response
+   }
+   ```
 
 4. **Inspect the result:**
    - Check the response data
@@ -115,6 +124,7 @@ The inspector will:
 1. **Test path traversal:**
    ```json
    {
+     "operation": "get",
      "id": "../../../etc/passwd"
    }
    ```
@@ -127,7 +137,12 @@ The inspector will:
 3. **Test input sanitization:**
    ```json
    {
-     "name": "Test\x00With\x01Control"
+     "operation": "create",
+     "slug": "test",
+     "name": "Test\x00With\x01Control",
+     "description": "Test",
+     "priority": "optional",
+     "criteria": [{"id": "req-001-test/crit-001", "description": "Test"}]
    }
    ```
    - Should sanitize control characters

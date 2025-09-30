@@ -1,285 +1,217 @@
 # Spec-MCP Slash Commands
 
-Quick access commands that directly invoke specialized agents for common specification workflows.
+Quick access commands for common specification workflows. Commands use smart routing to automatically invoke the right agent based on context.
 
-## Requirements Commands
+## 📋 Specification Commands
 
-### `/create-requirement`
-Create a new requirement specification using the 7-step reasoning process.
+### `/create {type} {context}`
+Create a new specification of any type.
 
-**Usage:**
+**Types:** `requirement` | `component` | `plan`
+
+**Examples:**
 ```
-/create-requirement user authentication with OAuth support
-/create-requirement real-time data synchronization
+/create requirement user authentication with OAuth support
+/create component authentication-service for handling OAuth
+/create plan auth-implementation for req-001-auth/crit-001
 ```
 
 **What it does:**
-- Invokes requirement-planner agent
-- Guides through 7-step process
+- `requirement` → Invokes requirement-planner (7-step process)
+- `component` → Invokes component-planner (10-step process)
+- `plan` → Invokes implementation-planner (12-step process)
 - Researches best practices
 - Validates against schema
-- Creates requirement in system
+- Creates specification in system
 
 ---
 
-### `/refine-requirement`
-Analyze and improve an existing requirement specification.
+### `/refine {id}`
+Analyze and improve an existing specification. **Auto-detects type from ID prefix.**
 
-**Usage:**
+**Examples:**
 ```
-/refine-requirement req-001-authentication
-/refine-requirement req-003-data-sync
+/refine req-001-authentication
+/refine app-002-dashboard
+/refine pln-003-implementation
 ```
 
 **What it does:**
-- Gets existing requirement
-- Analyzes quality
+- Auto-detects type from ID:
+  - `req-*` → requirement-planner
+  - `app-*`, `svc-*`, `lib-*`, `tol-*` → component-planner
+  - `pln-*` → implementation-planner
+- Analyzes current quality
 - Researches improvements
 - Provides specific recommendations
 - Updates if approved
 
 ---
 
-## Component Commands
+### `/validate {id}`
+Validate a specification against best practices. **Auto-detects type from ID prefix.**
 
-### `/design-component`
-Design a new component specification using the 10-step reasoning process.
-
-**Usage:**
+**Examples:**
 ```
-/design-component authentication service
-/design-component dashboard UI component
-```
-
-**What it does:**
-- Invokes component-planner agent
-- Guides through 10-step process
-- Researches architectural patterns
-- Validates boundaries and dependencies
-- Creates component in system
-
----
-
-### `/refine-component`
-Analyze and improve an existing component specification.
-
-**Usage:**
-```
-/refine-component svc-003-auth-service
-/refine-component app-001-dashboard
+/validate req-001-auth
+/validate app-002-dashboard
+/validate pln-003-implementation
 ```
 
 **What it does:**
-- Gets existing component
-- Analyzes architecture
-- Checks for circular dependencies
-- Provides recommendations
-- Updates if approved
+- Uses spec-manager agent
+- Auto-detects type from ID prefix
+- Runs appropriate validation (7/10/12-step process)
+- Provides quality score, issues, suggestions, strengths
+- Includes confidence-scored recommendations
 
 ---
 
-## Planning Commands
+## 💻 Implementation Commands
 
-### `/create-plan`
-Create a detailed implementation plan using the 12-step reasoning process.
+### `/implement task {task-id}`
+Implement a specific task from a plan.
 
-**Usage:**
+**Examples:**
 ```
-/create-plan implement authentication service for req-001-auth/crit-001
-/create-plan build dashboard UI
-```
-
-**What it does:**
-- Invokes implementation-planner agent
-- Links to criteria_id
-- Breaks down into 0.5-3 day tasks
-- Includes 20% buffer
-- Defines testing strategy
-- Creates plan in system
-
----
-
-### `/refine-plan`
-Analyze and improve an existing implementation plan.
-
-**Usage:**
-```
-/refine-plan pln-001-auth-implementation
-/refine-plan pln-005-dashboard-build
-```
-
-**What it does:**
-- Gets existing plan
-- Validates task sizing
-- Checks dependencies
-- Detects circular dependencies
-- Provides recommendations
-- Updates if approved
-
----
-
-## Development Commands
-
-### `/implement-task`
-Implement a specific task from a plan with proper tracking.
-
-**Usage:**
-```
-/implement-task task-003 from pln-001-auth-implementation
-/implement-task task-007 from pln-005-dashboard-build
+/implement task task-003 from pln-001-calculator
+/implement task task-005
 ```
 
 **What it does:**
 - Invokes developer agent
-- Researches implementation patterns
-- Gets latest library documentation
-- Executes file actions
-- Updates task tracking fields
-- Marks files as applied
+- Researches implementation patterns and library docs
+- Follows task specifications exactly
+- Executes all file actions (create/modify/delete)
+- Updates task tracking (completed, applied flags)
 
 ---
 
-## Testing Commands
-
-### `/implement-tests`
+### `/implement tests {plan-id}`
 Implement comprehensive test suite for a plan.
 
-**Usage:**
+**Examples:**
 ```
-/implement-tests pln-001-auth-implementation
-/implement-tests pln-005-dashboard-build
+/implement tests pln-001-calculator
+/implement tests pln-003-auth
 ```
 
 **What it does:**
 - Invokes quality-assurance agent
-- Implements all test_cases from plan
-- Achieves 90%+ coverage
-- Validates acceptance criteria
-- Updates test_case tracking
+- Researches testing frameworks and patterns
+- Implements all test cases from plan
+- Targets 90%+ code coverage
+- Validates all acceptance criteria
+- Updates test_case tracking (implemented, passing flags)
 
 ---
 
-## Management Commands
+## 🔍 System Commands
 
 ### `/health-check`
-Run a comprehensive specification system health audit.
+Run comprehensive system health audit and generate executive summary.
 
-**Usage:**
+**Example:**
 ```
 /health-check
 ```
 
 **What it does:**
 - Invokes spec-manager agent
-- Calculates overall health score
-- Validates all references
-- Detects circular dependencies
-- Finds orphaned specs
-- Analyzes coverage gaps
-- Generates executive summary
+- Analyzes:
+  - Overall health score (0-100)
+  - Broken references with suggested fixes
+  - Circular dependencies
+  - Orphaned specifications
+  - Coverage gaps (Requirements → Components → Plans)
+  - Actionable recommendations with confidence scores
+- Generates executive summary report
 
 ---
 
-### `/validate-spec`
-Validate a specific specification against best practices.
+## 🆕 What's New
 
-**Usage:**
-```
-/validate-spec req-001-authentication
-/validate-spec svc-003-auth-service
-/validate-spec pln-001-auth-implementation
-```
+**This is a consolidated command set** that replaces 12 individual commands with 6 smarter commands:
 
-**What it does:**
-- Routes to appropriate analyzer (7/10/12-step)
-- Provides quality score
-- Lists issues and suggestions
-- Highlights strengths
-- Gives actionable recommendations
+### Migration Guide
 
----
-
-### `/generate-report`
-Generate a comprehensive specification system report.
-
-**Usage:**
-```
-/generate-report executive
-/generate-report detailed
-/generate-report technical
-```
-
-**Report Styles:**
-- **executive**: High-level summary for stakeholders (metrics, progress, top issues)
-- **detailed**: Comprehensive analysis (all issues, gaps, traceability)
-- **technical**: Deep dive with graphs and metrics (dependency graphs, coverage details)
-
-**What it does:**
-- Comprehensive system analysis
-- Coverage metrics
-- Progress tracking
-- Issue identification
-- Recommendations
+| Old Command | New Command |
+|-------------|-------------|
+| `/create-requirement X` | `/create requirement X` |
+| `/design-component X` | `/create component X` |
+| `/create-plan X` | `/create plan X` |
+| `/refine-requirement req-001` | `/refine req-001` |
+| `/refine-component app-001` | `/refine app-001` |
+| `/refine-plan pln-001` | `/refine pln-001` |
+| `/validate-spec req-001` | `/validate req-001` |
+| `/generate-report` | `/health-check` |
+| `/implement-task X` | `/implement task X` |
+| `/implement-tests X` | `/implement tests X` |
+| `/health-check` | `/health-check` *(unchanged)* |
 
 ---
 
-## Workflow Examples
+## 💡 Command Tips
 
-### Creating a New Feature
+### Auto-Detection Magic
+The `/refine` and `/validate` commands automatically detect specification type from ID prefix:
+- `req-XXX-*` = Requirement
+- `app-XXX-*` = Application Component
+- `svc-XXX-*` = Service Component
+- `lib-XXX-*` = Library Component
+- `tol-XXX-*` = Tool Component
+- `pln-XXX-*` = Plan
 
-```bash
-# 1. Define what's needed
-/create-requirement user profile management
+No need to specify the type - just use the ID!
 
-# 2. Design the architecture
-/design-component user-profile-service
+### Multi-Word Context
+For `/create` commands, everything after the type becomes context:
+```
+/create requirement user authentication with OAuth2 and MFA support
+```
+Context: "user authentication with OAuth2 and MFA support"
 
-# 3. Plan the implementation
-/create-plan implement user profile service for req-002-profile/crit-001
+### Agents Behind the Scenes
+Each command invokes a specialized agent:
+- **requirement-planner**: 7-step reasoning process for requirements
+- **component-planner**: 10-step reasoning process for components
+- **implementation-planner**: 12-step reasoning process for plans
+- **developer**: Code implementation specialist
+- **quality-assurance**: Test implementation specialist
+- **spec-manager**: System health and validation specialist
 
-# 4. Implement tasks
-/implement-task task-001 from pln-002-profile-service
+All agents follow rigorous research and validation processes to ensure high-quality specifications.
 
-# 5. Add tests
-/implement-tests pln-002-profile-service
+---
 
-# 6. Validate everything
+## 📚 Related Documentation
+
+- **Schemas**: See `.claude/shared/schemas/` for entity schema specifications
+- **Best Practices**: See `.claude/shared/best-practices/` for specification guidelines
+- **Agents**: See `.claude/agents/` for detailed agent capabilities
+
+---
+
+## 🚀 Quick Start
+
+**Creating your first spec:**
+```
+/create requirement real-time chat messaging
+```
+
+**Refining it after review:**
+```
+/refine req-001-real-time-chat
+```
+
+**Validating quality:**
+```
+/validate req-001-real-time-chat
+```
+
+**Checking system health:**
+```
 /health-check
 ```
 
-### Improving Existing Specs
-
-```bash
-# Analyze current state
-/health-check
-
-# Refine problematic specs
-/refine-requirement req-001-authentication
-/refine-component svc-003-auth-service
-/refine-plan pln-001-auth-implementation
-
-# Generate report for stakeholders
-/generate-report executive
-```
-
----
-
-## Tips
-
-1. **Use Tab Completion**: Commands support Claude Code's tab completion
-2. **Context Matters**: Provide clear, specific context in your command input
-3. **Follow Workflow**: Requirements → Components → Plans → Implementation → Testing
-4. **Regular Health Checks**: Run `/health-check` periodically to catch issues early
-5. **Validate Often**: Use `/validate-spec` before considering a spec complete
-
----
-
-## Agent Documentation
-
-For detailed information about each agent's capabilities and reasoning process, see:
-- `.claude/agents/requirement-planner.md`
-- `.claude/agents/component-planner.md`
-- `.claude/agents/implementation-planner.md`
-- `.claude/agents/developer.md`
-- `.claude/agents/quality-assurance.md`
-- `.claude/agents/spec-manager.md`
+That's it! The commands handle all the complexity of routing to the right agents and following best practices.

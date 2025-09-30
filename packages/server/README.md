@@ -109,49 +109,48 @@ specs/
 
 ## Available Tools
 
-### Requirements Management
-- `create-requirement` - Create a new requirement specification
-- `get-requirement` - Retrieve a requirement by ID
-- `update-requirement` - Update an existing requirement
-- `delete-requirement` - Remove a requirement
-- `list-requirements` - List all requirements with filtering
+### Entity Management (3 tools)
+- `requirement` - Manage requirements (operation: create, get, update, delete, list)
+- `component` - Manage components (operation: create, get, update, delete, list)
+- `plan` - Manage plans (operation: create, get, update, delete, list)
 
-### Components Management
-- `create-component` - Create a new component specification
-- `get-component` - Retrieve a component by ID
-- `update-component` - Update an existing component
-- `delete-component` - Remove a component
-- `list-components` - List all components with filtering
+**Example Usage:**
+```javascript
+// Create a requirement
+{ name: "requirement", arguments: { operation: "create", slug: "user-auth", name: "User Authentication", ... } }
 
-### Plans Management
-- `create-plan` - Create a new implementation plan
-- `get-plan` - Retrieve a plan by ID
-- `update-plan` - Update an existing plan
-- `delete-plan` - Remove a plan
-- `list-plans` - List all plans with filtering
+// Get a requirement
+{ name: "requirement", arguments: { operation: "get", id: "req-001-user-auth" } }
 
-### Sub-Entity Tools
+// List requirements
+{ name: "requirement", arguments: { operation: "list", priority: "critical" } }
+```
+
+### Comprehensive Analysis (2 tools)
+- `analyze` - Run any analysis: dependencies, coverage, orphans, cycles, health, references, or full-report
+- `guidance` - Validate specs against best practices (requirements 7-step, components 10-step, plans 12-step)
+
+**Example Usage:**
+```javascript
+// Analyze dependencies
+{ name: "analyze", arguments: { analysis_type: "dependencies", include_metrics: true } }
+
+// Get full system report
+{ name: "analyze", arguments: { analysis_type: "full-report" } }
+
+// Validate a requirement
+{ name: "guidance", arguments: { spec_type: "requirement", id: "req-001-user-auth" } }
+```
+
+### Sub-Entity Access (5 tools)
 - `get-plan-task` - Retrieve individual tasks from plans
 - `get-plan-test-case` - Retrieve test cases
 - `get-plan-flow` - Retrieve flows
 - `get-plan-api-contract` - Retrieve API contracts
 - `get-plan-data-model` - Retrieve data models
 
-### Analysis & Validation
-- `analyze-requirement` - Validate requirements against 7-step process
-- `analyze-component` - Validate components against 10-step process
-- `analyze-plan` - Validate plans against 12-step process
-- `validate-spec` - Universal validation tool for any spec type
-- `analyze-dependencies` - Analyze dependency graphs
-- `analyze-coverage` - Check implementation and test coverage
-- `detect-orphans` - Find unreferenced specifications
-- `detect-cycles` - Identify circular dependencies
-- `get-health-score` - Calculate system health metrics
-
-### Reporting & Search
-- `generate-report` - Create comprehensive system reports
+### Search (1 tool)
 - `search-specs` - Full-text search across all specifications
-- `validate-references` - Check all cross-references for validity
 
 ## Configuration
 

@@ -132,54 +132,57 @@ export function wrapToolHandler<TInput>(
 
 ## Example: Requirements Tool
 
-See `/Users/luca/Developer/Personal/spec-mcp/packages/server/src/tools/requirements.ts` and
-`/Users/luca/Developer/Personal/spec-mcp/packages/server/src/tools/schemas/requirements.ts` for a complete implementation.
+See `/Users/luca/Developer/Personal/spec-mcp/packages/server/src/tools/requirement.ts` for a complete implementation using consolidated tools.
 
-### Schema Definition
+### Consolidated Tool Pattern
 
-```typescript
-// Reusable criterion schema
-export const CriterionSchema = z.object({
-  id: z.string().regex(/^req-\d{3}-[a-z0-9-]+\/crit-\d{3}$/),
-  description: z.string(),
-  plan_id: z.string().regex(/^pln-\d{3}-[a-z0-9-]+$/),
-  completed: z.boolean().default(false),
-});
-
-// MCP SDK input schema
-export const CreateRequirementInputSchema = {
-  slug: z.string().describe("URL-friendly identifier"),
-  name: z.string().describe("Display name"),
-  description: z.string().describe("Detailed description"),
-  priority: z.enum(["critical", "required", "ideal", "optional"]),
-  criteria: z.array(CriterionSchema).min(1),
-};
-
-// Runtime validation schema
-export const CreateRequirementSchema = z.object(CreateRequirementInputSchema);
-```
-
-### Tool Usage
+With the consolidated tool pattern, a single tool handles multiple operations using an `operation` parameter:
 
 ```typescript
+const OperationSchema = z.enum(["create", "get", "update", "delete", "list"]);
+
 server.registerTool(
-  "create-requirement",
+  "requirement",
   {
-    title: "Create Requirement",
-    description: "Create a new requirement specification",
-    inputSchema: CreateRequirementInputSchema, // For MCP SDK
+    title: "Requirement",
+    description: "Manage requirements (create, get, update, delete, list)",
+    inputSchema: {
+      operation: OperationSchema.describe("Operation to perform"),
+      id: z.string().optional().describe("Requirement ID (for get/update/delete)"),
+      slug: z.string().optional().describe("URL-friendly identifier (for create)"),
+      name: z.string().optional().describe("Display name"),
+      description: z.string().optional().describe("Detailed description"),
+      priority: z.enum(["critical", "required", "ideal", "optional"]).optional(),
+      criteria: z.array(CriterionSchema).optional(),
+      search: z.string().optional().describe("Search query (for list)"),
+    },
   },
   wrapToolHandler(
-    "create-requirement",
-    async ({ slug, name, description, priority, criteria }) => {
-      // Input already validated by wrapper
-      // ... process validated input
+    "requirement",
+    async ({ operation, id, slug, name, description, priority, criteria, search }) => {
+      switch (operation) {
+        case "create":
+          // Validate required fields for create
+          if (!slug || !name || !description || !priority || !criteria) {
+            return errorResponse("Missing required fields");
+          }
+          // ... create logic
+        case "get":
+          // ... get logic
+        // ... other operations
+      }
     },
     context,
-    CreateRequirementSchema, // For runtime validation
   ),
 );
 ```
+
+### Benefits of Consolidated Tools
+
+1. **Reduced Context**: Single tool replaces 5 separate tools
+2. **Consistent API**: All operations follow same pattern
+3. **Easier Discovery**: Users find one tool instead of many
+4. **Flexible Validation**: Each operation validates its own required fields
 
 ## Migration Guide
 

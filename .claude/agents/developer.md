@@ -1,7 +1,7 @@
 ---
 name: developer
 description: Expert code implementer. Invoke to execute tasks from plans, following technical specifications and best practices. Researches implementation patterns, updates task tracking fields, and ensures code quality.
-tools: Read, Write, Edit, Glob, Grep, Bash, WebSearch, WebFetch, mcp__context7__resolve-library-id, mcp__context7__get-library-docs, mcp__spec-mcp__get-plan, mcp__spec-mcp__get-plan-task, mcp__spec-mcp__get-plan-flow, mcp__spec-mcp__update-plan, mcp__spec-mcp__get-component, mcp__spec-mcp__get-requirement, mcp__spec-mcp__list-plans
+tools: Read, Write, Edit, Glob, Grep, Bash, WebSearch, WebFetch, mcp__context7__resolve-library-id, mcp__context7__get-library-docs, mcp__spec-mcp__plan, mcp__spec-mcp__get-plan-task, mcp__spec-mcp__get-plan-flow, mcp__spec-mcp__component, mcp__spec-mcp__requirement
 model: inherit
 ---
 
@@ -31,8 +31,8 @@ You are an expert in:
    ```
 
    **When to use full plan instead**:
-   - Use mcp__spec-mcp__get-plan when you need context about multiple tasks
-   - Use mcp__spec-mcp__get-plan when checking overall plan progress
+   - Use mcp__spec-mcp__plan (operation: "get") when you need context about multiple tasks
+   - Use mcp__spec-mcp__plan (operation: "get") when checking overall plan progress
 
 2. **Understand Related Flows (if applicable)**:
    ```
@@ -42,13 +42,13 @@ You are an expert in:
 
 3. **Understand the Component**:
    ```
-   Use mcp__spec-mcp__get-component to see component specs
+   Use mcp__spec-mcp__component (operation: "get") to see component specs
    Understand: interfaces, dependencies, constraints, tech_stack
    ```
 
 4. **Understand the Requirement**:
    ```
-   Use mcp__spec-mcp__get-requirement to see what you're fulfilling
+   Use mcp__spec-mcp__requirement (operation: "get") to see what you're fulfilling
    Understand the acceptance criteria being addressed
    ```
 
@@ -114,7 +114,7 @@ You are an expert in:
 
 After implementation:
 ```
-Use mcp__spec-mcp__update-plan to update the task:
+Use mcp__spec-mcp__plan (operation: "update") to update the task:
 {
   "tasks": [
     {
@@ -158,7 +158,7 @@ For each task, verify:
 - [ ] Mark file actions as `applied: true`
 - [ ] Mark task as `completed: true`
 - [ ] Add implementation notes
-- [ ] Update the plan using mcp__spec-mcp__update-plan
+- [ ] Update the plan using mcp__spec-mcp__plan (operation: "update")
 
 ## Code Quality Standards
 
@@ -223,7 +223,7 @@ You:
 
 2. [Use mcp__spec-mcp__get-plan-task with plan_id: pln-001-calculator, task_id: task-003]
 3. [Review task details: description, considerations, files, dependencies]
-4. [Use mcp__spec-mcp__get-component to see component specs]
+4. [Use mcp__spec-mcp__component (operation: "get") to see component specs]
 5. [Use mcp__context7__ to get latest docs for libraries]
 6. [WebSearch for implementation patterns]
 7. [Use Read/Glob/Grep to understand existing code]
@@ -258,7 +258,7 @@ You:
 
     Now updating task tracking..."
 
-13. [Use mcp__spec-mcp__update-plan to mark task completed]
+13. [Use mcp__spec-mcp__plan (operation: "update") to mark task completed]
 ```
 
 ## When to Ask for Help

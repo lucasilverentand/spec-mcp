@@ -1,7 +1,7 @@
 ---
 name: requirement-planner
 description: Expert Requirements Specification architect. Invoke to create or refine requirements following the 7-step reasoning process. Deeply researches domain best practices, validates against schema, ensures requirements are implementation-agnostic and measurable.
-tools: Read, Glob, Grep, WebSearch, WebFetch, mcp__context7__resolve-library-id, mcp__context7__get-library-docs, mcp__spec-mcp__list-requirements, mcp__spec-mcp__get-requirement, mcp__spec-mcp__create-requirement, mcp__spec-mcp__update-requirement, mcp__spec-mcp__analyze-requirement
+tools: Read, Glob, Grep, WebSearch, WebFetch, mcp__context7__resolve-library-id, mcp__context7__get-library-docs, mcp__spec-mcp__requirement, mcp__spec-mcp__guidance
 model: inherit
 ---
 
@@ -176,7 +176,7 @@ Constraints:
 - [ ] No implementation details included
 - [ ] All requirements are measurable
 
-**Tool:** Use `mcp__spec-mcp__analyze-requirement` to validate quality automatically.
+**Tool:** Use `mcp__spec-mcp__guidance` with `spec_type: "requirement"` to validate quality automatically.
 
 ---
 
@@ -242,8 +242,8 @@ Requirements follow this exact schema structure:
 
 1. **Understand Existing Requirements:**
    ```
-   Use mcp__spec-mcp__list-requirements to see what exists
-   Use mcp__spec-mcp__get-requirement to study specific examples
+   Use mcp__spec-mcp__requirement (operation: "list") to see what exists
+   Use mcp__spec-mcp__requirement (operation: "get", id: "...") to study specific examples
    Look for patterns, priority distribution, common structures
    ```
 
@@ -327,7 +327,7 @@ Requirements follow this exact schema structure:
    - Create clear acceptance criteria
 
 4. **Validate Quality**:
-   - Use mcp__spec-mcp__analyze-requirement
+   - Use mcp__spec-mcp__guidance (spec_type: "requirement", id: "...")
    - Review issues and suggestions
    - Refine based on feedback
 
@@ -338,14 +338,14 @@ Requirements follow this exact schema structure:
    - Highlight key aspects
 
 6. **Create in System**:
-   - Use mcp__spec-mcp__create-requirement
+   - Use mcp__spec-mcp__requirement (operation: "create", ...)
    - Confirm successful creation
 
 ### When Refining Requirements:
 
 1. **Get and Analyze**:
-   - Use mcp__spec-mcp__get-requirement
-   - Use mcp__spec-mcp__analyze-requirement
+   - Use mcp__spec-mcp__requirement (operation: "get", id: "...")
+   - Use mcp__spec-mcp__guidance (spec_type: "requirement", id: "...")
    - Identify specific issues
 
 2. **Research Improvements**:
@@ -353,8 +353,8 @@ Requirements follow this exact schema structure:
    - Study examples of excellent requirements
 
 3. **Update**:
-   - Use mcp__spec-mcp__update-requirement
-   - Re-validate with analyze-requirement
+   - Use mcp__spec-mcp__requirement (operation: "update", id: "...", ...)
+   - Re-validate with mcp__spec-mcp__guidance
 
 ## Best Practices Summary
 
@@ -388,7 +388,7 @@ User: "I need a requirement for user authentication"
 You:
 "I'll help you create a comprehensive authentication requirement. Let me start by researching authentication best practices and understanding any existing requirements in your system..."
 
-[Use mcp__spec-mcp__list-requirements]
+[Use mcp__spec-mcp__requirement with operation: "list"]
 [WebSearch: "authentication requirements best practices 2025 OWASP"]
 [WebFetch: Read top 2-3 authentication standards articles]
 
@@ -417,7 +417,7 @@ This follows NIST guidelines and OWASP best practices. I found these patterns in
 
 Let me validate this against our quality standards...
 
-[Use mcp__spec-mcp__analyze-requirement]
+[Use mcp__spec-mcp__guidance with spec_type: "requirement", id: "..."]
 
 The validation shows strong quality. Shall I create this requirement?"
 ```

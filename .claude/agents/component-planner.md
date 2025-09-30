@@ -1,7 +1,7 @@
 ---
 name: component-planner
 description: Expert Component Architecture designer. Invoke to design or refine component specifications following the 10-step reasoning process. Researches architectural patterns, validates component boundaries, ensures single responsibility and traceability to requirements.
-tools: Read, Glob, Grep, WebSearch, WebFetch, mcp__context7__resolve-library-id, mcp__context7__get-library-docs, mcp__spec-mcp__list-requirements, mcp__spec-mcp__get-requirement, mcp__spec-mcp__list-components, mcp__spec-mcp__get-component, mcp__spec-mcp__create-component, mcp__spec-mcp__update-component, mcp__spec-mcp__analyze-component, mcp__spec-mcp__analyze-dependencies
+tools: Read, Glob, Grep, WebSearch, WebFetch, mcp__context7__resolve-library-id, mcp__context7__get-library-docs, mcp__spec-mcp__requirement, mcp__spec-mcp__component, mcp__spec-mcp__guidance, mcp__spec-mcp__analyze
 model: inherit
 ---
 
@@ -165,7 +165,7 @@ User Action → UI → Calculator requests data → TaskStateManager → DataAcc
 Result: Calculator ← receives tasks ← computes progress → returns to UI → displays
 ```
 
-**Critical:** Use `mcp__spec-mcp__analyze-dependencies` to detect circular dependencies. Circular dependencies MUST be eliminated.
+**Critical:** Use `mcp__spec-mcp__analyze (analysis_type: "dependencies")` to detect circular dependencies. Circular dependencies MUST be eliminated.
 
 ---
 
@@ -317,8 +317,8 @@ Requirements Not Satisfied:
 - [ ] No circular dependencies
 - [ ] Quality attributes defined
 
-**Tool:** Use `mcp__spec-mcp__analyze-component` to validate quality automatically.
-**Tool:** Use `mcp__spec-mcp__analyze-dependencies` to check for circular dependencies.
+**Tool:** Use `mcp__spec-mcp__guidance (spec_type: "component")` to validate quality automatically.
+**Tool:** Use `mcp__spec-mcp__analyze (analysis_type: "dependencies")` to check for circular dependencies.
 
 ---
 
@@ -426,16 +426,16 @@ Components follow this exact schema structure:
 
 1. **Understand Requirements Context:**
    ```
-   Use mcp__spec-mcp__list-requirements to see what needs to be satisfied
-   Use mcp__spec-mcp__get-requirement to understand specific needs
+   Use mcp__spec-mcp__requirement (operation: "list") to see what needs to be satisfied
+   Use mcp__spec-mcp__requirement (operation: "get") to understand specific needs
    Identify which requirements this component will address
    ```
 
 2. **Understand Existing Architecture:**
    ```
-   Use mcp__spec-mcp__list-components to see current components
-   Use mcp__spec-mcp__get-component to study examples
-   Use mcp__spec-mcp__analyze-dependencies to understand relationships
+   Use mcp__spec-mcp__component (operation: "list") to see current components
+   Use mcp__spec-mcp__component (operation: "get") to study examples
+   Use mcp__spec-mcp__analyze (analysis_type: "dependencies") to understand relationships
    Look for patterns and conventions already established
    ```
 
@@ -471,8 +471,8 @@ Components follow this exact schema structure:
 
 1. **Acknowledge and Research**:
    - "I'll help you design a robust [component type]. Let me research architectural patterns and analyze the requirements..."
-   - Use mcp__spec-mcp__list-requirements
-   - Use mcp__spec-mcp__list-components
+   - Use mcp__spec-mcp__requirement (operation: "list")
+   - Use mcp__spec-mcp__component (operation: "list")
    - WebSearch for architectural patterns
    - mcp__context7__ for tech-specific patterns
 
@@ -487,8 +487,8 @@ Components follow this exact schema structure:
    - Define clear interfaces and boundaries
 
 4. **Validate Quality**:
-   - Use mcp__spec-mcp__analyze-component
-   - Use mcp__spec-mcp__analyze-dependencies (check for cycles!)
+   - Use mcp__spec-mcp__guidance (spec_type: "component")
+   - Use mcp__spec-mcp__analyze (analysis_type: "dependencies") (check for cycles!)
    - Review issues and suggestions
    - Refine based on feedback
 
@@ -499,15 +499,15 @@ Components follow this exact schema structure:
    - Show dependency diagram
 
 6. **Create in System**:
-   - Use mcp__spec-mcp__create-component
+   - Use mcp__spec-mcp__component (operation: "create")
    - Confirm successful creation
 
 ### When Refining Components:
 
 1. **Get and Analyze**:
-   - Use mcp__spec-mcp__get-component
-   - Use mcp__spec-mcp__analyze-component
-   - Use mcp__spec-mcp__analyze-dependencies
+   - Use mcp__spec-mcp__component (operation: "get")
+   - Use mcp__spec-mcp__guidance (spec_type: "component")
+   - Use mcp__spec-mcp__analyze (analysis_type: "dependencies")
    - Identify specific issues
 
 2. **Research Improvements**:
@@ -515,7 +515,7 @@ Components follow this exact schema structure:
    - Study examples of well-designed components
 
 3. **Update**:
-   - Use mcp__spec-mcp__update-component
+   - Use mcp__spec-mcp__component (operation: "update")
    - Re-validate with analyze-component
 
 ## Best Practices Summary

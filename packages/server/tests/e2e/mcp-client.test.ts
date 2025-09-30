@@ -61,9 +61,9 @@ describe("MCP E2E Tests", () => {
 			expect(tools.tools.length).toBeGreaterThan(0);
 
 			const toolNames = tools.tools.map((t) => t.name);
-			expect(toolNames).toContain("create-requirement");
-			expect(toolNames).toContain("create-plan");
-			expect(toolNames).toContain("create-component");
+			expect(toolNames).toContain("requirement");
+			expect(toolNames).toContain("plan");
+			expect(toolNames).toContain("component");
 		});
 	});
 
@@ -72,8 +72,9 @@ describe("MCP E2E Tests", () => {
 
 		it("should create a requirement", async () => {
 			const result = await client.callTool({
-				name: "create-requirement",
+				name: "requirement",
 				arguments: {
+					operation: "create",
 					slug: "test-requirement",
 					name: "Test Requirement",
 					description: "A test requirement for E2E testing",
@@ -82,8 +83,6 @@ describe("MCP E2E Tests", () => {
 						{
 							id: "req-001-test-requirement/crit-001",
 							description: "Test criterion",
-							plan_id: "pln-001-test-plan",
-							completed: false,
 						},
 					],
 				},
@@ -112,8 +111,9 @@ describe("MCP E2E Tests", () => {
 			}
 
 			const result = await client.callTool({
-				name: "get-requirement",
+				name: "requirement",
 				arguments: {
+					operation: "get",
 					id: createdId,
 				},
 			});
@@ -125,8 +125,10 @@ describe("MCP E2E Tests", () => {
 
 		it("should list requirements", async () => {
 			const result = await client.callTool({
-				name: "list-requirements",
-				arguments: {},
+				name: "requirement",
+				arguments: {
+					operation: "list",
+				},
 			});
 
 			const response = JSON.parse(result.content[0].text);
@@ -143,8 +145,9 @@ describe("MCP E2E Tests", () => {
 			}
 
 			const result = await client.callTool({
-				name: "update-requirement",
+				name: "requirement",
 				arguments: {
+					operation: "update",
 					id: createdId,
 					description: "Updated description",
 				},
@@ -162,8 +165,9 @@ describe("MCP E2E Tests", () => {
 			}
 
 			const result = await client.callTool({
-				name: "delete-requirement",
+				name: "requirement",
 				arguments: {
+					operation: "delete",
 					id: createdId,
 				},
 			});
@@ -176,8 +180,9 @@ describe("MCP E2E Tests", () => {
 	describe("Security", () => {
 		it("should reject path traversal in IDs", async () => {
 			const result = await client.callTool({
-				name: "get-requirement",
+				name: "requirement",
 				arguments: {
+					operation: "get",
 					id: "../../../etc/passwd",
 				},
 			});
@@ -190,8 +195,9 @@ describe("MCP E2E Tests", () => {
 
 		it("should sanitize input strings", async () => {
 			const result = await client.callTool({
-				name: "create-requirement",
+				name: "requirement",
 				arguments: {
+					operation: "create",
 					slug: "test-sanitize",
 					name: "Test\x00Sanitize\x01Name",
 					description: "Test description",
@@ -200,8 +206,6 @@ describe("MCP E2E Tests", () => {
 						{
 							id: "req-002-test-sanitize/crit-001",
 							description: "Test criterion",
-							plan_id: "pln-001-test-plan",
-							completed: false,
 						},
 					],
 				},
@@ -223,8 +227,9 @@ describe("MCP E2E Tests", () => {
 	describe("Error Handling", () => {
 		it("should return error for non-existent requirement", async () => {
 			const result = await client.callTool({
-				name: "get-requirement",
+				name: "requirement",
 				arguments: {
+					operation: "get",
 					id: "req-999-nonexistent",
 				},
 			});
@@ -237,15 +242,20 @@ describe("MCP E2E Tests", () => {
 		});
 
 		it("should validate required fields", async () => {
-			await expect(
-				client.callTool({
-					name: "create-requirement",
-					arguments: {
-						slug: "test",
-						// Missing required fields
-					},
-				}),
-			).rejects.toThrow();
+			const result = await client.callTool({
+				name: "requirement",
+				arguments: {
+					operation: "create",
+					slug: "test",
+					// Missing required fields
+				},
+			});
+
+			// Should return error response
+			expect(result.isError).toBe(true);
+			const response = JSON.parse(result.content[0].text);
+			expect(response.success).toBe(false);
+			expect(response.error).toBeDefined();
 		});
 	});
 });

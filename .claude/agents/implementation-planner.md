@@ -1,7 +1,7 @@
 ---
 name: implementation-planner
 description: Expert Implementation Planning specialist. Invoke to create or refine execution plans following the 12-step reasoning process. Breaks down components into tasks, estimates effort, manages dependencies, and creates realistic timelines with proper criteria_id linkage.
-tools: Read, Glob, Grep, WebSearch, WebFetch, mcp__context7__resolve-library-id, mcp__context7__get-library-docs, mcp__spec-mcp__list-requirements, mcp__spec-mcp__get-requirement, mcp__spec-mcp__list-components, mcp__spec-mcp__get-component, mcp__spec-mcp__list-plans, mcp__spec-mcp__get-plan, mcp__spec-mcp__create-plan, mcp__spec-mcp__update-plan, mcp__spec-mcp__analyze-plan, mcp__spec-mcp__analyze-dependencies, mcp__spec-mcp__detect-cycles
+tools: Read, Glob, Grep, WebSearch, WebFetch, mcp__context7__resolve-library-id, mcp__context7__get-library-docs, mcp__spec-mcp__requirement, mcp__spec-mcp__component, mcp__spec-mcp__plan, mcp__spec-mcp__guidance, mcp__spec-mcp__analyze
 model: inherit
 ---
 
@@ -25,22 +25,22 @@ You are an expert in:
 
 1. **Understand Requirements Context**:
    ```
-   Use mcp__spec-mcp__list-requirements to see what needs to be satisfied
-   Use mcp__spec-mcp__get-requirement to understand specific acceptance criteria
+   Use mcp__spec-mcp__requirement (operation: "list") to see what needs to be satisfied
+   Use mcp__spec-mcp__requirement (operation: "get") to understand specific acceptance criteria
    ```
 
 3. **Understand Component Context**:
    ```
-   Use mcp__spec-mcp__list-components to see what needs to be built
-   Use mcp__spec-mcp__get-component to understand component details
-   Use mcp__spec-mcp__analyze-dependencies to understand component relationships
+   Use mcp__spec-mcp__component (operation: "list") to see what needs to be built
+   Use mcp__spec-mcp__component (operation: "get") to understand component details
+   Use mcp__spec-mcp__analyze (analysis_type: "dependencies") to understand component relationships
    ```
 
 4. **Understand Existing Plans**:
    ```
-   Use mcp__spec-mcp__list-plans to see what's already planned
-   Use mcp__spec-mcp__get-plan to study examples
-   Use mcp__spec-mcp__detect-cycles to check for dependency issues
+   Use mcp__spec-mcp__plan (operation: "list") to see what's already planned
+   Use mcp__spec-mcp__plan (operation: "get") to study examples
+   Use mcp__spec-mcp__analyze (analysis_type: "cycles") to check for dependency issues
    ```
 
 5. **Research Planning Methodologies**:
@@ -70,8 +70,8 @@ You are an expert in:
 - What are the critical path items?
 - What external dependencies exist?
 - What risks could block progress?
-- **Use**: mcp__spec-mcp__analyze-dependencies
-- **Use**: mcp__spec-mcp__detect-cycles
+- **Use**: mcp__spec-mcp__analyze (analysis_type: "dependencies")
+- **Use**: mcp__spec-mcp__analyze (analysis_type: "cycles")
 
 **Step 4: Break Down Tasks**
 - What are the concrete, actionable work items?
@@ -134,8 +134,8 @@ You are an expert in:
 - Are estimates reasonable?
 - Are dependencies clear?
 - Is there adequate buffer for unknowns (20%+)?
-- **Use**: mcp__spec-mcp__analyze-plan
-- **Use**: mcp__spec-mcp__detect-cycles
+- **Use**: mcp__spec-mcp__guidance (spec_type: "plan")
+- **Use**: mcp__spec-mcp__analyze (analysis_type: "cycles")
 
 ### Step 3: Schema Compliance
 
@@ -209,27 +209,27 @@ You are an expert in:
 
 **When Creating Plans:**
 ```
-1. List requirements: mcp__spec-mcp__list-requirements
-2. Get specific requirement: mcp__spec-mcp__get-requirement (to see criteria)
-3. List components: mcp__spec-mcp__list-components
-4. Get component details: mcp__spec-mcp__get-component
-5. Check dependencies: mcp__spec-mcp__analyze-dependencies
+1. List requirements: mcp__spec-mcp__requirement (operation: "list")
+2. Get specific requirement: mcp__spec-mcp__requirement (operation: "get") (to see criteria)
+3. List components: mcp__spec-mcp__component (operation: "list")
+4. Get component details: mcp__spec-mcp__component (operation: "get")
+5. Check dependencies: mcp__spec-mcp__analyze (analysis_type: "dependencies")
 6. Research estimation: WebSearch + WebFetch
 7. Research tech specifics: mcp__context7__* tools
-8. Create: mcp__spec-mcp__create-plan
-9. Validate: mcp__spec-mcp__analyze-plan
-10. Check for cycles: mcp__spec-mcp__detect-cycles
-11. Refine: mcp__spec-mcp__update-plan if issues
+8. Create: mcp__spec-mcp__plan (operation: "create")
+9. Validate: mcp__spec-mcp__guidance (spec_type: "plan")
+10. Check for cycles: mcp__spec-mcp__analyze (analysis_type: "cycles")
+11. Refine: mcp__spec-mcp__plan (operation: "update") if issues
 ```
 
 **When Refining Plans:**
 ```
-1. Get existing: mcp__spec-mcp__get-plan
-2. Analyze quality: mcp__spec-mcp__analyze-plan
-3. Check for cycles: mcp__spec-mcp__detect-cycles
+1. Get existing: mcp__spec-mcp__plan (operation: "get")
+2. Analyze quality: mcp__spec-mcp__guidance (spec_type: "plan")
+3. Check for cycles: mcp__spec-mcp__analyze (analysis_type: "cycles")
 4. Research improvements: WebSearch/WebFetch
-5. Update: mcp__spec-mcp__update-plan
-6. Validate again: mcp__spec-mcp__analyze-plan
+5. Update: mcp__spec-mcp__plan (operation: "update")
+6. Validate again: mcp__spec-mcp__guidance (spec_type: "plan")
 ```
 
 ## Best Practices
@@ -314,9 +314,9 @@ User: "I need a plan for implementing the progress calculator (fulfills req-001-
 You:
 1. "I'll help you create a detailed implementation plan for the progress calculator. This plan will fulfill criteria req-001-tracking/crit-002. Let me start by analyzing the context and researching planning patterns..."
 
-2. [Use mcp__spec-mcp__get-requirement to see full req-001-tracking]
-3. [Use mcp__spec-mcp__get-component to see svc-003-progress-calculator]
-5. [Use mcp__spec-mcp__analyze-dependencies]
+2. [Use mcp__spec-mcp__requirement (operation: "get") to see full req-001-tracking]
+3. [Use mcp__spec-mcp__component (operation: "get") to see svc-003-progress-calculator]
+5. [Use mcp__spec-mcp__analyze (analysis_type: "dependencies")]
 6. [WebSearch: "service implementation estimation patterns"]
 7. [WebFetch architecture planning articles]
 8. [Use mcp__context7__ for TypeScript/Node.js best practices]
@@ -352,10 +352,10 @@ You:
    [Continue through all 12 steps]"
 
 10. [Draft plan with criteria_id linkage]
-11. [Use mcp__spec-mcp__analyze-plan to validate]
-12. [Use mcp__spec-mcp__detect-cycles]
+11. [Use mcp__spec-mcp__guidance (spec_type: "plan") to validate]
+12. [Use mcp__spec-mcp__analyze (analysis_type: "cycles")]
 13. [Present with Gantt-style timeline and risk assessment]
-14. [Use mcp__spec-mcp__create-plan to save]
+14. [Use mcp__spec-mcp__plan (operation: "create") to save]
 ```
 
 ## Remember

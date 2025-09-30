@@ -11,39 +11,7 @@ type Component = Extract<
 	{ type: "app" | "service" | "library" | "tool" }
 >;
 
-// Input schemas for guidance tools (ZodRawShape format for MCP SDK)
-const AnalyzeRequirementInputSchema = {
-	id: z
-		.string()
-		.describe("The requirement ID to analyze (e.g., req-001-user-auth)"),
-};
-
-const AnalyzeComponentInputSchema = {
-	id: z
-		.string()
-		.describe(
-			"The component ID to analyze (e.g., app-001-dashboard, svc-002-api)",
-		),
-};
-
-const AnalyzePlanInputSchema = {
-	id: z
-		.string()
-		.describe("The plan ID to analyze (e.g., pln-001-implementation)"),
-};
-
-const ValidateSpecInputSchema = {
-	type: z
-		.enum(["requirement", "component", "plan"])
-		.describe("Type of specification to validate"),
-	id: z.string().describe("The specification ID to validate"),
-};
-
-// Zod object schemas for validation
-const AnalyzeRequirementSchema = z.object(AnalyzeRequirementInputSchema);
-const AnalyzeComponentSchema = z.object(AnalyzeComponentInputSchema);
-const AnalyzePlanSchema = z.object(AnalyzePlanInputSchema);
-const ValidateSpecSchema = z.object(ValidateSpecInputSchema);
+const SpecTypeSchema = z.enum(["requirement", "component", "plan"]);
 
 interface AnalysisResult {
 	id: string;
@@ -67,8 +35,8 @@ function analyzeRequirement(req: Requirement): AnalysisResult {
 	if (
 		!req.description ||
 		req.description.length < 50 ||
-		!req.description.includes("because") ||
-		!req.description.includes("needed")
+		(!req.description.includes("because") &&
+			!req.description.includes("needed"))
 	) {
 		issues.push(
 			"Description should clearly state the problem/opportunity and rationale (include 'because' or 'why needed')",
@@ -164,22 +132,7 @@ function analyzeRequirement(req: Requirement): AnalysisResult {
 		strengths.push(`Has ${req.criteria.length} acceptance criteria`);
 	}
 
-	// Step 6: Criteria linking to plans
-	if (req.criteria && req.criteria.length > 0) {
-		const unlinkedCriteria = req.criteria.filter(
-			(c: { id: string; description: string; plan_id?: string }) =>
-				!("plan_id" in c) || !c.plan_id,
-		);
-		if (unlinkedCriteria.length > 0) {
-			suggestions.push(
-				`${unlinkedCriteria.length} criteria not linked to plans - link them once plans are created`,
-			);
-		} else {
-			strengths.push("All criteria linked to implementation plans");
-		}
-	}
-
-	// Step 7: Priority validation
+	// Step 6: Priority validation
 	if (!req.priority || req.priority === "optional") {
 		suggestions.push(
 			"Review priority - should this really be optional? Consider required/critical.",
@@ -205,112 +158,88 @@ function analyzeComponent(comp: Component): AnalysisResult {
 	const suggestions: string[] = [];
 	const strengths: string[] = [];
 
-	// Step 1: Single Responsibility Check
-	if (
-		!comp.description ||
-		comp.description.length < 100 ||
-		!comp.description.includes("responsible for")
-	) {
+	// Step 1: Single responsibility
+	if (comp.capabilities && comp.capabilities.length > 5) {
 		issues.push(
-			"Description should clearly state the component's single responsibility",
+			`Component has ${comp.capabilities.length} capabilities - may violate single responsibility principle`,
+		);
+		suggestions.push("Consider breaking into smaller, focused components");
+	} else if (comp.capabilities && comp.capabilities.length > 0) {
+		strengths.push(`Defines ${comp.capabilities.length} capabilities`);
+	}
+
+	// Step 2: Clear description
+	if (!comp.description || comp.description.length < 50) {
+		issues.push(
+			"Component description is too brief - should clearly explain purpose and role",
 		);
 		suggestions.push(
-			'Add "responsible for" statement and explicitly state what it does NOT do',
+			"Add context: What does this component do? Why does it exist?",
 		);
 	} else {
-		strengths.push("Has clear responsibility statement");
+		strengths.push("Has detailed description");
 	}
 
-	// Step 2: God component detection
-	if (comp.capabilities && comp.capabilities.length > 8) {
-		issues.push(
-			`Component has ${comp.capabilities.length} capabilities - risk of being a 'God' component`,
-		);
+	// Step 3: Type appropriateness
+	if (
+		comp.type === "library" &&
+		comp.depends_on &&
+		comp.depends_on.length > 3
+	) {
 		suggestions.push(
-			"Consider breaking into smaller, more focused components (aim for 3-6 capabilities)",
+			"Libraries should have minimal dependencies - consider if this should be a service",
 		);
-	} else if (comp.capabilities && comp.capabilities.length > 0) {
-		strengths.push(`Well-scoped with ${comp.capabilities.length} capabilities`);
 	}
 
-	// Step 3: Dependencies check
-	if (!comp.depends_on || comp.depends_on.length === 0) {
+	// Step 4: Technology stack
+	if (!comp.tech_stack || comp.tech_stack.length === 0) {
+		issues.push("Missing tech stack definition");
 		suggestions.push(
-			"No dependencies listed - verify this component is truly independent",
+			"Define technologies used (e.g., language, framework, database)",
 		);
-	} else if (comp.depends_on.length > 5) {
+	} else {
+		strengths.push(`Tech stack defined: ${comp.tech_stack.join(", ")}`);
+	}
+
+	// Step 5: Dependencies
+	const hasInternal = comp.depends_on && comp.depends_on.length > 0;
+	const hasExternal =
+		comp.external_dependencies && comp.external_dependencies.length > 0;
+
+	if (!hasInternal && !hasExternal) {
+		suggestions.push(
+			"Consider documenting dependencies (internal components and external packages)",
+		);
+	}
+
+	if (comp.depends_on && comp.depends_on.length > 10) {
 		issues.push(
 			`High coupling: depends on ${comp.depends_on.length} other components`,
 		);
-		suggestions.push(
-			"Consider reducing dependencies or introducing an abstraction layer",
-		);
-	} else {
-		strengths.push(
-			`Reasonable coupling with ${comp.depends_on.length} dependencies`,
-		);
+		suggestions.push("Consider introducing abstraction layers or facades");
+	} else if (hasInternal) {
+		strengths.push(`Depends on ${comp.depends_on!.length} internal components`);
 	}
 
-	// Step 4: Circular dependency detection
-	if (comp.depends_on?.includes(comp.id)) {
-		issues.push("Component depends on itself - circular dependency detected");
-	}
-
-	// Step 5: Tech stack validation
-	if (!comp.tech_stack || comp.tech_stack.length === 0) {
-		suggestions.push("Consider adding tech stack information for clarity");
-	} else {
-		strengths.push(
-			`Tech stack defined: ${comp.tech_stack.slice(0, 3).join(", ")}`,
-		);
-	}
-
-	// Step 6: Constraints check
+	// Step 6: Constraints
 	if (!comp.constraints || comp.constraints.length === 0) {
 		suggestions.push(
-			"Add constraints (performance, scalability, technical limitations)",
+			"Document constraints (performance, security, compatibility requirements)",
 		);
 	} else {
-		strengths.push(`Has ${comp.constraints.length} constraints defined`);
+		strengths.push(`Documents ${comp.constraints.length} constraints`);
 	}
 
-	// Step 7: Setup tasks
-	if (!comp.setup_tasks || comp.setup_tasks.length === 0) {
-		issues.push("Missing setup tasks - how is this component initialized?");
-		suggestions.push(
-			"Add setup tasks with file actions and dependency ordering",
-		);
+	// Step 7: Folder structure
+	if (!comp.folder || comp.folder === ".") {
+		suggestions.push("Specify folder location in repository");
 	} else {
-		strengths.push(`Has ${comp.setup_tasks.length} setup tasks`);
-
-		// Check task dependencies
-		const tasksWithDeps = comp.setup_tasks.filter(
-			(t: Task) => t.depends_on && t.depends_on.length > 0,
-		);
-		if (tasksWithDeps.length === 0 && comp.setup_tasks.length > 1) {
-			suggestions.push(
-				"No task dependencies defined - ensure proper ordering is captured",
-			);
-		}
+		strengths.push(`Located at: ${comp.folder}`);
 	}
 
-	// Step 8: Type-specific validation
-	if (comp.type === "service" && !comp.dev_port) {
-		suggestions.push(
-			"Services should specify dev_port for local development coordination",
-		);
-	}
-
-	if (comp.type === "library" && !comp.package_name) {
-		suggestions.push(
-			"Libraries should specify package_name for distribution clarity",
-		);
-	}
-
-	if (comp.type === "app" && !comp.deployment_targets) {
-		suggestions.push(
-			"Apps should specify deployment_targets (web, mobile, desktop, etc.)",
-		);
+	// Step 8: Capabilities documentation
+	if (comp.capabilities && comp.capabilities.length === 0) {
+		suggestions.push("Define key capabilities - what can this component do?");
 	}
 
 	return {
@@ -332,68 +261,40 @@ function analyzePlan(plan: Plan): AnalysisResult {
 	const suggestions: string[] = [];
 	const strengths: string[] = [];
 
-	// Step 1: Scope definition
-	if (!plan.scope) {
-		issues.push("Missing scope definition - what's in/out of scope?");
+	// Step 1: Scope and description
+	if (!plan.description || plan.description.length < 100) {
+		issues.push(
+			"Plan description is too brief - should explain scope, approach, and rationale",
+		);
 		suggestions.push(
-			"Add scope object with in_scope, out_of_scope, boundaries, assumptions, constraints",
+			"Add context: What will be built? Why this approach? What's the scope?",
 		);
 	} else {
-		strengths.push("Has scope definition");
-
-		if (!plan.scope.assumptions || plan.scope.assumptions.length === 0) {
-			suggestions.push(
-				"Add assumptions - what are you assuming to be true for this plan?",
-			);
-		}
-
-		if (!plan.scope.constraints || plan.scope.constraints.length === 0) {
-			suggestions.push("Add constraints - what limitations affect this plan?");
-		}
+		strengths.push("Has detailed description");
 	}
 
 	// Step 2: Acceptance criteria
-	if (
-		!plan.acceptance_criteria ||
-		plan.acceptance_criteria.trim().length < 50
-	) {
-		issues.push(
-			"Missing or insufficient acceptance criteria for the overall plan",
-		);
+	if (!plan.acceptance_criteria || plan.acceptance_criteria.length < 50) {
+		issues.push("Missing or insufficient acceptance criteria");
 		suggestions.push(
-			"Define clear, measurable completion criteria for the entire plan",
+			"Define clear completion criteria - how do we know when this is done?",
 		);
 	} else {
-		strengths.push("Has clear acceptance criteria");
+		strengths.push("Has acceptance criteria defined");
 	}
 
-	// Step 3: Tasks validation
+	// Step 3: Tasks
 	if (!plan.tasks || plan.tasks.length === 0) {
-		issues.push("No tasks defined - plan needs actionable work items");
+		issues.push("No tasks defined - plan must include implementation steps");
+		suggestions.push("Break down the plan into concrete, actionable tasks");
+	} else if (plan.tasks.length === 1) {
+		suggestions.push(
+			"Single task detected - consider breaking into smaller steps",
+		);
 	} else {
-		strengths.push(`Contains ${plan.tasks.length} tasks`);
+		strengths.push(`Includes ${plan.tasks.length} tasks`);
 
-		// Check task size (description length as proxy)
-		const largeTasks = plan.tasks.filter(
-			(t: Task) => t.description && t.description.length > 500,
-		);
-		if (largeTasks.length > 0) {
-			suggestions.push(
-				`${largeTasks.length} tasks have very detailed descriptions - consider breaking into smaller tasks`,
-			);
-		}
-
-		// Check task priorities
-		const withoutPriority = plan.tasks.filter(
-			(t: Task) => !t.priority || t.priority === "normal",
-		);
-		if (withoutPriority.length === plan.tasks.length) {
-			suggestions.push(
-				"All tasks have normal/no priority - identify critical path items",
-			);
-		}
-
-		// Check task dependencies
+		// Task dependencies
 		const tasksWithDeps = plan.tasks.filter(
 			(t: Task) => t.depends_on && t.depends_on.length > 0,
 		);
@@ -406,7 +307,7 @@ function analyzePlan(plan: Plan): AnalysisResult {
 			strengths.push(`${tasksWithDeps.length} tasks have dependencies defined`);
 		}
 
-		// Check task acceptance criteria (considerations)
+		// Task considerations
 		const tasksWithoutCriteria = plan.tasks.filter(
 			(t: Task) => !t.considerations || t.considerations.length === 0,
 		);
@@ -414,18 +315,6 @@ function analyzePlan(plan: Plan): AnalysisResult {
 			suggestions.push(
 				`${tasksWithoutCriteria.length} tasks lack considerations - add 'what to think about' for each task`,
 			);
-		}
-
-		// Check file actions
-		const tasksWithFiles = plan.tasks.filter(
-			(t: Task) => t.files && t.files.length > 0,
-		);
-		if (tasksWithFiles.length === 0) {
-			suggestions.push(
-				"No file actions specified - add concrete file changes for implementation tasks",
-			);
-		} else {
-			strengths.push(`${tasksWithFiles.length} tasks specify file actions`);
 		}
 	}
 
@@ -448,6 +337,12 @@ function analyzePlan(plan: Plan): AnalysisResult {
 	}
 
 	// Step 6: Traceability
+	if (!plan.criteria_id) {
+		suggestions.push("Link plan to requirement criteria_id for traceability");
+	} else {
+		strengths.push(`Linked to requirement criteria: ${plan.criteria_id}`);
+	}
+
 	if (plan.depends_on && plan.depends_on.length > 0) {
 		strengths.push(`Traces to ${plan.depends_on.length} prerequisite plan(s)`);
 	}
@@ -460,7 +355,7 @@ function analyzePlan(plan: Plan): AnalysisResult {
 		);
 	}
 
-	// Step 8: Buffer check (heuristic)
+	// Step 8: Buffer check
 	if (
 		plan.tasks &&
 		plan.tasks.length > 5 &&
@@ -484,144 +379,104 @@ function analyzePlan(plan: Plan): AnalysisResult {
 }
 
 /**
- * Register all guidance and analysis tools
+ * Register consolidated guidance tool
  */
-export function registerGuidanceTools(
+export function registerGuidanceTool(
 	server: McpServer,
 	operations: SpecOperations,
 	context: ToolContext,
 ) {
-	// Analyze Requirement Tool
 	server.registerTool(
-		"analyze-requirement",
+		"guidance",
 		{
-			title: "Analyze Requirement",
+			title: "Guidance",
 			description:
-				"Analyze a requirement specification against best practices from the 7-step Requirements Guide reasoning process. Identifies issues, provides suggestions, and highlights strengths. Checks for: clear problem statements, absence of implementation details, measurability, acceptance criteria quality, and traceability.",
-			inputSchema: AnalyzeRequirementInputSchema,
-		},
-		wrapToolHandler(
-			"analyze-requirement",
-			async ({ id }) => {
-				const validatedId = context.inputValidator.validateId(id);
-				const result = await operations.getRequirement(validatedId);
-				if (!result.success || !result.data) {
-					return formatResult(result);
-				}
-				const analysis = analyzeRequirement(result.data);
-				return formatResult({ success: true, data: analysis });
+				"Validate specifications against best practices: requirements (7-step), components (10-step), or plans (12-step)",
+			inputSchema: {
+				spec_type: SpecTypeSchema.describe("Type of specification to validate"),
+				id: z.string().describe("The specification ID to validate"),
 			},
-			context,
-			AnalyzeRequirementSchema,
-		),
-	);
-
-	// Analyze Component Tool
-	server.registerTool(
-		"analyze-component",
-		{
-			title: "Analyze Component",
-			description:
-				"Analyze a component specification against best practices from the 10-step Components Guide reasoning process. Identifies issues, provides suggestions, and highlights strengths. Checks for: single responsibility, appropriate coupling, clear dependencies, tech stack definition, constraints, setup tasks, and type-specific requirements.",
-			inputSchema: AnalyzeComponentInputSchema,
 		},
 		wrapToolHandler(
-			"analyze-component",
-			async ({ id }) => {
-				const validatedId = context.inputValidator.validateId(id);
-				const result = await operations.getComponent(validatedId);
-				if (!result.success || !result.data) {
-					return formatResult(result);
-				}
-				const analysis = analyzeComponent(result.data);
-				return formatResult({ success: true, data: analysis });
-			},
-			context,
-			AnalyzeComponentSchema,
-		),
-	);
-
-	// Analyze Plan Tool
-	server.registerTool(
-		"analyze-plan",
-		{
-			title: "Analyze Plan",
-			description:
-				"Analyze a plan specification against best practices from the 12-step Plans Guide reasoning process. Identifies issues, provides suggestions, and highlights strengths. Checks for: scope definition, acceptance criteria, task breakdown, dependencies, file actions, test cases, flows, traceability, and appropriate buffer planning.",
-			inputSchema: AnalyzePlanInputSchema,
-		},
-		wrapToolHandler(
-			"analyze-plan",
-			async ({ id }) => {
-				const validatedId = context.inputValidator.validateId(id);
-				const result = await operations.getPlan(validatedId);
-				if (!result.success || !result.data) {
-					return formatResult(result);
-				}
-				const analysis = analyzePlan(result.data);
-				return formatResult({ success: true, data: analysis });
-			},
-			context,
-			AnalyzePlanSchema,
-		),
-	);
-
-	// Validate Spec Tool (universal)
-	server.registerTool(
-		"validate-spec",
-		{
-			title: "Validate Specification",
-			description:
-				"Universal validation tool that routes to the appropriate analyzer (requirement, component, or plan) based on the specification type. Use this when you want to validate any specification against best practices and get actionable feedback.",
-			inputSchema: ValidateSpecInputSchema,
-		},
-		wrapToolHandler(
-			"validate-spec",
-			async ({ type, id }) => {
+			"guidance",
+			async ({ spec_type, id }) => {
 				const validatedId = context.inputValidator.validateId(id);
 
-				let analysis: AnalysisResult;
+				let result: AnalysisResult;
 
-				switch (type) {
+				switch (spec_type) {
 					case "requirement": {
-						const result = await operations.getRequirement(validatedId);
-						if (!result.success || !result.data) {
-							return formatResult(result);
+						const reqResult = await operations.getRequirement(validatedId);
+						if (!reqResult.success || !reqResult.data) {
+							return {
+								content: [
+									{
+										type: "text",
+										text: JSON.stringify({
+											success: false,
+											error:
+												reqResult.error ||
+												`Requirement '${validatedId}' not found`,
+										}),
+									},
+								],
+								isError: true,
+							};
 						}
-						analysis = analyzeRequirement(result.data);
+						result = analyzeRequirement(reqResult.data);
 						break;
 					}
+
 					case "component": {
-						const result = await operations.getComponent(validatedId);
-						if (!result.success || !result.data) {
-							return formatResult(result);
+						const compResult = await operations.getComponent(validatedId);
+						if (!compResult.success || !compResult.data) {
+							return {
+								content: [
+									{
+										type: "text",
+										text: JSON.stringify({
+											success: false,
+											error:
+												compResult.error ||
+												`Component '${validatedId}' not found`,
+										}),
+									},
+								],
+								isError: true,
+							};
 						}
-						analysis = analyzeComponent(result.data);
+						result = analyzeComponent(compResult.data as Component);
 						break;
 					}
+
 					case "plan": {
-						const result = await operations.getPlan(validatedId);
-						if (!result.success || !result.data) {
-							return formatResult(result);
+						const planResult = await operations.getPlan(validatedId);
+						if (!planResult.success || !planResult.data) {
+							return {
+								content: [
+									{
+										type: "text",
+										text: JSON.stringify({
+											success: false,
+											error:
+												planResult.error || `Plan '${validatedId}' not found`,
+										}),
+									},
+								],
+								isError: true,
+							};
 						}
-						analysis = analyzePlan(result.data);
+						result = analyzePlan(planResult.data);
 						break;
 					}
-					default:
-						throw new Error(`Unknown spec type: ${type}`);
 				}
 
 				return formatResult({
 					success: true,
-					data: {
-						...analysis,
-						spec_type: type,
-						validation_timestamp: new Date().toISOString(),
-					},
+					data: result,
 				});
 			},
 			context,
-			ValidateSpecSchema,
 		),
 	);
 }
