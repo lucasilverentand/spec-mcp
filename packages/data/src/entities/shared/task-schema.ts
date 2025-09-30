@@ -70,7 +70,8 @@ const _TaskStatusSchema = z.object({
 		.boolean()
 		.default(false)
 		.describe("Whether the task has been completed"),
-	completed_at: z.string()
+	completed_at: z
+		.string()
 		.datetime()
 		.optional()
 		.describe("Timestamp when the task was completed"),
@@ -78,7 +79,8 @@ const _TaskStatusSchema = z.object({
 		.boolean()
 		.default(false)
 		.describe("Whether the task has been verified"),
-	verified_at: z.string()
+	verified_at: z
+		.string()
 		.datetime()
 		.optional()
 		.describe("Timestamp when the task was verified"),

@@ -69,7 +69,8 @@ export const PlanStorageSchema = BaseSchema.extend({
 		.boolean()
 		.default(false)
 		.describe("Whether the plan has been completed"),
-	completed_at: z.string()
+	completed_at: z
+		.string()
 		.datetime()
 		.optional()
 		.describe("Timestamp when the plan was completed"),

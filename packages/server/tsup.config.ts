@@ -12,7 +12,13 @@ export default defineConfig({
 	// Bundle workspace dependencies and zod (to avoid version conflicts)
 	noExternal: [/@spec-mcp\/.*/, "zod"],
 	// Keep external dependencies that have CommonJS issues
-	external: ["@modelcontextprotocol/sdk", "yaml", "glob", "pino", "pino-pretty"],
+	external: [
+		"@modelcontextprotocol/sdk",
+		"yaml",
+		"glob",
+		"pino",
+		"pino-pretty",
+	],
 	treeshake: true,
 	splitting: false,
 	minify: false, // Keep readable for debugging
