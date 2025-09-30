@@ -376,7 +376,6 @@ function createBaseEntity(entityType: string): AnyEntity {
 				type: "app",
 				folder: ".",
 				setup_tasks: [],
-				test_setup: [],
 				depends_on: [],
 				external_dependencies: [],
 				capabilities: [],
@@ -384,7 +383,7 @@ function createBaseEntity(entityType: string): AnyEntity {
 				tech_stack: [],
 				deployment_targets: [],
 				environments: ["development"],
-			} as AppComponent;
+			} as unknown as AppComponent;
 
 		case "service":
 			return {
@@ -392,13 +391,12 @@ function createBaseEntity(entityType: string): AnyEntity {
 				type: "service",
 				folder: ".",
 				setup_tasks: [],
-				test_setup: [],
 				depends_on: [],
 				external_dependencies: [],
 				capabilities: [],
 				constraints: [],
 				tech_stack: [],
-			} as ServiceComponent;
+			} as unknown as ServiceComponent;
 
 		case "library":
 			return {
@@ -406,13 +404,12 @@ function createBaseEntity(entityType: string): AnyEntity {
 				type: "library",
 				folder: ".",
 				setup_tasks: [],
-				test_setup: [],
 				depends_on: [],
 				external_dependencies: [],
 				capabilities: [],
 				constraints: [],
 				tech_stack: [],
-			} as LibraryComponent;
+			} as unknown as LibraryComponent;
 
 		case "tool":
 			return {
@@ -420,13 +417,12 @@ function createBaseEntity(entityType: string): AnyEntity {
 				type: "tool",
 				folder: ".",
 				setup_tasks: [],
-				test_setup: [],
 				depends_on: [],
 				external_dependencies: [],
 				capabilities: [],
 				constraints: [],
 				tech_stack: [],
-			} as ToolComponent;
+			} as unknown as ToolComponent;
 
 		default:
 			throw new Error(`Unknown entity type: ${entityType}`);

@@ -95,10 +95,6 @@ export function registerComponentTool(
 					.array(SetupTaskSchema)
 					.optional()
 					.describe("Tasks required to set up the component"),
-				test_setup: z
-					.array(SetupTaskSchema)
-					.optional()
-					.describe("Tasks required to configure testing for the component"),
 				// List filters
 				search: z.string().optional().describe("Search query"),
 			},
@@ -119,7 +115,6 @@ export function registerComponentTool(
 				capabilities,
 				constraints,
 				setup_tasks,
-				test_setup,
 				search,
 			}) => {
 				switch (operation) {
@@ -162,7 +157,6 @@ export function registerComponentTool(
 							capabilities: capabilities ?? [],
 							constraints: constraints ?? [],
 							setup_tasks: [],
-							test_setup: test_setup ?? [],
 						};
 						// @ts-expect-error - Type system limitation
 						const result = await operations.createComponent(data);
@@ -225,7 +219,6 @@ export function registerComponentTool(
 						if (capabilities) updateData.capabilities = capabilities;
 						if (constraints) updateData.constraints = constraints;
 						if (setup_tasks) updateData.setup_tasks = setup_tasks;
-						if (test_setup) updateData.test_setup = test_setup;
 
 						const result = await operations.updateComponent(
 							validatedId,
