@@ -190,8 +190,41 @@ jobs:
       - name: Run tests with coverage
         run: pnpm test:coverage
 
-  publish:
-    name: Publish Release Assets
+  publish-npm:
+    name: Publish to NPM
+    runs-on: ubuntu-latest
+    needs: test
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 8.15.0
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build packages
+        run: pnpm build
+
+      - name: Publish @spec-mcp/server to npm
+        run: cd packages/server && pnpm publish --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  publish-github:
+    name: Publish GitHub Release Assets
     runs-on: ubuntu-latest
     needs: test
     permissions:
