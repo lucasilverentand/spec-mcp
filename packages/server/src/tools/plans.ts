@@ -33,6 +33,17 @@ const PlanPrioritySchema = z.enum(["critical", "high", "medium", "low"]);
 // PlanIdSchema - matches PlanIdSchema from data package
 const PlanIdSchema = z.string().regex(/^pln-\d{3}-[a-z0-9-]+$/);
 
+// AcceptanceCriteriaIdSchema - matches AcceptanceCriteriaIdSchema from data package
+const AcceptanceCriteriaIdSchema = z
+	.string()
+	.regex(/^req-\d{3}-[a-z0-9-]+\/crit-\d{3}$/);
+
+// Additional ID schemas for sub-entities
+const TestCaseIdSchema = z.string().regex(/^tc-\d{3}$/);
+const FlowIdSchema = z.string().regex(/^flow-\d{3}$/);
+const ApiContractIdSchema = z.string().regex(/^api-\d{3}$/);
+const DataModelIdSchema = z.string().regex(/^dm-\d{3}$/);
+
 /**
  * Register all plan-related tools
  */
@@ -51,6 +62,9 @@ export function registerPlanTools(
 				slug: z.string().describe("URL-friendly identifier"),
 				name: z.string().describe("Display name of the plan"),
 				description: z.string().describe("Detailed description of the plan"),
+				criteria_id: AcceptanceCriteriaIdSchema.optional().describe(
+					"The acceptance criteria ID this plan fulfills (e.g., 'req-001-auth/crit-001'). Optional for orchestration/milestone plans.",
+				),
 				priority: PlanPrioritySchema
 					.default("medium")
 					.describe("Priority level"),
@@ -73,6 +87,7 @@ export function registerPlanTools(
 				slug,
 				name,
 				description,
+				criteria_id,
 				priority,
 				acceptance_criteria,
 				depends_on,
@@ -91,6 +106,7 @@ export function registerPlanTools(
 					slug: validatedSlug,
 					name: validatedName,
 					description: validatedDescription,
+					criteria_id,
 					created_at: new Date().toISOString(),
 					updated_at: new Date().toISOString(),
 					priority,
@@ -137,9 +153,10 @@ export function registerPlanTools(
 				id: z.string().describe("Plan ID to update"),
 				name: z.string().optional().describe("Updated name"),
 				description: z.string().optional().describe("Updated description"),
-				priority: PlanPrioritySchema
-					.optional()
-					.describe("Updated priority"),
+				criteria_id: AcceptanceCriteriaIdSchema.optional().describe(
+					"Updated acceptance criteria ID this plan fulfills",
+				),
+				priority: PlanPrioritySchema.optional().describe("Updated priority"),
 				acceptance_criteria: z
 					.string()
 					.optional()
@@ -148,10 +165,7 @@ export function registerPlanTools(
 					.array(PlanIdSchema)
 					.optional()
 					.describe("Updated plan dependencies"),
-				tasks: z
-					.array(TaskSchema)
-					.optional()
-					.describe("Updated tasks"),
+				tasks: z.array(TaskSchema).optional().describe("Updated tasks"),
 			},
 		},
 		wrapToolHandler(
@@ -170,6 +184,9 @@ export function registerPlanTools(
 					updateData.description = context.inputValidator.sanitizeString(
 						updates.description,
 					);
+				}
+				if (updates.criteria_id) {
+					updateData.criteria_id = updates.criteria_id;
 				}
 				if (updates.acceptance_criteria) {
 					updateData.acceptance_criteria =
@@ -247,6 +264,203 @@ export function registerPlanTools(
 					Object.keys(filter).length > 0 ? filter : undefined,
 				);
 				return formatListResult(result, "plan");
+			},
+			context,
+		),
+	);
+
+	// Get Plan Task Tool
+	server.registerTool(
+		"get-plan-task",
+		{
+			title: "Get Plan Task",
+			description: "Retrieve a single task from a plan by its ID",
+			inputSchema: {
+				plan_id: z.string().describe("Plan ID (e.g., 'pln-001-slug')"),
+				task_id: TaskIdSchema.describe("Task ID (e.g., 'task-001')"),
+			},
+		},
+		wrapToolHandler(
+			"get-plan-task",
+			async ({ plan_id, task_id }) => {
+				const validatedPlanId = context.inputValidator.validateId(plan_id);
+				const validatedTaskId = context.inputValidator.validateId(task_id);
+
+				const planResult = await operations.getPlan(validatedPlanId);
+				if (!planResult.success || !planResult.data) {
+					return planResult;
+				}
+
+				const task = planResult.data.tasks?.find((t) => t.id === validatedTaskId);
+				if (!task) {
+					return {
+						success: false,
+						error: `Task '${validatedTaskId}' not found in plan '${validatedPlanId}'`,
+					};
+				}
+
+				return formatResult({ success: true, data: task });
+			},
+			context,
+		),
+	);
+
+	// Get Plan Test Case Tool
+	server.registerTool(
+		"get-plan-test-case",
+		{
+			title: "Get Plan Test Case",
+			description: "Retrieve a single test case from a plan by its ID",
+			inputSchema: {
+				plan_id: z.string().describe("Plan ID (e.g., 'pln-001-slug')"),
+				test_case_id: TestCaseIdSchema.describe(
+					"Test Case ID (e.g., 'tc-001')",
+				),
+			},
+		},
+		wrapToolHandler(
+			"get-plan-test-case",
+			async ({ plan_id, test_case_id }) => {
+				const validatedPlanId = context.inputValidator.validateId(plan_id);
+				const validatedTestCaseId =
+					context.inputValidator.validateId(test_case_id);
+
+				const planResult = await operations.getPlan(validatedPlanId);
+				if (!planResult.success || !planResult.data) {
+					return planResult;
+				}
+
+				const testCase = planResult.data.test_cases?.find(
+					(tc) => tc.id === validatedTestCaseId,
+				);
+				if (!testCase) {
+					return {
+						success: false,
+						error: `Test case '${validatedTestCaseId}' not found in plan '${validatedPlanId}'`,
+					};
+				}
+
+				return formatResult({ success: true, data: testCase });
+			},
+			context,
+		),
+	);
+
+	// Get Plan Flow Tool
+	server.registerTool(
+		"get-plan-flow",
+		{
+			title: "Get Plan Flow",
+			description: "Retrieve a single flow from a plan by its ID",
+			inputSchema: {
+				plan_id: z.string().describe("Plan ID (e.g., 'pln-001-slug')"),
+				flow_id: FlowIdSchema.describe("Flow ID (e.g., 'flow-001')"),
+			},
+		},
+		wrapToolHandler(
+			"get-plan-flow",
+			async ({ plan_id, flow_id }) => {
+				const validatedPlanId = context.inputValidator.validateId(plan_id);
+				const validatedFlowId = context.inputValidator.validateId(flow_id);
+
+				const planResult = await operations.getPlan(validatedPlanId);
+				if (!planResult.success || !planResult.data) {
+					return planResult;
+				}
+
+				const flow = planResult.data.flows?.find(
+					(f) => f.id === validatedFlowId,
+				);
+				if (!flow) {
+					return {
+						success: false,
+						error: `Flow '${validatedFlowId}' not found in plan '${validatedPlanId}'`,
+					};
+				}
+
+				return formatResult({ success: true, data: flow });
+			},
+			context,
+		),
+	);
+
+	// Get Plan API Contract Tool
+	server.registerTool(
+		"get-plan-api-contract",
+		{
+			title: "Get Plan API Contract",
+			description: "Retrieve a single API contract from a plan by its ID",
+			inputSchema: {
+				plan_id: z.string().describe("Plan ID (e.g., 'pln-001-slug')"),
+				api_contract_id: ApiContractIdSchema.describe(
+					"API Contract ID (e.g., 'api-001')",
+				),
+			},
+		},
+		wrapToolHandler(
+			"get-plan-api-contract",
+			async ({ plan_id, api_contract_id }) => {
+				const validatedPlanId = context.inputValidator.validateId(plan_id);
+				const validatedApiContractId =
+					context.inputValidator.validateId(api_contract_id);
+
+				const planResult = await operations.getPlan(validatedPlanId);
+				if (!planResult.success || !planResult.data) {
+					return planResult;
+				}
+
+				const apiContract = planResult.data.api_contracts?.find(
+					(ac) => ac.id === validatedApiContractId,
+				);
+				if (!apiContract) {
+					return {
+						success: false,
+						error: `API contract '${validatedApiContractId}' not found in plan '${validatedPlanId}'`,
+					};
+				}
+
+				return formatResult({ success: true, data: apiContract });
+			},
+			context,
+		),
+	);
+
+	// Get Plan Data Model Tool
+	server.registerTool(
+		"get-plan-data-model",
+		{
+			title: "Get Plan Data Model",
+			description: "Retrieve a single data model from a plan by its ID",
+			inputSchema: {
+				plan_id: z.string().describe("Plan ID (e.g., 'pln-001-slug')"),
+				data_model_id: DataModelIdSchema.describe(
+					"Data Model ID (e.g., 'dm-001')",
+				),
+			},
+		},
+		wrapToolHandler(
+			"get-plan-data-model",
+			async ({ plan_id, data_model_id }) => {
+				const validatedPlanId = context.inputValidator.validateId(plan_id);
+				const validatedDataModelId =
+					context.inputValidator.validateId(data_model_id);
+
+				const planResult = await operations.getPlan(validatedPlanId);
+				if (!planResult.success || !planResult.data) {
+					return planResult;
+				}
+
+				const dataModel = planResult.data.data_models?.find(
+					(dm) => dm.id === validatedDataModelId,
+				);
+				if (!dataModel) {
+					return {
+						success: false,
+						error: `Data model '${validatedDataModelId}' not found in plan '${validatedPlanId}'`,
+					};
+				}
+
+				return formatResult({ success: true, data: dataModel });
 			},
 			context,
 		),
