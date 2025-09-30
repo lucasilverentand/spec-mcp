@@ -52,5 +52,14 @@
 		"project-management",
 		"requirements",
 		"planning"
-	]
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/lucasilverentand/spec-mcp.git",
+		"directory": "packages/server"
+	},
+	"publishConfig": {
+		"registry": "https://registry.npmjs.org",
+		"access": "public"
+	}
 }
