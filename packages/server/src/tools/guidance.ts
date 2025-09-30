@@ -1,10 +1,12 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { SpecOperations } from "@spec-mcp/core";
-import type { Component, Plan, Requirement } from "@spec-mcp/data/entities";
+import type { AnyEntity, Plan, Requirement, Task } from "@spec-mcp/data";
 import { z } from "zod";
 import { formatResult } from "../utils/result-formatter.js";
 import { wrapToolHandler } from "../utils/tool-wrapper.js";
 import type { ToolContext } from "./index.js";
+
+type Component = Extract<AnyEntity, { type: "app" | "service" | "library" | "tool" }>;
 
 // Input schemas for guidance tools (ZodRawShape format for MCP SDK)
 const AnalyzeRequirementInputSchema = {
@@ -161,8 +163,8 @@ function analyzeRequirement(req: Requirement): AnalysisResult {
 
 	// Step 6: Criteria linking to plans
 	if (req.criteria && req.criteria.length > 0) {
-		const unlinkedCriteria = req.criteria.filter(
-			(c) => !("plan_id" in c) || !c.plan_id,
+		const unlinkedCriteria = req.criteria.filter((c: { id: string; description: string; plan_id?: string }) =>
+			!("plan_id" in c) || !c.plan_id,
 		);
 		if (unlinkedCriteria.length > 0) {
 			suggestions.push(
@@ -279,7 +281,7 @@ function analyzeComponent(comp: Component): AnalysisResult {
 
 		// Check task dependencies
 		const tasksWithDeps = comp.setup_tasks.filter(
-			(t) => t.depends_on && t.depends_on.length > 0,
+			(t: Task) => t.depends_on && t.depends_on.length > 0,
 		);
 		if (tasksWithDeps.length === 0 && comp.setup_tasks.length > 1) {
 			suggestions.push(
@@ -369,7 +371,7 @@ function analyzePlan(plan: Plan): AnalysisResult {
 
 		// Check task size (description length as proxy)
 		const largeTasks = plan.tasks.filter(
-			(t) => t.description && t.description.length > 500,
+			(t: Task) => t.description && t.description.length > 500,
 		);
 		if (largeTasks.length > 0) {
 			suggestions.push(
@@ -379,7 +381,7 @@ function analyzePlan(plan: Plan): AnalysisResult {
 
 		// Check task priorities
 		const withoutPriority = plan.tasks.filter(
-			(t) => !t.priority || t.priority === "normal",
+			(t: Task) => !t.priority || t.priority === "normal",
 		);
 		if (withoutPriority.length === plan.tasks.length) {
 			suggestions.push(
@@ -389,7 +391,7 @@ function analyzePlan(plan: Plan): AnalysisResult {
 
 		// Check task dependencies
 		const tasksWithDeps = plan.tasks.filter(
-			(t) => t.depends_on && t.depends_on.length > 0,
+			(t: Task) => t.depends_on && t.depends_on.length > 0,
 		);
 		if (tasksWithDeps.length === 0 && plan.tasks.length > 3) {
 			issues.push(
@@ -402,7 +404,7 @@ function analyzePlan(plan: Plan): AnalysisResult {
 
 		// Check task acceptance criteria (considerations)
 		const tasksWithoutCriteria = plan.tasks.filter(
-			(t) => !t.considerations || t.considerations.length === 0,
+			(t: Task) => !t.considerations || t.considerations.length === 0,
 		);
 		if (tasksWithoutCriteria.length > plan.tasks.length * 0.5) {
 			suggestions.push(
@@ -412,7 +414,7 @@ function analyzePlan(plan: Plan): AnalysisResult {
 
 		// Check file actions
 		const tasksWithFiles = plan.tasks.filter(
-			(t) => t.files && t.files.length > 0,
+			(t: Task) => t.files && t.files.length > 0,
 		);
 		if (tasksWithFiles.length === 0) {
 			suggestions.push(
@@ -498,9 +500,12 @@ export function registerGuidanceTools(
 			"analyze-requirement",
 			async ({ id }) => {
 				const validatedId = context.inputValidator.validateId(id);
-				const requirement = await operations.getRequirement(validatedId);
-				const analysis = analyzeRequirement(requirement);
-				return formatResult(analysis);
+				const result = await operations.getRequirement(validatedId);
+				if (!result.success || !result.data) {
+					return formatResult(result);
+				}
+				const analysis = analyzeRequirement(result.data);
+				return formatResult({ success: true, data: analysis });
 			},
 			context,
 			AnalyzeRequirementSchema,
@@ -520,9 +525,12 @@ export function registerGuidanceTools(
 			"analyze-component",
 			async ({ id }) => {
 				const validatedId = context.inputValidator.validateId(id);
-				const component = await operations.getComponent(validatedId);
-				const analysis = analyzeComponent(component);
-				return formatResult(analysis);
+				const result = await operations.getComponent(validatedId);
+				if (!result.success || !result.data) {
+					return formatResult(result);
+				}
+				const analysis = analyzeComponent(result.data);
+				return formatResult({ success: true, data: analysis });
 			},
 			context,
 			AnalyzeComponentSchema,
@@ -542,9 +550,12 @@ export function registerGuidanceTools(
 			"analyze-plan",
 			async ({ id }) => {
 				const validatedId = context.inputValidator.validateId(id);
-				const plan = await operations.getPlan(validatedId);
-				const analysis = analyzePlan(plan);
-				return formatResult(analysis);
+				const result = await operations.getPlan(validatedId);
+				if (!result.success || !result.data) {
+					return formatResult(result);
+				}
+				const analysis = analyzePlan(result.data);
+				return formatResult({ success: true, data: analysis });
 			},
 			context,
 			AnalyzePlanSchema,
@@ -569,18 +580,27 @@ export function registerGuidanceTools(
 
 				switch (type) {
 					case "requirement": {
-						const spec = await operations.getRequirement(validatedId);
-						analysis = analyzeRequirement(spec);
+						const result = await operations.getRequirement(validatedId);
+						if (!result.success || !result.data) {
+							return formatResult(result);
+						}
+						analysis = analyzeRequirement(result.data);
 						break;
 					}
 					case "component": {
-						const spec = await operations.getComponent(validatedId);
-						analysis = analyzeComponent(spec);
+						const result = await operations.getComponent(validatedId);
+						if (!result.success || !result.data) {
+							return formatResult(result);
+						}
+						analysis = analyzeComponent(result.data);
 						break;
 					}
 					case "plan": {
-						const spec = await operations.getPlan(validatedId);
-						analysis = analyzePlan(spec);
+						const result = await operations.getPlan(validatedId);
+						if (!result.success || !result.data) {
+							return formatResult(result);
+						}
+						analysis = analyzePlan(result.data);
 						break;
 					}
 					default:
@@ -588,9 +608,12 @@ export function registerGuidanceTools(
 				}
 
 				return formatResult({
-					...analysis,
-					spec_type: type,
-					validation_timestamp: new Date().toISOString(),
+					success: true,
+					data: {
+						...analysis,
+						spec_type: type,
+						validation_timestamp: new Date().toISOString(),
+					},
 				});
 			},
 			context,
