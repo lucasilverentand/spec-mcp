@@ -1,6 +1,6 @@
 {
 	"name": "@spec-mcp/server",
-	"version": "0.2.1",
+	"version": "0.2.2",
 	"mcpName": "io.github.lucasilverentand/spec-mcp",
 	"description": "Model Context Protocol server for managing software project specifications",
 	"type": "module",
