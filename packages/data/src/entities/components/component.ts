@@ -27,6 +27,10 @@ const _BaseComponentStorageSchema = BaseSchema.extend({
 		.array(TaskSchema)
 		.default([])
 		.describe("Tasks required to set up the component"),
+	test_setup: z
+		.array(TaskSchema)
+		.default([])
+		.describe("Tasks required to configure testing for the component"),
 	depends_on: z
 		.array(ComponentIdSchema)
 		.default([])

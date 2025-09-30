@@ -99,6 +99,7 @@ describe("AppComponentSchema", () => {
 
 		expect(parsed.folder).toBe(".");
 		expect(parsed.setup_tasks).toEqual([]);
+		expect(parsed.test_setup).toEqual([]);
 		expect(parsed.depends_on).toEqual([]);
 		expect(parsed.external_dependencies).toEqual([]);
 		expect(parsed.capabilities).toEqual([]);
@@ -324,6 +325,72 @@ describe("ToolComponentSchema", () => {
 		expect(parsed.tech_stack).toEqual(["Node.js", "Docker"]);
 		expect(parsed.capabilities).toEqual(["Deploy to AWS", "Rollback support"]);
 		expect(parsed.constraints).toEqual(["Requires AWS credentials"]);
+	});
+});
+
+describe("Component Test Setup", () => {
+	it("should accept test_setup with valid tasks", () => {
+		const component = {
+			type: "library" as const,
+			number: 1,
+			slug: "test-library",
+			name: "Test Library",
+			description: "A library with test setup",
+			created_at: new Date().toISOString(),
+			updated_at: new Date().toISOString(),
+			test_setup: [
+				{
+					id: "task-001",
+					description: "Configure Vitest for unit testing",
+					priority: "high" as const,
+					depends_on: [],
+					completed: false,
+					verified: false,
+					notes: [],
+					considerations: ["Use workspace-aware paths"],
+				},
+				{
+					id: "task-002",
+					description: "Set up test coverage reporting",
+					priority: "normal" as const,
+					depends_on: ["task-001"],
+					completed: false,
+					verified: false,
+					notes: [],
+					considerations: [],
+				},
+			],
+		};
+
+		expect(() => LibraryComponentSchema.parse(component)).not.toThrow();
+		const parsed = LibraryComponentSchema.parse(component);
+		expect(parsed.test_setup).toHaveLength(2);
+		expect(parsed.test_setup[0].id).toBe("task-001");
+		expect(parsed.test_setup[1].depends_on).toEqual(["task-001"]);
+	});
+
+	it("should reject invalid task IDs in test_setup", () => {
+		const component = {
+			type: "service" as const,
+			number: 1,
+			slug: "test-service",
+			name: "Test Service",
+			description: "A service with invalid test setup",
+			created_at: new Date().toISOString(),
+			updated_at: new Date().toISOString(),
+			test_setup: [
+				{
+					id: "invalid-id",
+					description: "Invalid task",
+					completed: false,
+					verified: false,
+					notes: [],
+					considerations: [],
+				},
+			],
+		};
+
+		expect(() => ServiceComponentSchema.parse(component)).toThrow();
 	});
 });
 

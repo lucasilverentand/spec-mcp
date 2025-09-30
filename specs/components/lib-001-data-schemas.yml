@@ -9,6 +9,34 @@ created_at: 2025-09-29T23:34:00.862Z
 updated_at: 2025-09-29T23:34:00.862Z
 folder: packages/data/src/entities
 setup_tasks: []
+test_setup:
+  - id: task-001
+    description: Configure Vitest for unit testing all schema definitions
+    priority: high
+    depends_on: []
+    completed: true
+    completed_at: '2025-09-29T23:40:00.000Z'
+    verified: true
+    verified_at: '2025-09-29T23:45:00.000Z'
+    notes:
+      - Configured vitest.config.ts with coverage reporting
+      - Set coverage threshold to 90%
+    considerations:
+      - Ensure all schema edge cases are tested
+      - Test both valid and invalid inputs
+  - id: task-002
+    description: Set up test coverage reporting with thresholds
+    priority: normal
+    depends_on:
+      - task-001
+    completed: true
+    completed_at: '2025-09-29T23:50:00.000Z'
+    verified: true
+    verified_at: '2025-09-29T23:55:00.000Z'
+    notes:
+      - Coverage threshold set to 90% for statements, branches, functions, and lines
+    considerations:
+      - Monitor coverage in CI/CD pipeline
 depends_on: []
 external_dependencies:
   - zod@^4.1.11
