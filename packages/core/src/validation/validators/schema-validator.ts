@@ -376,7 +376,6 @@ function createBaseEntity(entityType: string): AnyEntity {
 				type: "app",
 				folder: ".",
 				setup_tasks: [],
-				test_setup: [],
 				depends_on: [],
 				external_dependencies: [],
 				capabilities: [],
@@ -392,12 +391,12 @@ function createBaseEntity(entityType: string): AnyEntity {
 				type: "service",
 				folder: ".",
 				setup_tasks: [],
-				test_setup: [],
 				depends_on: [],
 				external_dependencies: [],
 				capabilities: [],
 				constraints: [],
 				tech_stack: [],
+				// Add any other required ServiceComponent properties here if missing
 			} as ServiceComponent;
 
 		case "library":
@@ -406,12 +405,12 @@ function createBaseEntity(entityType: string): AnyEntity {
 				type: "library",
 				folder: ".",
 				setup_tasks: [],
-				test_setup: [],
 				depends_on: [],
 				external_dependencies: [],
 				capabilities: [],
 				constraints: [],
 				tech_stack: [],
+				environments: ["development"],
 			} as LibraryComponent;
 
 		case "tool":
@@ -420,12 +419,12 @@ function createBaseEntity(entityType: string): AnyEntity {
 				type: "tool",
 				folder: ".",
 				setup_tasks: [],
-				test_setup: [],
 				depends_on: [],
 				external_dependencies: [],
 				capabilities: [],
 				constraints: [],
 				tech_stack: [],
+				// Add any required fields for ToolComponent that are missing here.
 			} as ToolComponent;
 
 		default:
