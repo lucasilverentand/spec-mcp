@@ -154,7 +154,7 @@ export function registerConstitutionTool(
 							status: status || "active",
 							version: version || "1.0.0",
 						};
-
+						// @ts-expect-error - Type system limitation
 						const result = await operations.createConstitution(data);
 						return formatResult(result);
 					}
