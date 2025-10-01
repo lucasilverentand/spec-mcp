@@ -76,7 +76,6 @@ describe("SpecsManager", () => {
 		name: "Test Component",
 		description: "Test description",
 		capabilities: [] as string[],
-		setup_tasks: [] as unknown[],
 		...overrides,
 	});
 

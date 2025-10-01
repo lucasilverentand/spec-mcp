@@ -8,7 +8,6 @@ description: Zod schema definitions for all specification types including requir
 created_at: 2025-09-29T23:34:00.862Z
 updated_at: 2025-09-29T23:34:00.862Z
 folder: packages/data/src/entities
-setup_tasks: []
 depends_on: []
 external_dependencies:
   - zod@^4.1.11

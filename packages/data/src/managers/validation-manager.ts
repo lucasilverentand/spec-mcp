@@ -301,7 +301,6 @@ export class ValidationManager {
 				const base = {
 					...baseFields,
 					folder: comp.folder,
-					setup_tasks: comp.setup_tasks || [],
 					depends_on: comp.depends_on || [],
 					external_dependencies: comp.external_dependencies || [],
 					capabilities: comp.capabilities || [],

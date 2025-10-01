@@ -1,6 +1,5 @@
 import z from "zod";
 import { BaseSchema, computeEntityId } from "../../core/base-entity.js";
-import { TaskSchema } from "../shared/task-schema.js";
 
 export const ComponentIdSchema = z
 	.string()
@@ -23,10 +22,6 @@ const _BaseComponentStorageSchema = BaseSchema.extend({
 		.min(1)
 		.default(".")
 		.describe("Relative path from repository root"),
-	setup_tasks: z
-		.array(TaskSchema)
-		.default([])
-		.describe("Tasks required to set up the component"),
 	depends_on: z
 		.array(ComponentIdSchema)
 		.default([])

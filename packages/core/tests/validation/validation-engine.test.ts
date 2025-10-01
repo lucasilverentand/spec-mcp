@@ -82,7 +82,6 @@ describe("ValidationEngine", () => {
 				overview: "Test overview",
 				number: 1,
 				folder: "./apps/test",
-				setup_tasks: [],
 				depends_on: [],
 				external_dependencies: [],
 				capabilities: [],

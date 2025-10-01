@@ -98,7 +98,6 @@ describe("AppComponentSchema", () => {
 		const parsed = AppComponentSchema.parse(app);
 
 		expect(parsed.folder).toBe(".");
-		expect(parsed.setup_tasks).toEqual([]);
 		expect(parsed.depends_on).toEqual([]);
 		expect(parsed.external_dependencies).toEqual([]);
 		expect(parsed.capabilities).toEqual([]);

@@ -309,7 +309,6 @@ Based on the system's Zod schema, components have four types: **app**, **service
 
 ### Common Component Fields
 - **folder**: Relative path from repository root (default: `"."`)
-- **setup_tasks**: Array of Task objects required to set up the component
 - **depends_on**: Array of component IDs this component relies on (format: `app-XXX-slug`, `svc-XXX-slug`, etc.)
 - **external_dependencies**: Array of third-party services or libraries
 - **capabilities**: Array of key functionalities provided
@@ -416,52 +415,6 @@ Plans (THIRD)
   "updated_at": "2025-01-20T16:45:00Z",
   "folder": "services/progress-calculator",
   "dev_port": 3003,
-  "setup_tasks": [
-    {
-      "id": "task-001",
-      "priority": "high",
-      "depends_on": [],
-      "description": "Install dependencies and configure TypeScript build",
-      "considerations": [
-        "Ensure Node.js 18+ is installed",
-        "Configure tsconfig for ES modules"
-      ],
-      "references": [],
-      "files": [
-        {
-          "path": "services/progress-calculator/package.json",
-          "action": "create",
-          "action_description": "Create package.json with dependencies",
-          "applied": false
-        }
-      ],
-      "completed": false,
-      "verified": false,
-      "notes": []
-    },
-    {
-      "id": "task-002",
-      "priority": "high",
-      "depends_on": ["task-001"],
-      "description": "Implement core calculation logic with unit tests",
-      "considerations": [
-        "Handle division by zero for empty projects",
-        "Exclude blocked tasks from total count"
-      ],
-      "references": [],
-      "files": [
-        {
-          "path": "services/progress-calculator/src/calculator.ts",
-          "action": "create",
-          "action_description": "Implement progress calculation algorithms",
-          "applied": false
-        }
-      ],
-      "completed": false,
-      "verified": false,
-      "notes": []
-    }
-  ],
   "depends_on": [
     "svc-004-task-state-manager",
     "svc-006-data-access-layer"
@@ -497,6 +450,5 @@ Plans (THIRD)
 **Key Points:**
 - **ID is computed**: `svc-003-progress-calculator` (from type="service" + number=3 + slug)
 - **Service-specific field**: `dev_port: 3003` for local development
-- **Setup tasks**: Detailed tasks with file actions, dependencies, and tracking
 - **Component dependencies**: References other components by their computed IDs
 - **Rich constraints**: Performance, scalability, and technical constraints included

@@ -20,8 +20,7 @@ Components follow this exact schema structure:
   "constraints": [
     "Performance: <100ms response",
     "Security: OAuth 2.0 required"
-  ],
-  "setup_tasks": []
+  ]
 }
 ```
 
@@ -58,7 +57,6 @@ Components follow this exact schema structure:
   - Security requirements
   - Compatibility requirements
   - Example: "Must support 10,000 concurrent users"
-- **setup_tasks**: Initial setup steps (usually empty, filled during setup)
 - **id** (computed): Auto-generated as `{type_prefix}-XXX-slug`
   - `app-XXX-slug` for applications
   - `svc-XXX-slug` for services

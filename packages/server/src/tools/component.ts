@@ -17,28 +17,6 @@ const ComponentIdSchema = z
 
 const OperationSchema = z.enum(["create", "get", "update", "delete", "list"]);
 
-// Task schema for setup_tasks
-const TaskIdSchema = z.string().regex(/^task-\d{3}$/);
-const TaskPrioritySchema = z.enum([
-	"critical",
-	"high",
-	"normal",
-	"low",
-	"optional",
-]);
-const SetupTaskSchema = z.object({
-	id: TaskIdSchema,
-	description: z.string().min(1),
-	priority: TaskPrioritySchema.default("normal"),
-	depends_on: z.array(TaskIdSchema).default([]),
-	completed: z.boolean().default(false),
-	completed_at: z.string().datetime().optional(),
-	verified: z.boolean().default(false),
-	verified_at: z.string().datetime().optional(),
-	notes: z.array(z.string()).default([]),
-	considerations: z.array(z.string()).default([]),
-});
-
 /**
  * Register consolidated component tool
  */
@@ -91,10 +69,6 @@ export function registerComponentTool(
 					.array(z.string())
 					.optional()
 					.describe("Technical and business constraints"),
-				setup_tasks: z
-					.array(SetupTaskSchema)
-					.optional()
-					.describe("Tasks required to set up the component"),
 				// List filters
 				search: z.string().optional().describe("Search query"),
 			},
@@ -114,7 +88,6 @@ export function registerComponentTool(
 				external_dependencies,
 				capabilities,
 				constraints,
-				setup_tasks,
 				search,
 			}) => {
 				switch (operation) {
@@ -156,7 +129,6 @@ export function registerComponentTool(
 							external_dependencies: external_dependencies ?? [],
 							capabilities: capabilities ?? [],
 							constraints: constraints ?? [],
-							setup_tasks: [],
 						};
 						// @ts-expect-error - Type system limitation
 						const result = await operations.createComponent(data);
@@ -218,7 +190,6 @@ export function registerComponentTool(
 							updateData.external_dependencies = external_dependencies;
 						if (capabilities) updateData.capabilities = capabilities;
 						if (constraints) updateData.constraints = constraints;
-						if (setup_tasks) updateData.setup_tasks = setup_tasks;
 
 						const result = await operations.updateComponent(
 							validatedId,
