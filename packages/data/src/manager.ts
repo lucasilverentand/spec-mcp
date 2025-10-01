@@ -1,16 +1,19 @@
 import z from "zod";
 import { ComponentIdSchema } from "./entities/components/component.js";
+import { ConstitutionIdSchema } from "./entities/constitutions/constitution.js";
 import { PlanIdSchema } from "./entities/plans/plan.js";
 import { RequirementIdSchema } from "./entities/requirements/requirement.js";
 import { EntityManager } from "./managers/entity-manager.js";
 import type {
 	AnyComponent,
 	ComponentFilter,
+	ConstitutionFilter,
 	PlanFilter,
 	RequirementFilter,
 } from "./managers/types.js";
 import {
 	ComponentFilterSchema,
+	ConstitutionFilterSchema,
 	PlanFilterSchema,
 	RequirementFilterSchema,
 } from "./managers/types.js";
@@ -179,6 +182,48 @@ export class SpecsManager {
 			ComponentFilterSchema.parse(filter);
 		}
 		return this.entityManager.listComponents(filter);
+	}
+
+	// === CONSTITUTION CRUD OPERATIONS ===
+
+	async createConstitution(
+		data: Omit<
+			import("./entities/constitutions/constitution.js").Constitution,
+			"number"
+		>,
+	) {
+		return this.entityManager.createConstitution(data);
+	}
+
+	async getConstitution(id: string) {
+		// Validate ID format
+		ConstitutionIdSchema.parse(id);
+		return this.entityManager.getConstitution(id);
+	}
+
+	async updateConstitution(
+		id: string,
+		data: Partial<
+			import("./entities/constitutions/constitution.js").Constitution
+		>,
+	) {
+		// Validate ID format
+		ConstitutionIdSchema.parse(id);
+		return this.entityManager.updateConstitution(id, data);
+	}
+
+	async deleteConstitution(id: string) {
+		// Validate ID format
+		ConstitutionIdSchema.parse(id);
+		return this.entityManager.deleteConstitution(id);
+	}
+
+	async listConstitutions(filter?: ConstitutionFilter) {
+		// Validate filter if provided
+		if (filter !== undefined) {
+			ConstitutionFilterSchema.parse(filter);
+		}
+		return this.entityManager.listConstitutions(filter);
 	}
 
 	// === BATCH OPERATIONS ===

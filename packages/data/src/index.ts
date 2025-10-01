@@ -19,6 +19,15 @@ export {
 	ServiceComponentSchema,
 	ToolComponentSchema,
 } from "./entities/components/component.js";
+export {
+	AmendmentIdSchema,
+	AmendmentSchema,
+	ArticleIdSchema,
+	ArticleSchema,
+	ConstitutionIdSchema,
+	ConstitutionSchema,
+	ConstitutionStorageSchema,
+} from "./entities/constitutions/constitution.js";
 export * from "./entities/index.js";
 export {
 	PlanIdSchema,
@@ -60,12 +69,14 @@ export { FileManagerConfigSchema } from "./managers/file-manager.js";
 export type {
 	AnyComponent,
 	ComponentFilter,
+	ConstitutionFilter,
 	EntityFilter,
 	PlanFilter,
 	RequirementFilter,
 } from "./managers/types.js";
 export {
 	ComponentFilterSchema,
+	ConstitutionFilterSchema,
 	EntityFilterSchema,
 	PlanFilterSchema,
 	RequirementFilterSchema,

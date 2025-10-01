@@ -2,6 +2,7 @@ import z from "zod";
 import type { AnyEntity, EntityType } from "../entities/index.js";
 import {
 	AppComponentStorageSchema,
+	ConstitutionStorageSchema,
 	LibraryComponentStorageSchema,
 	PlanStorageSchema,
 	RequirementStorageSchema,
@@ -155,6 +156,8 @@ export class ValidationManager {
 				return LibraryComponentStorageSchema;
 			case "tool":
 				return ToolComponentStorageSchema;
+			case "constitution":
+				return ConstitutionStorageSchema;
 			default:
 				throw new Error(`Unknown entity type: ${entityType}`);
 		}
@@ -218,6 +221,8 @@ export class ValidationManager {
 			return await this.fileManager.entityExists("app", entityId);
 		} else if (entityId.startsWith("req-")) {
 			return await this.fileManager.entityExists("requirement", entityId);
+		} else if (entityId.startsWith("con-")) {
+			return await this.fileManager.entityExists("constitution", entityId);
 		}
 		return false;
 	}
@@ -328,6 +333,19 @@ export class ValidationManager {
 				} else {
 					return base as AnyEntity;
 				}
+			}
+			case "constitution": {
+				const con = entity as Record<string, unknown>;
+				return {
+					...baseFields,
+					articles: con.articles || [],
+					amendments: con.amendments || [],
+					applies_to: con.applies_to || ["all"],
+					maintainers: con.maintainers || [],
+					review_required: con.review_required ?? true,
+					status: con.status || "active",
+					version: con.version || "1.0.0",
+				} as AnyEntity;
 			}
 			default:
 				return entity;

@@ -9,6 +9,7 @@ import type {
 } from "@spec-mcp/data";
 import {
 	AppComponentSchema,
+	ConstitutionSchema,
 	LibraryComponentSchema,
 	PlanSchema,
 	RequirementSchema,
@@ -61,6 +62,9 @@ function validateEntity(entity: AnyEntity): ValidationResult {
 				break;
 			case "tool":
 				ToolComponentSchema.parse(entity);
+				break;
+			case "constitution":
+				ConstitutionSchema.parse(entity);
 				break;
 			default:
 				// This should never happen due to AnyEntity typing

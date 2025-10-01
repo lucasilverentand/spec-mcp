@@ -136,7 +136,9 @@ export class FileManager {
 				? "requirements"
 				: entityType === "plan"
 					? "plans"
-					: "components";
+					: entityType === "constitution"
+						? "constitutions"
+						: "components";
 		return `${folder}/${id}.yml`;
 	}
 
@@ -153,6 +155,7 @@ export class FileManager {
 			join(specsPath, "requirements"),
 			join(specsPath, "plans"),
 			join(specsPath, "components"),
+			join(specsPath, "constitutions"),
 		];
 
 		for (const dir of directories) {

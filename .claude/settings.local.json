@@ -1,0 +1,17 @@
+{
+	"permissions": {
+		"allow": [
+			"Bash(tree:*)",
+			"mcp__context7__resolve-library-id",
+			"mcp__context7__get-library-docs",
+			"mcp__spec-mcp__list-requirements",
+			"mcp__github__list_workflows",
+			"mcp__github__list_workflow_runs",
+			"mcp__github__get_job_logs"
+		],
+		"deny": [],
+		"ask": []
+	},
+	"enableAllProjectMcpServers": true,
+	"enabledMcpjsonServers": ["spec-mcp"]
+}

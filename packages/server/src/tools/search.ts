@@ -252,6 +252,7 @@ export function registerSearchTools(
 							"service",
 							"library",
 							"tool",
+							"constitution",
 						]),
 					)
 					.optional()

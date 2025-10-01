@@ -5,6 +5,7 @@ import type { InputValidator } from "../middleware/input-validator.js";
 import type { RateLimiter } from "../middleware/rate-limiter.js";
 import { registerAnalyzeTool } from "./analyze.js";
 import { registerComponentTool } from "./component.js";
+import { registerConstitutionTool } from "./constitution.js";
 import { registerGuidanceTool } from "./guidance.js";
 import { registerPlanTool } from "./plan.js";
 import { registerRequirementTool } from "./requirement.js";
@@ -25,10 +26,11 @@ export function registerAllTools(
 	operations: SpecOperations,
 	context: ToolContext,
 ) {
-	// Consolidated entity management tools (3 tools)
+	// Consolidated entity management tools (4 tools)
 	registerRequirementTool(server, operations, context);
 	registerPlanTool(server, operations, context);
 	registerComponentTool(server, operations, context);
+	registerConstitutionTool(server, operations, context);
 
 	// Consolidated analysis and guidance (2 tools)
 	registerAnalyzeTool(server, operations, context);
