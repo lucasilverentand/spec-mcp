@@ -28,15 +28,17 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build packages
+        run: pnpm build
+
       - name: Extract version from tag
         id: get_version
         run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
 
-      - name: Sync versions across all packages
-        run: pnpm version:sync ${{ steps.get_version.outputs.VERSION }}
-
-      - name: Build packages
-        run: pnpm build
+      - name: Update package version
+        run: |
+          cd packages/server
+          npm pkg set version=${{ steps.get_version.outputs.VERSION }}
 
       - name: Publish @spec-mcp/server to npm
         run: cd packages/server && pnpm publish --access public --no-git-checks
