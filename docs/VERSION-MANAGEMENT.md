@@ -29,7 +29,30 @@ pnpm version:sync 2.1.3-beta.1
 
 ### Automated Release Process
 
-Version synchronization is integrated into the release workflow (`.github/workflows/release.yml`):
+Version synchronization can be integrated into the release workflow (`.github/workflows/release.yml`).
+
+#### Integration Steps
+
+To enable automated version syncing in the release workflow, update `.github/workflows/release.yml`:
+
+```yaml
+- name: Install dependencies
+  run: pnpm install --frozen-lockfile
+
+- name: Extract version from tag
+  id: get_version
+  run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+- name: Sync versions across all packages
+  run: pnpm version:sync ${{ steps.get_version.outputs.VERSION }}
+
+- name: Build packages
+  run: pnpm build
+```
+
+**Note**: The workflow file must be updated manually as GitHub App permissions don't allow automated workflow modifications.
+
+#### Release Process
 
 1. **Create a Release Tag**: Create a git tag following the format `v{version}` (e.g., `v1.0.0`)
 2. **Trigger Release**: Push the tag or create a GitHub release
