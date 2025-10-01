@@ -7,7 +7,6 @@ description: Utility functions for ID generation, slug transformation, YAML form
 created_at: 2025-09-29T23:34:01.499Z
 updated_at: 2025-09-29T23:34:01.499Z
 folder: packages/core/src/transformation
-setup_tasks: []
 depends_on: []
 external_dependencies: []
 capabilities:

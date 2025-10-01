@@ -153,7 +153,6 @@ describe("ValidationManager", () => {
 			description: "Test description",
 			folder: ".",
 			capabilities: [],
-			setup_tasks: [],
 			depends_on: [],
 			external_dependencies: [],
 			constraints: [],
@@ -1030,13 +1029,6 @@ describe("ValidationManager", () => {
 			const base = createValidComponentData("app") as Record<string, unknown>;
 			const component = {
 				...base,
-				setup_tasks: [
-					{
-						id: "app-001-test-component/setup-001",
-						description: "Setup task",
-						status: "pending",
-					},
-				],
 				external_dependencies: ["react", "typescript"],
 				capabilities: ["authentication", "data-storage"],
 				constraints: ["Must support offline mode"],

@@ -105,7 +105,6 @@ describe("FileManager", () => {
 		created_at: new Date().toISOString(),
 		updated_at: new Date().toISOString(),
 		capabilities: [],
-		setup_tasks: [],
 		...overrides,
 	});
 

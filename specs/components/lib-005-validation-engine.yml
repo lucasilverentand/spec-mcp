@@ -8,7 +8,6 @@ description: Multi-layered validation system including schema validation, refere
 created_at: 2025-09-29T23:34:01.276Z
 updated_at: 2025-09-29T23:34:01.276Z
 folder: packages/core/src/validation
-setup_tasks: []
 depends_on:
   - lib-001-data-schemas
 external_dependencies: []

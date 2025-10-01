@@ -334,7 +334,6 @@ Components follow this exact schema structure:
   "name": "Display Name",
   "description": "Detailed purpose, responsibilities, and what it does NOT do",
   "folder": "relative/path/from/repo/root",
-  "setup_tasks": [...],
   "depends_on": ["svc-001-other-component"],
   "external_dependencies": ["Redis", "PostgreSQL"],
   "capabilities": ["What it can do"],
@@ -365,8 +364,6 @@ Components follow this exact schema structure:
 - Include why this component exists
 
 **folder**: Relative path from repository root (default: `"."`)
-
-**setup_tasks**: Array of Task objects for component setup (optional but recommended)
 
 **depends_on**: Array of component IDs (format: `app-XXX-slug`, `svc-XXX-slug`, etc.)
 - MUST not create circular dependencies
