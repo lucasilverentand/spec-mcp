@@ -86,6 +86,7 @@ Perfect for:
 - [Getting Started Guide](./docs/getting-started.md)
 - [API Reference](./docs/api-reference.md)
 - [Configuration](./docs/configuration.md)
+- [Version Management](./docs/VERSION-MANAGEMENT.md)
 - [Examples](./docs/examples.md)
 
 ## Development

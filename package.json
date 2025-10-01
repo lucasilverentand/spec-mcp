@@ -23,7 +23,8 @@
 		"test:coverage": "turbo run test:coverage",
 		"inspector": "cd packages/server && pnpm inspector",
 		"workspace:list": "pnpm list -r --depth=-1",
-		"workspace:graph": "pnpm list -r --depth=-1 --json"
+		"workspace:graph": "pnpm list -r --depth=-1 --json",
+		"version:sync": "node scripts/sync-versions.js"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.2.4",
