@@ -187,7 +187,10 @@ export class SpecsManager {
 	// === CONSTITUTION CRUD OPERATIONS ===
 
 	async createConstitution(
-		data: Omit<import("./entities/constitutions/constitution.js").Constitution, "number">,
+		data: Omit<
+			import("./entities/constitutions/constitution.js").Constitution,
+			"number"
+		>,
 	) {
 		return this.entityManager.createConstitution(data);
 	}
@@ -200,7 +203,9 @@ export class SpecsManager {
 
 	async updateConstitution(
 		id: string,
-		data: Partial<import("./entities/constitutions/constitution.js").Constitution>,
+		data: Partial<
+			import("./entities/constitutions/constitution.js").Constitution
+		>,
 	) {
 		// Validate ID format
 		ConstitutionIdSchema.parse(id);

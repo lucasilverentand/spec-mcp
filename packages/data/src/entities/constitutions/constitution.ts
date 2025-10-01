@@ -45,17 +45,9 @@ export const AmendmentIdSchema = z
 
 export const AmendmentSchema = z.object({
 	id: AmendmentIdSchema,
-	article_id: ArticleIdSchema.describe(
-		"Which article this amendment modifies",
-	),
-	change_description: z
-		.string()
-		.min(1)
-		.describe("Description of what changed"),
-	rationale: z
-		.string()
-		.min(1)
-		.describe("Why this amendment was necessary"),
+	article_id: ArticleIdSchema.describe("Which article this amendment modifies"),
+	change_description: z.string().min(1).describe("Description of what changed"),
+	rationale: z.string().min(1).describe("Why this amendment was necessary"),
 	backwards_compatibility: z
 		.string()
 		.min(1)

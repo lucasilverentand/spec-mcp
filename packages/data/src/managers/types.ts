@@ -32,7 +32,16 @@ export const ConstitutionFilterSchema = z.object({
 		.optional()
 		.describe("Filter by constitution status"),
 	applies_to: z
-		.array(z.enum(["all", "requirements", "components", "plans", "architecture", "testing"]))
+		.array(
+			z.enum([
+				"all",
+				"requirements",
+				"components",
+				"plans",
+				"architecture",
+				"testing",
+			]),
+		)
 		.optional()
 		.describe("Filter by applies_to scope"),
 });

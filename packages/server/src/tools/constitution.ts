@@ -115,7 +115,6 @@ export function registerConstitutionTool(
 				review_required,
 				status,
 				version,
-				search,
 			}) => {
 				switch (operation) {
 					case "create": {
@@ -244,7 +243,12 @@ export function registerConstitutionTool(
 						const filter: {
 							status?: Array<"draft" | "active" | "archived">;
 							applies_to?: Array<
-								"all" | "requirements" | "components" | "plans" | "architecture" | "testing"
+								| "all"
+								| "requirements"
+								| "components"
+								| "plans"
+								| "architecture"
+								| "testing"
 							>;
 						} = {};
 

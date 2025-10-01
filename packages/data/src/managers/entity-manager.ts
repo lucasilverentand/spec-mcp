@@ -759,7 +759,10 @@ export class EntityManager {
 	}
 
 	async createConstitution(
-		data: Omit<import("../entities/constitutions/constitution.js").Constitution, "number">,
+		data: Omit<
+			import("../entities/constitutions/constitution.js").Constitution,
+			"number"
+		>,
 	): Promise<import("../entities/constitutions/constitution.js").Constitution> {
 		const result = await this.create("constitution", {
 			...data,
@@ -773,7 +776,9 @@ export class EntityManager {
 
 	async getConstitution(
 		id: string,
-	): Promise<import("../entities/constitutions/constitution.js").Constitution | null> {
+	): Promise<
+		import("../entities/constitutions/constitution.js").Constitution | null
+	> {
 		// Validate ID format
 		ConstitutionIdSchema.parse(id);
 		const result = await this.get("constitution", id);
@@ -785,7 +790,9 @@ export class EntityManager {
 
 	async updateConstitution(
 		id: string,
-		data: Partial<import("../entities/constitutions/constitution.js").Constitution>,
+		data: Partial<
+			import("../entities/constitutions/constitution.js").Constitution
+		>,
 	): Promise<import("../entities/constitutions/constitution.js").Constitution> {
 		// Validate ID format
 		ConstitutionIdSchema.parse(id);
@@ -805,7 +812,9 @@ export class EntityManager {
 
 	async listConstitutions(
 		filter?: import("./types.js").ConstitutionFilter,
-	): Promise<import("../entities/constitutions/constitution.js").Constitution[]> {
+	): Promise<
+		import("../entities/constitutions/constitution.js").Constitution[]
+	> {
 		// Validate filter if provided
 		if (filter !== undefined) {
 			ConstitutionFilterSchema.parse(filter);
