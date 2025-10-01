@@ -2,6 +2,8 @@ import type {
 	AnyComponent,
 	AnyEntity,
 	ComponentFilter,
+	Constitution,
+	ConstitutionFilter,
 	Plan,
 	PlanFilter,
 	Requirement,
@@ -306,6 +308,110 @@ export class SpecOperations {
 				success: false,
 				error:
 					error instanceof Error ? error.message : "Failed to list components",
+			};
+		}
+	}
+
+	// Constitution Operations
+	async createConstitution(
+		data: Omit<Constitution, "number">,
+	): Promise<SpecOperationResult<Constitution>> {
+		try {
+			const constitution = await this.manager.createConstitution(data);
+			return {
+				success: true,
+				data: constitution,
+			};
+		} catch (error) {
+			return {
+				success: false,
+				error:
+					error instanceof Error
+						? error.message
+						: "Failed to create constitution",
+			};
+		}
+	}
+
+	async getConstitution(
+		id: string,
+	): Promise<SpecOperationResult<Constitution>> {
+		try {
+			const constitution = await this.manager.getConstitution(id);
+			if (!constitution) {
+				return {
+					success: false,
+					error: `Constitution with ID '${id}' not found`,
+				};
+			}
+			return {
+				success: true,
+				data: constitution,
+			};
+		} catch (error) {
+			return {
+				success: false,
+				error:
+					error instanceof Error ? error.message : "Failed to get constitution",
+			};
+		}
+	}
+
+	async updateConstitution(
+		id: string,
+		data: Partial<Constitution>,
+	): Promise<SpecOperationResult<Constitution>> {
+		try {
+			const constitution = await this.manager.updateConstitution(id, data);
+			return {
+				success: true,
+				data: constitution,
+			};
+		} catch (error) {
+			return {
+				success: false,
+				error:
+					error instanceof Error
+						? error.message
+						: "Failed to update constitution",
+			};
+		}
+	}
+
+	async deleteConstitution(id: string): Promise<SpecOperationResult<boolean>> {
+		try {
+			const deleted = await this.manager.deleteConstitution(id);
+			return {
+				success: true,
+				data: deleted,
+			};
+		} catch (error) {
+			return {
+				success: false,
+				error:
+					error instanceof Error
+						? error.message
+						: "Failed to delete constitution",
+			};
+		}
+	}
+
+	async listConstitutions(
+		filter?: ConstitutionFilter,
+	): Promise<SpecOperationResult<Constitution[]>> {
+		try {
+			const constitutions = await this.manager.listConstitutions(filter);
+			return {
+				success: true,
+				data: constitutions,
+			};
+		} catch (error) {
+			return {
+				success: false,
+				error:
+					error instanceof Error
+						? error.message
+						: "Failed to list constitutions",
 			};
 		}
 	}

@@ -26,16 +26,29 @@ export const ComponentFilterSchema = z.object({
 	folder: z.string().optional().describe("Filter by folder path"),
 });
 
+export const ConstitutionFilterSchema = z.object({
+	status: z
+		.array(z.enum(["draft", "active", "archived"]))
+		.optional()
+		.describe("Filter by constitution status"),
+	applies_to: z
+		.array(z.enum(["all", "requirements", "components", "plans", "architecture", "testing"]))
+		.optional()
+		.describe("Filter by applies_to scope"),
+});
+
 export const EntityFilterSchema = z.union([
 	RequirementFilterSchema,
 	PlanFilterSchema,
 	ComponentFilterSchema,
+	ConstitutionFilterSchema,
 ]);
 
 // Export inferred types for backward compatibility
 export type RequirementFilter = z.infer<typeof RequirementFilterSchema>;
 export type PlanFilter = z.infer<typeof PlanFilterSchema>;
 export type ComponentFilter = z.infer<typeof ComponentFilterSchema>;
+export type ConstitutionFilter = z.infer<typeof ConstitutionFilterSchema>;
 export type EntityFilter = z.infer<typeof EntityFilterSchema>;
 
 // Re-export component types
@@ -46,6 +59,7 @@ export type {
 	ServiceComponent,
 	ToolComponent,
 } from "../entities/components/component.js";
+export type { Constitution } from "../entities/constitutions/constitution.js";
 export type { Plan } from "../entities/plans/plan.js";
 // Re-export other entity types
 export type { Requirement } from "../entities/requirements/requirement.js";
@@ -54,4 +68,5 @@ export type { Requirement } from "../entities/requirements/requirement.js";
 export type AnyEntity =
 	| import("../entities/requirements/requirement.js").Requirement
 	| import("../entities/plans/plan.js").Plan
-	| import("../entities/components/component.js").AnyComponent;
+	| import("../entities/components/component.js").AnyComponent
+	| import("../entities/constitutions/constitution.js").Constitution;

@@ -1,12 +1,14 @@
 import z from "zod";
 import { computeEntityId } from "../core/base-entity.js";
 import { ComponentIdSchema } from "../entities/components/component.js";
+import { ConstitutionIdSchema } from "../entities/constitutions/constitution.js";
 import type { AnyEntity, EntityType } from "../entities/index.js";
 import { PlanIdSchema } from "../entities/plans/plan.js";
 import { RequirementIdSchema } from "../entities/requirements/requirement.js";
 import { FileManager } from "./file-manager.js";
 import {
 	ComponentFilterSchema,
+	ConstitutionFilterSchema,
 	PlanFilterSchema,
 	RequirementFilterSchema,
 } from "./types.js";
@@ -756,6 +758,83 @@ export class EntityManager {
 		});
 	}
 
+	async createConstitution(
+		data: Omit<import("../entities/constitutions/constitution.js").Constitution, "number">,
+	): Promise<import("../entities/constitutions/constitution.js").Constitution> {
+		const result = await this.create("constitution", {
+			...data,
+			type: "constitution",
+		});
+		if (!result.success) {
+			throw new Error(result.error);
+		}
+		return result.data as import("../entities/constitutions/constitution.js").Constitution;
+	}
+
+	async getConstitution(
+		id: string,
+	): Promise<import("../entities/constitutions/constitution.js").Constitution | null> {
+		// Validate ID format
+		ConstitutionIdSchema.parse(id);
+		const result = await this.get("constitution", id);
+		if (!result.success) {
+			return null;
+		}
+		return result.data as import("../entities/constitutions/constitution.js").Constitution;
+	}
+
+	async updateConstitution(
+		id: string,
+		data: Partial<import("../entities/constitutions/constitution.js").Constitution>,
+	): Promise<import("../entities/constitutions/constitution.js").Constitution> {
+		// Validate ID format
+		ConstitutionIdSchema.parse(id);
+		const result = await this.update("constitution", id, data);
+		if (!result.success) {
+			throw new Error(result.error);
+		}
+		return result.data as import("../entities/constitutions/constitution.js").Constitution;
+	}
+
+	async deleteConstitution(id: string): Promise<boolean> {
+		// Validate ID format
+		ConstitutionIdSchema.parse(id);
+		const result = await this.delete("constitution", id);
+		return result.success;
+	}
+
+	async listConstitutions(
+		filter?: import("./types.js").ConstitutionFilter,
+	): Promise<import("../entities/constitutions/constitution.js").Constitution[]> {
+		// Validate filter if provided
+		if (filter !== undefined) {
+			ConstitutionFilterSchema.parse(filter);
+		}
+
+		const result = await this.list("constitution", {
+			...(filter?.status && { status: filter.status }),
+			sortBy: "number",
+			sortOrder: "asc",
+		});
+		if (!result.success) {
+			throw new Error(result.error);
+		}
+
+		// Apply applies_to filter (custom logic)
+		let constitutions =
+			result.data as import("../entities/constitutions/constitution.js").Constitution[];
+		if (filter?.applies_to !== undefined) {
+			constitutions = constitutions.filter((con) => {
+				if (!filter.applies_to) return true;
+				return filter.applies_to.some((scope) =>
+					con.applies_to.includes(scope),
+				);
+			});
+		}
+
+		return constitutions;
+	}
+
 	// === BATCH OPERATIONS (from OperationManager) ===
 
 	async createMultipleEntities(
@@ -922,6 +1001,9 @@ export class EntityManager {
 			case "tool":
 				ComponentIdSchema.parse(id);
 				break;
+			case "constitution":
+				ConstitutionIdSchema.parse(id);
+				break;
 			default:
 				throw new Error(`Unknown entity type: ${entityType}`);
 		}
@@ -941,6 +1023,8 @@ export class EntityManager {
 				return "Component";
 			case "tool":
 				return "Component";
+			case "constitution":
+				return "Constitution";
 			default:
 				return "Entity";
 		}

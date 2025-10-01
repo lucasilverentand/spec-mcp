@@ -16,6 +16,7 @@ const prefixMap: Record<EntityType, string> = {
 	service: "svc",
 	library: "lib",
 	tool: "tol",
+	constitution: "con",
 };
 
 const typeMap: Record<string, EntityType> = {
@@ -25,6 +26,7 @@ const typeMap: Record<string, EntityType> = {
 	svc: "service",
 	lib: "library",
 	tol: "tool",
+	con: "constitution",
 };
 
 export class IdGenerator implements IIdGenerator {
@@ -105,7 +107,7 @@ export function parseId(id: string): {
 	number: number;
 	slug: string;
 } | null {
-	const match = id.match(/^(req|pln|app|svc|lib|tol)-(\d{3})-(.+)$/);
+	const match = id.match(/^(req|pln|app|svc|lib|tol|con)-(\d{3})-(.+)$/);
 	if (!match) {
 		return null;
 	}

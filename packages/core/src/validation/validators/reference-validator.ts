@@ -699,6 +699,9 @@ export class ReferenceValidator {
 				return this.getRequirementId(entity);
 			case "plan":
 				return this.getPlanId(entity);
+			case "constitution":
+				// Constitutions follow same ID pattern as components
+				return `con-${entity.number.toString().padStart(3, "0")}-${entity.slug}`;
 			default:
 				return this.getComponentId(entity);
 		}
