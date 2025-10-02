@@ -1,4 +1,5 @@
 import pino from "pino";
+import { VERSION } from "./version.js";
 
 /**
  * Logger instance for the MCP server
@@ -8,7 +9,7 @@ const pinoOptions: Record<string, unknown> = {
 	level: process.env.LOG_LEVEL || "info",
 	base: {
 		service: "spec-mcp",
-		version: "0.1.0",
+		version: VERSION,
 	},
 };
 
