@@ -1,0 +1,32 @@
+type: library
+number: 9
+slug: github-tools
+name: GitHub Integration Tools
+description: |
+  MCP tools for GitHub integration that track spec changes, sync with GitHub issues/PRs,
+  and provide traceability. Implements change detection via git diff analysis, issue
+  creation/updates via GitHub REST API, and PR description generation with spec context.
+created_at: 2025-10-02T08:00:00.000Z
+updated_at: 2025-10-02T08:00:00.000Z
+folder: packages/server/src/tools/github
+depends_on: []
+external_dependencies:
+  - "@octokit/rest"
+  - "simple-git"
+capabilities:
+  - Track specification changes via git diff analysis
+  - Create and update GitHub issues with spec metadata
+  - Generate PR descriptions with spec state and changes
+  - Bidirectional linking between specs and GitHub items
+  - Label management based on spec type and status
+constraints:
+  - Must authenticate via GitHub token (GITHUB_TOKEN env var)
+  - Rate limited by GitHub API (5000 requests/hour authenticated)
+  - Requires git repository context
+  - Must preserve existing issue content when updating
+tech_stack:
+  - TypeScript
+  - "@octokit/rest"
+  - "simple-git"
+  - "@spec-mcp/data"
+  - "@spec-mcp/core"

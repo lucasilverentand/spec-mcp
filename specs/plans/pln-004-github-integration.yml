@@ -1,0 +1,400 @@
+type: plan
+number: 4
+slug: github-integration
+name: GitHub Integration Implementation
+description: |
+  Implement MCP tools for GitHub integration with automated CI synchronization.
+  This plan covers spec change tracking, GitHub API integration, issue/PR management,
+  and CI workflow automation for push-to-main synchronization.
+created_at: 2025-10-02T08:00:00.000Z
+updated_at: 2025-10-02T08:00:00.000Z
+priority: high
+acceptance_criteria: |
+  - MCP tools can track spec changes via git diff
+  - Issues are created/updated automatically on spec changes
+  - PR descriptions include relevant spec state and changes
+  - CI workflow runs on push to main and syncs changes
+  - All tests pass with 90%+ coverage
+  - Documentation includes setup and usage examples
+
+scope:
+  in_scope:
+    - Spec change detection (add/update/delete)
+    - GitHub issue creation and updates
+    - PR description generation
+    - CI workflow automation
+    - Bidirectional traceability
+    - Label management
+  out_of_scope:
+    - GitHub Projects integration
+    - Issue assignment automation
+    - Comment thread management
+    - Milestone tracking
+    - Release note generation
+
+depends_on: []
+
+tasks:
+  - id: pln-004-github-integration/task-001
+    name: Install and configure GitHub dependencies
+    description: Add @octokit/rest and simple-git packages, configure TypeScript types
+    assignee: developer
+    priority: critical
+    status: pending
+    effort_estimate: 1
+    actual_effort: 0
+    depends_on: []
+    criteria_id: req-009-github-integration/crit-001
+
+  - id: pln-004-github-integration/task-002
+    name: Implement spec change tracker
+    description: |
+      Create change tracking module that uses git diff to detect spec file changes
+      (additions, modifications, deletions) between commits or against main branch.
+    assignee: developer
+    priority: critical
+    status: pending
+    effort_estimate: 3
+    actual_effort: 0
+    depends_on:
+      - pln-004-github-integration/task-001
+    criteria_id: req-009-github-integration/crit-001
+
+  - id: pln-004-github-integration/task-003
+    name: Create GitHub API client wrapper
+    description: |
+      Implement authenticated Octokit client wrapper with error handling, rate limiting,
+      and retry logic. Support issue and PR operations.
+    assignee: developer
+    priority: critical
+    status: pending
+    effort_estimate: 2
+    actual_effort: 0
+    depends_on:
+      - pln-004-github-integration/task-001
+    criteria_id: req-009-github-integration/crit-002
+
+  - id: pln-004-github-integration/task-004
+    name: Implement issue creation tool
+    description: |
+      MCP tool to create GitHub issues from spec metadata. Include spec ID, type,
+      description, and traceability links. Apply appropriate labels.
+    assignee: developer
+    priority: high
+    status: pending
+    effort_estimate: 3
+    actual_effort: 0
+    depends_on:
+      - pln-004-github-integration/task-002
+      - pln-004-github-integration/task-003
+    criteria_id: req-009-github-integration/crit-002
+
+  - id: pln-004-github-integration/task-005
+    name: Implement issue update tool
+    description: |
+      MCP tool to update existing GitHub issues when related specs change.
+      Preserve existing content, add update timestamp and change summary.
+    assignee: developer
+    priority: high
+    status: pending
+    effort_estimate: 3
+    actual_effort: 0
+    depends_on:
+      - pln-004-github-integration/task-004
+    criteria_id: req-009-github-integration/crit-003
+
+  - id: pln-004-github-integration/task-006
+    name: Implement PR description generator
+    description: |
+      Tool to generate PR descriptions with spec state snapshot, changes made,
+      and links to related specs/issues. Format with markdown sections.
+    assignee: developer
+    priority: high
+    status: pending
+    effort_estimate: 3
+    actual_effort: 0
+    depends_on:
+      - pln-004-github-integration/task-002
+    criteria_id: req-009-github-integration/crit-004
+
+  - id: pln-004-github-integration/task-007
+    name: Implement label management
+    description: |
+      Create/update GitHub labels based on spec type (requirement, component, plan)
+      and status (completed, in-progress, blocked). Ensure labels exist before applying.
+    assignee: developer
+    priority: medium
+    status: pending
+    effort_estimate: 2
+    actual_effort: 0
+    depends_on:
+      - pln-004-github-integration/task-003
+    criteria_id: req-009-github-integration/crit-006
+
+  - id: pln-004-github-integration/task-008
+    name: Implement bidirectional linking
+    description: |
+      Add spec metadata to track related GitHub issues/PRs. Update spec files
+      with GitHub links, and GitHub items with spec references.
+    assignee: developer
+    priority: medium
+    status: pending
+    effort_estimate: 3
+    actual_effort: 0
+    depends_on:
+      - pln-004-github-integration/task-004
+      - pln-004-github-integration/task-005
+    criteria_id: req-009-github-integration/crit-007
+
+  - id: pln-004-github-integration/task-009
+    name: Register MCP tools
+    description: |
+      Register all GitHub integration tools with MCP server. Add to tools/index.ts
+      and implement proper input validation and error handling.
+    assignee: developer
+    priority: high
+    status: pending
+    effort_estimate: 2
+    actual_effort: 0
+    depends_on:
+      - pln-004-github-integration/task-004
+      - pln-004-github-integration/task-005
+      - pln-004-github-integration/task-006
+    criteria_id: req-009-github-integration/crit-002
+
+  - id: pln-004-github-integration/task-010
+    name: Create CI workflow for sync automation
+    description: |
+      GitHub Actions workflow that triggers on push to main. Detects spec changes,
+      creates/updates issues, adds labels. Uses GITHUB_TOKEN for authentication.
+    assignee: developer
+    priority: high
+    status: pending
+    effort_estimate: 3
+    actual_effort: 0
+    depends_on:
+      - pln-004-github-integration/task-009
+    criteria_id: req-009-github-integration/crit-005
+
+  - id: pln-004-github-integration/task-011
+    name: Write unit tests
+    description: |
+      Comprehensive unit tests for change tracker, GitHub client, issue operations,
+      and PR generator. Mock GitHub API calls. Target 90%+ coverage.
+    assignee: qa
+    priority: high
+    status: pending
+    effort_estimate: 5
+    actual_effort: 0
+    depends_on:
+      - pln-004-github-integration/task-009
+    criteria_id: req-009-github-integration/crit-001
+
+  - id: pln-004-github-integration/task-012
+    name: Write integration tests
+    description: |
+      Integration tests using test repository. Verify end-to-end workflows for
+      issue creation, updates, and CI automation.
+    assignee: qa
+    priority: medium
+    status: pending
+    effort_estimate: 4
+    actual_effort: 0
+    depends_on:
+      - pln-004-github-integration/task-011
+    criteria_id: req-009-github-integration/crit-005
+
+  - id: pln-004-github-integration/task-013
+    name: Create documentation
+    description: |
+      Documentation covering setup (GitHub token), MCP tool usage, CI workflow
+      configuration, and troubleshooting. Include examples.
+    assignee: developer
+    priority: medium
+    status: pending
+    effort_estimate: 3
+    actual_effort: 0
+    depends_on:
+      - pln-004-github-integration/task-010
+    criteria_id: req-009-github-integration/crit-002
+
+  - id: pln-004-github-integration/task-014
+    name: Update README and changelog
+    description: |
+      Add GitHub integration feature to main README. Document new MCP tools.
+      Create changelog entry for the release.
+    assignee: developer
+    priority: low
+    status: pending
+    effort_estimate: 1
+    actual_effort: 0
+    depends_on:
+      - pln-004-github-integration/task-013
+    criteria_id: req-009-github-integration/crit-002
+
+test_cases:
+  - id: pln-004-github-integration/test-001
+    name: Spec change detection
+    description: Verify change tracker detects additions, modifications, deletions
+    type: unit
+    priority: critical
+    status: pending
+    coverage:
+      - pln-004-github-integration/task-002
+
+  - id: pln-004-github-integration/test-002
+    name: Issue creation from spec
+    description: Create GitHub issue with correct metadata, labels, and description
+    type: integration
+    priority: critical
+    status: pending
+    coverage:
+      - pln-004-github-integration/task-004
+      - pln-004-github-integration/task-007
+
+  - id: pln-004-github-integration/test-003
+    name: Issue update on spec change
+    description: Update existing issue when spec is modified, preserving content
+    type: integration
+    priority: critical
+    status: pending
+    coverage:
+      - pln-004-github-integration/task-005
+
+  - id: pln-004-github-integration/test-004
+    name: PR description generation
+    description: Generate PR description with spec snapshot and change summary
+    type: unit
+    priority: high
+    status: pending
+    coverage:
+      - pln-004-github-integration/task-006
+
+  - id: pln-004-github-integration/test-005
+    name: Bidirectional linking
+    description: Verify specs reference GitHub items and vice versa
+    type: integration
+    priority: high
+    status: pending
+    coverage:
+      - pln-004-github-integration/task-008
+
+  - id: pln-004-github-integration/test-006
+    name: CI workflow automation
+    description: Workflow triggers on push to main and syncs changes correctly
+    type: integration
+    priority: critical
+    status: pending
+    coverage:
+      - pln-004-github-integration/task-010
+
+  - id: pln-004-github-integration/test-007
+    name: Error handling and rate limiting
+    description: Verify graceful handling of API errors and rate limits
+    type: unit
+    priority: high
+    status: pending
+    coverage:
+      - pln-004-github-integration/task-003
+
+flows:
+  - id: pln-004-github-integration/flow-001
+    name: Issue Creation Flow
+    type: system
+    description: Create GitHub issue when new spec is added
+    steps:
+      - Change tracker detects new spec file in git diff
+      - Parse spec YAML to extract metadata
+      - Check if issue already exists for spec ID
+      - Create GitHub issue with spec content
+      - Apply labels based on spec type and status
+      - Add spec ID to issue body for traceability
+      - Update spec file with GitHub issue link
+    actors:
+      - CI Workflow
+      - GitHub API
+    success_criteria:
+      - Issue created with correct metadata
+      - Labels applied correctly
+      - Bidirectional link established
+
+  - id: pln-004-github-integration/flow-002
+    name: Issue Update Flow
+    type: system
+    description: Update GitHub issue when spec is modified
+    steps:
+      - Change tracker detects modified spec file
+      - Parse updated spec YAML
+      - Find linked GitHub issue (from spec metadata or search)
+      - Generate change summary (diff of key fields)
+      - Update issue with change summary and timestamp
+      - Update labels if spec status changed
+      - Preserve existing issue comments and content
+    actors:
+      - CI Workflow
+      - GitHub API
+    success_criteria:
+      - Issue updated with change summary
+      - Existing content preserved
+      - Labels reflect current status
+
+  - id: pln-004-github-integration/flow-003
+    name: PR Description Generation Flow
+    type: user
+    description: Generate PR description with spec context
+    steps:
+      - User invokes PR description tool (MCP or CLI)
+      - Tool detects changed spec files in PR branch
+      - Load affected specs from YAML files
+      - Generate spec state snapshot (IDs, names, status)
+      - Generate change summary for each spec
+      - Format markdown with sections (specs, changes, links)
+      - Return formatted PR description
+    actors:
+      - Developer
+      - MCP Client
+    success_criteria:
+      - Description includes all changed specs
+      - Links to related issues included
+      - Markdown properly formatted
+
+  - id: pln-004-github-integration/flow-004
+    name: CI Automation Flow
+    type: system
+    description: Automated sync on push to main
+    steps:
+      - Push to main triggers GitHub Actions workflow
+      - Checkout repository and install dependencies
+      - Run change tracker against previous commit
+      - For each added spec, create GitHub issue
+      - For each modified spec, update GitHub issue
+      - For each deleted spec, add comment to issue (close optionally)
+      - Comment workflow summary on commit
+    actors:
+      - GitHub Actions
+      - CI Workflow
+    success_criteria:
+      - All spec changes processed
+      - Issues created/updated correctly
+      - Workflow completes without errors
+
+references:
+  - type: external
+    title: GitHub REST API Documentation
+    url: https://docs.github.com/en/rest
+    description: Official GitHub REST API docs for issues and PRs
+  - type: external
+    title: Octokit.js
+    url: https://github.com/octokit/octokit.js
+    description: Official GitHub API client for JavaScript
+  - type: external
+    title: simple-git
+    url: https://github.com/steveukx/git-js
+    description: Git command wrapper for Node.js
+  - type: internal
+    title: MCP Tool Implementation Guide
+    path: packages/server/src/tools/README.md
+    description: Guide for implementing MCP tools in spec-mcp
+
+completed: false
+approved: false
