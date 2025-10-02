@@ -158,13 +158,25 @@ export const COMPONENT_STEPS: StepDefinition[] = [
 		name: "Analyze Requirements",
 		description: "Review which requirements this component satisfies",
 		prompt:
-			"Which requirements does this component satisfy? List the requirement IDs and explain how this component addresses them.",
+			"Which requirements does this component satisfy?\n\n" +
+			"For FEATURE components (app, service, api): List the requirement IDs and explain how this component addresses them.\n\n" +
+			"For INFRASTRUCTURE components (tool, foundational library): If this component doesn't directly implement user-facing requirements, explain its infrastructure purpose (e.g., 'Build tooling', 'Cross-cutting utilities', 'Configuration management'). You may skip requirement linkage for infrastructure components.",
 		required_fields: ["description"],
 		validation_rules: [
 			{
-				type: "required",
+				type: "conditional_required",
 				field: "description",
 				message: "Description linking to requirements is required",
+				condition: (data: Record<string, unknown>) => {
+					// Only require requirement linkage for feature components
+					// Infrastructure components (tool, certain libraries) can skip this
+					const componentType = data.type as string | undefined;
+					if (!componentType) return true; // If no type yet, require description
+
+					// Infrastructure component types that don't need requirement linkage
+					const infrastructureTypes = ["tool"];
+					return !infrastructureTypes.includes(componentType);
+				},
 			},
 		],
 		next_step: "define_boundaries",
@@ -279,14 +291,22 @@ export const COMPONENT_STEPS: StepDefinition[] = [
 		name: "Trace to Requirements",
 		description: "Create traceability matrix",
 		prompt:
-			"Explicitly link this component back to requirement IDs. Ensure every capability traces to at least one requirement.",
+			"Explicitly link this component back to requirement IDs. Ensure every capability traces to at least one requirement.\n\n" +
+			"For infrastructure components (tool, foundational library): If this component doesn't directly trace to requirements, you may provide a brief description of its architectural purpose instead.",
 		required_fields: ["description"],
 		validation_rules: [
 			{
-				type: "min_length",
+				type: "conditional_required",
 				field: "description",
-				value: 50,
 				message: "Traceability description required",
+				condition: (data: Record<string, unknown>) => {
+					// Only require detailed traceability for feature components
+					const componentType = data.type as string | undefined;
+					if (!componentType) return true;
+
+					const infrastructureTypes = ["tool"];
+					return !infrastructureTypes.includes(componentType);
+				},
 			},
 		],
 		next_step: "validate_refine",

@@ -10,11 +10,13 @@ export interface ValidationRule {
 		| "contains_rationale"
 		| "no_implementation"
 		| "measurable"
-		| "specific_language";
+		| "specific_language"
+		| "conditional_required";
 	field?: string;
 	value?: number;
 	keywords?: string[];
 	message?: string;
+	condition?: (data: Record<string, unknown>) => boolean;
 }
 
 export interface ValidationResult {

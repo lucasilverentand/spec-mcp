@@ -243,6 +243,20 @@ export class StepValidator {
 				};
 			}
 
+			case "conditional_required": {
+				// Check if the condition function exists and evaluate it
+				if (rule.condition && !rule.condition(data)) {
+					// Condition not met, validation passes (requirement not enforced)
+					return { passed: true, message: "" };
+				}
+				// Condition met or no condition provided, enforce requirement
+				const passed = value !== undefined && value !== null && value !== "";
+				return {
+					passed,
+					message: passed ? "" : rule.message || `${field} is required`,
+				};
+			}
+
 			default:
 				return { passed: true, message: "" };
 		}
