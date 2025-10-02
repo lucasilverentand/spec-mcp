@@ -6,10 +6,7 @@ import { formatResult } from "../utils/result-formatter.js";
 import { wrapToolHandler } from "../utils/tool-wrapper.js";
 import type { ToolContext } from "./index.js";
 
-type Component = Extract<
-	AnyEntity,
-	{ type: "app" | "service" | "library" }
->;
+type Component = Extract<AnyEntity, { type: "app" | "service" | "library" }>;
 
 const SpecTypeSchema = z.enum(["requirement", "component", "plan"]);
 

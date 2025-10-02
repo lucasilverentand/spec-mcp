@@ -12,9 +12,7 @@ import type { ToolContext } from "./index.js";
 
 // Schemas
 const ComponentTypeSchema = z.enum(["app", "service", "library"]);
-const ComponentIdSchema = z
-	.string()
-	.regex(/^(app|svc|lib)-\d{3}-[a-z0-9-]+$/);
+const ComponentIdSchema = z.string().regex(/^(app|svc|lib)-\d{3}-[a-z0-9-]+$/);
 
 const OperationSchema = z.enum([
 	"create",

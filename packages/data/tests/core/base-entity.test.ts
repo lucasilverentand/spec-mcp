@@ -9,13 +9,7 @@ import {
 
 describe("EntityTypeSchema", () => {
 	it("should accept valid entity types", () => {
-		const validTypes = [
-			"requirement",
-			"plan",
-			"app",
-			"service",
-			"library",
-		];
+		const validTypes = ["requirement", "plan", "app", "service", "library"];
 
 		for (const type of validTypes) {
 			expect(() => EntityTypeSchema.parse(type)).not.toThrow();

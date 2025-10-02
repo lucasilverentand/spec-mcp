@@ -8,11 +8,7 @@ export const ComponentIdSchema = z
 	})
 	.describe("Unique identifier for the component");
 
-export const ComponentTypeSchema = z.enum([
-	"app",
-	"service",
-	"library",
-]);
+export const ComponentTypeSchema = z.enum(["app", "service", "library"]);
 
 const _BaseComponentStorageSchema = BaseSchema.extend({
 	type: ComponentTypeSchema.describe("Type of the component"),
@@ -103,7 +99,4 @@ export type AppComponent = z.infer<typeof AppComponentSchema>;
 export type ServiceComponent = z.infer<typeof ServiceComponentSchema>;
 export type LibraryComponent = z.infer<typeof LibraryComponentSchema>;
 
-export type AnyComponent =
-	| AppComponent
-	| ServiceComponent
-	| LibraryComponent;
+export type AnyComponent = AppComponent | ServiceComponent | LibraryComponent;

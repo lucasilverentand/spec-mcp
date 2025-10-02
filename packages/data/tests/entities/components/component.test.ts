@@ -6,7 +6,6 @@ import {
 	ComponentTypeSchema,
 	LibraryComponentSchema,
 	ServiceComponentSchema,
-	ToolComponentSchema,
 } from "../../../src/entities/components/component.js";
 
 describe("ComponentIdSchema", () => {
@@ -286,7 +285,6 @@ describe("LibraryComponentSchema", () => {
 		expect(() => LibraryComponentSchema.parse(library)).toThrow();
 	});
 });
-
 
 describe("Component Dependencies", () => {
 	it("should accept valid component dependencies", () => {
