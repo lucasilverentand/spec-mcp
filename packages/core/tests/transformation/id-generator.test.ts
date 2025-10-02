@@ -389,7 +389,7 @@ describe("Entity-Specific ID Functions", () => {
 			expect(extractEntityType("app-001-test")).toBe("app");
 			expect(extractEntityType("svc-001-test")).toBe("service");
 			expect(extractEntityType("lib-001-test")).toBe("library");
-			});
+		});
 
 		it("should return null for invalid ID", () => {
 			expect(extractEntityType("invalid-id")).toBeNull();
@@ -535,7 +535,7 @@ describe("Prefix Mapping Functions", () => {
 			expect(getPrefix("app")).toBe("app");
 			expect(getPrefix("service")).toBe("svc");
 			expect(getPrefix("library")).toBe("lib");
-			});
+		});
 	});
 
 	describe("getEntityTypeFromPrefix function", () => {
@@ -545,7 +545,7 @@ describe("Prefix Mapping Functions", () => {
 			expect(getEntityTypeFromPrefix("app")).toBe("app");
 			expect(getEntityTypeFromPrefix("svc")).toBe("service");
 			expect(getEntityTypeFromPrefix("lib")).toBe("library");
-			});
+		});
 
 		it("should return undefined for unknown prefix", () => {
 			expect(getEntityTypeFromPrefix("xyz")).toBeUndefined();

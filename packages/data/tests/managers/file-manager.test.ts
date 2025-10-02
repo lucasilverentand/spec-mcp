@@ -304,7 +304,6 @@ describe("FileManager", () => {
 				const path = fileManager.getEntityPath("library", "lib-001-test");
 				expect(path).toBe("components/lib-001-test.yml");
 			});
-
 		});
 
 		describe("getFullEntityPath", () => {
@@ -1134,7 +1133,6 @@ describe("FileManager", () => {
 				const type = fileManager.getComponentTypeFromId("lib-001-test");
 				expect(type).toBe("library");
 			});
-
 
 			it("should throw error for invalid component ID", () => {
 				expect(() => fileManager.getComponentTypeFromId("invalid-id")).toThrow(

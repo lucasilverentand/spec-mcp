@@ -125,7 +125,6 @@ describe("SchemaValidator", () => {
 			expect(result.errors).toHaveLength(0);
 		});
 
-
 		it("should reject entity with unknown type", () => {
 			const entity = {
 				type: "unknown",
@@ -423,7 +422,6 @@ describe("SchemaValidator", () => {
 			const schema = SchemaValidator.getSchemaForType("library");
 			expect(schema).toBeDefined();
 		});
-
 
 		it("should throw error for unknown type", () => {
 			expect(() => SchemaValidator.getSchemaForType("unknown")).toThrow(

@@ -498,7 +498,6 @@ describe("ValidationManager", () => {
 			expect(result.errors).toHaveLength(0);
 		});
 
-
 		it("should reject component with invalid depends_on format", async () => {
 			const component = createValidComponentData("app", {
 				depends_on: ["invalid-component-id"],
@@ -770,7 +769,6 @@ describe("ValidationManager", () => {
 			expect(sanitized).toBeDefined();
 			expect(sanitized.type).toBe("library");
 		});
-
 
 		it("should extract valid fields from invalid requirement", () => {
 			const requirement: Partial<AnyEntity> = {
