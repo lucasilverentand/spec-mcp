@@ -162,7 +162,9 @@ export class StepValidator {
 									"Focus on WHAT needs to happen, not HOW it should be implemented",
 							}
 						: {}),
-					...(passed ? { strength: "Implementation-agnostic description" } : {}),
+					...(passed
+						? { strength: "Implementation-agnostic description" }
+						: {}),
 				};
 			}
 
@@ -235,7 +237,9 @@ export class StepValidator {
 									"Replace vague terms with specific, quantifiable language (e.g., 'under 200ms' instead of 'fast')",
 							}
 						: {}),
-					...(passed ? { strength: "Specific, quantifiable language used" } : {}),
+					...(passed
+						? { strength: "Specific, quantifiable language used" }
+						: {}),
 				};
 			}
 
