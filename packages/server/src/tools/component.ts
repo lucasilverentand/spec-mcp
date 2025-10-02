@@ -7,6 +7,7 @@ import {
 	formatResult,
 } from "../utils/result-formatter.js";
 import { wrapToolHandler } from "../utils/tool-wrapper.js";
+import { wizardHelper } from "../utils/wizard-helper.js";
 import type { ToolContext } from "./index.js";
 
 // Schemas
@@ -15,7 +16,17 @@ const ComponentIdSchema = z
 	.string()
 	.regex(/^(app|svc|lib|tol)-\d{3}-[a-z0-9-]+$/);
 
-const OperationSchema = z.enum(["create", "get", "update", "delete", "list"]);
+const OperationSchema = z.enum([
+	"create",
+	"get",
+	"update",
+	"delete",
+	"list",
+	"start",
+	"step",
+	"validate",
+	"finalize",
+]);
 
 /**
  * Register consolidated component tool
@@ -30,16 +41,25 @@ export function registerComponentTool(
 		{
 			title: "Component",
 			description:
-				"Manage components: create, get, update, delete, or list component specifications",
+				"Manage components: create, get, update, delete, list, or use wizard (start, step, validate, finalize)",
 			inputSchema: {
 				operation: OperationSchema.describe(
-					"Operation to perform: create, get, update, delete, or list",
+					"Operation to perform: create (direct), get, update, delete, list, start (wizard), step (wizard), validate (wizard), finalize (wizard)",
 				),
 				// Common fields
 				id: z
 					.string()
 					.optional()
 					.describe("Component ID (required for get, update, delete)"),
+				// Wizard fields
+				draft_id: z
+					.string()
+					.optional()
+					.describe("Draft ID (required for step, validate, finalize)"),
+				data: z
+					.record(z.unknown())
+					.optional()
+					.describe("Step data (for wizard step operation)"),
 				// Create/Update fields
 				type: ComponentTypeSchema.optional().describe("Component type"),
 				slug: z.string().optional().describe("URL-friendly identifier"),
@@ -78,6 +98,8 @@ export function registerComponentTool(
 			async ({
 				operation,
 				id,
+				draft_id,
+				data,
 				type,
 				slug,
 				name,
@@ -91,6 +113,187 @@ export function registerComponentTool(
 				search,
 			}) => {
 				switch (operation) {
+					case "start": {
+						// Start wizard
+						const response = wizardHelper.start("component");
+						return {
+							content: [
+								{
+									type: "text",
+									text: JSON.stringify({ success: true, data: response }, null, 2),
+								},
+							],
+						};
+					}
+
+					case "step": {
+						// Process wizard step
+						if (!draft_id) {
+							return {
+								content: [
+									{
+										type: "text",
+										text: JSON.stringify({
+											success: false,
+											error: "Missing required field: draft_id",
+										}),
+									},
+								],
+								isError: true,
+							};
+						}
+
+						const stepResponse = wizardHelper.step(draft_id, data || {});
+						if ("error" in stepResponse) {
+							return {
+								content: [
+									{
+										type: "text",
+										text: JSON.stringify({
+											success: false,
+											error: stepResponse.error,
+										}),
+									},
+								],
+								isError: true,
+							};
+						}
+
+						return {
+							content: [
+								{
+									type: "text",
+									text: JSON.stringify(
+										{ success: true, data: stepResponse },
+										null,
+										2,
+									),
+								},
+							],
+						};
+					}
+
+					case "validate": {
+						// Validate current draft
+						if (!draft_id) {
+							return {
+								content: [
+									{
+										type: "text",
+										text: JSON.stringify({
+											success: false,
+											error: "Missing required field: draft_id",
+										}),
+									},
+								],
+								isError: true,
+							};
+						}
+
+						const validateResponse = wizardHelper.validate(draft_id);
+						if ("error" in validateResponse) {
+							return {
+								content: [
+									{
+										type: "text",
+										text: JSON.stringify({
+											success: false,
+											error: validateResponse.error,
+										}),
+									},
+								],
+								isError: true,
+							};
+						}
+
+						return {
+							content: [
+								{
+									type: "text",
+									text: JSON.stringify(
+										{ success: true, data: validateResponse },
+										null,
+										2,
+									),
+								},
+							],
+						};
+					}
+
+					case "finalize": {
+						// Finalize wizard and create component
+						if (!draft_id) {
+							return {
+								content: [
+									{
+										type: "text",
+										text: JSON.stringify({
+											success: false,
+											error: "Missing required field: draft_id",
+										}),
+									},
+								],
+								isError: true,
+							};
+						}
+
+						const draft = wizardHelper.getDraft(draft_id);
+						if (!draft) {
+							return {
+								content: [
+									{
+										type: "text",
+										text: JSON.stringify({
+											success: false,
+											error: `Draft not found: ${draft_id}`,
+										}),
+									},
+								],
+								isError: true,
+							};
+						}
+
+						// Extract data from draft
+						const draftData = draft.data;
+						const validatedSlug = context.inputValidator.validateSlug(
+							(draftData.slug as string) || "",
+						);
+						const validatedName = context.inputValidator.sanitizeString(
+							(draftData.name as string) || "",
+						);
+						const validatedDescription = context.inputValidator.sanitizeString(
+							(draftData.description as string) || "",
+						);
+						const validatedFolder = context.inputValidator.sanitizeString(
+							(draftData.folder as string) || ".",
+						);
+
+						const compData = {
+							type: (draftData.type as "app" | "service" | "library" | "tool") || "service",
+							slug: validatedSlug,
+							name: validatedName,
+							description: validatedDescription,
+							created_at: new Date().toISOString(),
+							updated_at: new Date().toISOString(),
+							folder: validatedFolder,
+							tech_stack: (draftData.tech_stack as string[]) || [],
+							depends_on: (draftData.depends_on as string[]) || [],
+							external_dependencies: (draftData.external_dependencies as string[]) || [],
+							capabilities: (draftData.capabilities as string[]) || [],
+							constraints: (draftData.constraints as string[]) || [],
+						};
+
+						// @ts-expect-error - Type system limitation
+						const result = await operations.createComponent(compData);
+
+						// Delete draft after successful creation
+						if (result.success) {
+							wizardHelper.deleteDraft(draft_id);
+						}
+
+						return formatResult(result);
+					}
+
 					case "create": {
 						if (!type || !slug || !name || !description) {
 							return {
