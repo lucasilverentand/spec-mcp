@@ -208,7 +208,9 @@ export class FileManager {
 					? "requirements"
 					: entityType === "plan"
 						? "plans"
-						: "components";
+						: entityType === "constitution"
+							? "constitutions"
+							: "components";
 
 			const folderPath = join(specsPath, folder);
 			const files = await readdir(folderPath);
@@ -373,6 +375,8 @@ export class FileManager {
 				return "lib";
 			case "tool":
 				return "tol";
+			case "constitution":
+				return "con";
 			default:
 				throw new Error(`Unknown entity type: ${entityType}`);
 		}

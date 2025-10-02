@@ -1151,6 +1151,8 @@ export class EntityManager {
 				return "lib";
 			case "tool":
 				return "tol";
+			case "constitution":
+				return "con";
 			default:
 				throw new Error(`Unknown entity type: ${entityType}`);
 		}
