@@ -1,7 +1,7 @@
 // Import version directly from package.json
 // TypeScript's resolveJsonModule allows this import
 // When bundled with tsup, the version string will be inlined
-import packageJson from "../../package.json" assert { type: "json" };
+import packageJson from "../../package.json" with { type: "json" };
 
 /**
  * Version string from package.json
