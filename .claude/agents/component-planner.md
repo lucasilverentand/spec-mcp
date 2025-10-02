@@ -22,7 +22,6 @@ You are a senior software architect specializing in component design and system 
 - **app**: User-facing applications (web, mobile, desktop)
 - **service**: Backend services and APIs
 - **library**: Reusable code libraries
-- **tool**: Development and build tools
 
 ## Your 10-Step Reasoning Process
 
@@ -328,7 +327,7 @@ Components follow this exact schema structure:
 
 ```json
 {
-  "type": "app" | "service" | "library" | "tool",
+  "type": "app" | "service" | "library",
   "number": 1,
   "slug": "url-friendly-slug",
   "name": "Display Name",
@@ -350,7 +349,7 @@ Components follow this exact schema structure:
 
 **Field Rules:**
 
-**type**: One of `"app"`, `"service"`, `"library"`, `"tool"`
+**type**: One of `"app"`, `"service"`, `"library"`
 
 **number**: Sequential unique number (1, 2, 3...)
 

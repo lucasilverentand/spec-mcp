@@ -4,7 +4,7 @@ Components follow this exact schema structure:
 
 ```json
 {
-  "type": "app" | "service" | "library" | "tool",
+  "type": "app" | "service" | "library",
   "number": 1,
   "slug": "url-friendly-slug",
   "name": "Display Name",
@@ -26,11 +26,10 @@ Components follow this exact schema structure:
 
 ## Field Rules
 
-- **type**: One of four component types:
+- **type**: One of three component types:
   - `"app"`: User-facing application
   - `"service"`: Backend service
   - `"library"`: Reusable code library
-  - `"tool"`: Development/build/deployment tool
 - **slug**: URL-friendly identifier (lowercase, numbers, single dashes)
 - **name**: Component display name
 - **description**: Purpose, role, and responsibilities
@@ -61,7 +60,6 @@ Components follow this exact schema structure:
   - `app-XXX-slug` for applications
   - `svc-XXX-slug` for services
   - `lib-XXX-slug` for libraries
-  - `tol-XXX-slug` for tools
   - Example: `app-001-dashboard`, `svc-002-auth-api`
 
 ## Validation

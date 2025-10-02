@@ -11,10 +11,10 @@ import { wizardHelper } from "../utils/wizard-helper.js";
 import type { ToolContext } from "./index.js";
 
 // Schemas
-const ComponentTypeSchema = z.enum(["app", "service", "library", "tool"]);
+const ComponentTypeSchema = z.enum(["app", "service", "library"]);
 const ComponentIdSchema = z
 	.string()
-	.regex(/^(app|svc|lib|tol)-\d{3}-[a-z0-9-]+$/);
+	.regex(/^(app|svc|lib)-\d{3}-[a-z0-9-]+$/);
 
 const OperationSchema = z.enum([
 	"create",
@@ -274,7 +274,7 @@ export function registerComponentTool(
 
 						const compData = {
 							type:
-								(draftData.type as "app" | "service" | "library" | "tool") ||
+								(draftData.type as "app" | "service" | "library") ||
 								"service",
 							slug: validatedSlug,
 							name: validatedName,

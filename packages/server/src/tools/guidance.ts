@@ -8,7 +8,7 @@ import type { ToolContext } from "./index.js";
 
 type Component = Extract<
 	AnyEntity,
-	{ type: "app" | "service" | "library" | "tool" }
+	{ type: "app" | "service" | "library" }
 >;
 
 const SpecTypeSchema = z.enum(["requirement", "component", "plan"]);

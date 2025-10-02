@@ -3,8 +3,8 @@ import { BaseSchema, computeEntityId } from "../../core/base-entity.js";
 
 export const ComponentIdSchema = z
 	.string()
-	.regex(/^(app|svc|lib|tol)-\d{3}-[a-z0-9-]+$/, {
-		message: "Component ID must follow format: (app|svc|lib|tol)-XXX-slug",
+	.regex(/^(app|svc|lib)-\d{3}-[a-z0-9-]+$/, {
+		message: "Component ID must follow format: (app|svc|lib)-XXX-slug",
 	})
 	.describe("Unique identifier for the component");
 
@@ -12,7 +12,6 @@ export const ComponentTypeSchema = z.enum([
 	"app",
 	"service",
 	"library",
-	"tool",
 ]);
 
 const _BaseComponentStorageSchema = BaseSchema.extend({
@@ -76,10 +75,6 @@ export const LibraryComponentStorageSchema = _BaseComponentStorageSchema.extend(
 	},
 );
 
-export const ToolComponentStorageSchema = _BaseComponentStorageSchema.extend({
-	type: z.literal("tool"),
-});
-
 // Runtime schemas (with computed ID)
 export const AppComponentSchema = AppComponentStorageSchema.transform(
 	(data) => ({
@@ -102,22 +97,13 @@ export const LibraryComponentSchema = LibraryComponentStorageSchema.transform(
 	}),
 );
 
-export const ToolComponentSchema = ToolComponentStorageSchema.transform(
-	(data) => ({
-		...data,
-		id: computeEntityId(data.type, data.number, data.slug),
-	}),
-);
-
 export type ComponentId = z.infer<typeof ComponentIdSchema>;
 export type ComponentType = z.infer<typeof ComponentTypeSchema>;
 export type AppComponent = z.infer<typeof AppComponentSchema>;
 export type ServiceComponent = z.infer<typeof ServiceComponentSchema>;
 export type LibraryComponent = z.infer<typeof LibraryComponentSchema>;
-export type ToolComponent = z.infer<typeof ToolComponentSchema>;
 
 export type AnyComponent =
 	| AppComponent
 	| ServiceComponent
-	| LibraryComponent
-	| ToolComponent;
+	| LibraryComponent;

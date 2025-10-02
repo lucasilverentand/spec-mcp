@@ -44,7 +44,7 @@ describe("ComponentIdSchema", () => {
 
 describe("ComponentTypeSchema", () => {
 	it("should accept valid component types", () => {
-		const validTypes: ComponentType[] = ["app", "service", "library", "tool"];
+		const validTypes: ComponentType[] = ["app", "service", "library"];
 
 		for (const type of validTypes) {
 			expect(() => ComponentTypeSchema.parse(type)).not.toThrow();
@@ -287,44 +287,6 @@ describe("LibraryComponentSchema", () => {
 	});
 });
 
-describe("ToolComponentSchema", () => {
-	it("should accept minimal valid tool component", () => {
-		const validTool = {
-			type: "tool" as const,
-			number: 1,
-			slug: "build-tool",
-			name: "Build Tool",
-			description: "Custom build automation tool",
-			created_at: new Date().toISOString(),
-			updated_at: new Date().toISOString(),
-		};
-
-		const parsed = ToolComponentSchema.parse(validTool);
-		expect(parsed.id).toBe("tol-001-build-tool");
-	});
-
-	it("should inherit all base component properties", () => {
-		const tool = {
-			type: "tool" as const,
-			number: 1,
-			slug: "deployment-tool",
-			name: "Deployment Tool",
-			description: "Automated deployment tool",
-			created_at: new Date().toISOString(),
-			updated_at: new Date().toISOString(),
-			folder: "tools/deploy",
-			tech_stack: ["Node.js", "Docker"],
-			capabilities: ["Deploy to AWS", "Rollback support"],
-			constraints: ["Requires AWS credentials"],
-		};
-
-		const parsed = ToolComponentSchema.parse(tool);
-		expect(parsed.folder).toBe("tools/deploy");
-		expect(parsed.tech_stack).toEqual(["Node.js", "Docker"]);
-		expect(parsed.capabilities).toEqual(["Deploy to AWS", "Rollback support"]);
-		expect(parsed.constraints).toEqual(["Requires AWS credentials"]);
-	});
-});
 
 describe("Component Dependencies", () => {
 	it("should accept valid component dependencies", () => {

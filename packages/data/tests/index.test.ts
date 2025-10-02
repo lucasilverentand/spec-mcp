@@ -48,6 +48,5 @@ describe("Package Exports", () => {
 		expect(DataPackage.shortenEntityType("app")).toBe("app");
 		expect(DataPackage.shortenEntityType("service")).toBe("svc");
 		expect(DataPackage.shortenEntityType("library")).toBe("lib");
-		expect(DataPackage.shortenEntityType("tool")).toBe("tol");
 	});
 });

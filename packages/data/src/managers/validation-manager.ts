@@ -215,8 +215,7 @@ export class ValidationManager {
 		} else if (
 			entityId.startsWith("app-") ||
 			entityId.startsWith("svc-") ||
-			entityId.startsWith("lib-") ||
-			entityId.startsWith("tol-")
+			entityId.startsWith("lib-")
 		) {
 			return await this.fileManager.entityExists("app", entityId);
 		} else if (entityId.startsWith("req-")) {

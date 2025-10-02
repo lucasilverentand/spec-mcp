@@ -315,7 +315,6 @@ export class DependencyResolver {
 			app: "app",
 			service: "svc",
 			library: "lib",
-			tool: "tol",
 		};
 
 		const prefix =
