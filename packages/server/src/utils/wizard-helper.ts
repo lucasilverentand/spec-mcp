@@ -26,13 +26,17 @@ export class WizardHelper {
 		const steps = getStepDefinitions(type);
 		const firstStep = steps[0];
 
+		if (!firstStep) {
+			throw new Error("No steps defined for this spec type");
+		}
+
 		return {
 			draft_id: draft.id,
 			step: 1,
 			total_steps: draft.total_steps,
 			current_step_name: firstStep.name,
 			prompt: firstStep.prompt,
-			next_step: firstStep.next_step || undefined,
+			...(firstStep.next_step ? { next_step: firstStep.next_step } : {}),
 		};
 	}
 
@@ -59,6 +63,9 @@ export class WizardHelper {
 		}
 
 		const currentStep = steps[currentStepIndex];
+		if (!currentStep) {
+			return { error: "Invalid step index" };
+		}
 
 		// Merge new data with existing draft data
 		const updatedData = { ...draft.data, ...data };
@@ -108,6 +115,10 @@ export class WizardHelper {
 		}
 
 		const nextStep = steps[nextStepIndex];
+		if (!nextStep) {
+			return { error: "Invalid next step index" };
+		}
+
 		const finalDraft = this.draftManager.update(draft_id, {
 			current_step: nextStepIndex + 1,
 		});
@@ -123,7 +134,7 @@ export class WizardHelper {
 			current_step_name: nextStep.name,
 			prompt: nextStep.prompt,
 			validation,
-			next_step: nextStep.next_step || undefined,
+			...(nextStep.next_step ? { next_step: nextStep.next_step } : {}),
 		};
 	}
 
@@ -144,6 +155,10 @@ export class WizardHelper {
 		}
 
 		const currentStep = steps[currentStepIndex];
+		if (!currentStep) {
+			return { error: "Invalid step index" };
+		}
+
 		const validation = this.stepValidator.validate(
 			currentStep.id,
 			draft.data,
