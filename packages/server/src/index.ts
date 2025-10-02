@@ -9,6 +9,7 @@ import { RateLimiter } from "./middleware/rate-limiter.js";
 import { registerAllTools } from "./tools/index.js";
 import { ErrorCode, McpError } from "./utils/error-codes.js";
 import { logger } from "./utils/logger.js";
+import { VERSION } from "./utils/version.js";
 
 /**
  * Graceful shutdown handler
@@ -162,7 +163,7 @@ async function main() {
 		// Initialize the MCP server
 		const server = new McpServer({
 			name: "spec-mcp",
-			version: "0.1.0",
+			version: VERSION,
 		});
 
 		// Initialize spec operations
@@ -199,7 +200,7 @@ async function main() {
 		logger.info(
 			{
 				specsPath: config.specsPath,
-				version: "0.1.0",
+				version: VERSION,
 			},
 			"Spec MCP Server running",
 		);
