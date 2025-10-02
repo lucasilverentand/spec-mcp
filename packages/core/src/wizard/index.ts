@@ -5,9 +5,9 @@
 export { DraftManager } from "./draft-manager.js";
 export {
 	COMPONENT_STEPS,
+	getStepDefinitions,
 	PLAN_STEPS,
 	REQUIREMENT_STEPS,
-	getStepDefinitions,
 } from "./step-definitions.js";
 export { StepValidator } from "./step-validator.js";
 export type {

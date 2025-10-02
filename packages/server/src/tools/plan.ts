@@ -126,7 +126,11 @@ export function registerPlanTool(
 							content: [
 								{
 									type: "text",
-									text: JSON.stringify({ success: true, data: response }, null, 2),
+									text: JSON.stringify(
+										{ success: true, data: response },
+										null,
+										2,
+									),
 								},
 							],
 						};
@@ -282,7 +286,12 @@ export function registerPlanTool(
 							criteria_id: (draftData.criteria_id as string) || undefined,
 							created_at: new Date().toISOString(),
 							updated_at: new Date().toISOString(),
-							priority: (draftData.priority as "critical" | "high" | "medium" | "low") || "medium",
+							priority:
+								(draftData.priority as
+									| "critical"
+									| "high"
+									| "medium"
+									| "low") || "medium",
 							acceptance_criteria: validatedCriteria,
 							depends_on: (draftData.depends_on as string[]) || [],
 							tasks: (draftData.tasks as typeof tasks) || [],

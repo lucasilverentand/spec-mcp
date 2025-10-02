@@ -28,7 +28,8 @@ export const REQUIREMENT_STEPS: StepDefinition[] = [
 				type: "contains_rationale",
 				field: "description",
 				keywords: ["because", "needed", "why", "so that"],
-				message: "Description should include rationale (use words like 'because', 'needed', 'so that')",
+				message:
+					"Description should include rationale (use words like 'because', 'needed', 'so that')",
 			},
 		],
 		next_step: "avoid_implementation",

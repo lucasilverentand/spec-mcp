@@ -55,8 +55,7 @@ export class StepValidator {
 
 		switch (rule.type) {
 			case "required": {
-				const passed =
-					value !== undefined && value !== null && value !== "";
+				const passed = value !== undefined && value !== null && value !== "";
 				return {
 					passed,
 					message: passed ? "" : rule.message || `${field} is required`,
@@ -68,7 +67,8 @@ export class StepValidator {
 					return {
 						passed: false,
 						message:
-							rule.message || `${field} must be at least ${rule.value} characters`,
+							rule.message ||
+							`${field} must be at least ${rule.value} characters`,
 					};
 				}
 				const passed = value.length >= (rule.value || 0);
@@ -76,7 +76,8 @@ export class StepValidator {
 					passed,
 					message: passed
 						? ""
-						: rule.message || `${field} must be at least ${rule.value} characters`,
+						: rule.message ||
+							`${field} must be at least ${rule.value} characters`,
 					strength: passed ? `Good detail in ${field}` : undefined,
 				};
 			}
@@ -90,7 +91,8 @@ export class StepValidator {
 					passed,
 					message: passed
 						? ""
-						: rule.message || `${field} must be at most ${rule.value} characters`,
+						: rule.message ||
+							`${field} must be at most ${rule.value} characters`,
 				};
 			}
 
@@ -155,9 +157,7 @@ export class StepValidator {
 					suggestion: passed
 						? undefined
 						: "Focus on WHAT needs to happen, not HOW it should be implemented",
-					strength: passed
-						? "Implementation-agnostic description"
-						: undefined,
+					strength: passed ? "Implementation-agnostic description" : undefined,
 				};
 			}
 
@@ -170,7 +170,8 @@ export class StepValidator {
 				}
 				const hasMeasurableTerms = value.some((criterion) => {
 					if (typeof criterion !== "object" || criterion === null) return false;
-					const desc = (criterion as { description?: string }).description || "";
+					const desc =
+						(criterion as { description?: string }).description || "";
 					return (
 						/\d+/.test(desc) || // contains numbers
 						/(must|should|will|can)\s+(display|show|allow|enable|provide)/i.test(
@@ -218,7 +219,8 @@ export class StepValidator {
 					passed,
 					message: passed
 						? ""
-						: rule.message || `Contains vague terms: ${foundVagueTerms.join(", ")}`,
+						: rule.message ||
+							`Contains vague terms: ${foundVagueTerms.join(", ")}`,
 					suggestion: passed
 						? undefined
 						: "Replace vague terms with specific, quantifiable language (e.g., 'under 200ms' instead of 'fast')",

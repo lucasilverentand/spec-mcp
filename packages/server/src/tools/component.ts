@@ -120,7 +120,11 @@ export function registerComponentTool(
 							content: [
 								{
 									type: "text",
-									text: JSON.stringify({ success: true, data: response }, null, 2),
+									text: JSON.stringify(
+										{ success: true, data: response },
+										null,
+										2,
+									),
 								},
 							],
 						};
@@ -269,7 +273,9 @@ export function registerComponentTool(
 						);
 
 						const compData = {
-							type: (draftData.type as "app" | "service" | "library" | "tool") || "service",
+							type:
+								(draftData.type as "app" | "service" | "library" | "tool") ||
+								"service",
 							slug: validatedSlug,
 							name: validatedName,
 							description: validatedDescription,
@@ -278,7 +284,8 @@ export function registerComponentTool(
 							folder: validatedFolder,
 							tech_stack: (draftData.tech_stack as string[]) || [],
 							depends_on: (draftData.depends_on as string[]) || [],
-							external_dependencies: (draftData.external_dependencies as string[]) || [],
+							external_dependencies:
+								(draftData.external_dependencies as string[]) || [],
 							capabilities: (draftData.capabilities as string[]) || [],
 							constraints: (draftData.constraints as string[]) || [],
 						};

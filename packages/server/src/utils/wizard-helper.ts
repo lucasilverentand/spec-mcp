@@ -1,9 +1,9 @@
 import {
 	type Draft,
 	DraftManager,
+	getStepDefinitions,
 	type StepResponse,
 	StepValidator,
-	getStepDefinitions,
 } from "@spec-mcp/core";
 
 /**
@@ -53,7 +53,8 @@ export class WizardHelper {
 
 		if (currentStepIndex >= steps.length) {
 			return {
-				error: "All steps completed. Use 'finalize' operation to create the spec.",
+				error:
+					"All steps completed. Use 'finalize' operation to create the spec.",
 			};
 		}
 
@@ -100,7 +101,8 @@ export class WizardHelper {
 				step: draft.current_step,
 				total_steps: draft.total_steps,
 				current_step_name: currentStep.name,
-				prompt: "All steps completed! Use 'finalize' operation to create the spec.",
+				prompt:
+					"All steps completed! Use 'finalize' operation to create the spec.",
 				completed: true,
 			};
 		}

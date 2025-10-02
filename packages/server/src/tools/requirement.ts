@@ -98,7 +98,11 @@ export function registerRequirementTool(
 							content: [
 								{
 									type: "text",
-									text: JSON.stringify({ success: true, data: response }, null, 2),
+									text: JSON.stringify(
+										{ success: true, data: response },
+										null,
+										2,
+									),
 								},
 							],
 						};
@@ -250,11 +254,12 @@ export function registerRequirementTool(
 							description: validatedDescription,
 							created_at: new Date().toISOString(),
 							updated_at: new Date().toISOString(),
-							priority: (draftData.priority as
-								| "critical"
-								| "required"
-								| "ideal"
-								| "optional") || "required",
+							priority:
+								(draftData.priority as
+									| "critical"
+									| "required"
+									| "ideal"
+									| "optional") || "required",
 							criteria: (draftData.criteria as typeof criteria) || [],
 						};
 

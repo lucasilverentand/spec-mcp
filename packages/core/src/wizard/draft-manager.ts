@@ -26,7 +26,8 @@ export class DraftManager {
 		const expiresAt = new Date(now.getTime() + 24 * 60 * 60 * 1000); // 24 hours
 
 		// Determine total steps based on type
-		const totalSteps = type === "requirement" ? 7 : type === "component" ? 10 : 12;
+		const totalSteps =
+			type === "requirement" ? 7 : type === "component" ? 10 : 12;
 
 		const draft: Draft = {
 			id,
