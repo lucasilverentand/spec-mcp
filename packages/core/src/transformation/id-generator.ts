@@ -15,7 +15,6 @@ const prefixMap: Record<EntityType, string> = {
 	app: "app",
 	service: "svc",
 	library: "lib",
-	tool: "tol",
 	constitution: "con",
 };
 
@@ -25,7 +24,6 @@ const typeMap: Record<string, EntityType> = {
 	app: "app",
 	svc: "service",
 	lib: "library",
-	tol: "tool",
 	con: "constitution",
 };
 
@@ -107,7 +105,7 @@ export function parseId(id: string): {
 	number: number;
 	slug: string;
 } | null {
-	const match = id.match(/^(req|pln|app|svc|lib|tol|con)-(\d{3})-(.+)$/);
+	const match = id.match(/^(req|pln|app|svc|lib|con)-(\d{3})-(.+)$/);
 	if (!match) {
 		return null;
 	}

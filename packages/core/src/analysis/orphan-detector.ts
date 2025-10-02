@@ -135,8 +135,6 @@ export class OrphanDetector
 				return `svc-${component.number.toString().padStart(3, "0")}-${component.slug}`;
 			case "library":
 				return `lib-${component.number.toString().padStart(3, "0")}-${component.slug}`;
-			case "tool":
-				return `tol-${component.number.toString().padStart(3, "0")}-${component.slug}`;
 		}
 	}
 }

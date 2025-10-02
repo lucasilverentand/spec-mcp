@@ -1049,8 +1049,8 @@ describe("EntityManager", () => {
 
 			it("should delete component with helper method", async () => {
 				const created = await manager.createComponent({
-					type: "tool",
-					slug: "test-tool",
+					type: "library",
+					slug: "test-library",
 					name: "Test",
 					description: "Test",
 				});

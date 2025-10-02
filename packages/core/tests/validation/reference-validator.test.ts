@@ -849,7 +849,7 @@ describe("ReferenceValidator", () => {
 		});
 
 		it("should handle all component types", async () => {
-			const types = ["app", "service", "library", "tool"];
+			const types = ["app", "service", "library"];
 
 			for (const type of types) {
 				const component: AnyEntity = {

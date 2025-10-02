@@ -296,10 +296,10 @@ Requirements Not Satisfied:
 
 ## Component Specification Schema
 
-Based on the system's Zod schema, components have four types: **app**, **service**, **library**, and **tool**.
+Based on the system's Zod schema, components have three types: **app**, **service**, and **library**.
 
 ### Core Fields (from BaseSchema)
-- **type**: One of `"app"`, `"service"`, `"library"`, or `"tool"`
+- **type**: One of `"app"`, `"service"`, or `"library"`
 - **number**: Unique sequential number (e.g., 1, 2, 3)
 - **slug**: URL-friendly identifier (lowercase letters, numbers, single dashes)
 - **name**: Display name of the component
@@ -327,15 +327,11 @@ Based on the system's Zod schema, components have four types: **app**, **service
 #### Library Components (`type: "library"`)
 - **package_name**: NPM/package manager name (optional)
 
-#### Tool Components (`type: "tool"`)
-- (No additional fields beyond common ones)
-
 ### Computed Field
 - **id**: Auto-generated based on type:
   - Apps: `app-XXX-slug`
   - Services: `svc-XXX-slug`
   - Libraries: `lib-XXX-slug`
-  - Tools: `tol-XXX-slug`
 
 ---
 

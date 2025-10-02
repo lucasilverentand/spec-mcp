@@ -15,7 +15,6 @@ describe("EntityTypeSchema", () => {
 			"app",
 			"service",
 			"library",
-			"tool",
 		];
 
 		for (const type of validTypes) {
@@ -166,7 +165,6 @@ describe("shortenEntityType", () => {
 		expect(shortenEntityType("app")).toBe("app");
 		expect(shortenEntityType("service")).toBe("svc");
 		expect(shortenEntityType("library")).toBe("lib");
-		expect(shortenEntityType("tool")).toBe("tol");
 	});
 
 	it("should fallback to first 3 characters for unknown types", () => {

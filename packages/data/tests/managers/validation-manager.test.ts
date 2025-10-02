@@ -142,7 +142,7 @@ describe("ValidationManager", () => {
 
 	// Helper function to create valid test component data
 	const createValidComponentData = (
-		type: "app" | "service" | "library" | "tool",
+		type: "app" | "service" | "library",
 		overrides = {},
 	): AnyEntity => {
 		const base = {
@@ -498,14 +498,6 @@ describe("ValidationManager", () => {
 			expect(result.errors).toHaveLength(0);
 		});
 
-		it("should validate a valid tool component", async () => {
-			const tool = createValidComponentData("tool");
-			const result = await validationManager.validateEntity("tool", tool);
-
-			expect(result.success).toBe(true);
-			expect(result.valid).toBe(true);
-			expect(result.errors).toHaveLength(0);
-		});
 
 		it("should reject component with invalid depends_on format", async () => {
 			const component = createValidComponentData("app", {
@@ -779,13 +771,6 @@ describe("ValidationManager", () => {
 			expect(sanitized.type).toBe("library");
 		});
 
-		it("should sanitize a valid tool component", () => {
-			const tool = createValidComponentData("tool");
-			const sanitized = validationManager.sanitizeEntity("tool", tool);
-
-			expect(sanitized).toBeDefined();
-			expect(sanitized.type).toBe("tool");
-		});
 
 		it("should extract valid fields from invalid requirement", () => {
 			const requirement: Partial<AnyEntity> = {

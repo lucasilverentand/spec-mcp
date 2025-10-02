@@ -305,10 +305,6 @@ describe("FileManager", () => {
 				expect(path).toBe("components/lib-001-test.yml");
 			});
 
-			it("should generate path for tool component", () => {
-				const path = fileManager.getEntityPath("tool", "tol-001-test");
-				expect(path).toBe("components/tol-001-test.yml");
-			});
 		});
 
 		describe("getFullEntityPath", () => {
@@ -1139,10 +1135,6 @@ describe("FileManager", () => {
 				expect(type).toBe("library");
 			});
 
-			it("should detect tool component type", () => {
-				const type = fileManager.getComponentTypeFromId("tol-001-test");
-				expect(type).toBe("tool");
-			});
 
 			it("should throw error for invalid component ID", () => {
 				expect(() => fileManager.getComponentTypeFromId("invalid-id")).toThrow(
