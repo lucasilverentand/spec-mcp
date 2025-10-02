@@ -936,9 +936,7 @@ export class EntityManager {
 								? "app"
 								: c.type === "service"
 									? "svc"
-									: c.type === "library"
-										? "lib"
-										: "tol";
+									: "lib";
 						const componentId = `${prefix}-${c.number.toString().padStart(3, "0")}-${c.slug}`;
 						return componentId === depId;
 					});
@@ -990,7 +988,6 @@ export class EntityManager {
 		if (id.startsWith("app-")) return "app";
 		if (id.startsWith("svc-")) return "service";
 		if (id.startsWith("lib-")) return "library";
-		if (id.startsWith("tol-")) return "tool";
 		throw new Error(`Invalid component ID format: ${id}`);
 	}
 
@@ -1007,7 +1004,6 @@ export class EntityManager {
 			case "app":
 			case "service":
 			case "library":
-			case "tool":
 				ComponentIdSchema.parse(id);
 				break;
 			case "constitution":
@@ -1029,8 +1025,6 @@ export class EntityManager {
 			case "service":
 				return "Component";
 			case "library":
-				return "Component";
-			case "tool":
 				return "Component";
 			case "constitution":
 				return "Constitution";
@@ -1149,8 +1143,6 @@ export class EntityManager {
 				return "svc";
 			case "library":
 				return "lib";
-			case "tool":
-				return "tol";
 			case "constitution":
 				return "con";
 			default:

@@ -343,7 +343,6 @@ export class FileManager {
 		if (id.startsWith("app-")) return "app";
 		if (id.startsWith("svc-")) return "service";
 		if (id.startsWith("lib-")) return "library";
-		if (id.startsWith("tol-")) return "tool";
 		throw new Error(`Invalid component ID format: ${id}`);
 	}
 
@@ -373,8 +372,6 @@ export class FileManager {
 				return "svc";
 			case "library":
 				return "lib";
-			case "tool":
-				return "tol";
 			case "constitution":
 				return "con";
 			default:
