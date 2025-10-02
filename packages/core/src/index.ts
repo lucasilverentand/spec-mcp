@@ -86,6 +86,22 @@ export {
 	ValidationEngine,
 	WorkflowValidator,
 } from "./validation/index.js";
+export type {
+	Draft,
+	StepDefinition,
+	StepResponse,
+	ValidationResult,
+	ValidationRule,
+} from "./wizard/index.js";
+// Wizard system for step-by-step spec creation
+export {
+	COMPONENT_STEPS,
+	DraftManager,
+	getStepDefinitions,
+	PLAN_STEPS,
+	REQUIREMENT_STEPS,
+	StepValidator,
+} from "./wizard/index.js";
 
 import {
 	CoverageAnalyzer as CoverageAnalyzerClass,
