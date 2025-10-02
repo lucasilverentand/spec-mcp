@@ -1004,7 +1004,6 @@ export class EntityManager {
 			case "app":
 			case "service":
 			case "library":
-			case "tool":
 				ComponentIdSchema.parse(id);
 				break;
 			case "constitution":
@@ -1026,8 +1025,6 @@ export class EntityManager {
 			case "service":
 				return "Component";
 			case "library":
-				return "Component";
-			case "tool":
 				return "Component";
 			case "constitution":
 				return "Constitution";
@@ -1146,6 +1143,8 @@ export class EntityManager {
 				return "svc";
 			case "library":
 				return "lib";
+			case "constitution":
+				return "con";
 			default:
 				throw new Error(`Unknown entity type: ${entityType}`);
 		}
