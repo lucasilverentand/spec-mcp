@@ -78,7 +78,7 @@ export class StepValidator {
 						? ""
 						: rule.message ||
 							`${field} must be at least ${rule.value} characters`,
-					strength: passed ? `Good detail in ${field}` : undefined,
+					...(passed ? { strength: `Good detail in ${field}` } : {}),
 				};
 			}
 
@@ -113,10 +113,12 @@ export class StepValidator {
 				return {
 					passed: hasRationale,
 					message: hasRationale ? "" : rule.message || "Missing rationale",
-					suggestion: hasRationale
-						? undefined
-						: `Consider adding 'because' or 'so that' to explain why this is needed`,
-					strength: hasRationale ? "Clear rationale provided" : undefined,
+					...(!hasRationale
+						? {
+								suggestion: `Consider adding 'because' or 'so that' to explain why this is needed`,
+							}
+						: {}),
+					...(hasRationale ? { strength: "Clear rationale provided" } : {}),
 				};
 			}
 
@@ -154,10 +156,13 @@ export class StepValidator {
 						? ""
 						: rule.message ||
 							`Contains implementation details: ${foundKeywords.join(", ")}`,
-					suggestion: passed
-						? undefined
-						: "Focus on WHAT needs to happen, not HOW it should be implemented",
-					strength: passed ? "Implementation-agnostic description" : undefined,
+					...(!passed
+						? {
+								suggestion:
+									"Focus on WHAT needs to happen, not HOW it should be implemented",
+							}
+						: {}),
+					...(passed ? { strength: "Implementation-agnostic description" } : {}),
 				};
 			}
 
@@ -186,10 +191,13 @@ export class StepValidator {
 					message: passed
 						? ""
 						: rule.message || "Criteria should be measurable and testable",
-					suggestion: passed
-						? undefined
-						: "Use specific, testable language (e.g., 'displays 10 items', 'completes in under 2 seconds')",
-					strength: passed ? "Well-defined measurable criteria" : undefined,
+					...(!passed
+						? {
+								suggestion:
+									"Use specific, testable language (e.g., 'displays 10 items', 'completes in under 2 seconds')",
+							}
+						: {}),
+					...(passed ? { strength: "Well-defined measurable criteria" } : {}),
 				};
 			}
 
@@ -221,10 +229,13 @@ export class StepValidator {
 						? ""
 						: rule.message ||
 							`Contains vague terms: ${foundVagueTerms.join(", ")}`,
-					suggestion: passed
-						? undefined
-						: "Replace vague terms with specific, quantifiable language (e.g., 'under 200ms' instead of 'fast')",
-					strength: passed ? "Specific, quantifiable language used" : undefined,
+					...(!passed
+						? {
+								suggestion:
+									"Replace vague terms with specific, quantifiable language (e.g., 'under 200ms' instead of 'fast')",
+							}
+						: {}),
+					...(passed ? { strength: "Specific, quantifiable language used" } : {}),
 				};
 			}
 
