@@ -931,7 +931,8 @@ export class EntityManager {
 			if (component.depends_on && component.depends_on.length > 0) {
 				for (const depId of component.depends_on) {
 					const depExists = components.some((c) => {
-						const prefix = c.type === "app" ? "app" : c.type === "service" ? "svc" : "lib";
+						const prefix =
+							c.type === "app" ? "app" : c.type === "service" ? "svc" : "lib";
 						const componentId = `${prefix}-${c.number.toString().padStart(3, "0")}-${c.slug}`;
 						return componentId === depId;
 					});

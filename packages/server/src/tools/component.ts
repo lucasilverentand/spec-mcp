@@ -271,9 +271,7 @@ export function registerComponentTool(
 						);
 
 						const compData = {
-							type:
-								(draftData.type as "app" | "service" | "library") ||
-								"service",
+							type: (draftData.type as "app" | "service" | "library") || "service",
 							slug: validatedSlug,
 							name: validatedName,
 							description: validatedDescription,
