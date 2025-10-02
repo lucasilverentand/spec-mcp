@@ -70,12 +70,10 @@ export class ReferenceValidator {
 				case "app":
 				case "service":
 				case "library":
-				case "tool":
 					if (
 						entity.type === "app" ||
 						entity.type === "service" ||
-						entity.type === "library" ||
-						entity.type === "tool"
+						entity.type === "library"
 					) {
 						await this.validateComponentReferences(
 							entity,
@@ -276,8 +274,7 @@ export class ReferenceValidator {
 		if (
 			entity.type === "app" ||
 			entity.type === "service" ||
-			entity.type === "library" ||
-			entity.type === "tool"
+			entity.type === "library"
 		) {
 			for (const depId of entity.depends_on) {
 				const depExists = components.some(
@@ -306,7 +303,7 @@ export class ReferenceValidator {
 		const patterns = {
 			requirement: /^req-\d{3}-[a-z0-9-]+$/,
 			plan: /^pln-\d{3}-[a-z0-9-]+$/,
-			component: /^(app|svc|lib|tol)-\d{3}-[a-z0-9-]+$/,
+			component: /^(app|svc|lib)-\d{3}-[a-z0-9-]+$/,
 			criteria: /^req-\d{3}-[a-z0-9-]+\/crit-\d{3}$/,
 			task: /^task-\d{3}-[a-z0-9-]+$/,
 			flow: /^flow-\d{3}-[a-z0-9-]+$/,
@@ -506,7 +503,7 @@ export class ReferenceValidator {
 			}
 		}
 
-		if (["app", "service", "library", "tool"].includes(entity.type)) {
+		if (["app", "service", "library"].includes(entity.type)) {
 			const isReferenced =
 				plans.some((p) =>
 					p.test_cases.some((tc) => tc.components.includes(entityId)),
@@ -686,7 +683,6 @@ export class ReferenceValidator {
 			app: "app",
 			service: "svc",
 			library: "lib",
-			tool: "tol",
 		};
 
 		const prefix = typeMap[component.type];

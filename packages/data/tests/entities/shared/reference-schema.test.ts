@@ -17,7 +17,6 @@ describe("ReferenceTypeSchema", () => {
 		const invalidTypes = [
 			"api",
 			"library",
-			"tool",
 			"example",
 			"tutorial",
 			"",

@@ -713,7 +713,6 @@ describe("SpecsManager", () => {
 				{ id: "app-001-test", expectedType: "app" },
 				{ id: "svc-001-test", expectedType: "service" },
 				{ id: "lib-001-test", expectedType: "library" },
-				{ id: "tol-001-test", expectedType: "tool" },
 			];
 
 			for (const { id, expectedType } of testCases) {

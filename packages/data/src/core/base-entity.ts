@@ -63,7 +63,6 @@ export const EntityTypeShortMap: Record<EntityType, string> = {
 	app: "app",
 	service: "svc",
 	library: "lib",
-	tool: "tol",
 	constitution: "con",
 };
 

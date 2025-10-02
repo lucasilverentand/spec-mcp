@@ -210,7 +210,6 @@ describe("Entity-Specific ID Functions", () => {
 				"svc-020-my-service",
 			);
 			expect(generateId("library", 15, "my-lib")).toBe("lib-015-my-lib");
-			expect(generateId("tool", 3, "my-tool")).toBe("tol-003-my-tool");
 		});
 
 		it("should pad numbers with leading zeros", () => {
@@ -294,10 +293,10 @@ describe("Entity-Specific ID Functions", () => {
 				slug: "my-lib",
 			});
 
-			expect(parseId("tol-004-my-tool")).toEqual({
-				entityType: "tool",
+			expect(parseId("lib-004-my-other-lib")).toEqual({
+				entityType: "library",
 				number: 4,
-				slug: "my-tool",
+				slug: "my-other-lib",
 			});
 		});
 
@@ -390,8 +389,7 @@ describe("Entity-Specific ID Functions", () => {
 			expect(extractEntityType("app-001-test")).toBe("app");
 			expect(extractEntityType("svc-001-test")).toBe("service");
 			expect(extractEntityType("lib-001-test")).toBe("library");
-			expect(extractEntityType("tol-001-test")).toBe("tool");
-		});
+			});
 
 		it("should return null for invalid ID", () => {
 			expect(extractEntityType("invalid-id")).toBeNull();
@@ -537,8 +535,7 @@ describe("Prefix Mapping Functions", () => {
 			expect(getPrefix("app")).toBe("app");
 			expect(getPrefix("service")).toBe("svc");
 			expect(getPrefix("library")).toBe("lib");
-			expect(getPrefix("tool")).toBe("tol");
-		});
+			});
 	});
 
 	describe("getEntityTypeFromPrefix function", () => {
@@ -548,8 +545,7 @@ describe("Prefix Mapping Functions", () => {
 			expect(getEntityTypeFromPrefix("app")).toBe("app");
 			expect(getEntityTypeFromPrefix("svc")).toBe("service");
 			expect(getEntityTypeFromPrefix("lib")).toBe("library");
-			expect(getEntityTypeFromPrefix("tol")).toBe("tool");
-		});
+			});
 
 		it("should return undefined for unknown prefix", () => {
 			expect(getEntityTypeFromPrefix("xyz")).toBeUndefined();

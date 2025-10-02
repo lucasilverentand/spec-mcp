@@ -125,27 +125,6 @@ describe("SchemaValidator", () => {
 			expect(result.errors).toHaveLength(0);
 		});
 
-		it("should validate a valid tool component", () => {
-			const tool: AnyEntity = {
-				type: "tool",
-				name: "Test Tool",
-				slug: "test-tool",
-				description: "Test description",
-				number: 1,
-				folder: "./tools/test",
-				depends_on: [],
-				external_dependencies: [],
-				capabilities: [],
-				constraints: [],
-				tech_stack: [],
-				created_at: new Date().toISOString(),
-				updated_at: new Date().toISOString(),
-			};
-
-			const result = SchemaValidator.validateEntity(tool);
-			expect(result.valid).toBe(true);
-			expect(result.errors).toHaveLength(0);
-		});
 
 		it("should reject entity with unknown type", () => {
 			const entity = {
@@ -445,10 +424,6 @@ describe("SchemaValidator", () => {
 			expect(schema).toBeDefined();
 		});
 
-		it("should return schema for tool", () => {
-			const schema = SchemaValidator.getSchemaForType("tool");
-			expect(schema).toBeDefined();
-		});
 
 		it("should throw error for unknown type", () => {
 			expect(() => SchemaValidator.getSchemaForType("unknown")).toThrow(
