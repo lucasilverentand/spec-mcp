@@ -73,7 +73,7 @@ describe("MCP E2E Tests", () => {
 		let draftId: string | undefined;
 		let createdId: string | undefined;
 
-		it("should create a requirement using wizard flow", async () => {
+		it("should create a requirement using creation flow", async () => {
 			// Step 1: Start the draft
 			const startResult = await client.callTool({
 				name: "start_spec",

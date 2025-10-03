@@ -378,21 +378,21 @@ export class CreationFlowHelper {
 					field_hints.slug = "URL-friendly identifier (e.g., 'implement-auth')";
 					field_hints.name = "Display name (e.g., 'Implement Authentication')";
 					field_hints.description = "Final plan description";
-					field_hints.criteria_id = "Criteria reference (e.g., 'req-001-auth/crit-001')";
+					field_hints.criteria_id = "Criteria reference (e.g., 'crit-001')";
 					field_hints.acceptance_criteria = "Overall plan acceptance criteria";
 					field_hints.tasks = "List of tasks with IDs and descriptions";
 					examples.slug = "implement-auth";
 					examples.name = "Implement Authentication";
-					examples.criteria_id = "req-001-authentication/crit-001";
+					examples.criteria_id = "crit-001";
 				}
 				break;
 
 			// PLAN STEPS
 			case "review_context":
-				field_hints.criteria_id = "Criteria reference in format 'req-001-slug/crit-001'";
+				field_hints.criteria_id = "Criteria reference in format 'crit-001'";
 				field_hints.description = "Review and explain which requirements/components are relevant (min 50 chars)";
-				examples.criteria_id = "req-001-authentication/crit-001";
-				examples.description = "Fulfilling req-001-authentication/crit-001 which requires login completion in under 3 seconds. Relevant components: cmp-001-auth-service, cmp-002-user-service.";
+				examples.criteria_id = "crit-001";
+				examples.description = "Fulfilling crit-001 which requires login completion in under 3 seconds. Relevant components: cmp-001-auth-service, cmp-002-user-service.";
 				break;
 
 			case "identify_phases":

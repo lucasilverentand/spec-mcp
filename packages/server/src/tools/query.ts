@@ -932,7 +932,7 @@ export function registerQueryTool(
 					.string()
 					.optional()
 					.describe(
-						"Sub-entity ID (e.g., 'task-001', 'tc-002', 'flow-003', 'api-001', 'dm-001', 'req-001-auth/crit-002')",
+						"Sub-entity ID (e.g., 'task-001', 'tc-002', 'flow-003', 'api-001', 'dm-001', 'crit-002')",
 					),
 				parent_plan_id: z
 					.string()

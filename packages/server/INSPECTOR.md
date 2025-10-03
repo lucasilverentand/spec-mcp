@@ -142,7 +142,7 @@ The inspector will:
      "name": "Test\x00With\x01Control",
      "description": "Test",
      "priority": "optional",
-     "criteria": [{"id": "req-001-test/crit-001", "description": "Test"}]
+     "criteria": [{"id": "crit-001", "description": "Test"}]
    }
    ```
    - Should sanitize control characters
