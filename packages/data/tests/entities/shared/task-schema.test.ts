@@ -33,7 +33,7 @@ describe("TaskIdSchema", () => {
 
 describe("TaskPrioritySchema", () => {
 	it("should accept valid task priorities", () => {
-		const validPriorities = ["critical", "high", "normal", "low", "optional"];
+		const validPriorities = ["critical", "high", "medium", "low"];
 
 		for (const priority of validPriorities) {
 			expect(() => TaskPrioritySchema.parse(priority)).not.toThrow();
@@ -43,7 +43,8 @@ describe("TaskPrioritySchema", () => {
 	it("should reject invalid task priorities", () => {
 		const invalidPriorities = [
 			"urgent",
-			"medium",
+			"normal",
+			"optional",
 			"cancelled",
 			"",
 			null,
@@ -162,7 +163,7 @@ describe("TaskSchema", () => {
 
 		const parsed = TaskSchema.parse(task);
 
-		expect(parsed.priority).toBe("normal");
+		expect(parsed.priority).toBe("medium");
 		expect(parsed.depends_on).toEqual([]);
 		expect(parsed.considerations).toEqual([]);
 		expect(parsed.references).toEqual([]);

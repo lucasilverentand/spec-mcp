@@ -14,10 +14,9 @@ describe("SchemaValidator", () => {
 				priority: "required",
 				criteria: [
 					{
-						id: "req-001-test-requirement/crit-001",
+						id: "crit-001",
 						description: "Test criteria",
-						plan_id: "pln-001-test",
-						completed: false,
+						status: "active",
 					},
 				],
 				created_at: new Date().toISOString(),
@@ -46,7 +45,6 @@ describe("SchemaValidator", () => {
 				api_contracts: [],
 				data_models: [],
 				references: [],
-				completed: false,
 				approved: false,
 				created_at: new Date().toISOString(),
 				updated_at: new Date().toISOString(),
@@ -72,6 +70,29 @@ describe("SchemaValidator", () => {
 				tech_stack: [],
 				deployment_targets: [],
 				environments: ["development"],
+				testing_setup: {
+					frameworks: ["Vitest"],
+					coverage_target: 90,
+					test_commands: {},
+					test_patterns: [],
+				},
+				deployment: {
+					platform: "Test Platform",
+				},
+				scope: {
+					in_scope: [
+						{
+							item: "Test functionality",
+							reasoning: "Core responsibility",
+						},
+					],
+					out_of_scope: [
+						{
+							item: "External integrations",
+							reasoning: "Handled by other components",
+						},
+					],
+				},
 				created_at: new Date().toISOString(),
 				updated_at: new Date().toISOString(),
 			};
@@ -94,6 +115,29 @@ describe("SchemaValidator", () => {
 				capabilities: [],
 				constraints: [],
 				tech_stack: [],
+				testing_setup: {
+					frameworks: ["Vitest"],
+					coverage_target: 90,
+					test_commands: {},
+					test_patterns: [],
+				},
+				deployment: {
+					platform: "Test Platform",
+				},
+				scope: {
+					in_scope: [
+						{
+							item: "Test functionality",
+							reasoning: "Core responsibility",
+						},
+					],
+					out_of_scope: [
+						{
+							item: "External integrations",
+							reasoning: "Handled by other components",
+						},
+					],
+				},
 				created_at: new Date().toISOString(),
 				updated_at: new Date().toISOString(),
 			};
@@ -116,6 +160,29 @@ describe("SchemaValidator", () => {
 				capabilities: [],
 				constraints: [],
 				tech_stack: [],
+				testing_setup: {
+					frameworks: ["Vitest"],
+					coverage_target: 90,
+					test_commands: {},
+					test_patterns: [],
+				},
+				deployment: {
+					platform: "Test Platform",
+				},
+				scope: {
+					in_scope: [
+						{
+							item: "Test functionality",
+							reasoning: "Core responsibility",
+						},
+					],
+					out_of_scope: [
+						{
+							item: "External integrations",
+							reasoning: "Handled by other components",
+						},
+					],
+				},
 				created_at: new Date().toISOString(),
 				updated_at: new Date().toISOString(),
 			};
@@ -166,7 +233,6 @@ describe("SchemaValidator", () => {
 				api_contracts: [],
 				data_models: [],
 				references: [],
-				completed: false,
 				approved: false,
 				created_at: new Date().toISOString(),
 				updated_at: new Date().toISOString(),
@@ -222,10 +288,9 @@ describe("SchemaValidator", () => {
 					priority: "required",
 					criteria: [
 						{
-							id: "req-001-test-1/crit-001",
+							id: "crit-001",
 							description: "Test criteria",
-							plan_id: "pln-001-test",
-							completed: false,
+						status: "active",
 						},
 					],
 					created_at: new Date().toISOString(),
@@ -240,10 +305,9 @@ describe("SchemaValidator", () => {
 					priority: "required",
 					criteria: [
 						{
-							id: "req-002-test-2/crit-001",
+							id: "crit-001",
 							description: "Test criteria",
-							plan_id: "pln-001-test",
-							completed: false,
+						status: "active",
 						},
 					],
 					created_at: new Date().toISOString(),
@@ -267,10 +331,9 @@ describe("SchemaValidator", () => {
 					priority: "required",
 					criteria: [
 						{
-							id: "req-001-test-1/crit-001",
+							id: "crit-001",
 							description: "Test criteria",
-							plan_id: "pln-001-test",
-							completed: false,
+						status: "active",
 						},
 					],
 					created_at: new Date().toISOString(),
@@ -285,10 +348,9 @@ describe("SchemaValidator", () => {
 					priority: "required",
 					criteria: [
 						{
-							id: "req-002-test-2/crit-001",
+							id: "crit-001",
 							description: "Test criteria",
-							plan_id: "pln-001-test",
-							completed: false,
+						status: "active",
 						},
 					],
 					created_at: new Date().toISOString(),
@@ -329,10 +391,9 @@ describe("SchemaValidator", () => {
 					priority: "required",
 					criteria: [
 						{
-							id: "req-001-test-1/crit-001",
+							id: "crit-001",
 							description: "Test criteria",
-							plan_id: "pln-001-test",
-							completed: false,
+						status: "active",
 						},
 					],
 					created_at: new Date().toISOString(),
@@ -645,10 +706,9 @@ describe("SchemaValidator", () => {
 				priority: "required",
 				criteria: [
 					{
-						id: "req-001-test/crit-001",
+						id: "crit-001",
 						description: "Test criteria",
-						plan_id: "pln-001-test",
-						completed: false,
+						status: "active",
 					},
 				],
 				created_at: new Date().toISOString(),
@@ -683,7 +743,6 @@ describe("SchemaValidator", () => {
 				api_contracts: [],
 				data_models: [],
 				references: [],
-				completed: false,
 				approved: false,
 				created_at: new Date().toISOString(),
 				updated_at: new Date().toISOString(),
@@ -714,10 +773,9 @@ describe("SchemaValidator", () => {
 				priority: "required",
 				criteria: [
 					{
-						id: "req-001-t/crit-001",
+						id: "crit-001",
 						description: "Test criteria",
-						plan_id: "pln-001-test",
-						completed: false,
+						status: "active",
 					},
 				],
 				created_at: new Date().toISOString(),
@@ -743,16 +801,14 @@ describe("SchemaValidator", () => {
 					.map((_, i) => ({
 						id: `task-${i.toString().padStart(3, "0")}`,
 						description: `Task ${i}`,
-						completed: false,
 						depends_on: [],
-						priority: "normal" as const,
+						priority: "medium" as const,
 					})),
 				flows: [],
 				test_cases: [],
 				api_contracts: [],
 				data_models: [],
 				references: [],
-				completed: false,
 				approved: false,
 				created_at: new Date().toISOString(),
 				updated_at: new Date().toISOString(),

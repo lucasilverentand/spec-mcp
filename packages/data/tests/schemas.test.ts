@@ -47,10 +47,9 @@ describe("Schema Exports", () => {
 			priority: "required" as const,
 			criteria: [
 				{
-					id: "req-001-test-requirement/crit-001",
+					id: "crit-001",
 					description: "Test criteria",
-					plan_id: "pln-001-test-plan",
-					completed: false,
+					status: "active" as const,
 				},
 			],
 		};
@@ -74,6 +73,29 @@ describe("Schema Exports", () => {
 			description: "Test description",
 			created_at: new Date().toISOString(),
 			updated_at: new Date().toISOString(),
+			testing_setup: {
+				frameworks: ["Vitest"],
+				coverage_target: 90,
+				test_commands: {},
+				test_patterns: [],
+			},
+			deployment: {
+				platform: "Test Platform",
+			},
+			scope: {
+				in_scope: [
+					{
+						item: "Test functionality",
+						reasoning: "Core responsibility",
+					},
+				],
+				out_of_scope: [
+					{
+						item: "External integrations",
+						reasoning: "Handled by other components",
+					},
+				],
+			},
 		};
 
 		expect(() => RequirementSchema.parse(validRequirement)).not.toThrow();

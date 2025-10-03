@@ -1,5 +1,9 @@
 import z from "zod";
 import { BaseSchema, computeEntityId } from "../../core/base-entity.js";
+import {
+	ComponentScopeSchema,
+	DeploymentSchema,
+} from "../shared/index.js";
 
 export const ComponentIdSchema = z
 	.string()
@@ -80,6 +84,19 @@ const _BaseComponentStorageSchema = BaseSchema.extend({
 		.min(1)
 		.default(".")
 		.describe("Relative path from repository root"),
+	tech_stack: z
+		.array(z.string())
+		.default([])
+		.describe("Technologies and frameworks used in this component"),
+	testing_setup: TestingSetupSchema.optional().describe(
+		"Testing configuration including frameworks, patterns, coverage targets, and test organization",
+	),
+	deployment: DeploymentSchema.describe(
+		"Deployment configuration including platform, URLs, commands, and environment variables",
+	),
+	scope: ComponentScopeSchema.describe(
+		"Explicit scope definition with in-scope and out-of-scope items with reasoning",
+	),
 	depends_on: z
 		.array(ComponentIdSchema)
 		.default([])
@@ -88,17 +105,6 @@ const _BaseComponentStorageSchema = BaseSchema.extend({
 		.array(z.string())
 		.default([])
 		.describe("Third-party services or libraries used"),
-	constraints: z
-		.array(z.string())
-		.default([])
-		.describe("Technical and business constraints"),
-	tech_stack: z
-		.array(z.string())
-		.default([])
-		.describe("Technologies and frameworks used in this component"),
-	testing_setup: TestingSetupSchema.describe(
-		"Testing configuration including frameworks, patterns, coverage targets, and test organization",
-	),
 });
 
 // Storage schemas (no ID field)

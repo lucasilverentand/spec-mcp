@@ -129,7 +129,7 @@ export class EntityManager {
 				updated_at: now,
 			} as AnyEntity;
 
-			// Fix criteria IDs for requirements to match the parent requirement ID
+			// Auto-generate simple criteria IDs for requirements if not provided
 			if (entityType === "requirement") {
 				const reqEntity = entity as Record<string, unknown>;
 				if (reqEntity.criteria && Array.isArray(reqEntity.criteria)) {
@@ -138,7 +138,8 @@ export class EntityManager {
 						criteria: reqEntity.criteria.map(
 							(criterion: Record<string, unknown>, index: number) => ({
 								...criterion,
-								id: `${entityId}/crit-${(index + 1).toString().padStart(3, "0")}`,
+								// Use simple ID format: crit-XXX
+								id: criterion.id || `crit-${(index + 1).toString().padStart(3, "0")}`,
 							}),
 						),
 					} as AnyEntity;
@@ -829,17 +830,9 @@ export class EntityManager {
 			throw new Error(result.error);
 		}
 
-		// Apply applies_to filter (custom logic)
-		let constitutions =
+		// No filtering needed for simplified constitution schema
+		const constitutions =
 			result.data as import("../entities/constitutions/constitution.js").Constitution[];
-		if (filter?.applies_to !== undefined) {
-			constitutions = constitutions.filter((con) => {
-				if (!filter.applies_to) return true;
-				return filter.applies_to.some((scope) =>
-					con.applies_to.includes(scope),
-				);
-			});
-		}
 
 		return constitutions;
 	}
@@ -952,8 +945,18 @@ export class EntityManager {
 		// Validate plan criteria_id references to requirement criteria
 		for (const plan of plans) {
 			if (plan.criteria_id) {
-				const criteriaExists = requirements.some((req) =>
-					req.criteria.some((crit) => crit.id === plan.criteria_id),
+				// Parse criteria_id format: req-XXX-slug/crit-XXX
+				const match = plan.criteria_id.match(/^(req-\d{3}-[a-z0-9-]+)\/(crit-\d{3})$/);
+				if (!match) {
+					errors.push(
+						`Plan '${plan.slug}' has invalid criteria_id format: '${plan.criteria_id}'`,
+					);
+					continue;
+				}
+
+				const [, reqId, critId] = match;
+				const criteriaExists = requirements.some(
+					(req) => req.id === reqId && req.criteria.some((crit) => crit.id === critId),
 				);
 				if (!criteriaExists) {
 					errors.push(

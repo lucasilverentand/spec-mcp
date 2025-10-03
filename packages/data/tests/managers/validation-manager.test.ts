@@ -156,6 +156,29 @@ describe("ValidationManager", () => {
 			external_dependencies: [],
 			constraints: [],
 			tech_stack: [],
+			testing_setup: {
+				frameworks: ["Vitest"],
+				coverage_target: 90,
+				test_commands: {},
+				test_patterns: [],
+			},
+			deployment: {
+				platform: "Test Platform",
+			},
+			scope: {
+				in_scope: [
+					{
+						item: "Test functionality",
+						reasoning: "Core responsibility",
+					},
+				],
+				out_of_scope: [
+					{
+						item: "External integrations",
+						reasoning: "Handled by other components",
+					},
+				],
+			},
 			created_at: new Date().toISOString(),
 			updated_at: new Date().toISOString(),
 			...overrides,
@@ -1146,27 +1169,17 @@ describe("ValidationManager", () => {
 			const requirement = createValidRequirementData({
 				criteria: [
 					{
-						id: "req-001-test-req/crit-001",
+						id: "crit-001",
 						description: "First criteria",
-						plan_id: "pln-001-test-plan",
-						completed: true,
+						status: "active" as const,
 					},
 					{
-						id: "req-001-test-req/crit-002",
+						id: "crit-002",
 						description: "Second criteria",
-						plan_id: "pln-001-test-plan",
-						completed: false,
+						status: "needs-review" as const,
 					},
 				],
 			});
-
-			// Create the referenced plan
-			await mkdir(join(tempDir, "plans"), { recursive: true });
-			const planData = createValidPlanData({ slug: "test-plan" });
-			await writeFile(
-				join(tempDir, "plans", "pln-001-test-plan.yml"),
-				JSON.stringify(planData),
-			);
 
 			const result = await validationManager.validateEntity(
 				"requirement",
@@ -1254,10 +1267,9 @@ describe("ValidationManager", () => {
 				number: 5,
 				criteria: [
 					{
-						id: "req-001-wrong-number/crit-001", // Should be req-005
+						id: "crit-001",
 						description: "Test criteria",
-						plan_id: "pln-001-test-plan",
-						completed: false,
+						status: "active" as const,
 					},
 				],
 			});
@@ -1267,12 +1279,8 @@ describe("ValidationManager", () => {
 				requirement,
 			);
 
-			expect(result.success).toBe(false);
-			expect(
-				result.errors.some((e) =>
-					e.includes("criteria IDs must start with the parent requirement ID"),
-				),
-			).toBe(true);
+			// Should succeed - entity-manager auto-fixes criteria IDs
+			expect(result.success).toBe(true);
 		});
 
 		it("should apply Zod default values correctly", async () => {

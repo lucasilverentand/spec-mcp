@@ -426,19 +426,13 @@ describe("Child ID Generation Functions", () => {
 		it("should generate child ID from valid parent ID", () => {
 			const childId = generateChildId("req-001-test", "crit", 1);
 
-			expect(childId).toBe("req-001-test/crit-001");
+			expect(childId).toBe("crit-001");
 		});
 
 		it("should pad child numbers with leading zeros", () => {
-			expect(generateChildId("req-001-test", "crit", 1)).toBe(
-				"req-001-test/crit-001",
-			);
-			expect(generateChildId("req-001-test", "crit", 42)).toBe(
-				"req-001-test/crit-042",
-			);
-			expect(generateChildId("req-001-test", "crit", 999)).toBe(
-				"req-001-test/crit-999",
-			);
+			expect(generateChildId("req-001-test", "crit", 1)).toBe("crit-001");
+			expect(generateChildId("req-001-test", "crit", 42)).toBe("crit-042");
+			expect(generateChildId("req-001-test", "crit", 999)).toBe("crit-999");
 		});
 
 		it("should throw error for invalid parent ID", () => {
@@ -452,16 +446,12 @@ describe("Child ID Generation Functions", () => {
 		it("should generate criteria ID from requirement ID", () => {
 			const criteriaId = generateCriteriaId("req-001-test", 1);
 
-			expect(criteriaId).toBe("req-001-test/crit-001");
+			expect(criteriaId).toBe("crit-001");
 		});
 
 		it("should handle multiple criteria", () => {
-			expect(generateCriteriaId("req-001-test", 1)).toBe(
-				"req-001-test/crit-001",
-			);
-			expect(generateCriteriaId("req-001-test", 5)).toBe(
-				"req-001-test/crit-005",
-			);
+			expect(generateCriteriaId("req-001-test", 1)).toBe("crit-001");
+			expect(generateCriteriaId("req-001-test", 5)).toBe("crit-005");
 		});
 	});
 
@@ -469,12 +459,12 @@ describe("Child ID Generation Functions", () => {
 		it("should generate task ID from plan ID", () => {
 			const taskId = generateTaskId("pln-001-test", 1);
 
-			expect(taskId).toBe("pln-001-test/task-001");
+			expect(taskId).toBe("task-001");
 		});
 
 		it("should handle multiple tasks", () => {
-			expect(generateTaskId("pln-001-test", 1)).toBe("pln-001-test/task-001");
-			expect(generateTaskId("pln-001-test", 10)).toBe("pln-001-test/task-010");
+			expect(generateTaskId("pln-001-test", 1)).toBe("task-001");
+			expect(generateTaskId("pln-001-test", 10)).toBe("task-010");
 		});
 	});
 
@@ -482,29 +472,25 @@ describe("Child ID Generation Functions", () => {
 		it("should generate flow ID from plan ID", () => {
 			const flowId = generateFlowId("pln-001-test", 1);
 
-			expect(flowId).toBe("pln-001-test/flow-001");
+			expect(flowId).toBe("flow-001");
 		});
 
 		it("should handle multiple flows", () => {
-			expect(generateFlowId("pln-001-test", 1)).toBe("pln-001-test/flow-001");
-			expect(generateFlowId("pln-001-test", 3)).toBe("pln-001-test/flow-003");
+			expect(generateFlowId("pln-001-test", 1)).toBe("flow-001");
+			expect(generateFlowId("pln-001-test", 3)).toBe("flow-003");
 		});
 	});
 
 	describe("generateStepId function", () => {
 		it("should generate step ID from flow ID", () => {
-			const stepId = generateStepId("pln-001-test/flow-001", 1);
+			const stepId = generateStepId("flow-001", 1);
 
-			expect(stepId).toBe("pln-001-test/flow-001/step-001");
+			expect(stepId).toBe("step-001");
 		});
 
 		it("should handle multiple steps", () => {
-			expect(generateStepId("pln-001-test/flow-001", 1)).toBe(
-				"pln-001-test/flow-001/step-001",
-			);
-			expect(generateStepId("pln-001-test/flow-001", 7)).toBe(
-				"pln-001-test/flow-001/step-007",
-			);
+			expect(generateStepId("flow-001", 1)).toBe("step-001");
+			expect(generateStepId("flow-001", 7)).toBe("step-007");
 		});
 	});
 
@@ -512,16 +498,12 @@ describe("Child ID Generation Functions", () => {
 		it("should generate test case ID from plan ID", () => {
 			const testId = generateTestCaseId("pln-001-test", 1);
 
-			expect(testId).toBe("pln-001-test/test-001");
+			expect(testId).toBe("test-001");
 		});
 
 		it("should handle multiple test cases", () => {
-			expect(generateTestCaseId("pln-001-test", 1)).toBe(
-				"pln-001-test/test-001",
-			);
-			expect(generateTestCaseId("pln-001-test", 15)).toBe(
-				"pln-001-test/test-015",
-			);
+			expect(generateTestCaseId("pln-001-test", 1)).toBe("test-001");
+			expect(generateTestCaseId("pln-001-test", 15)).toBe("test-015");
 		});
 	});
 });

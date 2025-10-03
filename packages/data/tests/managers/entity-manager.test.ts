@@ -23,11 +23,10 @@ describe("EntityManager", () => {
 		priority: "required" as const,
 		criteria: [
 			{
-				id: "req-001-test-req/crit-001",
-				description: "Test criteria",
-				plan_id: "pln-001-test-plan",
-				completed: false,
-			},
+					id: "crit-001",
+					description: "Test criteria",
+					status: "active" as const,
+				},
 		],
 		...overrides,
 	});
@@ -52,6 +51,29 @@ describe("EntityManager", () => {
 		name: "Test Component",
 		description: "Test description",
 		capabilities: [] as string[],
+		testing_setup: {
+			frameworks: ["Vitest"],
+			coverage_target: 90,
+			test_commands: {},
+			test_patterns: [],
+		},
+		deployment: {
+			platform: "Test Platform",
+		},
+		scope: {
+			in_scope: [
+				{
+					item: "Test functionality",
+					reasoning: "Core responsibility",
+				},
+			],
+			out_of_scope: [
+				{
+					item: "External integrations",
+					reasoning: "Handled by other components",
+				},
+			],
+		},
 		...overrides,
 	});
 
@@ -195,14 +217,13 @@ describe("EntityManager", () => {
 			}
 		});
 
-		it("should auto-fix requirement criteria IDs to match requirement ID", async () => {
+		it("should auto-generate simple criteria IDs for requirements", async () => {
 			const data = createValidRequirementData({
 				criteria: [
 					{
-						id: "req-999-wrong/crit-001", // Wrong ID
+						// No ID provided, should auto-generate
 						description: "Test criteria",
-						plan_id: "pln-001-test-plan",
-						completed: false,
+						status: "active",
 					},
 				],
 			});
@@ -211,7 +232,8 @@ describe("EntityManager", () => {
 
 			expect(result.success).toBe(true);
 			if (result.success) {
-				expect(result.data.criteria[0].id).toBe("req-001-test-req/crit-001");
+				// Should auto-generate simple format: crit-001
+				expect(result.data.criteria[0].id).toBe("crit-001");
 			}
 		});
 
@@ -744,11 +766,10 @@ describe("EntityManager", () => {
 					priority: "required" as const,
 					criteria: [
 						{
-							id: "req-001-test-req/crit-001",
-							description: "Test criteria",
-							plan_id: "pln-001-test-plan",
-							completed: false,
-						},
+					id: "crit-001",
+					description: "Test criteria",
+					status: "active" as const,
+				},
 					],
 				};
 
@@ -764,11 +785,10 @@ describe("EntityManager", () => {
 					description: "Test",
 					criteria: [
 						{
-							id: "req-001-test-req/crit-001",
-							description: "Test criteria",
-							plan_id: "pln-001-test-plan",
-							completed: false,
-						},
+					id: "crit-001",
+					description: "Test criteria",
+					status: "active" as const,
+				},
 					],
 				});
 
@@ -791,11 +811,10 @@ describe("EntityManager", () => {
 					description: "Original",
 					criteria: [
 						{
-							id: "req-001-test-req/crit-001",
-							description: "Test criteria",
-							plan_id: "pln-001-test-plan",
-							completed: false,
-						},
+					id: "crit-001",
+					description: "Test criteria",
+					status: "active" as const,
+				},
 					],
 				});
 
@@ -812,11 +831,10 @@ describe("EntityManager", () => {
 					description: "Test",
 					criteria: [
 						{
-							id: "req-001-test-req/crit-001",
-							description: "Test criteria",
-							plan_id: "pln-001-test-plan",
-							completed: false,
-						},
+					id: "crit-001",
+					description: "Test criteria",
+					status: "active" as const,
+				},
 					],
 				});
 
@@ -832,11 +850,10 @@ describe("EntityManager", () => {
 					priority: "critical",
 					criteria: [
 						{
-							id: "req-001-critical/crit-001",
-							description: "Test criteria",
-							plan_id: "pln-001-test-plan",
-							completed: false,
-						},
+					id: "crit-001",
+					description: "Test criteria",
+					status: "active" as const,
+				},
 					],
 				});
 				await manager.createRequirement({
@@ -846,11 +863,10 @@ describe("EntityManager", () => {
 					priority: "optional",
 					criteria: [
 						{
-							id: "req-002-optional/crit-001",
-							description: "Test criteria",
-							plan_id: "pln-001-test-plan",
-							completed: false,
-						},
+					id: "crit-001",
+					description: "Test criteria",
+					status: "active" as const,
+				},
 					],
 				});
 
@@ -868,11 +884,10 @@ describe("EntityManager", () => {
 					description: "Test",
 					criteria: [
 						{
-							id: "req-001-incomplete/crit-001",
-							description: "Test",
-							plan_id: "pln-001-test",
-							completed: false,
-						},
+					id: "crit-001",
+					description: "Test",
+					status: "active" as const,
+				},
 					],
 				});
 				await manager.createRequirement({
@@ -881,9 +896,10 @@ describe("EntityManager", () => {
 					description: "Test",
 					criteria: [
 						{
-							id: "req-002-complete/crit-001",
-							description: "Test",
-						},
+					id: "crit-001",
+					description: "Test",
+					status: "active" as const,
+				},
 					],
 				});
 
@@ -1010,23 +1026,25 @@ describe("EntityManager", () => {
 
 		describe("Component Methods", () => {
 			it("should create component with helper method", async () => {
-				const component = await manager.createComponent({
-					type: "app",
-					slug: "test-app",
-					name: "Test App",
-					description: "Test description",
-				});
+				const component = await manager.createComponent(
+					createValidComponentData("app", {
+						slug: "test-app",
+						name: "Test App",
+						description: "Test description",
+					}),
+				);
 				expect(component.type).toBe("app");
 				expect(component.id).toBe("app-001-test-app");
 			});
 
 			it("should get component with helper method", async () => {
-				const created = await manager.createComponent({
-					type: "service",
-					slug: "test-service",
-					name: "Test",
-					description: "Test",
-				});
+				const created = await manager.createComponent(
+					createValidComponentData("service", {
+						slug: "test-service",
+						name: "Test",
+						description: "Test",
+					}),
+				);
 
 				const component = await manager.getComponent(created.id);
 				expect(component).not.toBeNull();
@@ -1034,12 +1052,13 @@ describe("EntityManager", () => {
 			});
 
 			it("should update component with helper method", async () => {
-				const created = await manager.createComponent({
-					type: "library",
-					slug: "test-lib",
-					name: "Test",
-					description: "Original",
-				});
+				const created = await manager.createComponent(
+					createValidComponentData("library", {
+						slug: "test-lib",
+						name: "Test",
+						description: "Original",
+					}),
+				);
 
 				const updated = await manager.updateComponent(created.id, {
 					description: "Updated",
@@ -1048,30 +1067,33 @@ describe("EntityManager", () => {
 			});
 
 			it("should delete component with helper method", async () => {
-				const created = await manager.createComponent({
-					type: "library",
-					slug: "test-library",
-					name: "Test",
-					description: "Test",
-				});
+				const created = await manager.createComponent(
+					createValidComponentData("library", {
+						slug: "test-library",
+						name: "Test",
+						description: "Test",
+					}),
+				);
 
 				const deleted = await manager.deleteComponent(created.id);
 				expect(deleted).toBe(true);
 			});
 
 			it("should list components with filter", async () => {
-				await manager.createComponent({
-					type: "app",
-					slug: "test-app",
-					name: "Test App",
-					description: "Test",
-				});
-				await manager.createComponent({
-					type: "service",
-					slug: "test-service",
-					name: "Test Service",
-					description: "Test",
-				});
+				await manager.createComponent(
+					createValidComponentData("app", {
+						slug: "test-app",
+						name: "Test App",
+						description: "Test",
+					}),
+				);
+				await manager.createComponent(
+					createValidComponentData("service", {
+						slug: "test-service",
+						name: "Test Service",
+						description: "Test",
+					}),
+				);
 
 				const apps = await manager.listComponents({ type: ["app"] });
 				expect(apps).toHaveLength(1);
@@ -1079,20 +1101,22 @@ describe("EntityManager", () => {
 			});
 
 			it("should filter components by folder", async () => {
-				await manager.createComponent({
-					type: "app",
-					slug: "frontend-app",
-					name: "Frontend",
-					description: "Test",
-					folder: "apps/frontend",
-				});
-				await manager.createComponent({
-					type: "app",
-					slug: "backend-app",
-					name: "Backend",
-					description: "Test",
-					folder: "apps/backend",
-				});
+				await manager.createComponent(
+					createValidComponentData("app", {
+						slug: "frontend-app",
+						name: "Frontend",
+						description: "Test",
+						folder: "apps/frontend",
+					}),
+				);
+				await manager.createComponent(
+					createValidComponentData("app", {
+						slug: "backend-app",
+						name: "Backend",
+						description: "Test",
+						folder: "apps/backend",
+					}),
+				);
 
 				const frontend = await manager.listComponents({
 					folder: "apps/frontend",
@@ -1102,12 +1126,13 @@ describe("EntityManager", () => {
 			});
 
 			it("should determine component type from ID", async () => {
-				await manager.createComponent({
-					type: "app",
-					slug: "test-app",
-					name: "Test",
-					description: "Test",
-				});
+				await manager.createComponent(
+					createValidComponentData("app", {
+						slug: "test-app",
+						name: "Test",
+						description: "Test",
+					}),
+				);
 
 				const component = await manager.getComponent("app-001-test-app");
 				expect(component?.type).toBe("app");
@@ -1197,11 +1222,10 @@ describe("EntityManager", () => {
 					description: "Test",
 					criteria: [
 						{
-							id: "req-001-req1/crit-001",
-							description: "Test criteria",
-							plan_id: "pln-001-test-plan",
-							completed: false,
-						},
+					id: "crit-001",
+					description: "Test criteria",
+					status: "active" as const,
+				},
 					],
 				} as Record<string, unknown>,
 				{
@@ -1212,10 +1236,12 @@ describe("EntityManager", () => {
 					acceptance_criteria: "Should work",
 				} as Record<string, unknown>,
 				{
+					...createValidComponentData("app", {
+						slug: "app1",
+						name: "App 1",
+						description: "Test",
+					}),
 					type: "app",
-					slug: "app1",
-					name: "App 1",
-					description: "Test",
 				} as Record<string, unknown>,
 			];
 
@@ -1230,11 +1256,10 @@ describe("EntityManager", () => {
 				description: "Test",
 				criteria: [
 					{
-						id: "req-001-req1/crit-001",
-						description: "Test criteria",
-						plan_id: "pln-001-test-plan",
-						completed: false,
-					},
+					id: "crit-001",
+					description: "Test criteria",
+					status: "active" as const,
+				},
 				],
 			});
 			await manager.createPlan({
@@ -1243,12 +1268,13 @@ describe("EntityManager", () => {
 				description: "Test",
 				acceptance_criteria: "Should work",
 			});
-			await manager.createComponent({
-				type: "app",
-				slug: "app1",
-				name: "Test",
-				description: "Test",
-			});
+			await manager.createComponent(
+				createValidComponentData("app", {
+					slug: "app1",
+					name: "Test",
+					description: "Test",
+				}),
+			);
 
 			const allEntities = await manager.getAllEntities();
 			expect(allEntities.requirements).toHaveLength(1);
@@ -1366,11 +1392,10 @@ describe("EntityManager", () => {
 				description: "Test",
 				criteria: [
 					{
-						id: "req-001-test-long/crit-001",
-						description: "Test criteria",
-						plan_id: "pln-001-test-plan",
-						completed: false,
-					},
+					id: "crit-001",
+					description: "Test criteria",
+					status: "active" as const,
+				},
 				],
 			} as Record<string, unknown>);
 			expect(result.success).toBe(true);

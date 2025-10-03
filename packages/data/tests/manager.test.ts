@@ -48,10 +48,9 @@ describe("SpecsManager", () => {
 		priority: "required" as const,
 		criteria: [
 			{
-				id: "req-001-test-req/crit-001",
+				id: "crit-001",
 				description: "Test criteria",
-				plan_id: "pln-001-test-plan",
-				completed: false,
+				status: "active" as const,
 			},
 		],
 		...overrides,
@@ -76,6 +75,29 @@ describe("SpecsManager", () => {
 		name: "Test Component",
 		description: "Test description",
 		capabilities: [] as string[],
+		testing_setup: {
+			frameworks: ["Vitest"],
+			coverage_target: 90,
+			test_commands: {},
+			test_patterns: [],
+		},
+		deployment: {
+			platform: "Test Platform",
+		},
+		scope: {
+			in_scope: [
+				{
+					item: "Test functionality",
+					reasoning: "Core responsibility",
+				},
+			],
+			out_of_scope: [
+				{
+					item: "External integrations",
+					reasoning: "Handled by other components",
+				},
+			],
+		},
 		...overrides,
 	});
 
@@ -119,11 +141,10 @@ describe("SpecsManager", () => {
 					name: "Test",
 					criteria: [
 						{
-							id: "req-001-test/crit-001",
-							description: "Test criteria",
-							plan_id: "pln-001-test-plan",
-							completed: false,
-						},
+						id: "crit-001",
+						description: "Test criteria",
+						status: "active" as const,
+					},
 					],
 				}),
 			);
@@ -155,11 +176,10 @@ describe("SpecsManager", () => {
 					name: "Test",
 					criteria: [
 						{
-							id: "req-001-test/crit-001",
-							description: "Test criteria",
-							plan_id: "pln-001-test-plan",
-							completed: false,
-						},
+						id: "crit-001",
+						description: "Test criteria",
+						status: "active" as const,
+					},
 					],
 				}),
 			);
@@ -189,10 +209,9 @@ describe("SpecsManager", () => {
 						name: "Test",
 						criteria: [
 							{
-								id: "req-001-test/crit-001",
+								id: "crit-001",
 								description: "Test criteria",
-								plan_id: "pln-001-test-plan",
-								completed: false,
+								status: "active" as const,
 							},
 						],
 					}),
@@ -216,10 +235,9 @@ describe("SpecsManager", () => {
 				priority: "required" as const,
 				criteria: [
 					{
-						id: "req-001-user-authentication/crit-001",
+						id: "crit-001",
 						description: "User can log in with valid credentials",
-						plan_id: "pln-001-auth-plan",
-						completed: false,
+						status: "active" as const,
 					},
 				],
 			};
@@ -294,10 +312,9 @@ describe("SpecsManager", () => {
 				priority: "critical" as const,
 				criteria: [
 					{
-						id: "req-001-critical-req/crit-001",
+						id: "crit-001",
 						description: "Test criteria",
-						plan_id: "pln-001-test-plan",
-						completed: true,
+						status: "active" as const,
 					},
 				],
 			};
@@ -309,10 +326,9 @@ describe("SpecsManager", () => {
 				priority: "optional" as const,
 				criteria: [
 					{
-						id: "req-002-optional-req/crit-001",
+						id: "crit-001",
 						description: "Test criteria",
-						plan_id: "pln-001-test-plan",
-						completed: false,
+						status: "active" as const,
 					},
 				],
 			};
@@ -405,19 +421,17 @@ describe("SpecsManager", () => {
 
 		it("should determine component type from ID correctly", async () => {
 			// Create different types of components
-			const appData = {
-				type: "app" as const,
+			const appData = createValidComponentData("app", {
 				slug: "test-app",
 				name: "Test App",
 				description: "Test application",
-			};
+			});
 
-			const serviceData = {
-				type: "service" as const,
+			const serviceData = createValidComponentData("service", {
 				slug: "test-service",
 				name: "Test Service",
 				description: "Test service",
-			};
+			});
 
 			await manager.createComponent(appData);
 			await manager.createComponent(serviceData);
@@ -438,28 +452,29 @@ describe("SpecsManager", () => {
 					type: "requirement",
 					slug: "req1",
 					name: "Requirement 1",
-					description: "First requirement",
+						description: "First requirement",
 					criteria: [
 						{
-							id: "req-001-req1/crit-001",
-							description: "Test criteria",
-							plan_id: "pln-001-test-plan",
-							completed: false,
-						},
+						id: "crit-001",
+						description: "Test criteria",
+						status: "active" as const,
+					},
 					],
 				},
 				{
 					type: "plan",
 					slug: "plan1",
 					name: "Plan 1",
-					description: "First plan",
+						description: "First plan",
 					acceptance_criteria: "Plan should work",
 				},
 				{
-					type: "app",
-					slug: "app1",
-					name: "App 1",
-					description: "First app",
+					...createValidComponentData("app", {
+						slug: "app1",
+						name: "App 1",
+						description: "First app",
+					}),
+					type: "app" as const,
 				},
 			];
 
@@ -479,10 +494,9 @@ describe("SpecsManager", () => {
 				description: "Test description",
 				criteria: [
 					{
-						id: "req-001-test-req/crit-001",
+						id: "crit-001",
 						description: "Test criteria",
-						plan_id: "pln-001-test-plan",
-						completed: false,
+						status: "active" as const,
 					},
 				],
 			});
@@ -494,12 +508,13 @@ describe("SpecsManager", () => {
 				acceptance_criteria: "Should work",
 			});
 
-			await manager.createComponent({
-				type: "app",
-				slug: "test-app",
-				name: "Test App",
-				description: "Test description",
-			});
+			await manager.createComponent(
+				createValidComponentData("app", {
+					slug: "test-app",
+					name: "Test App",
+					description: "Test description",
+				}),
+			);
 
 			const allEntities = await manager.getAllEntities();
 
@@ -510,17 +525,16 @@ describe("SpecsManager", () => {
 	});
 
 	describe("Validation", () => {
-		it("should auto-fix requirement criteria IDs to match requirement number", async () => {
+		it("should create requirement with valid criteria format", async () => {
 			const requirementData = {
 				slug: "test-req",
 				name: "Test Requirement",
 				description: "Test description",
 				criteria: [
 					{
-						id: "req-999-test-req/crit-001", // Wrong number, will be auto-fixed
+						id: "crit-001",
 						description: "Test criteria",
-						plan_id: "pln-001-test-plan",
-						completed: false,
+						status: "active" as const,
 					},
 				],
 			};
@@ -528,7 +542,8 @@ describe("SpecsManager", () => {
 			const requirement = await manager.createRequirement(requirementData);
 
 			expect(requirement).toBeDefined();
-			expect(requirement.criteria[0].id).toBe("req-001-test-req/crit-001"); // Auto-fixed ID
+			// Criteria IDs use simple format
+			expect(requirement.criteria[0].id).toBe("crit-001");
 		});
 
 		it("should reject invalid component dependency IDs", async () => {
@@ -565,13 +580,14 @@ describe("SpecsManager", () => {
 
 		it("should validate component dependencies exist", async () => {
 			// Create a component with non-existent dependency
-			await manager.createComponent({
-				type: "app",
-				slug: "dependent-app",
-				name: "Dependent App",
-				description: "An app that depends on others",
-				depends_on: ["svc-999-non-existent"],
-			});
+			await manager.createComponent(
+				createValidComponentData("app", {
+					slug: "dependent-app",
+					name: "Dependent App",
+					description: "An app that depends on others",
+					depends_on: ["svc-999-non-existent"],
+				}),
+			);
 
 			const validation = await manager.validateReferences();
 
@@ -643,7 +659,7 @@ describe("SpecsManager", () => {
 		it("should handle update of non-existent requirement", async () => {
 			await expect(
 				manager.updateRequirement("req-999-non-existent", {
-					description: "Updated description",
+						description: "Updated description",
 				}),
 			).rejects.toThrow("Requirement with ID 'req-999-non-existent' not found");
 		});
@@ -651,7 +667,7 @@ describe("SpecsManager", () => {
 		it("should handle update of non-existent plan", async () => {
 			await expect(
 				manager.updatePlan("pln-999-non-existent", {
-					description: "Updated description",
+						description: "Updated description",
 				}),
 			).rejects.toThrow("Plan with ID 'pln-999-non-existent' not found");
 		});
@@ -659,7 +675,7 @@ describe("SpecsManager", () => {
 		it("should handle update of non-existent component", async () => {
 			await expect(
 				manager.updateComponent("app-999-non-existent", {
-					description: "Updated description",
+						description: "Updated description",
 				}),
 			).rejects.toThrow("Component with ID 'app-999-non-existent' not found");
 		});
@@ -693,14 +709,13 @@ describe("SpecsManager", () => {
 				manager.createRequirement({
 					slug: "test",
 					name: "Test",
-					description: "Test",
+						description: "Test",
 					criteria: [
 						{
-							id: "req-001-test/crit-001",
-							description: "Test criteria",
-							plan_id: "pln-001-test",
-							completed: false,
-						},
+						id: "crit-001",
+						description: "Test criteria",
+						status: "active" as const,
+					},
 					],
 				}),
 			).rejects.toThrow(); // Will throw due to directory creation issue
@@ -717,12 +732,13 @@ describe("SpecsManager", () => {
 
 			for (const { id, expectedType } of testCases) {
 				// Create a component of each type first
-				await manager.createComponent({
-					type: expectedType as Record<string, unknown>,
-					slug: "test",
-					name: "Test",
-					description: "Test",
-				});
+				await manager.createComponent(
+					createValidComponentData(expectedType as string, {
+						slug: "test",
+						name: "Test",
+						description: "Test",
+					}),
+				);
 
 				const component = await manager.getComponent(id);
 				expect(component?.type).toBe(expectedType);
@@ -740,10 +756,9 @@ describe("SpecsManager", () => {
 				priority: "critical",
 				criteria: [
 					{
-						id: "req-001-critical-incomplete/crit-001",
+						id: "crit-001",
 						description: "Test criteria",
-						plan_id: "pln-001-test",
-						completed: false,
+						status: "active" as const,
 					},
 				],
 			});
@@ -755,8 +770,9 @@ describe("SpecsManager", () => {
 				priority: "required",
 				criteria: [
 					{
-						id: "req-002-required-complete/crit-001",
+						id: "crit-001",
 						description: "Test criteria",
+						status: "active" as const,
 					},
 				],
 			});
@@ -809,21 +825,23 @@ describe("SpecsManager", () => {
 		});
 
 		it("should handle component filtering by type and folder", async () => {
-			await manager.createComponent({
-				type: "app",
-				slug: "frontend-app",
-				name: "Frontend App",
-				description: "Frontend application",
-				folder: "apps/frontend",
-			});
+			await manager.createComponent(
+				createValidComponentData("app", {
+					slug: "frontend-app",
+					name: "Frontend App",
+					description: "Frontend application",
+					folder: "apps/frontend",
+				}),
+			);
 
-			await manager.createComponent({
-				type: "service",
-				slug: "backend-service",
-				name: "Backend Service",
-				description: "Backend service",
-				folder: "services/backend",
-			});
+			await manager.createComponent(
+				createValidComponentData("service", {
+					slug: "backend-service",
+					name: "Backend Service",
+					description: "Backend service",
+					folder: "services/backend",
+				}),
+			);
 
 			// Filter by type
 			const apps = await manager.listComponents({
@@ -850,10 +868,9 @@ describe("SpecsManager", () => {
 				description: "First requirement",
 				criteria: [
 					{
-						id: "req-001-first/crit-001",
+						id: "crit-001",
 						description: "Test criteria",
-						plan_id: "pln-001-test",
-						completed: false,
+						status: "active" as const,
 					},
 				],
 			});
@@ -864,10 +881,9 @@ describe("SpecsManager", () => {
 				description: "Second requirement",
 				criteria: [
 					{
-						id: "req-002-second/crit-001",
+						id: "crit-001",
 						description: "Test criteria",
-						plan_id: "pln-001-test",
-						completed: false,
+						status: "active" as const,
 					},
 				],
 			});
@@ -883,10 +899,9 @@ describe("SpecsManager", () => {
 				description: "Test",
 				criteria: [
 					{
-						id: "req-001-test-requirement/crit-001",
+						id: "crit-001",
 						description: "Test criteria",
-						plan_id: "pln-001-test",
-						completed: false,
+						status: "active" as const,
 					},
 				],
 			});
@@ -910,10 +925,9 @@ describe("SpecsManager", () => {
 				description: "First requirement",
 				criteria: [
 					{
-						id: "req-001-first/crit-001",
+						id: "crit-001",
 						description: "Test criteria",
-						plan_id: "pln-001-test",
-						completed: false,
+						status: "active" as const,
 					},
 				],
 			});
@@ -931,10 +945,9 @@ describe("SpecsManager", () => {
 				description: "Test",
 				criteria: [
 					{
-						id: "req-001-test/crit-001",
+						id: "crit-001",
 						description: "Test criteria",
-						plan_id: "pln-001-test",
-						completed: false,
+						status: "active" as const,
 					},
 				],
 			});
@@ -955,10 +968,9 @@ describe("SpecsManager", () => {
 				description: "Test",
 				criteria: [
 					{
-						id: "req-001-test/crit-001",
+						id: "crit-001",
 						description: "Test criteria",
-						plan_id: "pln-001-test",
-						completed: false,
+						status: "active" as const,
 					},
 				],
 			});
@@ -972,12 +984,13 @@ describe("SpecsManager", () => {
 			});
 
 			// Create a component
-			await manager.createComponent({
-				type: "app",
-				slug: "test-app",
-				name: "Test App",
-				description: "Test description",
-			});
+			await manager.createComponent(
+				createValidComponentData("app", {
+					slug: "test-app",
+					name: "Test App",
+					description: "Test description",
+				}),
+			);
 
 			// Now list all to ensure files can be read properly
 			const requirements = await manager.listRequirements();
@@ -1036,10 +1049,9 @@ describe("SpecsManager", () => {
 				description: "Test",
 				criteria: [
 					{
-						id: "req-001-test/crit-001",
+						id: "crit-001",
 						description: "Test criteria",
-						plan_id: "pln-001-test",
-						completed: false,
+						status: "active" as const,
 					},
 				],
 			});

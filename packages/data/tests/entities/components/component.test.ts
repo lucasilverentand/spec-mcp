@@ -15,6 +15,25 @@ const minimalTestingSetup = {
 	test_patterns: [],
 };
 
+const minimalDeployment = {
+	platform: "Test Platform",
+};
+
+const minimalScope = {
+	in_scope: [
+		{
+			item: "Test functionality",
+			reasoning: "Core responsibility of this component",
+		},
+	],
+	out_of_scope: [
+		{
+			item: "External integrations",
+			reasoning: "Handled by other components",
+		},
+	],
+};
+
 describe("ComponentIdSchema", () => {
 	it("should accept valid component IDs", () => {
 		const validIds = [
@@ -84,6 +103,8 @@ describe("AppComponentSchema", () => {
 			created_at: new Date().toISOString(),
 			updated_at: new Date().toISOString(),
 			testing_setup: minimalTestingSetup,
+			deployment: minimalDeployment,
+			scope: minimalScope,
 		};
 
 		const parsed = AppComponentSchema.parse(validApp);
@@ -100,6 +121,8 @@ describe("AppComponentSchema", () => {
 			created_at: new Date().toISOString(),
 			updated_at: new Date().toISOString(),
 			testing_setup: minimalTestingSetup,
+			deployment: minimalDeployment,
+			scope: minimalScope,
 		};
 
 		const parsed = AppComponentSchema.parse(app);
@@ -107,7 +130,6 @@ describe("AppComponentSchema", () => {
 		expect(parsed.folder).toBe(".");
 		expect(parsed.depends_on).toEqual([]);
 		expect(parsed.external_dependencies).toEqual([]);
-		expect(parsed.constraints).toEqual([]);
 		expect(parsed.tech_stack).toEqual([]);
 		expect(parsed.deployment_targets).toEqual([]);
 		expect(parsed.environments).toEqual([
@@ -128,6 +150,8 @@ describe("AppComponentSchema", () => {
 			updated_at: new Date().toISOString(),
 			deployment_targets: ["ios", "android", "web"],
 			testing_setup: minimalTestingSetup,
+			deployment: minimalDeployment,
+			scope: minimalScope,
 		};
 
 		expect(() => AppComponentSchema.parse(app)).not.toThrow();
@@ -160,6 +184,8 @@ describe("AppComponentSchema", () => {
 			updated_at: new Date().toISOString(),
 			environments: ["development", "production"],
 			testing_setup: minimalTestingSetup,
+			deployment: minimalDeployment,
+			scope: minimalScope,
 		};
 
 		expect(() => AppComponentSchema.parse(app)).not.toThrow();
@@ -193,6 +219,8 @@ describe("ServiceComponentSchema", () => {
 			created_at: new Date().toISOString(),
 			updated_at: new Date().toISOString(),
 			testing_setup: minimalTestingSetup,
+			deployment: minimalDeployment,
+			scope: minimalScope,
 		};
 
 		const parsed = ServiceComponentSchema.parse(validService);
@@ -210,6 +238,8 @@ describe("ServiceComponentSchema", () => {
 			updated_at: new Date().toISOString(),
 			dev_port: 3000,
 			testing_setup: minimalTestingSetup,
+			deployment: minimalDeployment,
+			scope: minimalScope,
 		};
 
 		expect(() => ServiceComponentSchema.parse(service)).not.toThrow();
@@ -249,6 +279,8 @@ describe("ServiceComponentSchema", () => {
 				updated_at: new Date().toISOString(),
 				dev_port: port,
 				testing_setup: minimalTestingSetup,
+				deployment: minimalDeployment,
+				scope: minimalScope,
 			};
 
 			expect(() => ServiceComponentSchema.parse(service)).not.toThrow();
@@ -267,6 +299,8 @@ describe("LibraryComponentSchema", () => {
 			created_at: new Date().toISOString(),
 			updated_at: new Date().toISOString(),
 			testing_setup: minimalTestingSetup,
+			deployment: minimalDeployment,
+			scope: minimalScope,
 		};
 
 		const parsed = LibraryComponentSchema.parse(validLibrary);
@@ -284,6 +318,8 @@ describe("LibraryComponentSchema", () => {
 			updated_at: new Date().toISOString(),
 			package_name: "@company/ui-components",
 			testing_setup: minimalTestingSetup,
+			deployment: minimalDeployment,
+			scope: minimalScope,
 		};
 
 		expect(() => LibraryComponentSchema.parse(library)).not.toThrow();
@@ -319,6 +355,8 @@ describe("Component Dependencies", () => {
 			updated_at: new Date().toISOString(),
 			depends_on: ["svc-001-auth-service", "lib-002-ui-components"],
 			testing_setup: minimalTestingSetup,
+			deployment: minimalDeployment,
+			scope: minimalScope,
 		};
 
 		expect(() => AppComponentSchema.parse(component)).not.toThrow();
@@ -351,6 +389,8 @@ describe("Component Dependencies", () => {
 			updated_at: new Date().toISOString(),
 			external_dependencies: ["PostgreSQL", "Redis", "AWS S3"],
 			testing_setup: minimalTestingSetup,
+			deployment: minimalDeployment,
+			scope: minimalScope,
 		};
 
 		expect(() => ServiceComponentSchema.parse(component)).not.toThrow();

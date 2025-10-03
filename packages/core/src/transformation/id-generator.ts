@@ -16,6 +16,7 @@ const prefixMap: Record<EntityType, string> = {
 	service: "svc",
 	library: "lib",
 	constitution: "con",
+	decision: "dec",
 };
 
 const typeMap: Record<string, EntityType> = {
@@ -25,6 +26,7 @@ const typeMap: Record<string, EntityType> = {
 	svc: "service",
 	lib: "library",
 	con: "constitution",
+	dec: "decision",
 };
 
 export class IdGenerator implements IIdGenerator {
@@ -105,7 +107,7 @@ export function parseId(id: string): {
 	number: number;
 	slug: string;
 } | null {
-	const match = id.match(/^(req|pln|app|svc|lib|con)-(\d{3})-(.+)$/);
+	const match = id.match(/^(req|pln|app|svc|lib|con|dec)-(\d{3})-(.+)$/);
 	if (!match) {
 		return null;
 	}
@@ -172,13 +174,18 @@ export function generateChildId(
 	childType: string,
 	childNumber: number,
 ): string {
-	const parsed = parseId(parentId);
-	if (!parsed) {
-		throw new Error(`Invalid parent ID format: ${parentId}`);
+	// Validate parent ID format only if it's a full entity ID (not a sub-entity ID)
+	// Sub-entity IDs like "flow-001" are valid parents for nested items like steps
+	if (parentId.includes("-") && !parentId.match(/^(flow|task|tc|api|dm|step|crit)-\d{3}$/)) {
+		const parsed = parseId(parentId);
+		if (!parsed) {
+			throw new Error(`Invalid parent ID format: ${parentId}`);
+		}
 	}
 
+	// Return simple child ID without parent prefix
 	const childId = `${childType}-${childNumber.toString().padStart(3, "0")}`;
-	return `${parentId}/${childId}`;
+	return childId;
 }
 
 export function generateCriteriaId(

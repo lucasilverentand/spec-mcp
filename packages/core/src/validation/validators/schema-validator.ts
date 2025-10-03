@@ -1,6 +1,7 @@
 import type {
 	AnyEntity,
 	AppComponent,
+	Decision,
 	LibraryComponent,
 	Plan,
 	Requirement,
@@ -9,6 +10,7 @@ import type {
 import {
 	AppComponentSchema,
 	ConstitutionSchema,
+	DecisionSchema,
 	LibraryComponentSchema,
 	PlanSchema,
 	RequirementSchema,
@@ -60,6 +62,9 @@ function validateEntity(entity: AnyEntity): ValidationResult {
 				break;
 			case "constitution":
 				ConstitutionSchema.parse(entity);
+				break;
+			case "decision":
+				DecisionSchema.parse(entity);
 				break;
 			default:
 				// This should never happen due to AnyEntity typing
@@ -342,8 +347,9 @@ function createBaseEntity(entityType: string): AnyEntity {
 				priority: "required",
 				criteria: [
 					{
-						id: "req-001-test-entity/crit-001",
+						id: "crit-001",
 						description: "Test criteria",
+						status: "active",
 					},
 				],
 			} as Requirement;
@@ -371,11 +377,24 @@ function createBaseEntity(entityType: string): AnyEntity {
 				...baseFields,
 				type: "app",
 				folder: ".",
+				tech_stack: [],
+				testing_setup: {
+					frameworks: [],
+					coverage_target: 90,
+					test_commands: {},
+					test_patterns: [],
+				},
+				deployment: {
+					platform: "unknown",
+					environment_vars: [],
+					secrets: [],
+				},
+				scope: {
+					in_scope: [],
+					out_of_scope: [],
+				},
 				depends_on: [],
 				external_dependencies: [],
-				capabilities: [],
-				constraints: [],
-				tech_stack: [],
 				deployment_targets: [],
 				environments: ["development"],
 			} as AppComponent;
@@ -385,12 +404,24 @@ function createBaseEntity(entityType: string): AnyEntity {
 				...baseFields,
 				type: "service",
 				folder: ".",
+				tech_stack: [],
+				testing_setup: {
+					frameworks: [],
+					coverage_target: 90,
+					test_commands: {},
+					test_patterns: [],
+				},
+				deployment: {
+					platform: "unknown",
+					environment_vars: [],
+					secrets: [],
+				},
+				scope: {
+					in_scope: [],
+					out_of_scope: [],
+				},
 				depends_on: [],
 				external_dependencies: [],
-				capabilities: [],
-				constraints: [],
-				tech_stack: [],
-				// Add any other required ServiceComponent properties here if missing
 			} as ServiceComponent;
 
 		case "library":
@@ -398,13 +429,46 @@ function createBaseEntity(entityType: string): AnyEntity {
 				...baseFields,
 				type: "library",
 				folder: ".",
+				tech_stack: [],
+				testing_setup: {
+					frameworks: [],
+					coverage_target: 90,
+					test_commands: {},
+					test_patterns: [],
+				},
+				deployment: {
+					platform: "unknown",
+					environment_vars: [],
+					secrets: [],
+				},
+				scope: {
+					in_scope: [],
+					out_of_scope: [],
+				},
 				depends_on: [],
 				external_dependencies: [],
-				capabilities: [],
-				constraints: [],
-				tech_stack: [],
-				environments: ["development"],
 			} as LibraryComponent;
+
+		case "decision":
+			return {
+				...baseFields,
+				type: "decision",
+				decision: "",
+				context: "",
+				status: "proposed",
+				alternatives: [],
+				consequences: {
+					positive: [],
+					negative: [],
+					risks: [],
+					mitigation: [],
+				},
+				affects_components: [],
+				affects_requirements: [],
+				affects_plans: [],
+				informed_by_articles: [],
+				references: [],
+			} as Decision;
 
 		default:
 			throw new Error(`Unknown entity type: ${entityType}`);

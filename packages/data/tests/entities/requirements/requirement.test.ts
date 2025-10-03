@@ -53,7 +53,7 @@ describe("AcceptanceCriteriaIdSchema", () => {
 			"criteria-001", // wrong prefix
 			"crit-1", // number not padded
 			"crit-", // missing number
-			"req-001-test/crit-001", // old format with parent
+			"req-001-test-crit-001", // missing slash separator
 			"", // empty
 		];
 
