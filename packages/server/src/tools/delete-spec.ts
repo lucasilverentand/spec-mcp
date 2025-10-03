@@ -3,7 +3,7 @@ import type { SpecOperations } from "@spec-mcp/core";
 import { z } from "zod";
 import { formatDeleteResult } from "../utils/result-formatter.js";
 import { wrapToolHandler } from "../utils/tool-wrapper.js";
-import { wizardHelper } from "../utils/wizard-helper.js";
+import { creationFlowHelper } from "../utils/creation-flow-helper.js";
 import type { ToolContext } from "./index.js";
 
 /**
@@ -11,12 +11,13 @@ import type { ToolContext } from "./index.js";
  */
 function detectEntityType(
 	id: string,
-): "requirement" | "plan" | "component" | "constitution" | "draft" | null {
+): "requirement" | "plan" | "component" | "constitution" | "decision" | "draft" | null {
 	if (id.startsWith("draft-")) return "draft";
 	if (/^req-\d{3}-.+$/.test(id)) return "requirement";
 	if (/^pln-\d{3}-.+$/.test(id)) return "plan";
 	if (/^(app|svc|lib)-\d{3}-.+$/.test(id)) return "component";
 	if (/^con-\d{3}-.+$/.test(id)) return "constitution";
+	if (/^dec-\d{3}-.+$/.test(id)) return "decision";
 	return null;
 }
 
@@ -71,7 +72,7 @@ export function registerDeleteSpecTool(
 
 				// Handle draft deletion
 				if (entityType === "draft") {
-					const draft = wizardHelper.getDraft(validatedId);
+					const draft = creationFlowHelper.getDraft(validatedId);
 					if (!draft) {
 						return {
 							content: [
@@ -91,7 +92,7 @@ export function registerDeleteSpecTool(
 						};
 					}
 
-					const deleted = await wizardHelper.deleteDraft(validatedId);
+					const deleted = await creationFlowHelper.deleteDraft(validatedId);
 					if (deleted) {
 						return {
 							content: [
@@ -131,23 +132,26 @@ export function registerDeleteSpecTool(
 				}
 
 				// Handle finalized spec deletion
-				let result;
 				switch (entityType) {
-					case "requirement":
-						result = await operations.deleteRequirement(validatedId);
+					case "requirement": {
+						const result = await operations.deleteRequirement(validatedId);
 						return formatDeleteResult(result, "requirement", validatedId);
+					}
 
-					case "plan":
-						result = await operations.deletePlan(validatedId);
+					case "plan": {
+						const result = await operations.deletePlan(validatedId);
 						return formatDeleteResult(result, "plan", validatedId);
+					}
 
-					case "component":
-						result = await operations.deleteComponent(validatedId);
+					case "component": {
+						const result = await operations.deleteComponent(validatedId);
 						return formatDeleteResult(result, "component", validatedId);
+					}
 
-					case "constitution":
-						result = await operations.deleteConstitution(validatedId);
+					case "constitution": {
+						const result = await operations.deleteConstitution(validatedId);
 						return formatDeleteResult(result, "constitution", validatedId);
+					}
 
 					default:
 						return {

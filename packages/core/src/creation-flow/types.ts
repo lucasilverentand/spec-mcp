@@ -1,21 +1,6 @@
 /**
- * Wizard system types for step-by-step spec creation
+ * CreationFlow system types for step-by-step spec creation
  */
-
-export interface ValidationRule {
-	type:
-		| "required"
-		| "min_length"
-		| "max_length"
-		| "contains_rationale"
-		| "no_implementation"
-		| "measurable"
-		| "specific_language";
-	field?: string;
-	value?: number;
-	keywords?: string[];
-	message?: string;
-}
 
 export interface ValidationResult {
 	step: string;
@@ -32,13 +17,12 @@ export interface StepDefinition {
 	description: string;
 	prompt: string;
 	required_fields: string[];
-	validation_rules: ValidationRule[];
 	next_step: string | null;
 }
 
 export interface Draft {
 	id: string;
-	type: "requirement" | "component" | "plan";
+	type: "requirement" | "component" | "plan" | "constitution" | "decision";
 	current_step: number;
 	total_steps: number;
 	data: Record<string, unknown>;
@@ -57,4 +41,8 @@ export interface StepResponse {
 	validation?: ValidationResult;
 	next_step?: string;
 	completed?: boolean;
+	// Enhanced feedback
+	field_hints?: Record<string, string>; // Field-specific helpful hints
+	examples?: Record<string, unknown>; // Example values for current step
+	progress_summary?: string; // Summary of what's been completed
 }

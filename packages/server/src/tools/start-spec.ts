@@ -2,7 +2,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { SpecOperations } from "@spec-mcp/core";
 import { z } from "zod";
 import { wrapToolHandler } from "../utils/tool-wrapper.js";
-import { wizardHelper } from "../utils/wizard-helper.js";
+import { creationFlowHelper } from "../utils/creation-flow-helper.js";
 import type { ToolContext } from "./index.js";
 
 const SpecTypeSchema = z.enum([
@@ -10,6 +10,7 @@ const SpecTypeSchema = z.enum([
 	"component",
 	"plan",
 	"constitution",
+	"decision",
 ]);
 
 /**
@@ -17,7 +18,7 @@ const SpecTypeSchema = z.enum([
  */
 export function registerStartSpecTool(
 	server: McpServer,
-	operations: SpecOperations,
+	_operations: SpecOperations,
 	context: ToolContext,
 ) {
 	server.registerTool(
@@ -25,11 +26,11 @@ export function registerStartSpecTool(
 		{
 			title: "Start Spec",
 			description:
-				"Start creating a new specification (requirement, component, plan, or constitution). " +
+				"Start creating a new specification (requirement, component, plan, constitution, or decision). " +
 				"Creates a draft and returns the first field to fill. Drafts are persisted as .draft.yml files.",
 			inputSchema: {
 				type: SpecTypeSchema.describe(
-					"Type of specification to create: requirement, component, plan, or constitution",
+					"Type of specification to create: requirement, component, plan, constitution, or decision",
 				),
 				slug: z
 					.string()
@@ -44,9 +45,9 @@ export function registerStartSpecTool(
 				// Validate slug
 				const validatedSlug = context.inputValidator.validateSlug(slug);
 
-				// Start wizard session
-				const response = await wizardHelper.start(
-					type as "requirement" | "component" | "plan",
+				// Start creation flow session
+				const response = await creationFlowHelper.start(
+					type as "requirement" | "component" | "plan" | "constitution" | "decision",
 					validatedSlug,
 				);
 

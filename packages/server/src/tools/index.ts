@@ -23,7 +23,7 @@ export function registerAllTools(
 	operations: SpecOperations,
 	context: ToolContext,
 ) {
-	// Simplified wizard-based CRUD tools (3 tools)
+	// Simplified creation flow CRUD tools (3 tools)
 	registerStartSpecTool(server, operations, context); // start_spec - create a draft
 	registerUpdateSpecTool(server, operations, context); // update_spec - fill fields one at a time
 	registerDeleteSpecTool(server, operations, context); // delete_spec - delete draft or finalized spec

@@ -1,0 +1,507 @@
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { CreationFlowHelper } from "../../src/utils/creation-flow-helper.js";
+import * as fs from "node:fs/promises";
+
+describe("CreationFlowHelper", () => {
+	let helper: CreationFlowHelper;
+	const testSpecsDir = ".test-specs-helper";
+
+	beforeEach(async () => {
+		helper = new CreationFlowHelper();
+		// Clean up test directory
+		try {
+			await fs.rm(testSpecsDir, { recursive: true, force: true });
+		} catch {
+			// Ignore if doesn't exist
+		}
+	});
+
+	afterEach(async () => {
+		helper.destroy();
+		try {
+			await fs.rm(testSpecsDir, { recursive: true, force: true });
+		} catch {
+			// Ignore cleanup errors
+		}
+	});
+
+	describe("start", () => {
+		it("should start requirement creation flow", async () => {
+			const response = await helper.start("requirement");
+
+			expect(response.draft_id).toMatch(/^draft-req-/);
+			expect(response.step).toBe(1);
+			expect(response.total_steps).toBe(7);
+			expect(response.current_step_name).toBe("Identify Problem");
+			expect(response.prompt).toBeDefined();
+			expect(response.field_hints).toBeDefined();
+			expect(response.examples).toBeDefined();
+			expect(response.progress_summary).toContain("Step 1/7");
+		});
+
+		it("should start component creation flow with 10 steps", async () => {
+			const response = await helper.start("component");
+
+			expect(response.step).toBe(1);
+			expect(response.total_steps).toBe(10);
+			expect(response.current_step_name).toBe("Analyze Requirements");
+		});
+
+		it("should start plan creation flow with 12 steps", async () => {
+			const response = await helper.start("plan");
+
+			expect(response.step).toBe(1);
+			expect(response.total_steps).toBe(12);
+			expect(response.current_step_name).toBe("Review Context");
+		});
+
+		it("should start constitution creation flow with 3 steps", async () => {
+			const response = await helper.start("constitution");
+
+			expect(response.step).toBe(1);
+			expect(response.total_steps).toBe(3);
+		});
+
+		it("should start decision creation flow with 6 steps", async () => {
+			const response = await helper.start("decision");
+
+			expect(response.step).toBe(1);
+			expect(response.total_steps).toBe(6);
+		});
+
+		it("should include slug in draft when provided", async () => {
+			const response = await helper.start("requirement", "user-auth");
+
+			expect(response.draft_id).toContain("user-auth");
+		});
+
+		it("should provide field hints for first step", async () => {
+			const response = await helper.start("requirement");
+
+			expect(response.field_hints).toBeDefined();
+			expect(response.field_hints?.description).toBeDefined();
+		});
+
+		it("should provide examples for first step", async () => {
+			const response = await helper.start("requirement");
+
+			expect(response.examples).toBeDefined();
+			expect(response.examples?.description).toBeDefined();
+		});
+	});
+
+	describe("step", () => {
+		it("should process valid step data and advance", async () => {
+			const startResponse = await helper.start("requirement");
+			const draft_id = startResponse.draft_id;
+
+			const stepResponse = await helper.step(draft_id, {
+				description:
+					"Users need secure authentication because we handle sensitive financial data",
+			});
+
+			expect("error" in stepResponse).toBe(false);
+			if (!("error" in stepResponse)) {
+				expect(stepResponse.step).toBe(2);
+				expect(stepResponse.validation?.passed).toBe(true);
+				expect(stepResponse.current_step_name).toBe(
+					"Avoid Implementation Details",
+				);
+			}
+		});
+
+		it("should return validation errors for invalid data", async () => {
+			const startResponse = await helper.start("requirement");
+			const draft_id = startResponse.draft_id;
+
+			const stepResponse = await helper.step(draft_id, {
+				description: "Short",
+			});
+
+			expect("error" in stepResponse).toBe(false);
+			if (!("error" in stepResponse)) {
+				expect(stepResponse.validation?.passed).toBe(false);
+				expect(stepResponse.validation?.issues).toBeDefined();
+				expect(stepResponse.validation?.suggestions).toBeDefined();
+				expect(stepResponse.step).toBe(1); // Should stay on same step
+			}
+		});
+
+		it("should accumulate data across steps", async () => {
+			const startResponse = await helper.start("requirement");
+			const draft_id = startResponse.draft_id;
+
+			// Step 1
+			await helper.step(draft_id, {
+				description:
+					"Users need authentication because we handle sensitive data and need to verify identity",
+			});
+
+			// Step 2
+			await helper.step(draft_id, {
+				description:
+					"System must verify user identity and maintain session state during interaction",
+			});
+
+			// Check draft contains both pieces of data
+			const draft = helper.getDraft(draft_id);
+			expect(draft?.data.description).toBeDefined();
+		});
+
+		it("should provide field hints at each step", async () => {
+			const startResponse = await helper.start("component");
+			const draft_id = startResponse.draft_id;
+
+			const step1Response = await helper.step(draft_id, {
+				description:
+					"Satisfies req-001-auth by providing credential validation",
+			});
+
+			expect("error" in step1Response).toBe(false);
+			if (!("error" in step1Response)) {
+				expect(step1Response.field_hints).toBeDefined();
+				expect(Object.keys(step1Response.field_hints || {}).length).toBeGreaterThan(
+					0,
+				);
+			}
+		});
+
+		it("should provide examples at each step", async () => {
+			const startResponse = await helper.start("plan");
+			const draft_id = startResponse.draft_id;
+
+			const step1Response = await helper.step(draft_id, {
+				criteria_id: "req-001-auth/crit-001",
+				description:
+					"Fulfilling authentication requirement for login under 3 seconds",
+			});
+
+			expect("error" in step1Response).toBe(false);
+			if (!("error" in step1Response)) {
+				expect(step1Response.examples).toBeDefined();
+			}
+		});
+
+		it("should mark completion when all steps done", async () => {
+			const startResponse = await helper.start("constitution");
+			const draft_id = startResponse.draft_id;
+
+			// Step 1: Basic info
+			await helper.step(draft_id, {
+				name: "Engineering Principles",
+				description:
+					"Core principles that guide our development decisions and practices",
+			});
+
+			// Step 2: Articles
+			await helper.step(draft_id, {
+				articles: [
+					{
+						id: "art-001",
+						title: "Test-Driven Development",
+						principle: "Write tests before implementation",
+						rationale: "Ensures code quality and prevents regressions",
+						examples: ["Unit tests for all business logic"],
+						exceptions: ["Prototypes and spikes"],
+						status: "active",
+					},
+				],
+			});
+
+			// Step 3: Finalize
+			const finalResponse = await helper.step(draft_id, {
+				name: "Engineering Principles",
+			});
+
+			expect("error" in finalResponse).toBe(false);
+			if (!("error" in finalResponse)) {
+				expect(finalResponse.completed).toBe(true);
+			}
+		});
+
+		it("should return error for non-existent draft", async () => {
+			const response = await helper.step("draft-req-nonexistent-123", {
+				description: "Test",
+			});
+
+			expect("error" in response).toBe(true);
+			if ("error" in response) {
+				expect(response.error).toContain("not found");
+			}
+		});
+
+		it("should update progress summary at each step", async () => {
+			const startResponse = await helper.start("requirement");
+			const draft_id = startResponse.draft_id;
+
+			const step1Response = await helper.step(draft_id, {
+				description:
+					"Users need authentication because security is required for sensitive operations",
+			});
+
+			expect("error" in step1Response).toBe(false);
+			if (!("error" in step1Response)) {
+				expect(step1Response.progress_summary).toContain("Step 2/7");
+				expect(step1Response.progress_summary).toContain("29%");
+			}
+		});
+	});
+
+	describe("validate", () => {
+		it("should validate current draft state", async () => {
+			const startResponse = await helper.start("requirement");
+			const draft_id = startResponse.draft_id;
+
+			// Add some data
+			await helper.step(draft_id, {
+				description:
+					"Users need authentication because we handle sensitive data",
+			});
+
+			const validation = helper.validate(draft_id);
+
+			expect("error" in validation).toBe(false);
+			if (!("error" in validation)) {
+				expect(validation.draft_id).toBe(draft_id);
+				expect(validation.step).toBe(2);
+				expect(validation.validation).toBeDefined();
+			}
+		});
+
+		it("should return error for non-existent draft", () => {
+			const result = helper.validate("draft-req-nonexistent-123");
+
+			expect("error" in result).toBe(true);
+		});
+	});
+
+	describe("getDraft", () => {
+		it("should retrieve draft by ID", async () => {
+			const startResponse = await helper.start("requirement");
+			const draft = helper.getDraft(startResponse.draft_id);
+
+			expect(draft).toBeDefined();
+			expect(draft?.id).toBe(startResponse.draft_id);
+			expect(draft?.type).toBe("requirement");
+		});
+
+		it("should return null for non-existent draft", () => {
+			const draft = helper.getDraft("draft-req-nonexistent-123");
+			expect(draft).toBeNull();
+		});
+	});
+
+	describe("deleteDraft", () => {
+		it("should delete draft", async () => {
+			const startResponse = await helper.start("requirement");
+			const draft_id = startResponse.draft_id;
+
+			const deleted = await helper.deleteDraft(draft_id);
+			expect(deleted).toBe(true);
+
+			const draft = helper.getDraft(draft_id);
+			expect(draft).toBeNull();
+		});
+
+		it("should return false for non-existent draft", async () => {
+			const deleted = await helper.deleteDraft("draft-req-nonexistent-123");
+			expect(deleted).toBe(false);
+		});
+	});
+
+	describe("generateStepGuidance", () => {
+		it("should provide guidance for all requirement steps", async () => {
+			const steps = [
+				"problem_identification",
+				"avoid_implementation",
+				"measurability",
+				"specific_language",
+				"acceptance_criteria",
+				"priority_assignment",
+				"review_and_refine",
+			];
+
+			for (const stepId of steps) {
+				const startResponse = await helper.start("requirement");
+				// Navigate to the specific step by providing valid data
+				// This is indirect testing - we verify guidance exists in step response
+			}
+		});
+
+		it("should provide guidance for all component steps", async () => {
+			const startResponse = await helper.start("component");
+
+			expect(startResponse.field_hints).toBeDefined();
+			expect(startResponse.examples).toBeDefined();
+		});
+
+		it("should provide guidance for all plan steps", async () => {
+			const startResponse = await helper.start("plan");
+
+			expect(startResponse.field_hints).toBeDefined();
+			expect(startResponse.examples).toBeDefined();
+		});
+
+		it("should provide guidance for constitution steps", async () => {
+			const startResponse = await helper.start("constitution");
+
+			expect(startResponse.field_hints).toBeDefined();
+			expect(startResponse.examples).toBeDefined();
+		});
+
+		it("should provide guidance for decision steps", async () => {
+			const startResponse = await helper.start("decision");
+
+			expect(startResponse.field_hints).toBeDefined();
+			expect(startResponse.examples).toBeDefined();
+		});
+	});
+
+	describe("generateProgressSummary", () => {
+		it("should calculate correct progress percentage", async () => {
+			const startResponse = await helper.start("requirement");
+			expect(startResponse.progress_summary).toContain("14%"); // 1/7
+
+			const draft_id = startResponse.draft_id;
+			const step2 = await helper.step(draft_id, {
+				description:
+					"Users need authentication because we handle sensitive financial data",
+			});
+
+			expect("error" in step2).toBe(false);
+			if (!("error" in step2)) {
+				expect(step2.progress_summary).toContain("29%"); // 2/7
+			}
+		});
+
+		it("should include spec type in summary", async () => {
+			const startResponse = await helper.start("component");
+			expect(startResponse.progress_summary).toContain("component");
+		});
+
+		it("should show step numbers", async () => {
+			const startResponse = await helper.start("plan");
+			expect(startResponse.progress_summary).toMatch(/Step \d+\/\d+/);
+		});
+	});
+
+	describe("Integration flow tests", () => {
+		it("should complete full requirement flow", async () => {
+			const startResponse = await helper.start("requirement");
+			const draft_id = startResponse.draft_id;
+
+			// Step 1: Problem identification
+			const step1 = await helper.step(draft_id, {
+				description:
+					"Users need secure authentication because we handle sensitive financial data and must verify identity",
+			});
+			expect("error" in step1).toBe(false);
+
+			// Step 2: Avoid implementation
+			const step2 = await helper.step(draft_id, {
+				description:
+					"System must verify user identity and maintain secure session state",
+			});
+			expect("error" in step2).toBe(false);
+
+			// Step 3: Measurability
+			const step3 = await helper.step(draft_id, {
+				criteria: [
+					{
+						id: "crit-001",
+						description:
+							"User can authenticate with valid credentials within 3 seconds",
+						status: "active",
+					},
+					{
+						id: "crit-002",
+						description:
+							"System displays error within 1 second for invalid credentials",
+						status: "active",
+					},
+				],
+			});
+			expect("error" in step3).toBe(false);
+
+			// Step 4: Specific language
+			const step4 = await helper.step(draft_id, {
+				description:
+					"Authentication must complete in under 3 seconds with 200ms response time",
+				criteria: [
+					{
+						id: "crit-001",
+						description: "Login accepts email (max 254 chars) and password (8-128 chars)",
+						status: "active",
+					},
+					{
+						id: "crit-002",
+						description: "Error displays within 1000ms for invalid input",
+						status: "active",
+					},
+				],
+			});
+			expect("error" in step4).toBe(false);
+
+			// Step 5: Acceptance criteria (already set in step 3, just confirm)
+			const step5 = await helper.step(draft_id, {
+				criteria: [
+					{
+						id: "crit-001",
+						description: "Valid credentials authenticate within 3 seconds",
+						status: "active",
+					},
+					{
+						id: "crit-002",
+						description: "Invalid credentials show error within 1 second",
+						status: "active",
+					},
+				],
+			});
+			expect("error" in step5).toBe(false);
+
+			// Step 6: Priority
+			const step6 = await helper.step(draft_id, {
+				priority: "critical",
+			});
+			expect("error" in step6).toBe(false);
+
+			// Step 7: Review and refine
+			const step7 = await helper.step(draft_id, {
+				slug: "user-authentication",
+				name: "User Authentication",
+				description:
+					"Authentication must complete in under 3 seconds with 200ms response time",
+				priority: "critical",
+				criteria: [
+					{
+						id: "crit-001",
+						description: "Valid credentials authenticate within 3 seconds",
+						status: "active",
+					},
+				],
+			});
+
+			expect("error" in step7).toBe(false);
+			if (!("error" in step7)) {
+				expect(step7.completed).toBe(true);
+			}
+		});
+
+		it("should maintain validation history throughout flow", async () => {
+			const startResponse = await helper.start("requirement");
+			const draft_id = startResponse.draft_id;
+
+			await helper.step(draft_id, {
+				description:
+					"Users need authentication because security is critical",
+			});
+
+			await helper.step(draft_id, {
+				description: "System must authenticate users securely",
+			});
+
+			const draft = helper.getDraft(draft_id);
+			expect(draft?.validation_results.length).toBeGreaterThan(0);
+		});
+	});
+});

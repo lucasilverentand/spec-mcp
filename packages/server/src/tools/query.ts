@@ -332,21 +332,11 @@ function applyFilters(entities: AnyEntity[], filters: Filters): AnyEntity[] {
 				return false;
 		}
 
-		// Constitution filters
+		// Constitution filters - constitutions don't have status or applies_to at entity level
+		// These filters would need to be applied to articles within constitutions
 		if (entity.type === "constitution") {
-			const con = entity as { status: string; applies_to: string[] };
-			if (
-				filters.constitution_status &&
-				!filters.constitution_status.includes(
-					con.status as "draft" | "active" | "archived",
-				)
-			)
-				return false;
-			if (
-				filters.applies_to &&
-				!con.applies_to.some((a) => filters.applies_to?.includes(a as never))
-			)
-				return false;
+			// Constitution-specific filtering could be added here if needed
+			// Currently constitutions are filtered by base fields (name, description, etc.)
 		}
 
 		return true;
@@ -689,7 +679,7 @@ async function handleSubEntityLookup(
 	}
 
 	for (const plan of plans) {
-		let subEntity;
+		let subEntity: unknown;
 
 		switch (subEntityType) {
 			case "task":
@@ -756,7 +746,7 @@ async function handleSearch(
 		return formatResult(entitiesResult);
 	}
 
-	let { requirements, plans, components } = entitiesResult.data;
+	const { requirements, plans, components } = entitiesResult.data;
 	let allEntities: AnyEntity[] = [...requirements, ...plans, ...components];
 
 	// Apply type filter
@@ -839,7 +829,7 @@ async function handleFilteredList(
 		return formatResult(entitiesResult);
 	}
 
-	let { requirements, plans, components } = entitiesResult.data;
+	const { requirements, plans, components } = entitiesResult.data;
 	let allEntities: AnyEntity[] = [...requirements, ...plans, ...components];
 
 	// Apply type filter

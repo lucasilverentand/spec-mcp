@@ -4,7 +4,7 @@ import { parseYaml, stringifyYaml } from "../transformation/yaml-transformer.js"
 import type { Draft } from "./types.js";
 
 /**
- * Manages wizard draft state with file-based persistence
+ * Manages creation flow draft state with file-based persistence
  */
 export class DraftManager {
 	private drafts: Map<string, Draft> = new Map();
@@ -82,7 +82,7 @@ export class DraftManager {
 		const filePath = path.join(this.draftsDir, fileName);
 		try {
 			await fs.unlink(filePath);
-		} catch (err) {
+		} catch {
 			// Ignore if file doesn't exist
 		}
 	}
@@ -91,7 +91,7 @@ export class DraftManager {
 	 * Create a new draft
 	 */
 	async create(
-		type: "requirement" | "component" | "plan",
+		type: "requirement" | "component" | "plan" | "constitution" | "decision",
 		slug?: string,
 	): Promise<Draft> {
 		const id = this.generateDraftId(type, slug);
@@ -100,7 +100,15 @@ export class DraftManager {
 
 		// Determine total steps based on type
 		const totalSteps =
-			type === "requirement" ? 7 : type === "component" ? 10 : 12;
+			type === "requirement"
+				? 7
+				: type === "component"
+					? 10
+					: type === "plan"
+						? 12
+						: type === "constitution"
+							? 3
+							: 6; // decision
 
 		const draft: Draft = {
 			id,
@@ -170,7 +178,14 @@ export class DraftManager {
 	/**
 	 * List all drafts (optionally filtered by type)
 	 */
-	list(type?: "requirement" | "component" | "plan"): Draft[] {
+	list(
+		type?:
+			| "requirement"
+			| "component"
+			| "plan"
+			| "constitution"
+			| "decision",
+	): Draft[] {
 		const allDrafts = Array.from(this.drafts.values());
 		if (!type) return allDrafts;
 		return allDrafts.filter((draft) => draft.type === type);
@@ -203,11 +218,19 @@ export class DraftManager {
 	 * Generate a unique draft ID
 	 */
 	private generateDraftId(
-		type: "requirement" | "component" | "plan",
+		type: "requirement" | "component" | "plan" | "constitution" | "decision",
 		slug?: string,
 	): string {
 		const prefix =
-			type === "requirement" ? "req" : type === "component" ? "cmp" : "pln";
+			type === "requirement"
+				? "req"
+				: type === "component"
+					? "cmp"
+					: type === "plan"
+						? "pln"
+						: type === "constitution"
+							? "con"
+							: "dec"; // decision
 		if (slug) {
 			const timestamp = Date.now();
 			return `draft-${prefix}-${slug}-${timestamp}`;

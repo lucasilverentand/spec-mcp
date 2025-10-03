@@ -91,17 +91,18 @@ export type {
 	StepDefinition,
 	StepResponse,
 	ValidationResult,
-	ValidationRule,
-} from "./wizard/index.js";
-// Wizard system for step-by-step spec creation
+} from "./creation-flow/index.js";
+// Creation flow system for step-by-step spec creation
 export {
 	COMPONENT_STEPS,
+	CONSTITUTION_STEPS,
+	DECISION_STEPS,
 	DraftManager,
 	getStepDefinitions,
 	PLAN_STEPS,
 	REQUIREMENT_STEPS,
 	StepValidator,
-} from "./wizard/index.js";
+} from "./creation-flow/index.js";
 
 import {
 	CoverageAnalyzer as CoverageAnalyzerClass,

@@ -3,7 +3,7 @@ import type { SpecOperations } from "@spec-mcp/core";
 import { z } from "zod";
 import { formatResult } from "../utils/result-formatter.js";
 import { wrapToolHandler } from "../utils/tool-wrapper.js";
-import { wizardHelper } from "../utils/wizard-helper.js";
+import { creationFlowHelper } from "../utils/creation-flow-helper.js";
 import type { ToolContext } from "./index.js";
 
 /**
@@ -44,7 +44,7 @@ export function registerUpdateSpecTool(
 			"update_spec",
 			async ({ draft_id, field, value }) => {
 				// Get the draft to check its type
-				const draft = wizardHelper.getDraft(draft_id);
+				const draft = creationFlowHelper.getDraft(draft_id);
 				if (!draft) {
 					return {
 						content: [
@@ -70,9 +70,9 @@ export function registerUpdateSpecTool(
 					sanitizedValue = context.inputValidator.sanitizeString(value);
 				}
 
-				// Process the wizard step with the field data
+				// Process the creation flow step with the field data
 				const stepData = { [field]: sanitizedValue };
-				const stepResponse = await wizardHelper.step(draft_id, stepData);
+				const stepResponse = await creationFlowHelper.step(draft_id, stepData);
 
 				if ("error" in stepResponse) {
 					return {
@@ -97,7 +97,7 @@ export function registerUpdateSpecTool(
 				if (
 					stepResponse.validation &&
 					!stepResponse.validation.passed &&
-					stepResponse.validation.errors
+					stepResponse.validation.issues
 				) {
 					return {
 						content: [
@@ -108,7 +108,7 @@ export function registerUpdateSpecTool(
 										success: false,
 										draft_id,
 										field,
-										validation_errors: stepResponse.validation.errors,
+										validation_issues: stepResponse.validation.issues,
 										suggestions: stepResponse.validation.suggestions || [],
 										instructions:
 											"Please correct the field value and try again.",
@@ -125,7 +125,7 @@ export function registerUpdateSpecTool(
 				// Check if all steps are completed (auto-finalize)
 				if (stepResponse.completed) {
 					// Finalize the spec
-					const finalizedDraft = wizardHelper.getDraft(draft_id);
+					const finalizedDraft = creationFlowHelper.getDraft(draft_id);
 					if (!finalizedDraft) {
 						return {
 							content: [
@@ -148,7 +148,7 @@ export function registerUpdateSpecTool(
 					// Create the spec based on type
 					const draftData = finalizedDraft.data;
 					const specType = finalizedDraft.type;
-					let result;
+					let result: unknown;
 
 					try {
 						switch (specType) {
@@ -282,8 +282,9 @@ export function registerUpdateSpecTool(
 						}
 
 						// Delete draft after successful creation
+						// @ts-expect-error - Result can be any entity type
 						if (result.success) {
-							await wizardHelper.deleteDraft(draft_id);
+							await creationFlowHelper.deleteDraft(draft_id);
 							return {
 								content: [
 									{
@@ -293,7 +294,9 @@ export function registerUpdateSpecTool(
 												success: true,
 												completed: true,
 												message: `${specType} created successfully!`,
+												// @ts-expect-error - Result can be any entity type
 												spec_id: result.data?.id,
+												// @ts-expect-error - Result can be any entity type
 												spec: result.data,
 											},
 											null,
@@ -304,6 +307,7 @@ export function registerUpdateSpecTool(
 							};
 						}
 
+						// @ts-expect-error - Result can be any entity type, formatResult handles all
 						return formatResult(result);
 					} catch (error) {
 						return {
@@ -342,7 +346,7 @@ export function registerUpdateSpecTool(
 										stepResponse.validation?.passed === false
 											? {
 													passed: false,
-													errors: stepResponse.validation.errors,
+													issues: stepResponse.validation.issues,
 													suggestions: stepResponse.validation.suggestions,
 												}
 											: { passed: true },

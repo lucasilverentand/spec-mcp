@@ -282,7 +282,7 @@ function generateTasksFromCriteria(
 	tasks.push({
 		id: "task-003",
 		description: `Implement: ${criteria.description}`,
-		priority: "normal",
+		priority: "medium",
 		depends_on: ["task-002"],
 		completed: false,
 		verified: false,
@@ -296,7 +296,7 @@ function generateTasksFromCriteria(
 	tasks.push({
 		id: "task-004",
 		description: `Test implementation of: ${criteria.description}`,
-		priority: "normal",
+		priority: "medium",
 		depends_on: ["task-003"],
 		completed: false,
 		verified: false,
@@ -546,7 +546,7 @@ function generateMilestoneTasks(
 		const priority =
 			req.priority === "critical" || req.priority === "required"
 				? "high"
-				: "normal";
+				: "medium";
 		tasks.push({
 			id: `task-${(index + 2).toString().padStart(3, "0")}`,
 			description: `Implement requirement: ${req.name}`,
@@ -564,7 +564,7 @@ function generateMilestoneTasks(
 	tasks.push({
 		id: `task-${(requirements.length + 2).toString().padStart(3, "0")}`,
 		description: `Integration testing for milestone ${milestoneNumber}`,
-		priority: "normal",
+		priority: "medium",
 		depends_on: tasks.slice(1).map((t) => t.id),
 		completed: false,
 		verified: false,
@@ -698,7 +698,7 @@ function createTestingPlan(
 			{
 				id: "task-002",
 				description: "Implement automated tests",
-				priority: "normal",
+				priority: "medium",
 				depends_on: ["task-001"],
 				completed: false,
 				verified: false,
@@ -745,7 +745,7 @@ function createDocumentationPlan(
 			{
 				id: "task-001",
 				description: "Plan documentation structure and content",
-				priority: "normal",
+				priority: "medium",
 				depends_on: [],
 				completed: false,
 				verified: false,
@@ -757,7 +757,7 @@ function createDocumentationPlan(
 			{
 				id: "task-002",
 				description: "Create comprehensive documentation",
-				priority: "normal",
+				priority: "medium",
 				depends_on: ["task-001"],
 				completed: false,
 				verified: false,
