@@ -1,108 +1,134 @@
-# Spec MCP Server
+# Spec MCP
 
-An open-source Model Context Protocol (MCP) server for managing software project specifications with intelligent tooling and AI-powered assistance.
+A Model Context Protocol (MCP) server for managing software project specifications with intelligent tooling.
+
+## Overview
+
+Spec MCP provides a structured approach to managing software requirements, plans, components, decisions, and project constitutions through the Model Context Protocol. It enables AI assistants to help you create, query, and analyze project specifications in a standardized, traceable way.
 
 ## Features
 
-- 🆔 **Auto-generated IDs**: Sequential, validated IDs for all specification types
-- 📝 **CRUD Operations**: Create, read, update, delete specs with comprehensive validation
-- 🔄 **Flow Management**: Create and track user journeys, system flows, and data flows
-- 🧪 **Test Management**: Track test implementation and pass/fail status
-- ⚠️ **Error Handling**: Define and track error scenarios and recovery strategies
-- 🔗 **Cross-References**: Link flows to tasks, tests to flows, with validation
-- 📊 **Analysis Tools**: Dependency graphs, coverage reports, orphan detection
-- ✅ **Validation & Analysis**: Built-in tools that analyze specs and dependencies
-- 🤖 **AI Prompts**: Interactive prompts for guided spec creation using proven methodologies
+- **📋 Requirements Management** - Define what needs to be built with measurable acceptance criteria
+- **📐 Component Modeling** - Structure your architecture (apps, services, libraries)
+- **🗺️ Implementation Planning** - Create detailed plans with tasks, test cases, and API specs
+- **⚖️ Decision Tracking** - Document architectural decisions and their rationale
+- **📜 Project Constitutions** - Define guiding principles for your project
+- **🔍 Intelligent Querying** - Search, filter, and analyze specifications with powerful query tools
+- **📊 Dependency Analysis** - Understand relationships between specs, find orphans, detect cycles
+- **✅ Validation** - Automated validation with reference checking and health scoring
 
-## Quick Start
-
-### Installation
+## Installation
 
 ```bash
 npm install -g @spec-mcp/server
-# or
+```
+
+Or using pnpm:
+
+```bash
 pnpm add -g @spec-mcp/server
 ```
 
-### Usage
+## Quick Start
 
-1. **As MCP Server** - Configure in Claude Desktop:
+### 1. Configure MCP Client
+
+Add to your Claude Desktop or other MCP client configuration:
 
 ```json
 {
   "mcpServers": {
     "spec-mcp": {
-      "command": "spec-mcp",
+      "command": "node",
+      "args": ["/path/to/spec-mcp/packages/server/dist/index.js"],
       "env": {
-        "SPECS_ROOT": "/path/to/your/project/specs"
+        "SPECS_ROOT": ".specs"
       }
     }
   }
 }
 ```
 
-2. **Debug with MCP Inspector**:
+### 2. Create Your First Requirement
 
-```bash
-# From project root
-pnpm inspector
+Use the MCP tools through your AI assistant:
 
-# Or from packages/server
-cd packages/server
-pnpm inspector
+```typescript
+// Start creating a requirement
+start_spec({
+  type: "requirement",
+  slug: "user-authentication"
+})
+
+// Follow the guided 4-step flow
+update_spec({
+  draft_id: "draft-req-user-authentication-...",
+  field: "slug_and_name",
+  value: {
+    slug: "user-authentication",
+    name: "User Authentication System"
+  }
+})
 ```
 
-This will:
-- Build the server
-- Launch the MCP Inspector in your browser
-- Allow you to test tools interactively
-- Inspect requests/responses
-- Debug tool behavior
+### 3. Query and Analyze
 
-3. **Direct Usage**:
+```typescript
+// Query all requirements
+query({
+  types: ["requirement"],
+  mode: "summary"
+})
 
-```bash
-# Start the server
-spec-mcp serve
-
-# Validate specifications
-spec-mcp validate
-
-# Generate spec templates
-spec-mcp init
+// Analyze project health
+analyze({
+  analysis_type: "health",
+  include_breakdown: true
+})
 ```
 
-## Use Cases
+## Specification Types
 
-Perfect for:
-- **Software Development Teams**: Manage requirements, components, and implementation plans
-- **Project Managers**: Track progress, dependencies, and test coverage
-- **QA Engineers**: Define test scenarios and track coverage
-- **Technical Writers**: Maintain comprehensive project documentation
-- **Open Source Projects**: Collaborative specification management
+| Type | Purpose | Example |
+|------|---------|---------|
+| **Requirement** | Define what needs to be built with acceptance criteria | User authentication system with OAuth support |
+| **Component** | Model system architecture (apps, services, libraries) | Authentication service with database schema |
+| **Plan** | Implementation details with tasks and test cases | Plan for implementing OAuth provider |
+| **Decision** | Document architectural decisions | Decision to use JWT for session management |
+| **Constitution** | Project principles and guidelines | Code quality standards, security requirements |
 
-## Documentation
+## Available Tools
 
-- [Requirements Guide](./docs/REQUIREMENTS-GUIDE.md)
-- [Components Guide](./docs/COMPONENTS-GUIDE.md)
-- [Plans Guide](./docs/PLANS-GUIDE.md)
-- [Version Management](./docs/VERSION-MANAGEMENT.md)
+### Creation & Management
+- `start_spec` - Begin creating a new specification with guided flow
+- `update_spec` - Update a draft specification field by field
+- `delete_spec` - Delete a specification or draft
+
+### Querying
+- `query` - Comprehensive query with filtering, search, sorting, and pagination
+
+### Analysis
+- `analyze` - Dependency analysis, coverage reports, orphan detection, cycle detection, health scoring
+
+## Architecture
+
+This is a monorepo containing:
+
+- **`packages/server`** - MCP server implementation
+- **`packages/core`** - Core business logic and operations
+- **`packages/data`** - Data schemas and validation
+- **`packages/tsconfig`** - Shared TypeScript configuration
 
 ## Development
 
-This project uses a pnpm workspace with the following packages:
+### Prerequisites
 
-- `@spec-mcp/server` - Main MCP server package
-- `@spec-mcp/data` - Data management, schemas, and validation
-- `@spec-mcp/core` - Core business logic
+- Node.js >= 18.0.0
+- pnpm >= 8.0.0
 
 ### Setup
 
 ```bash
-# Clone the repository
-git clone https://github.com/lucasilverentand/spec-mcp.git
-cd spec-mcp
-
 # Install dependencies
 pnpm install
 
@@ -114,66 +140,42 @@ pnpm test
 
 # Start development mode
 pnpm dev
-```
 
-### Code Quality
-
-```bash
-# Check code quality
-pnpm check
-
-# Auto-fix issues
-pnpm check:fix
-
-# Type checking
-pnpm typecheck
-```
-
-### Debugging
-
-```bash
-# Launch MCP Inspector for interactive debugging
+# Run MCP inspector for debugging
 pnpm inspector
-
-# Set environment variables for inspector
-SPECS_ROOT=./test-specs LOG_LEVEL=debug pnpm inspector
 ```
 
-The MCP Inspector provides:
-- Visual tool browser
-- Interactive tool testing
-- Request/response inspection
-- Real-time server logs
-- Error debugging
+### Project Scripts
 
-## Contributing
+```bash
+pnpm build          # Build all packages
+pnpm dev            # Watch mode for all packages
+pnpm test           # Run tests
+pnpm typecheck      # Type checking
+pnpm lint           # Lint code
+pnpm format         # Format code
+pnpm check          # Run all checks (lint + format)
+pnpm pre-commit     # Pre-commit checks (lint + typecheck + test)
+```
 
-We welcome contributions!
+## Documentation
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests and documentation
-5. Submit a pull request
+Detailed documentation for each specification type:
+
+- [Requirements](./docs/spec-types/requirement.md)
+- [Components](./docs/spec-types/component.md)
+- [Plans](./docs/spec-types/plan.md)
+- [Decisions](./docs/spec-types/decision.md)
+- [Constitutions](./docs/spec-types/constitution.md)
 
 ## License
 
-MIT License - see [LICENSE](./LICENSE) file for details.
+MIT License - see [LICENSE](./LICENSE) for details
 
-## Support
+## Repository
 
-- 📖 [Documentation](./docs/)
-- 🐛 [Issue Tracker](https://github.com/lucasilverentand/spec-mcp/issues)
-- 💬 [Discussions](https://github.com/lucasilverentand/spec-mcp/discussions)
+https://github.com/lucasilverentand/spec-mcp
 
-## Roadmap
+## Contributing
 
-- [ ] Web-based specification editor
-- [ ] Integration with popular project management tools
-- [ ] Advanced visualization and reporting
-- [ ] Plugin system for custom workflows
-- [ ] Multi-language specification support
-
----
-
-Built with ❤️ by the open source community
+Contributions are welcome! Please feel free to submit issues and pull requests.
