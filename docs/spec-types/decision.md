@@ -74,7 +74,7 @@ The decision creation follows a **4-stage flow** that captures the decision cont
 **After each step submission:**
 
 1. The field value is validated
-2. The draft is updated and saved to `.specs/.drafts/draft-dec-{slug}-{timestamp}.draft.yml`
+2. The draft is updated and saved to `.specs/.drafts/dec-{slug}-{timestamp}.draft.yml`
 3. The next step is determined by reading the draft state and finding the next empty field
 4. Progress can be resumed at any time by continuing with the next empty field
 

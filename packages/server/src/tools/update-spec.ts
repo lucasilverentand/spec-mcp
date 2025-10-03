@@ -26,7 +26,7 @@ export function registerUpdateSpecTool(
 				draft_id: z
 					.string()
 					.describe(
-						"Draft ID returned from start_spec (e.g., 'draft-req-auth-1234567890')",
+						"Draft ID returned from start_spec (e.g., 'req-auth-1234567890')",
 					),
 				field: z
 					.string()

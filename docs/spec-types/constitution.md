@@ -55,7 +55,7 @@ The constitution creation follows a **dynamic multi-stage flow** where the total
 
 **After each step submission:**
 1. The field value is validated
-2. The draft is updated and saved to `.specs/.drafts/draft-con-{slug}-{timestamp}.draft.yml`
+2. The draft is updated and saved to `.specs/.drafts/con-{slug}-{timestamp}.draft.yml`
 3. The next step is determined by reading the draft state and finding the next empty field
 4. Progress can be resumed at any time by continuing with the next empty field
 
@@ -80,7 +80,7 @@ The constitution creation follows a **dynamic multi-stage flow** where the total
 - **Validation**:
   - slug: Lowercase, hyphens only, must be unique
   - name: Non-empty, 3-100 characters
-- **Next**: Draft file created at `.specs/.drafts/draft-con-{slug}-{timestamp}.draft.yml`. Now describe the constitution's purpose.
+- **Next**: Draft file created at `.specs/.drafts/con-{slug}-{timestamp}.draft.yml`. Now describe the constitution's purpose.
 
 **Step 2: description**
 - **Prompt**: "Describe the purpose and scope of this constitution. What principles will it establish?"

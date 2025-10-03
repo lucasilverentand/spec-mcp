@@ -34,21 +34,31 @@ export function registerStartSpecTool(
 				),
 				slug: z
 					.string()
+					.optional()
 					.describe(
 						"Slug/identifier for the spec (e.g., 'user-auth', 'api-gateway'). Must be lowercase with hyphens.",
+					),
+				name: z
+					.string()
+					.optional()
+					.describe(
+						"Display name for the spec (e.g., 'User Authentication', 'API Gateway')",
 					),
 			},
 		},
 		wrapToolHandler(
 			"start_spec",
-			async ({ type, slug }) => {
-				// Validate slug
-				const validatedSlug = context.inputValidator.validateSlug(slug);
+			async ({ type, slug, name }) => {
+				// Validate slug if provided
+				const validatedSlug = slug
+					? context.inputValidator.validateSlug(slug)
+					: undefined;
 
 				// Start creation flow session
 				const response = await creationFlowHelper.start(
 					type as "requirement" | "component" | "plan" | "constitution" | "decision",
 					validatedSlug,
+					name,
 				);
 
 				return {

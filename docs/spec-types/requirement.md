@@ -77,7 +77,7 @@ Requirements are created using a **simple 5-step guided flow** that ensures meas
 
 **After each step submission:**
 1. The field value is validated
-2. The draft is updated and saved to `.specs/.drafts/draft-req-{slug}-{timestamp}.draft.yml`
+2. The draft is updated and saved to `.specs/.drafts/req-{slug}-{timestamp}.draft.yml`
 3. The next step is determined by reading the draft state and finding the next empty field
 4. Progress can be resumed at any time by continuing with the next empty field
 
@@ -102,7 +102,7 @@ Requirements are created using a **simple 5-step guided flow** that ensures meas
 - **Validation**:
   - slug: Lowercase, hyphens only, must be unique
   - name: Non-empty, 3-100 characters
-- **Next**: Draft file created at `.specs/.drafts/draft-req-{slug}-{timestamp}.draft.yml`. Now provide a description.
+- **Next**: Draft file created at `.specs/.drafts/req-{slug}-{timestamp}.draft.yml`. Now provide a description.
 
 **Step 2: description**
 - **Prompt**: "Provide a brief description of what needs to be built and why. Keep it concise."

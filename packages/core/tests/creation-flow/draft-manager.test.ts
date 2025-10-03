@@ -33,7 +33,7 @@ describe("DraftManager", () => {
 		it("should create a requirement draft with correct structure", async () => {
 			const draft = await draftManager.create("requirement");
 
-			expect(draft.id).toMatch(/^draft-req-\d+-[a-z0-9]+$/);
+			expect(draft.id).toMatch(/^req-\d+-[a-z0-9]+$/);
 			expect(draft.type).toBe("requirement");
 			expect(draft.current_step).toBe(1);
 			expect(draft.total_steps).toBe(7);
@@ -47,7 +47,7 @@ describe("DraftManager", () => {
 		it("should create a component draft with 10 total steps", async () => {
 			const draft = await draftManager.create("component");
 
-			expect(draft.id).toMatch(/^draft-cmp-\d+-[a-z0-9]+$/);
+			expect(draft.id).toMatch(/^cmp-\d+-[a-z0-9]+$/);
 			expect(draft.type).toBe("component");
 			expect(draft.total_steps).toBe(10);
 		});
@@ -55,7 +55,7 @@ describe("DraftManager", () => {
 		it("should create a plan draft with 12 total steps", async () => {
 			const draft = await draftManager.create("plan");
 
-			expect(draft.id).toMatch(/^draft-pln-\d+-[a-z0-9]+$/);
+			expect(draft.id).toMatch(/^pln-\d+-[a-z0-9]+$/);
 			expect(draft.type).toBe("plan");
 			expect(draft.total_steps).toBe(12);
 		});
@@ -63,7 +63,7 @@ describe("DraftManager", () => {
 		it("should create a constitution draft with 3 total steps", async () => {
 			const draft = await draftManager.create("constitution");
 
-			expect(draft.id).toMatch(/^draft-con-\d+-[a-z0-9]+$/);
+			expect(draft.id).toMatch(/^con-\d+-[a-z0-9]+$/);
 			expect(draft.type).toBe("constitution");
 			expect(draft.total_steps).toBe(3);
 		});
@@ -71,7 +71,7 @@ describe("DraftManager", () => {
 		it("should create a decision draft with 6 total steps", async () => {
 			const draft = await draftManager.create("decision");
 
-			expect(draft.id).toMatch(/^draft-dec-\d+-[a-z0-9]+$/);
+			expect(draft.id).toMatch(/^dec-\d+-[a-z0-9]+$/);
 			expect(draft.type).toBe("decision");
 			expect(draft.total_steps).toBe(6);
 		});
@@ -79,8 +79,21 @@ describe("DraftManager", () => {
 		it("should create draft with slug in data when provided", async () => {
 			const draft = await draftManager.create("requirement", "user-auth");
 
-			expect(draft.id).toMatch(/^draft-req-user-auth-\d+$/);
+			expect(draft.id).toMatch(/^req-user-auth-\d+$/);
 			expect(draft.data).toEqual({ slug: "user-auth" });
+		});
+
+		it("should create draft with name in data when provided", async () => {
+			const draft = await draftManager.create("requirement", undefined, "User Auth");
+
+			expect(draft.data).toEqual({ name: "User Auth" });
+		});
+
+		it("should create draft with both slug and name when provided", async () => {
+			const draft = await draftManager.create("requirement", "user-auth", "User Auth");
+
+			expect(draft.id).toMatch(/^req-user-auth-\d+$/);
+			expect(draft.data).toEqual({ slug: "user-auth", name: "User Auth" });
 		});
 
 		it("should set expiration to 24 hours from now", async () => {
@@ -117,7 +130,7 @@ describe("DraftManager", () => {
 		});
 
 		it("should return null for non-existent draft", () => {
-			const retrieved = draftManager.get("draft-req-nonexistent-123");
+			const retrieved = draftManager.get("req-nonexistent-123");
 			expect(retrieved).toBeNull();
 		});
 
@@ -208,7 +221,7 @@ describe("DraftManager", () => {
 		});
 
 		it("should return null for non-existent draft", async () => {
-			const updated = await draftManager.update("draft-req-nonexistent-123", {
+			const updated = await draftManager.update("req-nonexistent-123", {
 				data: { test: "value" },
 			});
 
@@ -251,7 +264,7 @@ describe("DraftManager", () => {
 		});
 
 		it("should return false for non-existent draft", async () => {
-			const deleted = await draftManager.delete("draft-req-nonexistent-123");
+			const deleted = await draftManager.delete("req-nonexistent-123");
 			expect(deleted).toBe(false);
 		});
 	});
@@ -386,16 +399,16 @@ describe("DraftManager", () => {
 			const con = await draftManager.create("constitution");
 			const dec = await draftManager.create("decision");
 
-			expect(req.id).toMatch(/^draft-req-/);
-			expect(cmp.id).toMatch(/^draft-cmp-/);
-			expect(pln.id).toMatch(/^draft-pln-/);
-			expect(con.id).toMatch(/^draft-con-/);
-			expect(dec.id).toMatch(/^draft-dec-/);
+			expect(req.id).toMatch(/^req-/);
+			expect(cmp.id).toMatch(/^cmp-/);
+			expect(pln.id).toMatch(/^pln-/);
+			expect(con.id).toMatch(/^con-/);
+			expect(dec.id).toMatch(/^dec-/);
 		});
 
 		it("should include slug in ID when provided", async () => {
 			const draft = await draftManager.create("requirement", "my-feature");
-			expect(draft.id).toMatch(/^draft-req-my-feature-\d+$/);
+			expect(draft.id).toMatch(/^req-my-feature-\d+$/);
 		});
 
 		it("should generate unique IDs", async () => {

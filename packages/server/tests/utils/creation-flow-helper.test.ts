@@ -29,7 +29,7 @@ describe("CreationFlowHelper", () => {
 		it("should start requirement creation flow", async () => {
 			const response = await helper.start("requirement");
 
-			expect(response.draft_id).toMatch(/^draft-req-/);
+			expect(response.draft_id).toMatch(/^req-/);
 			expect(response.step).toBe(1);
 			expect(response.total_steps).toBe(7);
 			expect(response.current_step_name).toBe("Identify Problem");
@@ -220,7 +220,7 @@ describe("CreationFlowHelper", () => {
 		});
 
 		it("should return error for non-existent draft", async () => {
-			const response = await helper.step("draft-req-nonexistent-123", {
+			const response = await helper.step("req-nonexistent-123", {
 				description: "Test",
 			});
 
@@ -269,7 +269,7 @@ describe("CreationFlowHelper", () => {
 		});
 
 		it("should return error for non-existent draft", () => {
-			const result = helper.validate("draft-req-nonexistent-123");
+			const result = helper.validate("req-nonexistent-123");
 
 			expect("error" in result).toBe(true);
 		});
@@ -286,7 +286,7 @@ describe("CreationFlowHelper", () => {
 		});
 
 		it("should return null for non-existent draft", () => {
-			const draft = helper.getDraft("draft-req-nonexistent-123");
+			const draft = helper.getDraft("req-nonexistent-123");
 			expect(draft).toBeNull();
 		});
 	});
@@ -304,7 +304,7 @@ describe("CreationFlowHelper", () => {
 		});
 
 		it("should return false for non-existent draft", async () => {
-			const deleted = await helper.deleteDraft("draft-req-nonexistent-123");
+			const deleted = await helper.deleteDraft("req-nonexistent-123");
 			expect(deleted).toBe(false);
 		});
 	});

@@ -11,8 +11,7 @@ import type { ToolContext } from "./index.js";
  */
 function detectEntityType(
 	id: string,
-): "requirement" | "plan" | "component" | "constitution" | "decision" | "draft" | null {
-	if (id.startsWith("draft-")) return "draft";
+): "requirement" | "plan" | "component" | "constitution" | "decision" | null {
 	if (/^req-\d{3}-.+$/.test(id)) return "requirement";
 	if (/^pln-\d{3}-.+$/.test(id)) return "plan";
 	if (/^(app|svc|lib)-\d{3}-.+$/.test(id)) return "component";
@@ -35,13 +34,12 @@ export function registerDeleteSpecTool(
 			title: "Delete Spec",
 			description:
 				"Delete a specification or draft. " +
-				"For drafts (IDs starting with 'draft-'), deletes the .draft.yml file. " +
-				"For finalized specs, deletes the spec file and all associated data.",
+				"Automatically detects whether the ID is a draft or finalized spec and deletes accordingly.",
 			inputSchema: {
 				id: z
 					.string()
 					.describe(
-						"Spec or draft ID to delete (e.g., 'draft-req-auth-1234567890', 'req-001-user-auth', 'pln-001-api-gateway')",
+						"Spec or draft ID to delete (e.g., 'req-001-user-auth', 'pln-001-api-gateway')",
 					),
 			},
 		},
@@ -49,49 +47,10 @@ export function registerDeleteSpecTool(
 			"delete_spec",
 			async ({ id }) => {
 				const validatedId = context.inputValidator.validateId(id);
-				const entityType = detectEntityType(validatedId);
 
-				if (!entityType) {
-					return {
-						content: [
-							{
-								type: "text",
-								text: JSON.stringify(
-									{
-										success: false,
-										error: `Invalid ID format: ${id}`,
-									},
-									null,
-									2,
-								),
-							},
-						],
-						isError: true,
-					};
-				}
-
-				// Handle draft deletion
-				if (entityType === "draft") {
-					const draft = creationFlowHelper.getDraft(validatedId);
-					if (!draft) {
-						return {
-							content: [
-								{
-									type: "text",
-									text: JSON.stringify(
-										{
-											success: false,
-											error: `Draft not found: ${id}`,
-										},
-										null,
-										2,
-									),
-								},
-							],
-							isError: true,
-						};
-					}
-
+				// Try to delete as draft first
+				const draft = creationFlowHelper.getDraft(validatedId);
+				if (draft) {
 					const deleted = await creationFlowHelper.deleteDraft(validatedId);
 					if (deleted) {
 						return {
@@ -132,6 +91,26 @@ export function registerDeleteSpecTool(
 				}
 
 				// Handle finalized spec deletion
+				const entityType = detectEntityType(validatedId);
+				if (!entityType) {
+					return {
+						content: [
+							{
+								type: "text",
+								text: JSON.stringify(
+									{
+										success: false,
+										error: `Invalid ID format or entity not found: ${id}`,
+									},
+									null,
+									2,
+								),
+							},
+						],
+						isError: true,
+					};
+				}
+
 				switch (entityType) {
 					case "requirement": {
 						const result = await operations.deleteRequirement(validatedId);

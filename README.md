@@ -62,7 +62,7 @@ start_spec({
 
 // Follow the guided 4-step flow
 update_spec({
-  draft_id: "draft-req-user-authentication-...",
+  draft_id: "req-user-authentication-...",
   field: "slug_and_name",
   value: {
     slug: "user-authentication",

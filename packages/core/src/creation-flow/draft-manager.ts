@@ -93,6 +93,7 @@ export class DraftManager {
 	async create(
 		type: "requirement" | "component" | "plan" | "constitution" | "decision",
 		slug?: string,
+		name?: string,
 	): Promise<Draft> {
 		const id = this.generateDraftId(type, slug);
 		const now = new Date();
@@ -110,12 +111,16 @@ export class DraftManager {
 							? 3
 							: 6; // decision
 
+		const initialData: Record<string, unknown> = {};
+		if (slug) initialData.slug = slug;
+		if (name) initialData.name = name;
+
 		const draft: Draft = {
 			id,
 			type,
 			current_step: 1,
 			total_steps: totalSteps,
-			data: slug ? { slug } : {},
+			data: initialData,
 			validation_results: [],
 			created_at: now.toISOString(),
 			updated_at: now.toISOString(),
@@ -233,11 +238,11 @@ export class DraftManager {
 							: "dec"; // decision
 		if (slug) {
 			const timestamp = Date.now();
-			return `draft-${prefix}-${slug}-${timestamp}`;
+			return `${prefix}-${slug}-${timestamp}`;
 		}
 		const timestamp = Date.now();
 		const random = Math.random().toString(36).substring(2, 8);
-		return `draft-${prefix}-${timestamp}-${random}`;
+		return `${prefix}-${timestamp}-${random}`;
 	}
 
 	/**

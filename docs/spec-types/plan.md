@@ -76,7 +76,7 @@ Plans are created using a **8-14 step flow** (depending on optional fields neede
 
 **After each step submission:**
 1. The field value is validated
-2. The draft is updated and saved to `.specs/.drafts/draft-pln-{slug}-{timestamp}.draft.yml`
+2. The draft is updated and saved to `.specs/.drafts/pln-{slug}-{timestamp}.draft.yml`
 3. The next step is determined by reading the draft state and finding the next empty field
 4. Progress can be resumed at any time by continuing with the next empty field
 
@@ -101,7 +101,7 @@ Plans are created using a **8-14 step flow** (depending on optional fields neede
 - **Validation**:
   - slug: Lowercase, hyphens only, must be unique
   - name: Non-empty, 3-100 characters
-- **Next**: Draft file created at `.specs/.drafts/draft-pln-{slug}-{timestamp}.draft.yml`. Now provide a brief description.
+- **Next**: Draft file created at `.specs/.drafts/pln-{slug}-{timestamp}.draft.yml`. Now provide a brief description.
 
 **Step 2: description**
 - **Prompt**: "Provide a brief description of what this plan implements and why. Keep it concise (1-3 sentences)."

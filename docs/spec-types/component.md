@@ -237,7 +237,7 @@ Components are created using a **simple 9-11 step flow** that captures essential
 
 **After each step submission:**
 1. The field value is validated
-2. The draft is updated and saved to `.specs/.drafts/draft-cmp-{slug}-{timestamp}.draft.yml`
+2. The draft is updated and saved to `.specs/.drafts/cmp-{slug}-{timestamp}.draft.yml`
 3. The next step is determined by reading the draft state and finding the next empty field
 4. Progress can be resumed at any time by continuing with the next empty field
 
@@ -264,7 +264,7 @@ Components are created using a **simple 9-11 step flow** that captures essential
   - slug: Lowercase, hyphens only, must be unique
   - name: Non-empty, 3-100 characters
   - type: Must be one of: "app", "service", "library"
-- **Next**: Draft file created at `.specs/.drafts/draft-cmp-{slug}-{timestamp}.draft.yml`. Now provide a brief description.
+- **Next**: Draft file created at `.specs/.drafts/cmp-{slug}-{timestamp}.draft.yml`. Now provide a brief description.
 
 **Step 2: description**
 - **Prompt**: "Provide a brief summary of this component's purpose and what it does. Keep it concise (1-3 sentences)."

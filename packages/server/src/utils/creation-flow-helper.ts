@@ -24,8 +24,9 @@ export class CreationFlowHelper {
 	async start(
 		type: "requirement" | "component" | "plan" | "constitution" | "decision",
 		slug?: string,
+		name?: string,
 	): Promise<StepResponse> {
-		const draft = await this.draftManager.create(type, slug);
+		const draft = await this.draftManager.create(type, slug, name);
 		const steps = getStepDefinitions(type);
 		const firstStep = steps[0];
 
