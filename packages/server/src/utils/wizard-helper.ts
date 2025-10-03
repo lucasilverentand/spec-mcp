@@ -21,8 +21,11 @@ export class WizardHelper {
 	/**
 	 * Start a new wizard session
 	 */
-	start(type: "requirement" | "component" | "plan"): StepResponse {
-		const draft = this.draftManager.create(type);
+	async start(
+		type: "requirement" | "component" | "plan",
+		slug?: string,
+	): Promise<StepResponse> {
+		const draft = await this.draftManager.create(type, slug);
 		const steps = getStepDefinitions(type);
 		const firstStep = steps[0];
 
@@ -43,10 +46,10 @@ export class WizardHelper {
 	/**
 	 * Process a wizard step
 	 */
-	step(
+	async step(
 		draft_id: string,
 		data: Record<string, unknown>,
-	): StepResponse | { error: string } {
+	): Promise<StepResponse | { error: string }> {
 		const draft = this.draftManager.get(draft_id);
 		if (!draft) {
 			return { error: `Draft not found: ${draft_id}` };
@@ -78,7 +81,7 @@ export class WizardHelper {
 		);
 
 		// Update draft with new data and validation
-		const updatedDraft = this.draftManager.update(draft_id, {
+		const updatedDraft = await this.draftManager.update(draft_id, {
 			data: updatedData,
 			validation_results: [...draft.validation_results, validation],
 		});
@@ -119,7 +122,7 @@ export class WizardHelper {
 			return { error: "Invalid next step index" };
 		}
 
-		const finalDraft = this.draftManager.update(draft_id, {
+		const finalDraft = await this.draftManager.update(draft_id, {
 			current_step: nextStepIndex + 1,
 		});
 
@@ -185,8 +188,8 @@ export class WizardHelper {
 	/**
 	 * Delete draft after finalization
 	 */
-	deleteDraft(draft_id: string): boolean {
-		return this.draftManager.delete(draft_id);
+	async deleteDraft(draft_id: string): Promise<boolean> {
+		return await this.draftManager.delete(draft_id);
 	}
 
 	/**

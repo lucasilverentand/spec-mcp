@@ -13,7 +13,6 @@ describe("Package Exports", () => {
 		expect(DataPackage.AppComponentSchema).toBeDefined();
 		expect(DataPackage.ServiceComponentSchema).toBeDefined();
 		expect(DataPackage.LibraryComponentSchema).toBeDefined();
-		expect(DataPackage.ToolComponentSchema).toBeDefined();
 
 		// Check utility functions
 		expect(DataPackage.shortenEntityType).toBeDefined();

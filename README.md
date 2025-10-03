@@ -11,7 +11,7 @@ An open-source Model Context Protocol (MCP) server for managing software project
 - ⚠️ **Error Handling**: Define and track error scenarios and recovery strategies
 - 🔗 **Cross-References**: Link flows to tasks, tests to flows, with validation
 - 📊 **Analysis Tools**: Dependency graphs, coverage reports, orphan detection
-- ✅ **Validation & Guidance**: Built-in tools that analyze specs against best practices
+- ✅ **Validation & Analysis**: Built-in tools that analyze specs and dependencies
 - 🤖 **AI Prompts**: Interactive prompts for guided spec creation using proven methodologies
 
 ## Quick Start
@@ -83,11 +83,10 @@ Perfect for:
 
 ## Documentation
 
-- [Getting Started Guide](./docs/getting-started.md)
-- [API Reference](./docs/api-reference.md)
-- [Configuration](./docs/configuration.md)
+- [Requirements Guide](./docs/REQUIREMENTS-GUIDE.md)
+- [Components Guide](./docs/COMPONENTS-GUIDE.md)
+- [Plans Guide](./docs/PLANS-GUIDE.md)
 - [Version Management](./docs/VERSION-MANAGEMENT.md)
-- [Examples](./docs/examples.md)
 
 ## Development
 
@@ -101,7 +100,7 @@ This project uses a pnpm workspace with the following packages:
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-org/spec-mcp.git
+git clone https://github.com/lucasilverentand/spec-mcp.git
 cd spec-mcp
 
 # Install dependencies
@@ -149,7 +148,7 @@ The MCP Inspector provides:
 
 ## Contributing
 
-We welcome contributions! Please see our [Contributing Guide](./CONTRIBUTING.md) for details.
+We welcome contributions!
 
 1. Fork the repository
 2. Create a feature branch
@@ -164,9 +163,8 @@ MIT License - see [LICENSE](./LICENSE) file for details.
 ## Support
 
 - 📖 [Documentation](./docs/)
-- 🐛 [Issue Tracker](https://github.com/your-org/spec-mcp/issues)
-- 💬 [Discussions](https://github.com/your-org/spec-mcp/discussions)
-- 📧 Email: support@spec-mcp.org
+- 🐛 [Issue Tracker](https://github.com/lucasilverentand/spec-mcp/issues)
+- 💬 [Discussions](https://github.com/lucasilverentand/spec-mcp/discussions)
 
 ## Roadmap
 

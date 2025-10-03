@@ -7,7 +7,6 @@ import {
 	PlanStorageSchema,
 	RequirementStorageSchema,
 	ServiceComponentStorageSchema,
-	ToolComponentStorageSchema,
 } from "../entities/index.js";
 import { FileManager } from "./file-manager.js";
 
@@ -154,8 +153,6 @@ export class ValidationManager {
 				return ServiceComponentStorageSchema;
 			case "library":
 				return LibraryComponentStorageSchema;
-			case "tool":
-				return ToolComponentStorageSchema;
 			case "constitution":
 				return ConstitutionStorageSchema;
 			default:
@@ -294,17 +291,21 @@ export class ValidationManager {
 			}
 			case "app":
 			case "service":
-			case "library":
-			case "tool": {
+			case "library": {
 				const comp = entity as Record<string, unknown>;
 				const base = {
 					...baseFields,
 					folder: comp.folder,
 					depends_on: comp.depends_on || [],
 					external_dependencies: comp.external_dependencies || [],
-					capabilities: comp.capabilities || [],
 					constraints: comp.constraints || [],
 					tech_stack: comp.tech_stack || [],
+					testing_setup: comp.testing_setup || {
+						frameworks: [],
+						coverage_target: 90,
+						test_commands: {},
+						test_patterns: [],
+					},
 				};
 
 				// Add type-specific fields

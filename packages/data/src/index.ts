@@ -17,7 +17,6 @@ export {
 	ComponentTypeSchema,
 	LibraryComponentSchema,
 	ServiceComponentSchema,
-	ToolComponentSchema,
 } from "./entities/components/component.js";
 export {
 	AmendmentIdSchema,

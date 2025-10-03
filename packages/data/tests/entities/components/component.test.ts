@@ -6,8 +6,14 @@ import {
 	ComponentTypeSchema,
 	LibraryComponentSchema,
 	ServiceComponentSchema,
-	ToolComponentSchema,
 } from "../../../src/entities/components/component.js";
+
+const minimalTestingSetup = {
+	frameworks: ["Vitest"],
+	coverage_target: 90,
+	test_commands: {},
+	test_patterns: [],
+};
 
 describe("ComponentIdSchema", () => {
 	it("should accept valid component IDs", () => {
@@ -15,7 +21,6 @@ describe("ComponentIdSchema", () => {
 			"app-001-frontend-app",
 			"svc-042-auth-service",
 			"lib-999-utility-library",
-			"tol-123-build-tool",
 		];
 
 		for (const id of validIds) {
@@ -78,6 +83,7 @@ describe("AppComponentSchema", () => {
 			description: "Main frontend application",
 			created_at: new Date().toISOString(),
 			updated_at: new Date().toISOString(),
+			testing_setup: minimalTestingSetup,
 		};
 
 		const parsed = AppComponentSchema.parse(validApp);
@@ -93,6 +99,7 @@ describe("AppComponentSchema", () => {
 			description: "A test application",
 			created_at: new Date().toISOString(),
 			updated_at: new Date().toISOString(),
+			testing_setup: minimalTestingSetup,
 		};
 
 		const parsed = AppComponentSchema.parse(app);
@@ -100,7 +107,6 @@ describe("AppComponentSchema", () => {
 		expect(parsed.folder).toBe(".");
 		expect(parsed.depends_on).toEqual([]);
 		expect(parsed.external_dependencies).toEqual([]);
-		expect(parsed.capabilities).toEqual([]);
 		expect(parsed.constraints).toEqual([]);
 		expect(parsed.tech_stack).toEqual([]);
 		expect(parsed.deployment_targets).toEqual([]);
@@ -121,6 +127,7 @@ describe("AppComponentSchema", () => {
 			created_at: new Date().toISOString(),
 			updated_at: new Date().toISOString(),
 			deployment_targets: ["ios", "android", "web"],
+			testing_setup: minimalTestingSetup,
 		};
 
 		expect(() => AppComponentSchema.parse(app)).not.toThrow();
@@ -136,6 +143,7 @@ describe("AppComponentSchema", () => {
 			created_at: new Date().toISOString(),
 			updated_at: new Date().toISOString(),
 			deployment_targets: ["ios", "windows", "android"], // "windows" is invalid
+			testing_setup: minimalTestingSetup,
 		};
 
 		expect(() => AppComponentSchema.parse(app)).toThrow();
@@ -151,6 +159,7 @@ describe("AppComponentSchema", () => {
 			created_at: new Date().toISOString(),
 			updated_at: new Date().toISOString(),
 			environments: ["development", "production"],
+			testing_setup: minimalTestingSetup,
 		};
 
 		expect(() => AppComponentSchema.parse(app)).not.toThrow();
@@ -166,6 +175,7 @@ describe("AppComponentSchema", () => {
 			created_at: new Date().toISOString(),
 			updated_at: new Date().toISOString(),
 			environments: ["development", "testing", "production"], // "testing" is invalid
+			testing_setup: minimalTestingSetup,
 		};
 
 		expect(() => AppComponentSchema.parse(app)).toThrow();
@@ -182,6 +192,7 @@ describe("ServiceComponentSchema", () => {
 			description: "Handles user authentication",
 			created_at: new Date().toISOString(),
 			updated_at: new Date().toISOString(),
+			testing_setup: minimalTestingSetup,
 		};
 
 		const parsed = ServiceComponentSchema.parse(validService);
@@ -198,6 +209,7 @@ describe("ServiceComponentSchema", () => {
 			created_at: new Date().toISOString(),
 			updated_at: new Date().toISOString(),
 			dev_port: 3000,
+			testing_setup: minimalTestingSetup,
 		};
 
 		expect(() => ServiceComponentSchema.parse(service)).not.toThrow();
@@ -216,6 +228,7 @@ describe("ServiceComponentSchema", () => {
 				created_at: new Date().toISOString(),
 				updated_at: new Date().toISOString(),
 				dev_port: port,
+				testing_setup: minimalTestingSetup,
 			};
 
 			expect(() => ServiceComponentSchema.parse(service)).toThrow();
@@ -235,6 +248,7 @@ describe("ServiceComponentSchema", () => {
 				created_at: new Date().toISOString(),
 				updated_at: new Date().toISOString(),
 				dev_port: port,
+				testing_setup: minimalTestingSetup,
 			};
 
 			expect(() => ServiceComponentSchema.parse(service)).not.toThrow();
@@ -252,6 +266,7 @@ describe("LibraryComponentSchema", () => {
 			description: "Common utility functions",
 			created_at: new Date().toISOString(),
 			updated_at: new Date().toISOString(),
+			testing_setup: minimalTestingSetup,
 		};
 
 		const parsed = LibraryComponentSchema.parse(validLibrary);
@@ -268,6 +283,7 @@ describe("LibraryComponentSchema", () => {
 			created_at: new Date().toISOString(),
 			updated_at: new Date().toISOString(),
 			package_name: "@company/ui-components",
+			testing_setup: minimalTestingSetup,
 		};
 
 		expect(() => LibraryComponentSchema.parse(library)).not.toThrow();
@@ -280,7 +296,10 @@ describe("LibraryComponentSchema", () => {
 			slug: "test-lib",
 			name: "Test Library",
 			description: "A test library",
+			created_at: new Date().toISOString(),
+			updated_at: new Date().toISOString(),
 			package_name: "",
+			testing_setup: minimalTestingSetup,
 		};
 
 		expect(() => LibraryComponentSchema.parse(library)).toThrow();
@@ -299,6 +318,7 @@ describe("Component Dependencies", () => {
 			created_at: new Date().toISOString(),
 			updated_at: new Date().toISOString(),
 			depends_on: ["svc-001-auth-service", "lib-002-ui-components"],
+			testing_setup: minimalTestingSetup,
 		};
 
 		expect(() => AppComponentSchema.parse(component)).not.toThrow();
@@ -311,7 +331,10 @@ describe("Component Dependencies", () => {
 			slug: "frontend-app",
 			name: "Frontend App",
 			description: "Main frontend application",
+			created_at: new Date().toISOString(),
+			updated_at: new Date().toISOString(),
 			depends_on: ["invalid-dependency", "svc-001-auth-service"],
+			testing_setup: minimalTestingSetup,
 		};
 
 		expect(() => AppComponentSchema.parse(component)).toThrow();
@@ -327,6 +350,7 @@ describe("Component Dependencies", () => {
 			created_at: new Date().toISOString(),
 			updated_at: new Date().toISOString(),
 			external_dependencies: ["PostgreSQL", "Redis", "AWS S3"],
+			testing_setup: minimalTestingSetup,
 		};
 
 		expect(() => ServiceComponentSchema.parse(component)).not.toThrow();

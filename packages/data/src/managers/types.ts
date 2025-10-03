@@ -20,7 +20,7 @@ export const PlanFilterSchema = z.object({
 
 export const ComponentFilterSchema = z.object({
 	type: z
-		.array(z.enum(["app", "service", "library", "tool"]))
+		.array(z.enum(["app", "service", "library"]))
 		.optional()
 		.describe("Filter by component type"),
 	folder: z.string().optional().describe("Filter by folder path"),
@@ -66,7 +66,6 @@ export type {
 	AppComponent,
 	LibraryComponent,
 	ServiceComponent,
-	ToolComponent,
 } from "../entities/components/component.js";
 export type { Constitution } from "../entities/constitutions/constitution.js";
 export type { Plan } from "../entities/plans/plan.js";

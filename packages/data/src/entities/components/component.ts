@@ -14,6 +14,65 @@ export const ComponentTypeSchema = z.enum([
 	"library",
 ]);
 
+export const TestSuiteSchema = z.object({
+	location: z
+		.string()
+		.min(1)
+		.describe("Directory or pattern where tests are located"),
+	pattern: z
+		.string()
+		.min(1)
+		.optional()
+		.describe("Test file pattern (e.g., '*.test.ts', '*.spec.js')"),
+	coverage_target: z
+		.number()
+		.min(0)
+		.max(100)
+		.optional()
+		.describe("Target coverage percentage for this test suite"),
+});
+
+export const TestingSetupSchema = z.object({
+	frameworks: z
+		.array(z.string())
+		.min(1)
+		.describe("Testing frameworks used (e.g., Jest, Vitest, Pytest)"),
+	unit_tests: TestSuiteSchema.optional().describe(
+		"Unit test configuration and location",
+	),
+	integration_tests: TestSuiteSchema.optional().describe(
+		"Integration test configuration and location",
+	),
+	e2e_tests: TestSuiteSchema.optional().describe(
+		"End-to-end test configuration and location",
+	),
+	coverage_target: z
+		.number()
+		.min(0)
+		.max(100)
+		.default(90)
+		.describe("Overall test coverage target percentage"),
+	test_commands: z
+		.record(z.string())
+		.default({})
+		.describe(
+			"Commands to run different test suites (e.g., {'unit': 'npm test', 'e2e': 'npm run test:e2e'})",
+		),
+	mocking_strategy: z
+		.string()
+		.min(1)
+		.optional()
+		.describe(
+			"Approach to mocking external dependencies (e.g., 'jest.mock() for all external deps', 'test containers for databases')",
+		),
+	test_patterns: z
+		.array(z.string())
+		.default([])
+		.describe(
+			"Testing patterns followed (e.g., 'AAA', 'Given-When-Then', 'Test Pyramid')",
+		),
+});
+
 const _BaseComponentStorageSchema = BaseSchema.extend({
 	type: ComponentTypeSchema.describe("Type of the component"),
 	folder: z
@@ -29,10 +88,6 @@ const _BaseComponentStorageSchema = BaseSchema.extend({
 		.array(z.string())
 		.default([])
 		.describe("Third-party services or libraries used"),
-	capabilities: z
-		.array(z.string())
-		.default([])
-		.describe("Key functionalities provided by the component"),
 	constraints: z
 		.array(z.string())
 		.default([])
@@ -41,6 +96,9 @@ const _BaseComponentStorageSchema = BaseSchema.extend({
 		.array(z.string())
 		.default([])
 		.describe("Technologies and frameworks used in this component"),
+	testing_setup: TestingSetupSchema.describe(
+		"Testing configuration including frameworks, patterns, coverage targets, and test organization",
+	),
 });
 
 // Storage schemas (no ID field)
@@ -71,7 +129,7 @@ export const ServiceComponentStorageSchema = _BaseComponentStorageSchema.extend(
 export const LibraryComponentStorageSchema = _BaseComponentStorageSchema.extend(
 	{
 		type: z.literal("library"),
-		package_name: z.string().nonempty().optional(),
+		package_name: z.string().min(1).optional(),
 	},
 );
 
@@ -99,6 +157,8 @@ export const LibraryComponentSchema = LibraryComponentStorageSchema.transform(
 
 export type ComponentId = z.infer<typeof ComponentIdSchema>;
 export type ComponentType = z.infer<typeof ComponentTypeSchema>;
+export type TestSuite = z.infer<typeof TestSuiteSchema>;
+export type TestingSetup = z.infer<typeof TestingSetupSchema>;
 export type AppComponent = z.infer<typeof AppComponentSchema>;
 export type ServiceComponent = z.infer<typeof ServiceComponentSchema>;
 export type LibraryComponent = z.infer<typeof LibraryComponentSchema>;

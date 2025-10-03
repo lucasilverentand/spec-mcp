@@ -4,13 +4,10 @@ import type { ServerConfig } from "../config/index.js";
 import type { InputValidator } from "../middleware/input-validator.js";
 import type { RateLimiter } from "../middleware/rate-limiter.js";
 import { registerAnalyzeTool } from "./analyze.js";
-import { registerComponentTool } from "./component.js";
-import { registerConstitutionTool } from "./constitution.js";
-import { registerGuidanceTool } from "./guidance.js";
-import { registerPlanTool } from "./plan.js";
-import { registerRequirementTool } from "./requirement.js";
-import { registerSearchTools } from "./search.js";
-import { registerSubEntityTools } from "./sub-entities.js";
+import { registerDeleteSpecTool } from "./delete-spec.js";
+import { registerQueryTool } from "./query.js";
+import { registerStartSpecTool } from "./start-spec.js";
+import { registerUpdateSpecTool } from "./update-spec.js";
 
 export interface ToolContext {
 	rateLimiter: RateLimiter;
@@ -26,17 +23,14 @@ export function registerAllTools(
 	operations: SpecOperations,
 	context: ToolContext,
 ) {
-	// Consolidated entity management tools (4 tools)
-	registerRequirementTool(server, operations, context);
-	registerPlanTool(server, operations, context);
-	registerComponentTool(server, operations, context);
-	registerConstitutionTool(server, operations, context);
+	// Simplified wizard-based CRUD tools (3 tools)
+	registerStartSpecTool(server, operations, context); // start_spec - create a draft
+	registerUpdateSpecTool(server, operations, context); // update_spec - fill fields one at a time
+	registerDeleteSpecTool(server, operations, context); // delete_spec - delete draft or finalized spec
 
-	// Consolidated analysis and guidance (2 tools)
+	// Analysis tool
 	registerAnalyzeTool(server, operations, context);
-	registerGuidanceTool(server, operations, context);
 
-	// Sub-entity accessors and search (6 tools)
-	registerSubEntityTools(server, operations, context); // get-plan-task, get-plan-test-case, etc.
-	registerSearchTools(server, operations, context); // search-specs
+	// Unified query tool (1 tool)
+	registerQueryTool(server, operations, context); // query (read-only queries)
 }

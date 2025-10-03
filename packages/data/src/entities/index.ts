@@ -10,7 +10,6 @@ import type {
 	AppComponent,
 	LibraryComponent,
 	ServiceComponent,
-	ToolComponent,
 } from "./components/index.js";
 import type { Constitution } from "./constitutions/index.js";
 import type { Plan } from "./plans/index.js";
@@ -22,5 +21,4 @@ export type AnyEntity =
 	| AppComponent
 	| ServiceComponent
 	| LibraryComponent
-	| ToolComponent
 	| Constitution;

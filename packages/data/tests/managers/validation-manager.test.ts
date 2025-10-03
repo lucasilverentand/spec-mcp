@@ -106,10 +106,9 @@ describe("ValidationManager", () => {
 		priority: "required" as const,
 		criteria: [
 			{
-				id: "req-001-test-req/crit-001",
+				id: "crit-001",
 				description: "Test criteria",
-				plan_id: "pln-001-test-plan",
-				completed: false,
+				status: "active",
 			},
 		],
 		created_at: new Date().toISOString(),
@@ -323,31 +322,7 @@ describe("ValidationManager", () => {
 			expect(result.errors.some((e) => e.includes("priority"))).toBe(true);
 		});
 
-		it("should reject requirement with mismatched criteria IDs", async () => {
-			const requirement = createValidRequirementData({
-				number: 5,
-				criteria: [
-					{
-						id: "req-001-test-req/crit-001", // Should be req-005
-						description: "Test criteria",
-						plan_id: "pln-001-test-plan",
-						completed: false,
-					},
-				],
-			});
-
-			const result = await validationManager.validateEntity(
-				"requirement",
-				requirement,
-			);
-
-			expect(result.success).toBe(false);
-			expect(
-				result.errors.some((e) =>
-					e.includes("criteria IDs must start with the parent requirement ID"),
-				),
-			).toBe(true);
-		});
+		// Test removed - criteria IDs no longer include parent requirement ID after refactoring
 
 		it("should reject requirement with invalid criteria ID format", async () => {
 			const requirement = createValidRequirementData({
@@ -355,8 +330,7 @@ describe("ValidationManager", () => {
 					{
 						id: "invalid-id-format",
 						description: "Test criteria",
-						plan_id: "pln-001-test-plan",
-						completed: false,
+						status: "active",
 					},
 				],
 			});
@@ -651,28 +625,7 @@ describe("ValidationManager", () => {
 			);
 		});
 
-		it("should fail validation for requirement with non-existent plan reference", async () => {
-			const requirement = createValidRequirementData({
-				criteria: [
-					{
-						id: "req-001-test-req/crit-001",
-						description: "Test criteria",
-						plan_id: "pln-999-non-existent",
-						completed: false,
-					},
-				],
-			});
-
-			const result = await validationManager.validateEntity(
-				"requirement",
-				requirement,
-			);
-
-			expect(result.success).toBe(false);
-			expect(result.errors.some((e) => e.includes("does not exist"))).toBe(
-				true,
-			);
-		});
+		// Test removed - plan_id field no longer exists on criteria after refactoring
 
 		it("should pass validation when referenced plan exists", async () => {
 			// Create a plan file
@@ -687,10 +640,9 @@ describe("ValidationManager", () => {
 			const requirement = createValidRequirementData({
 				criteria: [
 					{
-						id: "req-001-test-req/crit-001",
+						id: "crit-001",
 						description: "Test criteria",
-						plan_id: "pln-001-existing-plan",
-						completed: false,
+						status: "active",
 					},
 				],
 			});
@@ -939,22 +891,19 @@ describe("ValidationManager", () => {
 			const requirement = createValidRequirementData({
 				criteria: [
 					{
-						id: "req-001-test-req/crit-001",
+						id: "crit-001",
 						description: "First criteria",
-						plan_id: "pln-001-test-plan",
-						completed: false,
+						status: "active",
 					},
 					{
-						id: "req-001-test-req/crit-002",
+						id: "crit-002",
 						description: "Second criteria",
-						plan_id: "pln-001-test-plan",
-						completed: true,
+						status: "active",
 					},
 					{
-						id: "req-001-test-req/crit-003",
+						id: "crit-003",
 						description: "Third criteria",
-						plan_id: "pln-002-another-plan",
-						completed: false,
+						status: "needs-review",
 					},
 				],
 			});
@@ -964,9 +913,9 @@ describe("ValidationManager", () => {
 				requirement,
 			);
 
-			// Should fail due to non-existent plans
-			expect(result.success).toBe(false);
-			expect(result.errors.length).toBeGreaterThan(0);
+			// Should pass with valid criteria
+			expect(result.success).toBe(true);
+			expect(result.errors.length).toBe(0);
 		});
 
 		it("should handle plan with all optional fields populated", async () => {
@@ -1077,10 +1026,9 @@ describe("ValidationManager", () => {
 				number: 999,
 				criteria: [
 					{
-						id: "req-999-test-req/crit-001",
+						id: "crit-001",
 						description: "Test criteria",
-						plan_id: "pln-001-test-plan",
-						completed: false,
+						status: "active",
 					},
 				],
 			});
@@ -1090,8 +1038,8 @@ describe("ValidationManager", () => {
 				requirement,
 			);
 
-			// Should fail due to non-existent plan
-			expect(result.success).toBe(false);
+			// Should pass with valid criteria
+			expect(result.success).toBe(true);
 		});
 
 		it("should handle plan with circular dependencies in validation", async () => {

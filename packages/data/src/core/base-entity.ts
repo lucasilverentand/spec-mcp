@@ -6,7 +6,6 @@ export const EntityTypeSchema = z.enum([
 	"app",
 	"service",
 	"library",
-	"tool",
 	"constitution",
 ]);
 

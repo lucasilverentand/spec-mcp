@@ -5,7 +5,6 @@ import type {
 	Plan,
 	Requirement,
 	ServiceComponent,
-	ToolComponent,
 } from "@spec-mcp/data";
 import {
 	AppComponentSchema,
@@ -14,7 +13,6 @@ import {
 	PlanSchema,
 	RequirementSchema,
 	ServiceComponentSchema,
-	ToolComponentSchema,
 } from "@spec-mcp/data";
 import z from "zod";
 import type { ValidationResult } from "../../interfaces/results.js";
@@ -59,9 +57,6 @@ function validateEntity(entity: AnyEntity): ValidationResult {
 				break;
 			case "library":
 				LibraryComponentSchema.parse(entity);
-				break;
-			case "tool":
-				ToolComponentSchema.parse(entity);
 				break;
 			case "constitution":
 				ConstitutionSchema.parse(entity);
@@ -160,8 +155,6 @@ function getSchemaForType(entityType: string): z.Schema {
 			return ServiceComponentSchema as unknown as z.Schema;
 		case "library":
 			return LibraryComponentSchema as unknown as z.Schema;
-		case "tool":
-			return ToolComponentSchema as unknown as z.Schema;
 		default:
 			throw new Error(`Unknown entity type: ${entityType}`);
 	}
@@ -317,7 +310,6 @@ function validateEntityStructure(entity: unknown): ValidationResult {
 		case "app":
 		case "service":
 		case "library":
-		case "tool":
 			if (!record.capabilities || !Array.isArray(record.capabilities)) {
 				warnings.push("Components should have capabilities array");
 			}
@@ -413,19 +405,6 @@ function createBaseEntity(entityType: string): AnyEntity {
 				tech_stack: [],
 				environments: ["development"],
 			} as LibraryComponent;
-
-		case "tool":
-			return {
-				...baseFields,
-				type: "tool",
-				folder: ".",
-				depends_on: [],
-				external_dependencies: [],
-				capabilities: [],
-				constraints: [],
-				tech_stack: [],
-				// Add any required fields for ToolComponent that are missing here.
-			} as ToolComponent;
 
 		default:
 			throw new Error(`Unknown entity type: ${entityType}`);

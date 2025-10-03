@@ -15,7 +15,6 @@ export type {
 	Requirement,
 	RequirementFilter,
 	ServiceComponent,
-	ToolComponent,
 } from "@spec-mcp/data";
 export * from "./analysis.js";
 export * from "./config.js";

@@ -617,14 +617,6 @@ describe("ReferenceValidator", () => {
 			expect(result.valid).toBe(true);
 		});
 
-		it("should validate tool reference format", async () => {
-			const result = await validator.validateReferenceFormat(
-				"tol-001-test",
-				"component",
-			);
-			expect(result.valid).toBe(true);
-		});
-
 		it("should validate criteria reference format", async () => {
 			const result = await validator.validateReferenceFormat(
 				"req-001-test/crit-001",

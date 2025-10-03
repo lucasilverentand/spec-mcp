@@ -41,11 +41,7 @@ describe("RequirementIdSchema", () => {
 
 describe("AcceptanceCriteriaIdSchema", () => {
 	it("should accept valid acceptance criteria IDs", () => {
-		const validIds = [
-			"req-001-test-requirement/crit-001",
-			"req-999-another-req/crit-042",
-			"req-123-complex-slug/crit-999",
-		];
+		const validIds = ["crit-001", "crit-042", "crit-999"];
 
 		for (const id of validIds) {
 			expect(() => AcceptanceCriteriaIdSchema.parse(id)).not.toThrow();
@@ -54,11 +50,10 @@ describe("AcceptanceCriteriaIdSchema", () => {
 
 	it("should reject invalid acceptance criteria IDs", () => {
 		const invalidIds = [
-			"req-001-test/criteria-001", // wrong criteria prefix
-			"req-001-test/crit-1", // criteria number not padded
-			"req-001-test/crit-", // missing criteria number
-			"req-001-test", // missing criteria part
-			"requirement-001-test/crit-001", // invalid requirement prefix
+			"criteria-001", // wrong prefix
+			"crit-1", // number not padded
+			"crit-", // missing number
+			"req-001-test/crit-001", // old format with parent
 			"", // empty
 		];
 
@@ -71,11 +66,40 @@ describe("AcceptanceCriteriaIdSchema", () => {
 describe("AcceptanceCriteriaSchema", () => {
 	it("should accept valid acceptance criteria", () => {
 		const validCriteria: AcceptanceCriteria = {
-			id: "req-001-test-requirement/crit-001",
+			id: "crit-001",
 			description: "User can log in successfully",
+			status: "active",
 		};
 
 		expect(() => AcceptanceCriteriaSchema.parse(validCriteria)).not.toThrow();
+	});
+
+	it("should default status to 'needs-review'", () => {
+		const criteria = {
+			id: "crit-001",
+			description: "User can log in successfully",
+		};
+
+		const parsed = AcceptanceCriteriaSchema.parse(criteria);
+		expect(parsed.status).toBe("needs-review");
+	});
+
+	it("should accept all valid status values", () => {
+		const statuses: Array<"needs-review" | "active" | "archived"> = [
+			"needs-review",
+			"active",
+			"archived",
+		];
+
+		for (const status of statuses) {
+			const criteria = {
+				id: "crit-001",
+				description: "Test criteria",
+				status,
+			};
+
+			expect(() => AcceptanceCriteriaSchema.parse(criteria)).not.toThrow();
+		}
 	});
 
 	it("should require all mandatory fields", () => {
@@ -83,7 +107,7 @@ describe("AcceptanceCriteriaSchema", () => {
 
 		for (const field of requiredFields) {
 			const invalidCriteria = {
-				id: "req-001-test-requirement/crit-001",
+				id: "crit-001",
 				description: "Test description",
 			};
 			delete (invalidCriteria as Record<string, unknown>)[field];
@@ -94,7 +118,7 @@ describe("AcceptanceCriteriaSchema", () => {
 
 	it("should reject empty description", () => {
 		const criteria = {
-			id: "req-001-test-requirement/crit-001",
+			id: "crit-001",
 			description: "",
 		};
 
@@ -115,8 +139,9 @@ describe("RequirementSchema", () => {
 			priority: "required" as const,
 			criteria: [
 				{
-					id: "req-001-user-authentication/crit-001",
+					id: "crit-001",
 					description: "User can log in with valid credentials",
+					status: "active",
 				},
 			],
 		};
@@ -136,7 +161,7 @@ describe("RequirementSchema", () => {
 			updated_at: new Date().toISOString(),
 			criteria: [
 				{
-					id: "req-001-test-req/crit-001",
+					id: "crit-001",
 					description: "Test criteria",
 				},
 			],
@@ -166,7 +191,7 @@ describe("RequirementSchema", () => {
 				priority,
 				criteria: [
 					{
-						id: "req-001-test-req/crit-001",
+						id: "crit-001",
 						description: "Test criteria",
 					},
 				],
@@ -188,7 +213,7 @@ describe("RequirementSchema", () => {
 			priority: "invalid",
 			criteria: [
 				{
-					id: "req-001-test-req/crit-001",
+					id: "crit-001",
 					description: "Test criteria",
 				},
 			],
@@ -212,27 +237,7 @@ describe("RequirementSchema", () => {
 		expect(() => RequirementSchema.parse(requirement)).toThrow();
 	});
 
-	it("should validate criteria IDs match requirement number", () => {
-		const requirement = {
-			type: "requirement" as const,
-			number: 1,
-			slug: "test-req",
-			name: "Test Requirement",
-			description: "A test requirement",
-			created_at: new Date().toISOString(),
-			updated_at: new Date().toISOString(),
-			criteria: [
-				{
-					id: "req-002-test-req/crit-001", // Wrong number (002 instead of 001)
-					description: "Test criteria",
-				},
-			],
-		};
-
-		expect(() => RequirementSchema.parse(requirement)).toThrow();
-	});
-
-	it("should allow multiple criteria with matching requirement ID", () => {
+	it("should allow multiple criteria", () => {
 		const requirement = {
 			type: "requirement" as const,
 			number: 5,
@@ -243,16 +248,14 @@ describe("RequirementSchema", () => {
 			updated_at: new Date().toISOString(),
 			criteria: [
 				{
-					id: "req-005-test-req/crit-001",
+					id: "crit-001",
 					description: "First criteria",
-					plan_id: "pln-001-test-plan",
-					completed: false,
+					status: "active",
 				},
 				{
-					id: "req-005-test-req/crit-002",
+					id: "crit-002",
 					description: "Second criteria",
-					plan_id: "pln-002-test-plan",
-					completed: true,
+					status: "needs-review",
 				},
 			],
 		};

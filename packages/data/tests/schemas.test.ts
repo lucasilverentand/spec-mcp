@@ -11,7 +11,6 @@ import {
 	RequirementIdSchema,
 	RequirementSchema,
 	ServiceComponentSchema,
-	ToolComponentSchema,
 } from "../src/index.js";
 
 describe("Schema Exports", () => {
@@ -21,7 +20,6 @@ describe("Schema Exports", () => {
 		expect(ComponentTypeSchema).toBeDefined();
 		expect(LibraryComponentSchema).toBeDefined();
 		expect(ServiceComponentSchema).toBeDefined();
-		expect(ToolComponentSchema).toBeDefined();
 	});
 
 	it("should export all plan schemas", () => {

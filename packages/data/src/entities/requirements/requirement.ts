@@ -7,8 +7,8 @@ export const RequirementIdSchema = z.string().regex(/^req-\d{3}-[a-z0-9-]+$/, {
 
 export const AcceptanceCriteriaIdSchema = z
 	.string()
-	.regex(/^req-\d{3}-[a-z0-9-]+\/crit-\d{3}$/, {
-		message: "ID must follow format: req-XXX-slug/crit-XXX",
+	.regex(/^crit-\d{3}$/, {
+		message: "ID must follow format: crit-XXX",
 	})
 	.describe("Unique identifier for the acceptance criteria");
 
@@ -18,6 +18,10 @@ export const AcceptanceCriteriaSchema = z.object({
 		.string()
 		.min(1)
 		.describe("Description of the acceptance criteria"),
+	status: z
+		.enum(["needs-review", "active", "archived"])
+		.default("needs-review")
+		.describe("Criterion status"),
 });
 
 // Schema for stored requirements (no ID field)
@@ -30,17 +34,7 @@ export const RequirementStorageSchema = BaseSchema.extend({
 		.array(AcceptanceCriteriaSchema)
 		.min(1)
 		.describe("List of acceptance criteria"),
-})
-	.refine(
-		(data) =>
-			data.criteria.every((crit) =>
-				crit.id.startsWith(`req-${data.number.toString().padStart(3, "0")}`),
-			),
-		{
-			message: "All criteria IDs must start with the parent requirement ID",
-		},
-	)
-	.describe("Schema for stored requirements");
+}).describe("Schema for stored requirements");
 
 // Schema for runtime requirements (with computed ID)
 export const RequirementSchema = RequirementStorageSchema.transform((data) => ({

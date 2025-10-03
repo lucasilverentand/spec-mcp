@@ -333,7 +333,6 @@ describe("Entity-Specific ID Functions", () => {
 			expect(validateId("app-001-test")).toBe(true);
 			expect(validateId("svc-001-test")).toBe(true);
 			expect(validateId("lib-001-test")).toBe(true);
-			expect(validateId("tol-001-test")).toBe(true);
 		});
 
 		it("should invalidate ID with wrong entity type", () => {

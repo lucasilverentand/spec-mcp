@@ -23,10 +23,7 @@ Spec MCP Server provides a structured approach to managing software specificatio
 - **Orphan Detection**: Find unreferenced or isolated specifications
 - **Health Scoring**: Get overall system health metrics
 
-### 🤖 AI-Powered Guidance
-- **Requirement Analysis**: 7-step reasoning process validation
-- **Component Analysis**: 10-step architecture design validation
-- **Plan Analysis**: 12-step implementation planning validation
+### 🤖 AI-Powered Features
 - **Interactive Prompts**: Guided spec creation with proven methodologies
 
 ### 🔗 Advanced Features
@@ -126,9 +123,8 @@ specs/
 { name: "requirement", arguments: { operation: "list", priority: "critical" } }
 ```
 
-### Comprehensive Analysis (2 tools)
+### Comprehensive Analysis (1 tool)
 - `analyze` - Run any analysis: dependencies, coverage, orphans, cycles, health, references, or full-report
-- `guidance` - Validate specs against best practices (requirements 7-step, components 10-step, plans 12-step)
 
 **Example Usage:**
 ```javascript
@@ -137,9 +133,6 @@ specs/
 
 // Get full system report
 { name: "analyze", arguments: { analysis_type: "full-report" } }
-
-// Validate a requirement
-{ name: "guidance", arguments: { spec_type: "requirement", id: "req-001-user-auth" } }
 ```
 
 ### Sub-Entity Access (5 tools)
