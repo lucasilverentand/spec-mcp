@@ -19,14 +19,20 @@ export {
 	ServiceComponentSchema,
 } from "./entities/components/component.js";
 export {
-	AmendmentIdSchema,
-	AmendmentSchema,
 	ArticleIdSchema,
 	ArticleSchema,
+	ArticleStatusSchema,
 	ConstitutionIdSchema,
 	ConstitutionSchema,
 	ConstitutionStorageSchema,
 } from "./entities/constitutions/constitution.js";
+export {
+	ArticleReferenceSchema,
+	ConsequencesSchema,
+	DecisionIdSchema,
+	DecisionSchema,
+	DecisionStatusSchema,
+} from "./entities/decisions/decision.js";
 export * from "./entities/index.js";
 export {
 	PlanIdSchema,

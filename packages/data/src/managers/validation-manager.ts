@@ -296,9 +296,6 @@ export class ValidationManager {
 				const base = {
 					...baseFields,
 					folder: comp.folder,
-					depends_on: comp.depends_on || [],
-					external_dependencies: comp.external_dependencies || [],
-					constraints: comp.constraints || [],
 					tech_stack: comp.tech_stack || [],
 					testing_setup: comp.testing_setup || {
 						frameworks: [],
@@ -306,6 +303,17 @@ export class ValidationManager {
 						test_commands: {},
 						test_patterns: [],
 					},
+					deployment: comp.deployment || {
+						platform: "unknown",
+						environment_vars: [],
+						secrets: [],
+					},
+					scope: comp.scope || {
+						in_scope: [],
+						out_of_scope: [],
+					},
+					depends_on: comp.depends_on || [],
+					external_dependencies: comp.external_dependencies || [],
 				};
 
 				// Add type-specific fields
@@ -338,12 +346,28 @@ export class ValidationManager {
 				return {
 					...baseFields,
 					articles: con.articles || [],
-					amendments: con.amendments || [],
-					applies_to: con.applies_to || ["all"],
-					maintainers: con.maintainers || [],
-					review_required: con.review_required ?? true,
-					status: con.status || "active",
-					version: con.version || "1.0.0",
+				} as AnyEntity;
+			}
+			case "decision": {
+				const dec = entity as Record<string, unknown>;
+				return {
+					...baseFields,
+					decision: dec.decision || "",
+					context: dec.context || "",
+					status: dec.status || "proposed",
+					alternatives: dec.alternatives || [],
+					consequences: dec.consequences || {
+						positive: [],
+						negative: [],
+						risks: [],
+						mitigation: [],
+					},
+					affects_components: dec.affects_components || [],
+					affects_requirements: dec.affects_requirements || [],
+					affects_plans: dec.affects_plans || [],
+					informed_by_articles: dec.informed_by_articles || [],
+					supersedes: dec.supersedes,
+					references: dec.references || [],
 				} as AnyEntity;
 			}
 			default:

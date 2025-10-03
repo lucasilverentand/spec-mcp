@@ -7,6 +7,7 @@ export const EntityTypeSchema = z.enum([
 	"service",
 	"library",
 	"constitution",
+	"decision",
 ]);
 
 export const EntitySlugSchema = z
@@ -63,6 +64,7 @@ export const EntityTypeShortMap: Record<EntityType, string> = {
 	service: "svc",
 	library: "lib",
 	constitution: "con",
+	decision: "dec",
 };
 
 export function shortenEntityType(type: EntityType): string {

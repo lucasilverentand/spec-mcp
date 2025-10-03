@@ -2,6 +2,7 @@
 
 export * from "./api-contract-schema.js";
 export * from "./data-model-schema.js";
+export * from "./deployment-schema.js";
 export * from "./flow-schema.js";
 export * from "./reference-schema.js";
 export * from "./scope-schema.js";

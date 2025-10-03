@@ -698,6 +698,9 @@ export class ReferenceValidator {
 			case "constitution":
 				// Constitutions follow same ID pattern as components
 				return `con-${entity.number.toString().padStart(3, "0")}-${entity.slug}`;
+			case "decision":
+				// Decisions follow same ID pattern
+				return `dec-${entity.number.toString().padStart(3, "0")}-${entity.slug}`;
 			default:
 				return this.getComponentId(entity);
 		}
