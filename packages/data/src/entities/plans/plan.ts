@@ -1,6 +1,5 @@
 import z from "zod";
 import { BaseSchema, computeEntityId } from "../../core/base-entity.js";
-import { AcceptanceCriteriaIdSchema } from "../requirements/requirement.js";
 import { ApiContractSchema } from "../shared/api-contract-schema.js";
 import { DataModelSchema } from "../shared/data-model-schema.js";
 import { FlowSchema } from "../shared/flow-schema.js";
@@ -15,11 +14,22 @@ export const PlanIdSchema = z.string().regex(/^pln-\d{3}-[a-z0-9-]+$/, {
 
 export const PlanPrioritySchema = z.enum(["critical", "high", "medium", "low"]);
 
+// Criteria reference format: req-XXX-slug/crit-XXX
+export const CriteriaReferenceSchema = z
+	.string()
+	.regex(/^req-\d{3}-[a-z0-9-]+\/crit-\d{3}$/, {
+		message:
+			"Criteria reference must follow format: req-XXX-slug/crit-XXX (e.g., req-001-user-auth/crit-001)",
+	})
+	.describe(
+		"Full path reference to requirement acceptance criteria including parent requirement",
+	);
+
 // Schema for stored plans (no ID field)
 export const PlanStorageSchema = BaseSchema.extend({
 	type: z.literal("plan").describe("Entity type is always 'plan'"),
-	criteria_id: AcceptanceCriteriaIdSchema.optional().describe(
-		"The acceptance criteria ID this plan fulfills (one plan per criteria). Optional for orchestration/milestone plans.",
+	criteria_id: CriteriaReferenceSchema.optional().describe(
+		"The acceptance criteria ID this plan fulfills (format: req-XXX-slug/crit-XXX). Optional for orchestration/milestone plans.",
 	),
 	priority: PlanPrioritySchema.default("medium").describe(
 		"Priority level of the plan. 'critical' plans must be completed before 'high', 'high' before 'medium', and 'medium' before 'low'.",
@@ -88,4 +98,5 @@ export const PlanSchema = PlanStorageSchema.transform((data) => ({
 
 export type PlanId = z.infer<typeof PlanIdSchema>;
 export type PlanPriority = z.infer<typeof PlanPrioritySchema>;
+export type CriteriaReference = z.infer<typeof CriteriaReferenceSchema>;
 export type Plan = z.infer<typeof PlanSchema>;

@@ -11,9 +11,8 @@ export const TaskIdSchema = z
 export const TaskPrioritySchema = z.enum([
 	"critical",
 	"high",
-	"normal",
+	"medium",
 	"low",
-	"optional",
 ]);
 
 export const FileActionSchema = z.enum(["create", "modify", "delete"]);
@@ -42,7 +41,7 @@ export const TaskFileSchema = z.object({
 const _TaskDetailsSchema = z.object({
 	priority: TaskPrioritySchema.describe(
 		"Priority level for task ordering",
-	).default("normal"),
+	).default("medium"),
 	depends_on: z
 		.array(TaskIdSchema)
 		.default([])
