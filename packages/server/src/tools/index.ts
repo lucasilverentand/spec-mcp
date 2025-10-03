@@ -8,6 +8,7 @@ import { registerDeleteSpecTool } from "./delete-spec.js";
 import { registerQueryTool } from "./query.js";
 import { registerStartSpecTool } from "./start-spec.js";
 import { registerUpdateSpecTool } from "./update-spec.js";
+import { registerValidateTool } from "./validate.js";
 
 export interface ToolContext {
 	rateLimiter: RateLimiter;
@@ -30,6 +31,9 @@ export function registerAllTools(
 
 	// Analysis tool
 	registerAnalyzeTool(server, operations, context);
+
+	// Validation tool
+	registerValidateTool(server, operations, context);
 
 	// Unified query tool (1 tool)
 	registerQueryTool(server, operations, context); // query (read-only queries)
