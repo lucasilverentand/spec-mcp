@@ -212,7 +212,7 @@ export class StepValidator {
 				}
 				break;
 
-			case "map_dependencies":
+			case "map_dependencies": {
 				const internalDeps = Array.isArray(data.depends_on)
 					? data.depends_on.length
 					: 0;
@@ -227,6 +227,7 @@ export class StepValidator {
 					strengths.push("No external dependencies - self-contained component");
 				}
 				break;
+			}
 
 			case "define_ownership":
 				if (data.description) {
@@ -377,7 +378,7 @@ export class StepValidator {
 				}
 				break;
 
-			case "relationships":
+			case "relationships": {
 				const affectedCount =
 					(Array.isArray(data.affects_components)
 						? data.affects_components.length
@@ -399,6 +400,7 @@ export class StepValidator {
 					);
 				}
 				break;
+			}
 		}
 	}
 

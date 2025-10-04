@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
-import { EntityManager, FileManager } from "@spec-mcp/data";
+import { EntityManager, type FileManager } from "@spec-mcp/data";
 import { SpecOperations } from "@spec-mcp/core";
 import { creationFlowHelper } from "../../src/utils/creation-flow-helper.js";
 import * as fs from "node:fs/promises";

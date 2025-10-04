@@ -40,7 +40,7 @@ export function registerUpdateSpecTool(
 				try {
 					// Determine entity type from ID prefix
 					const prefix = id.split("-")[0];
-					let result;
+					let result: unknown;
 
 					// Sanitize string values in updates
 					const sanitizedUpdates = Object.entries(updates).reduce(

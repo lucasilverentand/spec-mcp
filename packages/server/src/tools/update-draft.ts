@@ -84,10 +84,29 @@ export function registerUpdateDraftTool(
 					};
 				}
 
-				// Sanitize string values
+				// Sanitize string values and parse JSON if needed
 				let sanitizedValue = value;
+
+				// Debug: Log the type and value
+				console.error(`[DEBUG] Field: ${field}, Type: ${typeof value}, Value:`, value);
+
 				if (typeof value === "string") {
-					sanitizedValue = context.inputValidator.sanitizeString(value);
+					// Try to parse JSON arrays/objects that were stringified during MCP transmission
+					if (
+						(value.trim().startsWith("[") && value.trim().endsWith("]")) ||
+						(value.trim().startsWith("{") && value.trim().endsWith("}"))
+					) {
+						try {
+							sanitizedValue = JSON.parse(value);
+							console.error(`[DEBUG] Successfully parsed JSON:`, sanitizedValue);
+						} catch (e) {
+							// If parsing fails, treat as regular string and sanitize
+							console.error(`[DEBUG] JSON parse failed:`, e);
+							sanitizedValue = context.inputValidator.sanitizeString(value);
+						}
+					} else {
+						sanitizedValue = context.inputValidator.sanitizeString(value);
+					}
 				}
 
 				// Process the creation flow step with the field data
