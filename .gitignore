@@ -52,6 +52,13 @@ test-output/
 packages/*/specs/
 packages/*/.specs/
 
+# Draft files and test-generated specs (runtime/temporary data)
+.specs/.drafts/
+specs/.drafts/
+specs/requirements/*-test*.yml
+specs/components/*-test*.yml
+specs/plans/*-test*.yml
+
 # Package manager
 .pnpm-debug.log*
 .pnpm-lock.yaml
