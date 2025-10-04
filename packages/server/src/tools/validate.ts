@@ -1,9 +1,9 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { ServerConfig } from "../config/index.js";
 import type { SpecOperations } from "@spec-mcp/core";
 import { computeEntityId, type EntityType } from "@spec-mcp/data";
 import { z } from "zod";
 import { wrapToolHandler } from "../utils/tool-wrapper.js";
-import type { ToolContext } from "./index.js";
 
 /**
  * Parse validation errors grouped by field
@@ -109,7 +109,7 @@ function formatValidationResults(validations: Array<{
 export function registerValidateTool(
 	server: McpServer,
 	operations: SpecOperations,
-	context: ToolContext,
+	_config: ServerConfig,
 ) {
 	server.registerTool(
 		"validate",
@@ -394,6 +394,7 @@ export function registerValidateTool(
 					},
 				],
 			};
-		}, context),
-	);
+		},
+	),
+);
 }

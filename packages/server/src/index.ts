@@ -4,8 +4,6 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { SpecOperations } from "@spec-mcp/core";
 import { loadConfig } from "./config/index.js";
-import { InputValidator } from "./middleware/input-validator.js";
-import { RateLimiter } from "./middleware/rate-limiter.js";
 import { registerAllTools } from "./tools/index.js";
 import { ErrorCode, McpError } from "./utils/error-codes.js";
 import { logger } from "./utils/logger.js";
@@ -153,13 +151,6 @@ async function main() {
 		// Load and validate configuration
 		const config = await loadConfig();
 
-		// Update logger level
-		logger.level = config.logLevel;
-
-		// Initialize middleware
-		const rateLimiter = new RateLimiter(config.rateLimit);
-		const inputValidator = new InputValidator(config);
-
 		// Initialize the MCP server
 		const server = new McpServer({
 			name: "spec-mcp",
@@ -169,17 +160,10 @@ async function main() {
 		// Initialize spec operations
 		const operations = new SpecOperations({
 			specsPath: config.specsPath,
-			autoDetect: config.autoDetect,
-			schemaValidation: config.schemaValidation,
-			referenceValidation: config.referenceValidation,
 		});
 
-		// Register all tools with middleware
-		registerAllTools(server, operations, {
-			rateLimiter,
-			inputValidator,
-			config,
-		});
+		// Register all tools
+		registerAllTools(server, operations, config);
 
 		// Set up connection with retry logic
 		const transport = new StdioServerTransport();
@@ -188,10 +172,6 @@ async function main() {
 		// Add cleanup handlers
 		shutdownHandler.addCleanupHandler(async () => {
 			await connectionManager.disconnect();
-		});
-
-		shutdownHandler.addCleanupHandler(async () => {
-			rateLimiter.clear();
 		});
 
 		// Connect with retry

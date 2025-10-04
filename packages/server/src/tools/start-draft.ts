@@ -1,9 +1,9 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { SpecOperations } from "@spec-mcp/core";
 import { z } from "zod";
+import type { ServerConfig } from "../config/index.js";
 import { wrapToolHandler } from "../utils/tool-wrapper.js";
-import { creationFlowHelper } from "../utils/creation-flow-helper.js";
-import type { ToolContext } from "./index.js";
+import { getCreationFlowHelper } from "../utils/creation-flow-helper.js";
 
 const SpecTypeSchema = z.enum([
 	"requirement",
@@ -19,7 +19,7 @@ const SpecTypeSchema = z.enum([
 export function registerStartDraftTool(
 	server: McpServer,
 	_operations: SpecOperations,
-	context: ToolContext,
+	config: ServerConfig,
 ) {
 	server.registerTool(
 		"start_draft",
@@ -37,8 +37,11 @@ export function registerStartDraftTool(
 		wrapToolHandler(
 			"start_draft",
 			async ({ type }) => {
+				// Get shared helper instance with resolved specs path
+				const helper = getCreationFlowHelper(config.specsPath);
+
 				// Start creation flow session
-				const response = await creationFlowHelper.start(
+				const response = await helper.start(
 					type as "requirement" | "component" | "plan" | "constitution" | "decision",
 				);
 
@@ -56,9 +59,9 @@ export function registerStartDraftTool(
 										total_steps: response.total_steps,
 										current_field: response.current_step_name,
 										instructions: response.prompt,
-										draft_file: `.specs/.drafts/${response.draft_id}.draft.yml`,
+										draft_file: `${config.specsPath}/.drafts/${response.draft_id}.draft.yml`,
 										next_action:
-											"Use update_spec to provide the value for this field",
+											"Use update_draft to provide the value for this field",
 									},
 								},
 								null,
@@ -68,7 +71,6 @@ export function registerStartDraftTool(
 					],
 				};
 			},
-			context,
 		),
 	);
 }

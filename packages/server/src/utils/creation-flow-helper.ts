@@ -13,8 +13,8 @@ export class CreationFlowHelper {
 	private draftManager: DraftManager;
 	private stepValidator: StepValidator;
 
-	constructor() {
-		this.draftManager = new DraftManager();
+	constructor(specsPath?: string) {
+		this.draftManager = new DraftManager(specsPath);
 		this.stepValidator = new StepValidator();
 	}
 
@@ -562,5 +562,15 @@ export class CreationFlowHelper {
 	}
 }
 
-// Global creation flow helper instance
-export const creationFlowHelper = new CreationFlowHelper();
+// Global helper instance - shared across all tool calls to maintain draft state
+let globalHelper: CreationFlowHelper | null = null;
+
+export function getCreationFlowHelper(specsPath?: string): CreationFlowHelper {
+	if (!globalHelper) {
+		globalHelper = new CreationFlowHelper(specsPath);
+	}
+	return globalHelper;
+}
+
+// For backward compatibility with tests
+export const creationFlowHelper = getCreationFlowHelper();

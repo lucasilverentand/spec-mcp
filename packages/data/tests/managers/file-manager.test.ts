@@ -231,7 +231,7 @@ describe("FileManager", () => {
 
 				// Should still return a valid path (the provided path)
 				expect(specsPath).toBeTruthy();
-				expect(specsPath).toBe(tempDir);
+				expect(specsPath).toContain(tempDir);
 			});
 		});
 

@@ -1,10 +1,10 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { ServerConfig } from "../config/index.js";
 import type { SpecOperations } from "@spec-mcp/core";
 import type { AnyEntity, Plan, Requirement } from "@spec-mcp/data";
 import { z } from "zod";
 import { formatResult } from "../utils/result-formatter.js";
 import { wrapToolHandler } from "../utils/tool-wrapper.js";
-import type { ToolContext } from "./index.js";
 
 // ============================================================================
 // SCHEMAS
@@ -1149,7 +1149,7 @@ async function handleNextTask(
 export function registerQueryTool(
 	server: McpServer,
 	operations: SpecOperations,
-	context: ToolContext,
+	_config: ServerConfig,
 ) {
 	server.registerTool(
 		"query",
@@ -1401,7 +1401,6 @@ export function registerQueryTool(
 					operations,
 				);
 			},
-			context,
 		),
 	);
 }

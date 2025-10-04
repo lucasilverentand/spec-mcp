@@ -1,10 +1,10 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { SpecOperations } from "@spec-mcp/core";
 import { z } from "zod";
+import type { ServerConfig } from "../config/index.js";
 import { formatDeleteResult } from "../utils/result-formatter.js";
 import { wrapToolHandler } from "../utils/tool-wrapper.js";
-import { creationFlowHelper } from "../utils/creation-flow-helper.js";
-import type { ToolContext } from "./index.js";
+import { getCreationFlowHelper } from "../utils/creation-flow-helper.js";
 
 /**
  * Detect entity type from ID
@@ -26,7 +26,7 @@ function detectEntityType(
 export function registerDeleteSpecTool(
 	server: McpServer,
 	operations: SpecOperations,
-	context: ToolContext,
+	config: ServerConfig,
 ) {
 	server.registerTool(
 		"delete_spec",
@@ -46,12 +46,13 @@ export function registerDeleteSpecTool(
 		wrapToolHandler(
 			"delete_spec",
 			async ({ id }) => {
-				const validatedId = context.inputValidator.validateId(id);
+				// Create helper with resolved specs path
+				const helper = getCreationFlowHelper(config.specsPath);
 
 				// Try to delete as draft first
-				const draft = creationFlowHelper.getDraft(validatedId);
+				const draft = helper.getDraft(id);
 				if (draft) {
-					const deleted = await creationFlowHelper.deleteDraft(validatedId);
+					const deleted = await helper.deleteDraft(id);
 					if (deleted) {
 						return {
 							content: [
@@ -61,7 +62,7 @@ export function registerDeleteSpecTool(
 										{
 											success: true,
 											message: `Draft deleted successfully`,
-											draft_id: validatedId,
+											draft_id: id,
 											spec_type: draft.type,
 										},
 										null,
@@ -91,7 +92,7 @@ export function registerDeleteSpecTool(
 				}
 
 				// Handle finalized spec deletion
-				const entityType = detectEntityType(validatedId);
+				const entityType = detectEntityType(id);
 				if (!entityType) {
 					return {
 						content: [
@@ -113,23 +114,23 @@ export function registerDeleteSpecTool(
 
 				switch (entityType) {
 					case "requirement": {
-						const result = await operations.deleteRequirement(validatedId);
-						return formatDeleteResult(result, "requirement", validatedId);
+						const result = await operations.deleteRequirement(id);
+						return formatDeleteResult(result, "requirement", id);
 					}
 
 					case "plan": {
-						const result = await operations.deletePlan(validatedId);
-						return formatDeleteResult(result, "plan", validatedId);
+						const result = await operations.deletePlan(id);
+						return formatDeleteResult(result, "plan", id);
 					}
 
 					case "component": {
-						const result = await operations.deleteComponent(validatedId);
-						return formatDeleteResult(result, "component", validatedId);
+						const result = await operations.deleteComponent(id);
+						return formatDeleteResult(result, "component", id);
 					}
 
 					case "constitution": {
-						const result = await operations.deleteConstitution(validatedId);
-						return formatDeleteResult(result, "constitution", validatedId);
+						const result = await operations.deleteConstitution(id);
+						return formatDeleteResult(result, "constitution", id);
 					}
 
 					default:
@@ -151,7 +152,6 @@ export function registerDeleteSpecTool(
 						};
 				}
 			},
-			context,
 		),
 	);
 }

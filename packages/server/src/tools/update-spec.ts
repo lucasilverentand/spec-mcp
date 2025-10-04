@@ -1,9 +1,9 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { ServerConfig } from "../config/index.js";
 import type { SpecOperations } from "@spec-mcp/core";
 import { computeEntityId } from "@spec-mcp/data";
 import { z } from "zod";
 import { wrapToolHandler } from "../utils/tool-wrapper.js";
-import type { ToolContext } from "./index.js";
 
 /**
  * Register update_spec tool - updates a finalized spec with full validation
@@ -11,7 +11,7 @@ import type { ToolContext } from "./index.js";
 export function registerUpdateSpecTool(
 	server: McpServer,
 	operations: SpecOperations,
-	context: ToolContext,
+	_config: ServerConfig,
 ) {
 	server.registerTool(
 		"update_spec",
@@ -40,13 +40,13 @@ export function registerUpdateSpecTool(
 				try {
 					// Determine entity type from ID prefix
 					const prefix = id.split("-")[0];
-					let result: unknown;
+					let result: { success: boolean; data?: unknown; error?: string };
 
 					// Sanitize string values in updates
 					const sanitizedUpdates = Object.entries(updates).reduce(
 						(acc, [key, value]) => {
 							if (typeof value === "string") {
-								acc[key] = context.inputValidator.sanitizeString(value);
+								acc[key] = value;
 							} else {
 								acc[key] = value;
 							}
@@ -179,7 +179,6 @@ export function registerUpdateSpecTool(
 					};
 				}
 			},
-			context,
 		),
 	);
 }

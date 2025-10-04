@@ -2,6 +2,7 @@ import { existsSync } from "node:fs";
 import { access, mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
 import { z } from "zod";
+import { FileManager } from "@spec-mcp/data";
 import { ErrorCode, McpError } from "../utils/error-codes.js";
 import { logger } from "../utils/logger.js";
 
@@ -10,23 +11,6 @@ import { logger } from "../utils/logger.js";
  */
 export const ConfigSchema = z.object({
 	specsPath: z.string().min(1, "Specs path cannot be empty"),
-	autoDetect: z.boolean().default(true),
-	schemaValidation: z.boolean().default(true),
-	referenceValidation: z.boolean().default(true),
-	maxFileSize: z
-		.number()
-		.positive()
-		.default(10 * 1024 * 1024), // 10MB default
-	rateLimit: z
-		.object({
-			enabled: z.boolean().default(true),
-			maxRequests: z.number().positive().default(100),
-			windowMs: z.number().positive().default(60000), // 1 minute
-		})
-		.default({}),
-	logLevel: z
-		.enum(["trace", "debug", "info", "warn", "error", "fatal"])
-		.default("info"),
 });
 
 export type ServerConfig = z.infer<typeof ConfigSchema>;
@@ -89,24 +73,19 @@ async function validateSpecsPath(specsPath: string): Promise<void> {
  * Load and validate server configuration
  */
 export async function loadConfig(): Promise<ServerConfig> {
+	// Get specs folder name relative to git root (e.g., "specs", ".specs", "docs/specs")
+	// Default: "specs"
+	const specsFolderName = process.env.SPECS_PATH || "specs";
+
+	// Use FileManager to resolve the full path - single source of truth
+	const fileManager = new FileManager({
+		path: specsFolderName,
+		autoDetect: true
+	});
+	const specsPath = await fileManager.getSpecsPath();
+
 	const rawConfig = {
-		specsPath: process.env.SPECS_ROOT || process.env.SPECS_PATH || "./specs",
-		autoDetect: process.env.AUTO_DETECT !== "false",
-		schemaValidation: process.env.SCHEMA_VALIDATION !== "false",
-		referenceValidation: process.env.REFERENCE_VALIDATION !== "false",
-		maxFileSize: process.env.MAX_FILE_SIZE
-			? Number.parseInt(process.env.MAX_FILE_SIZE, 10)
-			: undefined,
-		rateLimit: {
-			enabled: process.env.RATE_LIMIT_ENABLED !== "false",
-			maxRequests: process.env.RATE_LIMIT_MAX_REQUESTS
-				? Number.parseInt(process.env.RATE_LIMIT_MAX_REQUESTS, 10)
-				: undefined,
-			windowMs: process.env.RATE_LIMIT_WINDOW_MS
-				? Number.parseInt(process.env.RATE_LIMIT_WINDOW_MS, 10)
-				: undefined,
-		},
-		logLevel: (process.env.LOG_LEVEL || "info") as ServerConfig["logLevel"],
+		specsPath,
 	};
 
 	// Validate config schema

@@ -52,37 +52,51 @@ export class FileManager {
 			return this.resolvedPath;
 		}
 
-		if (this.config.path) {
-			this.resolvedPath = resolve(this.config.path);
-			return this.resolvedPath;
-		}
-
 		if (this.config.autoDetect) {
+			// Auto-detect: look for existing specs folder, optionally using config.path as hint
 			this.resolvedPath = await this.autoDetectSpecsPath();
 			return this.resolvedPath;
 		}
 
+		if (this.config.path) {
+			// Explicit path: resolve relative to git root if available, otherwise cwd
+			const gitRoot = await this.findGitRoot().catch(() => null);
+			const basePath = gitRoot || process.cwd();
+			this.resolvedPath = resolve(basePath, this.config.path);
+			return this.resolvedPath;
+		}
+
+		// Default fallback
 		this.resolvedPath = resolve("./specs");
 		return this.resolvedPath;
 	}
 
 	private async autoDetectSpecsPath(): Promise<string> {
 		const searchPaths: string[] = [];
+		const gitRoot = await this.findGitRoot().catch(() => null);
 
-		try {
-			// Try to find git repository root
-			const gitRoot = await this.findGitRoot();
-			if (gitRoot) {
-				searchPaths.push(join(gitRoot, ".specs"));
-				searchPaths.push(join(gitRoot, "specs"));
+		// If a path hint is provided, check it first
+		if (this.config.path) {
+			const basePath = gitRoot || process.cwd();
+			const hintPath = join(basePath, this.config.path);
+			if ((await this.pathExists(hintPath)) && (await this.isDirectory(hintPath))) {
+				return hintPath;
 			}
-		} catch {
-			// Silently fail git detection
+			// Path hint exists in config but directory not found - will create it later
+			// Return the hint path as the target
+			return hintPath;
 		}
 
-		// Add current working directory
-		searchPaths.push(join(process.cwd(), ".specs"));
+		// No path hint - search for existing specs folders
+		if (gitRoot) {
+			// Prefer 'specs' over '.specs' for better visibility
+			searchPaths.push(join(gitRoot, "specs"));
+			searchPaths.push(join(gitRoot, ".specs"));
+		}
+
+		// Add current working directory - prefer 'specs' over '.specs'
 		searchPaths.push(join(process.cwd(), "specs"));
+		searchPaths.push(join(process.cwd(), ".specs"));
 
 		// Look for existing specs folder in search paths
 		for (const path of searchPaths) {
@@ -91,11 +105,10 @@ export class FileManager {
 			}
 		}
 
-		// If no existing specs folder found, default to .specs in git root or cwd
-		const gitRoot = await this.findGitRoot().catch(() => null);
+		// If no existing specs folder found, default to 'specs' in git root or cwd
 		const defaultPath = gitRoot
-			? join(gitRoot, ".specs")
-			: join(process.cwd(), ".specs");
+			? join(gitRoot, "specs")
+			: join(process.cwd(), "specs");
 
 		return defaultPath;
 	}

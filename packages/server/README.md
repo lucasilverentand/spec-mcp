@@ -63,10 +63,7 @@ Add to your Claude Desktop configuration (`~/Library/Application Support/Claude/
   "mcpServers": {
     "spec-mcp": {
       "command": "npx",
-      "args": ["-y", "@spec-mcp/server"],
-      "env": {
-        "SPECS_ROOT": "/path/to/your/project/specs"
-      }
+      "args": ["-y", "@spec-mcp/server"]
     }
   }
 }
@@ -149,15 +146,26 @@ specs/
 
 ### Environment Variables
 
-- `SPECS_ROOT` - Root directory for specifications (required)
-- `LOG_LEVEL` - Logging level: `trace`, `debug`, `info`, `warn`, `error` (default: `info`)
-- `NODE_ENV` - Environment: `development`, `production` (default: `development`)
+- `SPECS_PATH` - Specs folder name/path relative to git root (default: `specs`)
+  - Examples: `specs`, `.specs`, `docs/specs`, `documentation/specifications`
+  - Auto-detection searches for existing folders in priority order:
+    1. `{git-root}/specs`
+    2. `{git-root}/.specs`
+    3. `{cwd}/specs`
+    4. `{cwd}/.specs`
+  - If `SPECS_PATH` is set, it will be used as a hint/override for the location
 
 ### Example Configuration
 
 ```bash
-export SPECS_ROOT=/Users/yourname/projects/my-app/specs
-export LOG_LEVEL=debug
+# Use default 'specs' folder (no configuration needed)
+# Auto-detects: ./specs or ./.specs
+
+# Use hidden '.specs' folder
+export SPECS_PATH=.specs
+
+# Use nested path
+export SPECS_PATH=docs/specifications
 ```
 
 ## Development & Debugging

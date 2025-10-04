@@ -11,8 +11,10 @@ export class DraftManager {
 	private cleanupInterval: NodeJS.Timeout | null = null;
 	private draftsDir: string;
 
-	constructor(specsBaseDir = ".specs") {
-		this.draftsDir = path.join(specsBaseDir, ".drafts");
+	constructor(specsBaseDir?: string) {
+		// Use provided path or fallback to default
+		const baseDir = specsBaseDir || ".specs";
+		this.draftsDir = path.join(baseDir, ".drafts");
 		// Auto-cleanup expired drafts every hour
 		this.cleanupInterval = setInterval(
 			() => {

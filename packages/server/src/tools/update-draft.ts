@@ -1,10 +1,10 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { ServerConfig } from "../config/index.js";
 import type { SpecOperations } from "@spec-mcp/core";
 import { z } from "zod";
 import { formatResult } from "../utils/result-formatter.js";
 import { wrapToolHandler } from "../utils/tool-wrapper.js";
-import { creationFlowHelper } from "../utils/creation-flow-helper.js";
-import type { ToolContext } from "./index.js";
+import { getCreationFlowHelper } from "../utils/creation-flow-helper.js";
 
 /**
  * Register update_draft tool - updates a draft one field at a time
@@ -12,7 +12,7 @@ import type { ToolContext } from "./index.js";
 export function registerUpdateDraftTool(
 	server: McpServer,
 	operations: SpecOperations,
-	context: ToolContext,
+	config: ServerConfig,
 ) {
 	server.registerTool(
 		"update_draft",
@@ -43,8 +43,11 @@ export function registerUpdateDraftTool(
 		wrapToolHandler(
 			"update_draft",
 			async ({ draft_id, field, value }) => {
+				// Create helper with resolved specs path
+				const helper = getCreationFlowHelper(config.specsPath);
+
 				// Get the draft to check its type
-				const draft = creationFlowHelper.getDraft(draft_id);
+				const draft = helper.getDraft(draft_id);
 				if (!draft) {
 					return {
 						content: [
@@ -90,28 +93,55 @@ export function registerUpdateDraftTool(
 				// Debug: Log the type and value
 				console.error(`[DEBUG] Field: ${field}, Type: ${typeof value}, Value:`, value);
 
-				if (typeof value === "string") {
-					// Try to parse JSON arrays/objects that were stringified during MCP transmission
-					if (
-						(value.trim().startsWith("[") && value.trim().endsWith("]")) ||
-						(value.trim().startsWith("{") && value.trim().endsWith("}"))
-					) {
-						try {
-							sanitizedValue = JSON.parse(value);
-							console.error(`[DEBUG] Successfully parsed JSON:`, sanitizedValue);
-						} catch (e) {
-							// If parsing fails, treat as regular string and sanitize
-							console.error(`[DEBUG] JSON parse failed:`, e);
-							sanitizedValue = context.inputValidator.sanitizeString(value);
+				/**
+				 * Recursively parse JSON strings to ensure proper data structure
+				 * This handles cases where MCP transmission double-stringifies complex objects
+				 */
+				const deepParseJson = (val: unknown): unknown => {
+					if (typeof val === "string") {
+						const trimmed = val.trim();
+						// Check if it looks like JSON
+						if (
+							(trimmed.startsWith("[") && trimmed.endsWith("]")) ||
+							(trimmed.startsWith("{") && trimmed.endsWith("}"))
+						) {
+							try {
+								const parsed = JSON.parse(val);
+								// Recursively parse in case of nested JSON strings
+								return deepParseJson(parsed);
+							} catch (e) {
+								// Not valid JSON, return sanitized string
+								return val;
+							}
 						}
-					} else {
-						sanitizedValue = context.inputValidator.sanitizeString(value);
+						// Regular string, sanitize it
+						return val;
 					}
-				}
+
+					// Recursively process arrays
+					if (Array.isArray(val)) {
+						return val.map(item => deepParseJson(item));
+					}
+
+					// Recursively process objects
+					if (val !== null && typeof val === "object") {
+						const result: Record<string, unknown> = {};
+						for (const [key, value] of Object.entries(val)) {
+							result[key] = deepParseJson(value);
+						}
+						return result;
+					}
+
+					// Primitive values pass through
+					return val;
+				};
+
+				sanitizedValue = deepParseJson(value);
+				console.error(`[DEBUG] After deep parse:`, sanitizedValue);
 
 				// Process the creation flow step with the field data
 				const stepData = { [field]: sanitizedValue };
-				const stepResponse = await creationFlowHelper.step(draft_id, stepData);
+				const stepResponse = await helper.step(draft_id, stepData);
 
 				if ("error" in stepResponse) {
 					return {
@@ -164,7 +194,7 @@ export function registerUpdateDraftTool(
 				// Check if all steps are completed (auto-finalize)
 				if (stepResponse.completed) {
 					// Finalize the spec
-					const finalizedDraft = creationFlowHelper.getDraft(draft_id);
+					const finalizedDraft = helper.getDraft(draft_id);
 					if (!finalizedDraft) {
 						return {
 							content: [
@@ -192,22 +222,11 @@ export function registerUpdateDraftTool(
 					try {
 						switch (specType) {
 							case "requirement": {
-								const validatedSlug = context.inputValidator.validateSlug(
-									(draftData.slug as string) || "",
-								);
-								const validatedName = context.inputValidator.sanitizeString(
-									(draftData.name as string) || "",
-								);
-								const validatedDescription =
-									context.inputValidator.sanitizeString(
-										(draftData.description as string) || "",
-									);
-
 								const reqData = {
 									type: "requirement" as const,
-									slug: validatedSlug,
-									name: validatedName,
-									description: validatedDescription,
+									slug: (draftData.slug as string) || "",
+									name: (draftData.name as string) || "",
+									description: (draftData.description as string) || "",
 									created_at: new Date().toISOString(),
 									updated_at: new Date().toISOString(),
 									priority:
@@ -225,25 +244,11 @@ export function registerUpdateDraftTool(
 							}
 
 							case "plan": {
-								const validatedSlug = context.inputValidator.validateSlug(
-									(draftData.slug as string) || "",
-								);
-								const validatedName = context.inputValidator.sanitizeString(
-									(draftData.name as string) || "",
-								);
-								const validatedDescription =
-									context.inputValidator.sanitizeString(
-										(draftData.description as string) || "",
-									);
-								const validatedCriteria = context.inputValidator.sanitizeString(
-									(draftData.acceptance_criteria as string) || "",
-								);
-
 								const planData = {
 									type: "plan" as const,
-									slug: validatedSlug,
-									name: validatedName,
-									description: validatedDescription,
+									slug: (draftData.slug as string) || "",
+									name: (draftData.name as string) || "",
+									description: (draftData.description as string) || "",
 									criteria_id: (draftData.criteria_id as string) || undefined,
 									created_at: new Date().toISOString(),
 									updated_at: new Date().toISOString(),
@@ -253,7 +258,7 @@ export function registerUpdateDraftTool(
 											| "high"
 											| "medium"
 											| "low") || "medium",
-									acceptance_criteria: validatedCriteria,
+									acceptance_criteria: (draftData.acceptance_criteria as string) || "",
 									depends_on: (draftData.depends_on as string[]) || [],
 									tasks: (draftData.tasks as unknown[]) || [],
 								};
@@ -264,30 +269,16 @@ export function registerUpdateDraftTool(
 							}
 
 							case "component": {
-								const validatedSlug = context.inputValidator.validateSlug(
-									(draftData.slug as string) || "",
-								);
-								const validatedName = context.inputValidator.sanitizeString(
-									(draftData.name as string) || "",
-								);
-								const validatedDescription =
-									context.inputValidator.sanitizeString(
-										(draftData.description as string) || "",
-									);
-								const validatedFolder = context.inputValidator.sanitizeString(
-									(draftData.folder as string) || ".",
-								);
-
 								const compData = {
 									type:
 										(draftData.type as "app" | "service" | "library") ||
 										"service",
-									slug: validatedSlug,
-									name: validatedName,
-									description: validatedDescription,
+									slug: (draftData.slug as string) || "",
+									name: (draftData.name as string) || "",
+									description: (draftData.description as string) || "",
 									created_at: new Date().toISOString(),
 									updated_at: new Date().toISOString(),
-									folder: validatedFolder,
+									folder: (draftData.folder as string) || ".",
 									tech_stack: (draftData.tech_stack as string[]) || [],
 									depends_on: (draftData.depends_on as string[]) || [],
 									external_dependencies:
@@ -323,7 +314,7 @@ export function registerUpdateDraftTool(
 						// Delete draft after successful creation
 						// @ts-expect-error - Result can be any entity type
 						if (result.success) {
-							await creationFlowHelper.deleteDraft(draft_id);
+							await helper.deleteDraft(draft_id);
 							return {
 								content: [
 									{
@@ -389,7 +380,7 @@ export function registerUpdateDraftTool(
 													suggestions: stepResponse.validation.suggestions,
 												}
 											: { passed: true },
-									draft_file: `.specs/.drafts/${draft_id}.draft.yml`,
+									draft_file: `${config.specsPath}/.drafts/${draft_id}.draft.yml`,
 									next_action:
 										"Use update_draft again to provide the next field value",
 								},
@@ -400,7 +391,6 @@ export function registerUpdateDraftTool(
 					],
 				};
 			},
-			context,
 		),
 	);
 }
