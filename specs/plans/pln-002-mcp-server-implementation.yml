@@ -6,7 +6,7 @@ description: Implement the Model Context Protocol server with stdio transport, t
   prompt registration, and error handling. This plan covers the MCP server core, tool
   implementations for all specification operations, and integration with the foundational libraries.
 created_at: 2025-09-29T23:43:28.365Z
-updated_at: 2025-09-29T23:43:28.365Z
+updated_at: 2025-10-04T13:34:54.533Z
 priority: critical
 acceptance_criteria: MCP server successfully initializes with stdio transport, all tools are
   registered and functional, prompts for guided workflows are accessible, error handling follows MCP
@@ -65,7 +65,7 @@ tasks:
     verified: false
     notes: []
   - id: task-006
-    priority: normal
+    priority: high
     depends_on: []
     description: Add search and query capabilities
     considerations: []

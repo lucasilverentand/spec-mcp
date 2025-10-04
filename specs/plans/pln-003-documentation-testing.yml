@@ -6,7 +6,7 @@ description: Create comprehensive documentation and testing infrastructure for t
   system. This includes unit tests, integration tests, end-to-end tests, API documentation, usage
   guides, and example specifications.
 created_at: 2025-09-29T23:43:28.415Z
-updated_at: 2025-09-29T23:43:28.415Z
+updated_at: 2025-10-04T13:34:54.577Z
 priority: high
 acceptance_criteria: Test coverage exceeds 80% for all modules, all tools have documented examples,
   integration tests validate complete workflows, and documentation includes setup guides and usage
@@ -35,7 +35,7 @@ tasks:
     verified: false
     notes: []
   - id: task-003
-    priority: normal
+    priority: high
     depends_on: []
     description: Write end-to-end workflow tests
     considerations: []
@@ -45,7 +45,7 @@ tasks:
     verified: false
     notes: []
   - id: task-004
-    priority: normal
+    priority: high
     depends_on: []
     description: Document all MCP tools with examples
     considerations: []
@@ -55,7 +55,7 @@ tasks:
     verified: false
     notes: []
   - id: task-005
-    priority: normal
+    priority: high
     depends_on: []
     description: Create usage guides and tutorials
     considerations: []

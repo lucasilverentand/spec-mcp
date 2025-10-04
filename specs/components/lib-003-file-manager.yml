@@ -5,7 +5,7 @@ name: File Manager Library
 description: Handles YAML file I/O operations including atomic writes, directory management, and
   file scanning. Provides safe concurrent access and error handling for filesystem operations.
 created_at: 2025-09-29T23:34:01.059Z
-updated_at: 2025-09-29T23:34:01.059Z
+updated_at: 2025-10-04T13:37:02.213Z
 folder: packages/data/src/managers
 depends_on: []
 external_dependencies:
@@ -23,3 +23,23 @@ tech_stack:
   - TypeScript
   - Node.js fs
   - yaml
+deployment:
+  environment: development
+  platform: node
+  dependencies:
+    - js-yaml
+scope:
+  visibility: internal
+  consumers: []
+  in_scope:
+    - item: YAML file I/O
+      reasoning: Provides file read/write operations
+    - item: Atomic writes
+      reasoning: Prevents data corruption
+    - item: Directory management
+      reasoning: Ensures proper folder structure
+  out_of_scope:
+    - item: Schema validation
+      reasoning: Handled by validation-engine library
+    - item: Business logic
+      reasoning: Handled by spec-operations library

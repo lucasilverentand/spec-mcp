@@ -8,22 +8,22 @@ description: The system must provide complete Create, Read, Update, and Delete o
   persistence as YAML files, and atomic file operations to prevent data corruption. Operations must
   support both individual and batch operations where appropriate.
 created_at: 2025-09-29T23:34:54.571Z
-updated_at: 2025-09-29T23:41:06.162Z
+updated_at: 2025-10-04T13:34:19.499Z
 priority: critical
 criteria:
-  - id: req-002-specification-crud-operations/crit-001
+  - id: crit-001
     description: Create operations generate sequential IDs and persist to YAML files with validation
     plan_id: pln-001-core-foundation
     completed: false
-  - id: req-002-specification-crud-operations/crit-002
+  - id: crit-002
     description: Read operations retrieve specs by ID with optional filtering and search
     plan_id: pln-002-mcp-server-implementation
     completed: false
-  - id: req-002-specification-crud-operations/crit-003
+  - id: crit-003
     description: Update operations validate changes and maintain referential integrity
     plan_id: pln-003-documentation-testing
     completed: false
-  - id: req-002-specification-crud-operations/crit-004
+  - id: crit-004
     description: Delete operations check for dependencies and prevent orphaning references
     plan_id: pln-001-core-foundation
     completed: false

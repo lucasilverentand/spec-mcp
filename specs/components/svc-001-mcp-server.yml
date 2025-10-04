@@ -6,7 +6,7 @@ description: Main MCP server implementation with stdio transport, tool and promp
   graceful shutdown handling, connection management with retry logic, and comprehensive error
   handling following MCP conventions.
 created_at: 2025-09-29T23:34:01.683Z
-updated_at: 2025-09-29T23:34:01.683Z
+updated_at: 2025-10-04T13:37:02.079Z
 folder: packages/server/src
 depends_on:
   - lib-004-spec-operations
@@ -26,3 +26,23 @@ tech_stack:
   - TypeScript
   - MCP SDK 1.18.2
   - pino logger
+deployment:
+  environment: production
+  platform: node
+  dependencies:
+    - "@modelcontextprotocol/sdk"
+scope:
+  visibility: public
+  consumers: []
+  in_scope:
+    - item: MCP protocol implementation
+      reasoning: Provides stdio transport and protocol handling
+    - item: Tool and prompt registration
+      reasoning: Makes spec operations available via MCP
+    - item: Connection management
+      reasoning: Handles client lifecycle and graceful shutdown
+  out_of_scope:
+    - item: Business logic
+      reasoning: Delegated to tool implementations
+    - item: Data validation
+      reasoning: Handled by validation engine

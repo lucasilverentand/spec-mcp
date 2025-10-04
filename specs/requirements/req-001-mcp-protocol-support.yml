@@ -8,22 +8,22 @@ description: The system must implement the Model Context Protocol (MCP) specific
   and proper error handling following MCP conventions. The implementation must be compatible with
   MCP SDK version 1.18.2+ and support both synchronous and asynchronous tool execution patterns.
 created_at: 2025-09-29T23:34:54.415Z
-updated_at: 2025-09-29T23:41:06.088Z
+updated_at: 2025-10-04T13:34:19.443Z
 priority: critical
 criteria:
-  - id: req-001-mcp-protocol-support/crit-001
+  - id: crit-001
     description: MCP server initializes with stdio transport and responds to protocol handshake
     plan_id: pln-002-mcp-server-implementation
     completed: false
-  - id: req-001-mcp-protocol-support/crit-002
+  - id: crit-002
     description: All specification tools are registered and discoverable through MCP tool listing
     plan_id: pln-001-core-foundation
     completed: false
-  - id: req-001-mcp-protocol-support/crit-003
+  - id: crit-003
     description: Interactive prompts for guided spec creation are registered and functional
     plan_id: pln-003-documentation-testing
     completed: false
-  - id: req-001-mcp-protocol-support/crit-004
+  - id: crit-004
     description: Error responses follow MCP error code conventions and include actionable messages
     plan_id: pln-002-mcp-server-implementation
     completed: false

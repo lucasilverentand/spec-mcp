@@ -6,7 +6,7 @@ description: Core business logic orchestration layer that coordinates between en
   validation, and analysis. Provides high-level operations for managing specifications with proper
   error handling and transaction-like semantics.
 created_at: 2025-09-29T23:34:01.171Z
-updated_at: 2025-09-29T23:34:01.171Z
+updated_at: 2025-10-04T13:37:02.299Z
 folder: packages/core/src/services
 depends_on:
   - lib-001-data-schemas
@@ -23,3 +23,22 @@ constraints:
   - Operations must be atomic where possible
 tech_stack:
   - TypeScript
+deployment:
+  environment: development
+  platform: node
+  dependencies: []
+scope:
+  visibility: internal
+  consumers: []
+  in_scope:
+    - item: Business logic orchestration
+      reasoning: Coordinates between multiple libraries
+    - item: Transaction semantics
+      reasoning: Ensures data consistency
+    - item: Error handling
+      reasoning: Provides consistent error responses
+  out_of_scope:
+    - item: File system access
+      reasoning: Handled by file-manager library
+    - item: Schema definitions
+      reasoning: Handled by data-schemas library

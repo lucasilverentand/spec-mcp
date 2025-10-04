@@ -6,7 +6,7 @@ description: Zod schema definitions for all specification types including requir
   plans, and nested entities. Provides type-safe validation, TypeScript type inference, and schema
   composition.
 created_at: 2025-09-29T23:34:00.862Z
-updated_at: 2025-09-29T23:34:00.862Z
+updated_at: 2025-10-04T13:40:43.345Z
 folder: packages/data/src/entities
 depends_on: []
 external_dependencies:
@@ -21,3 +21,23 @@ constraints:
 tech_stack:
   - TypeScript
   - Zod 4.x
+deployment:
+  environment: development
+  platform: node
+  dependencies:
+    - zod
+scope:
+  visibility: internal
+  consumers: []
+  in_scope:
+    - item: Zod schema definitions
+      reasoning: Provides type-safe validation for all spec types
+    - item: TypeScript type inference
+      reasoning: Enables compile-time type checking
+    - item: Schema composition
+      reasoning: Allows reusable schema components
+  out_of_scope:
+    - item: Business logic
+      reasoning: Handled by spec-operations library
+    - item: Data persistence
+      reasoning: Handled by file-manager library

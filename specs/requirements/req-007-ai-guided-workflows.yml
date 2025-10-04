@@ -8,18 +8,18 @@ description: The system must provide interactive MCP prompts that guide users th
   guides. Each prompt should ask contextual questions, validate responses, provide examples and
   suggestions, and ultimately generate properly formatted specifications that pass validation.
 created_at: 2025-09-29T23:34:55.393Z
-updated_at: 2025-09-29T23:41:06.494Z
+updated_at: 2025-10-04T13:34:19.800Z
 priority: ideal
 criteria:
-  - id: req-007-ai-guided-workflows/crit-001
+  - id: crit-001
     description: Requirements prompt guides through 7-step process with contextual questions
     plan_id: pln-002-mcp-server-implementation
     completed: false
-  - id: req-007-ai-guided-workflows/crit-002
+  - id: crit-002
     description: Components prompt guides through 10-step process for each component type
     plan_id: pln-001-core-foundation
     completed: false
-  - id: req-007-ai-guided-workflows/crit-003
+  - id: crit-003
     description: Plans prompt guides through 12-step process with task breakdown
     plan_id: pln-003-documentation-testing
     completed: false

@@ -6,7 +6,7 @@ description: Provides CRUD operations for all entity types with automatic ID gen
   and persistence. Manages entity lifecycle, ensures data integrity, and provides query
   capabilities.
 created_at: 2025-09-29T23:34:00.960Z
-updated_at: 2025-09-29T23:34:00.960Z
+updated_at: 2025-10-04T13:37:02.143Z
 folder: packages/data/src/managers
 depends_on:
   - lib-001-data-schemas
@@ -21,3 +21,22 @@ constraints:
   - ID generation must be thread-safe
 tech_stack:
   - TypeScript
+deployment:
+  environment: development
+  platform: node
+  dependencies: []
+scope:
+  visibility: internal
+  consumers: []
+  in_scope:
+    - item: CRUD operations
+      reasoning: Core entity management functionality
+    - item: ID generation
+      reasoning: Ensures unique sequential IDs
+    - item: Entity lifecycle
+      reasoning: Manages create/update/delete workflows
+  out_of_scope:
+    - item: File I/O
+      reasoning: Handled by file-manager library
+    - item: Validation
+      reasoning: Handled by validation-engine library
