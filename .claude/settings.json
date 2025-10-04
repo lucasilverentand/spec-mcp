@@ -1,0 +1,14 @@
+{
+	"permissions": {
+		"deny": [
+			"Read(./specs/**)",
+			"Edit(./specs/**)",
+			"Write(./specs/**)",
+			"Glob(./specs/**)",
+			"Grep(./specs/**)",
+			"Bash(*:./specs/*)",
+			"NotebookRead(./specs/**)",
+			"NotebookEdit(./specs/**)"
+		]
+	}
+}

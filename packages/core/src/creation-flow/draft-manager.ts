@@ -1,6 +1,6 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import { parseYaml, stringifyYaml } from "../transformation/yaml-transformer.js";
+import { formatYaml, parseYaml } from "@spec-mcp/data";
 import type { Draft } from "./types.js";
 
 /**
@@ -70,7 +70,7 @@ export class DraftManager {
 		await this.ensureDraftsDir();
 		const fileName = `${draft.id}.draft.yml`;
 		const filePath = path.join(this.draftsDir, fileName);
-		const content = stringifyYaml(draft);
+		const content = formatYaml(draft);
 		await fs.writeFile(filePath, content, "utf-8");
 	}
 

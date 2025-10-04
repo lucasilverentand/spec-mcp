@@ -96,3 +96,38 @@ export {
 	ValidationManagerConfigSchema,
 	ValidationResultSchema,
 } from "./managers/validation-manager.js";
+// Export YAML formatting utilities
+export {
+	formatYaml,
+	parseYaml,
+	YAML_FORMAT_OPTIONS,
+} from "./utils/yaml-formatter.js";
+// Export ID generation utilities
+export {
+	extractEntityType,
+	extractNumber,
+	extractSlug,
+	generateApiId,
+	generateChildId,
+	generateCriteriaId,
+	generateDataModelId,
+	generateFlowId,
+	generateId,
+	generateStepId,
+	generateTaskId,
+	generateTestCaseId,
+	getEntityTypeFromPrefix,
+	getPrefix,
+	parseId,
+	validateId,
+} from "./utils/id-generator.js";
+// Export slug generation utilities
+export {
+	generateSlug,
+	generateSlugFromTitle,
+	generateUniqueSlug,
+	sanitizeSlug,
+	validateSlug,
+} from "./utils/slug-generator.js";
+// Export string utilities
+export { extractWords, isStopWord, STOP_WORDS } from "./utils/string-utils.js";

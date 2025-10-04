@@ -1,33 +1,44 @@
 import type { EntityType } from "@spec-mcp/data";
+import {
+	extractEntityType as dataExtractEntityType,
+	extractNumber as dataExtractNumber,
+	extractSlug as dataExtractSlug,
+	generateChildId as dataGenerateChildId,
+	generateCriteriaId as dataGenerateCriteriaId,
+	generateFlowId as dataGenerateFlowId,
+	generateId as dataGenerateId,
+	generateStepId as dataGenerateStepId,
+	generateTaskId as dataGenerateTaskId,
+	generateTestCaseId as dataGenerateTestCaseId,
+	getEntityTypeFromPrefix as dataGetEntityTypeFromPrefix,
+	getPrefix as dataGetPrefix,
+	parseId as dataParseId,
+	validateId as dataValidateId,
+} from "@spec-mcp/data";
 import type { OperationResult } from "../interfaces/results.js";
 import type { IIdGenerator } from "../interfaces/transformer.js";
 import { calculateStringSimilarity } from "../utils/string-utils.js";
-import {
-	generateSlugFromTitle,
-	generateUniqueSlug,
-	sanitizeSlug,
-	validateSlug,
-} from "./slug-generator.js";
+import { generateSlugFromTitle, generateUniqueSlug } from "./slug-generator.js";
 
-const prefixMap: Record<EntityType, string> = {
-	requirement: "req",
-	plan: "pln",
-	app: "app",
-	service: "svc",
-	library: "lib",
-	constitution: "con",
-	decision: "dec",
-};
-
-const typeMap: Record<string, EntityType> = {
-	req: "requirement",
-	pln: "plan",
-	app: "app",
-	svc: "service",
-	lib: "library",
-	con: "constitution",
-	dec: "decision",
-};
+// Re-export from data package for backward compatibility
+export {
+	extractEntityType,
+	extractNumber,
+	extractSlug,
+	generateApiId,
+	generateChildId,
+	generateCriteriaId,
+	generateDataModelId,
+	generateFlowId,
+	generateId,
+	generateStepId,
+	generateTaskId,
+	generateTestCaseId,
+	getEntityTypeFromPrefix,
+	getPrefix,
+	parseId,
+	validateId,
+} from "@spec-mcp/data";
 
 export class IdGenerator implements IIdGenerator {
 	readonly name = "IdGenerator";
@@ -72,19 +83,7 @@ export class IdGenerator implements IIdGenerator {
 	}
 }
 
-// Enhanced entity-specific ID functions
-export function generateId(
-	entityType: EntityType,
-	number: number,
-	slug: string,
-): string {
-	const prefix = getPrefix(entityType);
-	const paddedNumber = number.toString().padStart(3, "0");
-	const sanitizedSlug = sanitizeSlug(slug);
-
-	return `${prefix}-${paddedNumber}-${sanitizedSlug}`;
-}
-
+// Generate unique ID with title-based slug generation
 export function generateUniqueId(
 	entityType: EntityType,
 	number: number,
@@ -95,65 +94,11 @@ export function generateUniqueId(
 	const uniqueSlug = generateUniqueSlug(
 		baseSlug,
 		existingIds
-			.map((id) => extractSlug(id))
+			.map((id) => dataExtractSlug(id))
 			.filter((s): s is string => Boolean(s)),
 	);
 
-	return generateId(entityType, number, uniqueSlug);
-}
-
-export function parseId(id: string): {
-	entityType: EntityType;
-	number: number;
-	slug: string;
-} | null {
-	const match = id.match(/^(req|pln|app|svc|lib|con|dec)-(\d{3})-(.+)$/);
-	if (!match) {
-		return null;
-	}
-
-	const [, prefix, numberStr, slug] = match;
-	if (!prefix || !numberStr || !slug) {
-		return null;
-	}
-
-	const entityType = getEntityTypeFromPrefix(prefix);
-	const number = Number.parseInt(numberStr, 10);
-
-	if (!entityType) {
-		return null;
-	}
-
-	return { entityType, number, slug };
-}
-
-export function validateId(id: string, expectedType?: EntityType): boolean {
-	const parsed = parseId(id);
-	if (!parsed) {
-		return false;
-	}
-
-	if (expectedType && parsed.entityType !== expectedType) {
-		return false;
-	}
-
-	// Validate slug format
-	return validateSlug(parsed.slug);
-}
-
-export function extractSlug(id: string): string | null {
-	const parsed = parseId(id);
-	return parsed?.slug || null;
-}
-
-export function extractNumber(id: string): number | null {
-	const parsed = parseId(id);
-	return parsed?.number || null;
-}
-
-export function extractEntityType(id: string): EntityType | null {
-	const parsed = parseId(id);
-	return parsed?.entityType || null;
+	return dataGenerateId(entityType, number, uniqueSlug);
 }
 
 export function getNextNumber(
@@ -161,7 +106,7 @@ export function getNextNumber(
 	entityType: EntityType,
 ): number {
 	const numbers = existingIds
-		.map((id) => parseId(id))
+		.map((id) => dataParseId(id))
 		.filter((parsed) => parsed && parsed.entityType === entityType)
 		.map((parsed) => parsed?.number)
 		.filter((num): num is number => num !== undefined);
@@ -169,63 +114,11 @@ export function getNextNumber(
 	return numbers.length > 0 ? Math.max(...numbers) + 1 : 1;
 }
 
-export function generateChildId(
-	parentId: string,
-	childType: string,
-	childNumber: number,
-): string {
-	// Validate parent ID format only if it's a full entity ID (not a sub-entity ID)
-	// Sub-entity IDs like "flow-001" are valid parents for nested items like steps
-	if (parentId.includes("-") && !parentId.match(/^(flow|task|tc|api|dm|step|crit)-\d{3}$/)) {
-		const parsed = parseId(parentId);
-		if (!parsed) {
-			throw new Error(`Invalid parent ID format: ${parentId}`);
-		}
-	}
-
-	// Return simple child ID without parent prefix
-	const childId = `${childType}-${childNumber.toString().padStart(3, "0")}`;
-	return childId;
-}
-
-export function generateCriteriaId(
-	requirementId: string,
-	criteriaNumber: number,
-): string {
-	return generateChildId(requirementId, "crit", criteriaNumber);
-}
-
-export function generateTaskId(planId: string, taskNumber: number): string {
-	return generateChildId(planId, "task", taskNumber);
-}
-
-export function generateFlowId(planId: string, flowNumber: number): string {
-	return generateChildId(planId, "flow", flowNumber);
-}
-
-export function generateStepId(flowId: string, stepNumber: number): string {
-	return generateChildId(flowId, "step", stepNumber);
-}
-
-export function generateTestCaseId(planId: string, testNumber: number): string {
-	return generateChildId(planId, "test", testNumber);
-}
-
-export function getPrefix(entityType: EntityType): string {
-	return prefixMap[entityType];
-}
-
-export function getEntityTypeFromPrefix(
-	prefix: string,
-): EntityType | undefined {
-	return typeMap[prefix];
-}
-
 export function suggestSimilarIds(
 	input: string,
 	existingIds: string[],
 ): string[] {
-	const parsed = parseId(input);
+	const parsed = dataParseId(input);
 	if (!parsed) {
 		return [];
 	}
@@ -233,7 +126,7 @@ export function suggestSimilarIds(
 	// Find IDs with similar slugs
 	const similarIds = existingIds
 		.filter((id) => {
-			const existing = parseId(id);
+			const existing = dataParseId(id);
 			return (
 				existing &&
 				existing.entityType === parsed.entityType &&
@@ -241,8 +134,8 @@ export function suggestSimilarIds(
 			);
 		})
 		.sort((a, b) => {
-			const aSlug = extractSlug(a);
-			const bSlug = extractSlug(b);
+			const aSlug = dataExtractSlug(a);
+			const bSlug = dataExtractSlug(b);
 			if (!aSlug || !bSlug) return 0;
 			return (
 				calculateStringSimilarity(bSlug, parsed.slug) -
@@ -258,21 +151,21 @@ export { IdGenerator as IdGeneratorClass };
 
 // Static methods for backward compatibility
 Object.assign(IdGenerator, {
-	generateId,
+	generateId: dataGenerateId,
 	generateUniqueId,
-	parseId,
-	validateId,
-	extractSlug,
-	extractNumber,
-	extractEntityType,
+	parseId: dataParseId,
+	validateId: dataValidateId,
+	extractSlug: dataExtractSlug,
+	extractNumber: dataExtractNumber,
+	extractEntityType: dataExtractEntityType,
 	getNextNumber,
-	generateChildId,
-	generateCriteriaId,
-	generateTaskId,
-	generateFlowId,
-	generateStepId,
-	generateTestCaseId,
-	getPrefix,
-	getEntityTypeFromPrefix,
+	generateChildId: dataGenerateChildId,
+	generateCriteriaId: dataGenerateCriteriaId,
+	generateTaskId: dataGenerateTaskId,
+	generateFlowId: dataGenerateFlowId,
+	generateStepId: dataGenerateStepId,
+	generateTestCaseId: dataGenerateTestCaseId,
+	getEntityTypeFromPrefix: dataGetEntityTypeFromPrefix,
+	getPrefix: dataGetPrefix,
 	suggestSimilarIds,
 });

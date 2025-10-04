@@ -10,9 +10,9 @@ import {
 } from "node:fs/promises";
 import { basename, dirname, join, resolve } from "node:path";
 import { promisify } from "node:util";
-import { parse as yamlParse, stringify as yamlStringify } from "yaml";
 import z from "zod";
 import type { AnyEntity, EntityType } from "../entities/index.js";
+import { formatYaml, parseYaml } from "../utils/yaml-formatter.js";
 
 export const FileManagerConfigSchema = z.object({
 	path: z.string().optional().describe("Path to the specifications directory"),
@@ -182,7 +182,7 @@ export class FileManager {
 		try {
 			const filePath = await this.getFullEntityPath(entityType, id);
 			const content = await readFile(filePath, "utf8");
-			return yamlParse(content) as AnyEntity;
+			return parseYaml<AnyEntity>(content);
 		} catch (error) {
 			if ((error as NodeJS.ErrnoException).code === "ENOENT") {
 				return null;
@@ -240,12 +240,8 @@ export class FileManager {
 		// Ensure directory exists
 		await this.ensureDirectory(dirname(filePath));
 
-		// Write YAML content
-		const yamlContent = yamlStringify(entity, {
-			indent: 2,
-			lineWidth: 100,
-			minContentWidth: 20,
-		});
+		// Write YAML content with consistent formatting
+		const yamlContent = formatYaml(entity);
 
 		await writeFile(filePath, yamlContent, "utf8");
 	}

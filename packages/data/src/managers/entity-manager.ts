@@ -1,10 +1,11 @@
 import z from "zod";
-import { computeEntityId } from "../core/base-entity.js";
 import { ComponentIdSchema } from "../entities/components/component.js";
 import { ConstitutionIdSchema } from "../entities/constitutions/constitution.js";
 import type { AnyEntity, EntityType } from "../entities/index.js";
 import { PlanIdSchema } from "../entities/plans/plan.js";
 import { RequirementIdSchema } from "../entities/requirements/requirement.js";
+import { generateId } from "../utils/id-generator.js";
+import { generateSlug } from "../utils/slug-generator.js";
 import { FileManager } from "./file-manager.js";
 import {
 	ComponentFilterSchema,
@@ -113,10 +114,10 @@ export class EntityManager {
 			}
 
 			// Generate slug if not provided
-			const slug = data.slug || this.generateSlug(data.name || "untitled");
+			const slug = data.slug || generateSlug(data.name || "untitled");
 
 			// Compute the entity ID
-			const entityId = computeEntityId(entityType, number, slug);
+			const entityId = generateId(entityType, number, slug);
 
 			// Set metadata (without ID field for storage)
 			const now = new Date().toISOString();
@@ -1161,8 +1162,8 @@ export class EntityManager {
 		let number = (data as { number?: number }).number;
 		if (!data.id) {
 			number = await this.fileManager.getNextNumber(entityType);
-			const slug = this.generateSlug(data.name || "untitled");
-			data.id = this.generateId(entityType, number, slug);
+			const slug = generateSlug(data.name || "untitled");
+			data.id = generateId(entityType, number, slug);
 		}
 
 		// Set metadata
@@ -1236,45 +1237,4 @@ export class EntityManager {
 		return { success: true, data: updatedEntity };
 	}
 
-	private generateId(
-		entityType: EntityType,
-		number: number,
-		slug: string,
-	): string {
-		if (number === undefined || number === null) {
-			throw new Error(`Invalid number for ${entityType}: ${number}`);
-		}
-		const shortPrefix = this.getEntityTypePrefix(entityType);
-		const paddedNumber = number.toString().padStart(3, "0");
-		return `${shortPrefix}-${paddedNumber}-${slug}`;
-	}
-
-	private getEntityTypePrefix(entityType: EntityType): string {
-		switch (entityType) {
-			case "requirement":
-				return "req";
-			case "plan":
-				return "pln";
-			case "app":
-				return "app";
-			case "service":
-				return "svc";
-			case "library":
-				return "lib";
-			case "constitution":
-				return "con";
-			default:
-				throw new Error(`Unknown entity type: ${entityType}`);
-		}
-	}
-
-	private generateSlug(text: string): string {
-		return text
-			.toLowerCase()
-			.replace(/[^a-z0-9\s-]/g, "")
-			.replace(/\s+/g, "-")
-			.replace(/-+/g, "-")
-			.replace(/^-+|-+$/g, "")
-			.substring(0, 50);
-	}
 }

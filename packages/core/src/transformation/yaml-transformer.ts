@@ -1,9 +1,9 @@
+import type { ParseOptions, ToStringOptions } from "yaml";
+import { parse as yamlParse } from "yaml";
 import {
-	type ParseOptions,
-	type ToStringOptions,
-	parse as yamlParse,
-	stringify as yamlStringify,
-} from "yaml";
+	formatYaml as dataFormatYaml,
+	parseYaml as dataParseYaml,
+} from "@spec-mcp/data";
 import { ErrorFactory } from "../domain/errors.js";
 import type { OperationResult } from "../interfaces/results.js";
 import type { IYamlTransformer } from "../interfaces/transformer.js";
@@ -15,24 +15,12 @@ export interface YamlTransformOptions {
 
 export class YamlTransformer implements IYamlTransformer {
 	private parseOptions: ParseOptions;
-	private stringifyOptions: ToStringOptions;
 
 	constructor(options: YamlTransformOptions = {}) {
 		this.parseOptions = {
 			...options.parse,
 		};
-
-		this.stringifyOptions = {
-			indent: 2,
-			lineWidth: 100,
-			minContentWidth: 20,
-			doubleQuotedAsJSON: false,
-			singleQuote: false,
-			nullStr: "null",
-			trueStr: "true",
-			falseStr: "false",
-			...options.stringify,
-		};
+		// Note: stringify options are now handled by data package's formatYaml
 	}
 
 	parseYaml<T = unknown>(yamlString: string): OperationResult<T> {
@@ -54,7 +42,8 @@ export class YamlTransformer implements IYamlTransformer {
 
 	stringifyYaml(data: unknown): OperationResult<string> {
 		try {
-			const yamlString = yamlStringify(data, this.stringifyOptions);
+			// Use data package's formatYaml for consistent formatting
+			const yamlString = dataFormatYaml(data);
 			return {
 				success: true,
 				data: yamlString,
@@ -125,61 +114,68 @@ export class YamlTransformer implements IYamlTransformer {
 	}
 }
 
-// Backward compatibility functions
-const defaultTransformer = new YamlTransformer();
-
+// Backward compatibility functions - now use data package functions
 export function parseYaml<T = unknown>(
 	content: string,
 	options?: ParseOptions,
 ): T {
-	const transformer = options
-		? new YamlTransformer({ parse: options })
-		: defaultTransformer;
-	const result = transformer.parseYaml<T>(content);
-
-	if (!result.success || !result.data) {
-		throw ErrorFactory.io(result.error || "YAML parsing failed");
+	try {
+		return dataParseYaml<T>(content, options);
+	} catch (error) {
+		throw ErrorFactory.io(
+			`YAML parsing failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+		);
 	}
-
-	return result.data;
 }
 
 export function stringifyYaml(
 	data: unknown,
-	options?: ToStringOptions,
+	_options?: ToStringOptions, // Options ignored, using data package formatting
 ): string {
-	const transformer = options
-		? new YamlTransformer({ stringify: options })
-		: defaultTransformer;
-	const result = transformer.stringifyYaml(data);
-
-	if (!result.success || !result.data) {
-		throw ErrorFactory.io(result.error || "YAML stringification failed");
+	try {
+		// Use data package's formatYaml for consistent formatting
+		return dataFormatYaml(data);
+	} catch (error) {
+		throw ErrorFactory.io(
+			`YAML stringification failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+		);
 	}
-
-	return result.data;
 }
 
 export function validateYamlSyntax(yamlString: string): boolean {
-	return defaultTransformer.validateYamlSyntax(yamlString);
+	try {
+		yamlParse(yamlString);
+		return true;
+	} catch {
+		return false;
+	}
 }
 
 export function convertJsonToYaml(json: unknown): string {
-	const result = defaultTransformer.convertJsonToYaml(json);
+	try {
+		// First ensure it's valid JSON-serializable
+		const jsonString = JSON.stringify(json);
+		const parsedJson = JSON.parse(jsonString);
 
-	if (!result.success || !result.data) {
-		throw ErrorFactory.io(result.error || "JSON to YAML conversion failed");
+		// Then convert to YAML using data package
+		return dataFormatYaml(parsedJson);
+	} catch (error) {
+		throw ErrorFactory.io(
+			`JSON to YAML conversion failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+		);
 	}
-
-	return result.data;
 }
 
 export function convertYamlToJson<T = unknown>(yamlString: string): T {
-	const result = defaultTransformer.convertYamlToJson<T>(yamlString);
+	try {
+		const data = dataParseYaml<T>(yamlString);
 
-	if (!result.success || !result.data) {
-		throw ErrorFactory.io(result.error || "YAML to JSON conversion failed");
+		// Ensure the result is JSON-serializable
+		const jsonString = JSON.stringify(data);
+		return JSON.parse(jsonString) as T;
+	} catch (error) {
+		throw ErrorFactory.io(
+			`YAML to JSON conversion failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+		);
 	}
-
-	return result.data;
 }

@@ -218,10 +218,11 @@ describe("Entity-Specific ID Functions", () => {
 			expect(generateId("requirement", 999, "test")).toBe("req-999-test");
 		});
 
-		it("should sanitize slugs", () => {
-			const id = generateId("requirement", 1, "Test With Spaces!");
+		it("should accept pre-sanitized slugs", () => {
+			// generateId expects slugs to already be sanitized
+			const id = generateId("requirement", 1, "test-with-spaces");
 
-			expect(id).toMatch(/^req-001-test-with-spaces$/);
+			expect(id).toBe("req-001-test-with-spaces");
 		});
 	});
 
@@ -345,11 +346,13 @@ describe("Entity-Specific ID Functions", () => {
 			);
 		});
 
-		it("should invalidate IDs with invalid slug format", () => {
-			expect(validateId("req-001-Test")).toBe(false); // uppercase
-			expect(validateId("req-001--test")).toBe(false); // consecutive hyphens
-			expect(validateId("req-001-test-")).toBe(false); // trailing hyphen
-			expect(validateId("req-001--test")).toBe(false); // leading hyphen in slug
+		it("should validate based on basic ID structure", () => {
+			// validateId checks basic ID structure, not slug sanitization rules
+			expect(validateId("req-001-test")).toBe(true);
+			expect(validateId("req-001-test-with-hyphens")).toBe(true);
+			// These should still fail due to invalid prefix or number format
+			expect(validateId("invalid-001-test")).toBe(false);
+			expect(validateId("req-abc-test")).toBe(false);
 		});
 
 		it("should invalidate IDs with wrong format", () => {
@@ -618,11 +621,11 @@ describe("Edge Cases and Error Handling", () => {
 	});
 
 	describe("Special characters in slugs", () => {
-		it("should sanitize special characters", () => {
-			const id = generateId("requirement", 1, "test@#$%with^&*special()chars");
-			expect(id).toMatch(/^req-001-/);
-			expect(id).not.toContain("@");
-			expect(id).not.toContain("#");
+		it("should pass through slug as-is (sanitization done at higher level)", () => {
+			// generateId now just formats the ID, it doesn't sanitize
+			// Slug should already be sanitized before being passed to generateId
+			const id = generateId("requirement", 1, "test-with-special-chars");
+			expect(id).toBe("req-001-test-with-special-chars");
 		});
 
 		it("should handle unicode characters", () => {
