@@ -3,7 +3,6 @@ import type { SpecOperations } from "@spec-mcp/core";
 import type { ServerConfig } from "../config/index.js";
 import type { InputValidator } from "../middleware/input-validator.js";
 import type { RateLimiter } from "../middleware/rate-limiter.js";
-import { registerAnalyzeTool } from "./analyze.js";
 import { registerDeleteSpecTool } from "./delete-spec.js";
 import { registerQueryTool } from "./query.js";
 import { registerStartDraftTool } from "./start-draft.js";
@@ -31,12 +30,9 @@ export function registerAllTools(
 	registerUpdateSpecTool(server, operations, context); // update_spec - update finalized specs with validation
 	registerDeleteSpecTool(server, operations, context); // delete_spec - delete draft or finalized spec
 
-	// Analysis tool
-	registerAnalyzeTool(server, operations, context);
-
-	// Validation tool
+	// Validation tool (includes reference checking, cycle detection, health scoring)
 	registerValidateTool(server, operations, context);
 
-	// Unified query tool (1 tool)
+	// Unified query tool (includes dependency analysis, orphan/coverage filters, next task)
 	registerQueryTool(server, operations, context); // query (read-only queries)
 }

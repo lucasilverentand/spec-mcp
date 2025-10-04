@@ -65,7 +65,7 @@ describe("MCP E2E Tests", () => {
 			expect(toolNames).toContain("update_spec");
 			expect(toolNames).toContain("delete_spec");
 			expect(toolNames).toContain("query");
-			expect(toolNames).toContain("analyze");
+			expect(toolNames).toContain("validate");
 		});
 	});
 
@@ -287,6 +287,116 @@ describe("MCP E2E Tests", () => {
 				// Expected to fail at some point
 				expect(error).toBeDefined();
 			}
+		});
+	});
+
+	describe("Query Tool Enhancements", () => {
+		it("should support next_task query", async () => {
+			const result = await client.callTool({
+				name: "query",
+				arguments: {
+					next_task: true,
+				},
+			});
+
+			const data = JSON.parse(result.content[0].text);
+			expect(data.success).toBe(true);
+			expect(data.data).toBeDefined();
+			// Could be null if no incomplete tasks or have a next_task
+			if (data.data.next_task) {
+				expect(data.data.next_task.task_id).toBeDefined();
+				expect(data.data.next_task.priority).toBeDefined();
+				expect(data.data.reasoning).toBeDefined();
+			}
+		});
+
+		it("should support orphaned filter", async () => {
+			const result = await client.callTool({
+				name: "query",
+				arguments: {
+					types: ["requirement"],
+					filters: { orphaned: true },
+					mode: "summary",
+				},
+			});
+
+			const data = JSON.parse(result.content[0].text);
+			expect(data.success).toBe(true);
+			expect(data.data.total_results).toBeGreaterThanOrEqual(0);
+		});
+
+		it("should support uncovered filter", async () => {
+			const result = await client.callTool({
+				name: "query",
+				arguments: {
+					types: ["requirement"],
+					filters: { uncovered: true },
+					mode: "summary",
+				},
+			});
+
+			const data = JSON.parse(result.content[0].text);
+			expect(data.success).toBe(true);
+			expect(data.data.total_results).toBeGreaterThanOrEqual(0);
+		});
+	});
+
+	describe("Validate Tool Enhancements", () => {
+		it("should support reference checking", async () => {
+			const result = await client.callTool({
+				name: "validate",
+				arguments: {
+					check_references: true,
+				},
+			});
+
+			const output = result.content[0].text;
+			expect(output).toContain("VALIDATION REPORT");
+			expect(output).toContain("Total Errors:");
+		});
+
+		it("should support cycle detection", async () => {
+			const result = await client.callTool({
+				name: "validate",
+				arguments: {
+					check_cycles: true,
+				},
+			});
+
+			const output = result.content[0].text;
+			expect(output).toContain("VALIDATION REPORT");
+			// May or may not have cycles
+		});
+
+		it("should support health scoring", async () => {
+			const result = await client.callTool({
+				name: "validate",
+				arguments: {
+					include_health: true,
+				},
+			});
+
+			const output = result.content[0].text;
+			expect(output).toContain("Health Score:");
+			expect(output).toContain("HEALTH BREAKDOWN:");
+			expect(output).toContain("Coverage:");
+			expect(output).toContain("Dependencies:");
+			expect(output).toContain("Validation:");
+		});
+
+		it("should support combined validation options", async () => {
+			const result = await client.callTool({
+				name: "validate",
+				arguments: {
+					check_references: true,
+					check_cycles: true,
+					include_health: true,
+				},
+			});
+
+			const output = result.content[0].text;
+			expect(output).toContain("VALIDATION REPORT");
+			expect(output).toContain("Health Score:");
 		});
 	});
 });

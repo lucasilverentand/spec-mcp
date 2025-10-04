@@ -91,10 +91,22 @@ const DateFiltersSchema = z.object({
 		.describe("Filter entities updated before this date (ISO datetime)"),
 });
 
+const AnalysisFiltersSchema = z.object({
+	orphaned: z
+		.boolean()
+		.optional()
+		.describe("Filter to only orphaned entities (no references)"),
+	uncovered: z
+		.boolean()
+		.optional()
+		.describe("Filter to only uncovered entities (requirements without plans, etc)"),
+});
+
 const FiltersSchema = RequirementFiltersSchema.merge(PlanFiltersSchema)
 	.merge(ComponentFiltersSchema)
 	.merge(ConstitutionFiltersSchema)
-	.merge(DateFiltersSchema);
+	.merge(DateFiltersSchema)
+	.merge(AnalysisFiltersSchema);
 
 const SortCriteriaSchema = z.object({
 	field: z.enum([
@@ -128,6 +140,10 @@ const ExpansionSchema = z.object({
 		.max(3)
 		.optional()
 		.describe("Max dependency traversal depth (1-3)"),
+	dependency_metrics: z
+		.boolean()
+		.optional()
+		.describe("Include dependency metrics (fan-in, fan-out, coupling, stability)"),
 });
 
 type Filters = z.infer<typeof FiltersSchema>;
@@ -257,6 +273,28 @@ function detectSubEntityType(
 	if (/^dm-\d{3}$/.test(subEntityId)) return "data_model";
 	if (/^req-\d{3}-.+\/crit-\d{3}$/.test(subEntityId)) return "criteria";
 	return null;
+}
+
+/**
+ * Get orphaned entities
+ */
+async function getOrphanedEntities(operations: SpecOperations): Promise<Set<string>> {
+	const orphanResult = await operations.detectOrphans();
+	if (!orphanResult.success || !orphanResult.data) {
+		return new Set();
+	}
+	return new Set(orphanResult.data.orphans);
+}
+
+/**
+ * Get uncovered entities
+ */
+async function getUncoveredEntities(operations: SpecOperations): Promise<Set<string>> {
+	const coverageResult = await operations.analyzeCoverage();
+	if (!coverageResult.success || !coverageResult.data) {
+		return new Set();
+	}
+	return new Set(coverageResult.data.report.uncoveredSpecs);
 }
 
 /**
@@ -800,6 +838,18 @@ async function handleSearch(
 	// Apply filters
 	if (filters) {
 		allEntities = applyFilters(allEntities, filters);
+
+		// Apply orphaned filter
+		if (filters.orphaned) {
+			const orphanedIds = await getOrphanedEntities(operations);
+			allEntities = allEntities.filter((e) => orphanedIds.has(e.id));
+		}
+
+		// Apply uncovered filter
+		if (filters.uncovered) {
+			const uncoveredIds = await getUncoveredEntities(operations);
+			allEntities = allEntities.filter((e) => uncoveredIds.has(e.id));
+		}
 	}
 
 	// Search
@@ -889,6 +939,18 @@ async function handleFilteredList(
 	// Apply filters
 	if (filters) {
 		allEntities = applyFilters(allEntities, filters);
+
+		// Apply orphaned filter
+		if (filters.orphaned) {
+			const orphanedIds = await getOrphanedEntities(operations);
+			allEntities = allEntities.filter((e) => orphanedIds.has(e.id));
+		}
+
+		// Apply uncovered filter
+		if (filters.uncovered) {
+			const uncoveredIds = await getUncoveredEntities(operations);
+			allEntities = allEntities.filter((e) => uncoveredIds.has(e.id));
+		}
 	}
 
 	// Convert to SearchResult format for sorting
@@ -953,6 +1015,133 @@ async function handleFilteredList(
 	});
 }
 
+/**
+ * Handle next task recommendation
+ */
+async function handleNextTask(
+	operations: SpecOperations,
+): Promise<ReturnType<typeof formatResult>> {
+	const entitiesResult = await operations.getAllEntities();
+	if (!entitiesResult.success || !entitiesResult.data) {
+		return formatResult(entitiesResult);
+	}
+
+	const { plans } = entitiesResult.data;
+
+	// Collect all incomplete tasks with their plan context
+	interface TaskCandidate {
+		taskId: string;
+		planId: string;
+		planName: string;
+		description: string;
+		priority: "critical" | "high" | "medium" | "low";
+		dependsOn: string[];
+		blockedBy: string[];
+	}
+
+	const candidates: TaskCandidate[] = [];
+
+	for (const plan of plans) {
+		if (plan.completed) continue;
+
+		for (const task of plan.tasks || []) {
+			if (task.completed) continue;
+
+			const blockedBy: string[] = [];
+
+			// Check task dependencies
+			if (task.depends_on && task.depends_on.length > 0) {
+				for (const depTaskId of task.depends_on) {
+					const depTask = plan.tasks?.find((t) => t.id === depTaskId);
+					if (depTask && !depTask.completed) {
+						blockedBy.push(depTaskId);
+					}
+				}
+			}
+
+			// Check plan dependencies
+			if (plan.depends_on && plan.depends_on.length > 0) {
+				for (const depPlanId of plan.depends_on) {
+					const depPlan = plans.find((p) => p.id === depPlanId);
+					if (depPlan && !depPlan.completed) {
+						blockedBy.push(depPlanId);
+					}
+				}
+			}
+
+			candidates.push({
+				taskId: task.id,
+				planId: plan.id,
+				planName: plan.name,
+				description: task.description,
+				priority: task.priority || "medium",
+				dependsOn: task.depends_on || [],
+				blockedBy,
+			});
+		}
+	}
+
+	if (candidates.length === 0) {
+		return formatResult({
+			success: true,
+			data: {
+				next_task: null,
+				message: "No incomplete tasks found. All work is complete!",
+			},
+		});
+	}
+
+	// Filter to unblocked tasks
+	const unblocked = candidates.filter((c) => c.blockedBy.length === 0);
+
+	if (unblocked.length === 0) {
+		return formatResult({
+			success: true,
+			data: {
+				next_task: null,
+				message: "All tasks are blocked by dependencies",
+				blocked_tasks: candidates.map((c) => ({
+					task_id: c.taskId,
+					plan_id: c.planId,
+					plan_name: c.planName,
+					description: c.description,
+					blocked_by: c.blockedBy,
+				})),
+			},
+		});
+	}
+
+	// Sort by priority
+	const priorityOrder = { critical: 0, high: 1, medium: 2, low: 3 };
+	unblocked.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
+
+	const nextTask = unblocked[0];
+
+	return formatResult({
+		success: true,
+		data: {
+			next_task: {
+				task_id: nextTask?.taskId,
+				plan_id: nextTask?.planId,
+				plan_name: nextTask?.planName,
+				description: nextTask?.description,
+				priority: nextTask?.priority,
+				depends_on: nextTask?.dependsOn,
+			},
+			reasoning: `Selected highest priority (${nextTask?.priority}) unblocked task from ${nextTask?.planName}`,
+			alternatives: unblocked.slice(1, 4).map((t) => ({
+				task_id: t.taskId,
+				plan_id: t.planId,
+				plan_name: t.planName,
+				description: t.description,
+				priority: t.priority,
+			})),
+			total_unblocked: unblocked.length,
+			total_tasks: candidates.length,
+		},
+	});
+}
+
 // ============================================================================
 // TOOL REGISTRATION
 // ============================================================================
@@ -992,6 +1181,14 @@ export function registerQueryTool(
 					.optional()
 					.describe(
 						"Parent plan ID for faster sub-entity lookup (optional optimization)",
+					),
+
+				// Next task recommendation
+				next_task: z
+					.boolean()
+					.optional()
+					.describe(
+						"Get next recommended task to work on (highest priority unblocked task)",
 					),
 
 				// Search & filter
@@ -1100,6 +1297,7 @@ export function registerQueryTool(
 				entity_ids,
 				sub_entity_id,
 				parent_plan_id,
+				next_task,
 				search_terms,
 				search_fields = ["name", "description"],
 				fuzzy = false,
@@ -1116,6 +1314,11 @@ export function registerQueryTool(
 				include_facets = false,
 				facet_fields,
 			}) => {
+				// Handle next_task first
+				if (next_task) {
+					return await handleNextTask(operations);
+				}
+
 				// Validate mutually exclusive fields
 				const primaryMethods = [
 					entity_id,

@@ -116,7 +116,8 @@ export function registerValidateTool(
 		{
 			title: "Validate Specifications",
 			description:
-				"Validate all specifications or specific entities. Returns structured validation results with errors and warnings grouped by field.",
+				"Validate all specifications or specific entities. Returns structured validation results with errors and warnings grouped by field. " +
+				"Includes reference validation, cycle detection, and health scoring.",
 			inputSchema: {
 				entity_id: z
 					.string()
@@ -124,6 +125,21 @@ export function registerValidateTool(
 					.describe(
 						"Optional: Validate a specific entity by ID (e.g., 'req-001-auth')",
 					),
+				check_references: z
+					.boolean()
+					.optional()
+					.default(true)
+					.describe("Check for broken references between entities"),
+				check_cycles: z
+					.boolean()
+					.optional()
+					.default(true)
+					.describe("Check for circular dependencies"),
+				include_health: z
+					.boolean()
+					.optional()
+					.default(false)
+					.describe("Include overall system health score"),
 			},
 		},
 		wrapToolHandler("validate", async (args) => {
@@ -140,6 +156,33 @@ export function registerValidateTool(
 			}
 
 			const { requirements, plans, components } = entitiesResult.data;
+
+			// Check references if requested
+			let referenceErrors: string[] = [];
+			if (args.check_references !== false) {
+				const refResult = await service.validateReferences();
+				if (!refResult.valid) {
+					referenceErrors = refResult.errors.filter((e) =>
+						e.toLowerCase().includes("reference"),
+					);
+				}
+			}
+
+			// Check cycles if requested
+			let cycleErrors: string[] = [];
+			if (args.check_cycles !== false) {
+				const cycleResult = await operations.detectCycles();
+				if (
+					cycleResult.success &&
+					cycleResult.data &&
+					cycleResult.data.hasCycles
+				) {
+					cycleErrors = cycleResult.data.cycles.map(
+						(cycle: string[], index: number) =>
+							`Circular dependency ${index + 1}: ${cycle.join(" → ")}`,
+					);
+				}
+			}
 
 			// If specific entity requested, validate only that one
 			if (args.entity_id) {
@@ -214,7 +257,9 @@ export function registerValidateTool(
 					0,
 				) +
 				planValidations.reduce((sum, v) => sum + v.errors.length, 0) +
-				componentValidations.reduce((sum, v) => sum + v.errors.length, 0);
+				componentValidations.reduce((sum, v) => sum + v.errors.length, 0) +
+				referenceErrors.length +
+				cycleErrors.length;
 
 			const totalWarnings =
 				requirementValidations.reduce(
@@ -241,10 +286,34 @@ export function registerValidateTool(
 			output.push("=".repeat(60));
 			output.push("");
 
+			// Get health score if requested
+			let healthScore = null;
+			if (args.include_health) {
+				const healthResult = await operations.getHealthScore();
+				if (healthResult.success && healthResult.data) {
+					healthScore = healthResult.data;
+				}
+			}
+
 			// Summary
 			output.push("SUMMARY:");
 			output.push(`  Total Errors: ${totalErrors}`);
 			output.push(`  Total Warnings: ${totalWarnings}`);
+			if (referenceErrors.length > 0) {
+				output.push(`  Reference Errors: ${referenceErrors.length}`);
+			}
+			if (cycleErrors.length > 0) {
+				output.push(`  Circular Dependencies: ${cycleErrors.length}`);
+			}
+			if (healthScore) {
+				const status =
+					healthScore.overall >= 80
+						? "Healthy"
+						: healthScore.overall >= 60
+							? "Needs Attention"
+							: "Critical";
+				output.push(`  Health Score: ${healthScore.overall}/100 (${status})`);
+			}
 			output.push(
 				`  Requirements: ${requirements.length} total, ${validRequirements} valid`,
 			);
@@ -278,6 +347,43 @@ export function registerValidateTool(
 				output.push("-".repeat(60));
 				output.push(formatValidationResults(componentValidations));
 				output.push("");
+			}
+
+			// Reference errors
+			if (referenceErrors.length > 0) {
+				output.push("REFERENCE ERRORS:");
+				output.push("-".repeat(60));
+				for (const error of referenceErrors) {
+					output.push(`  ✗ ${error}`);
+				}
+				output.push("");
+			}
+
+			// Cycle errors
+			if (cycleErrors.length > 0) {
+				output.push("CIRCULAR DEPENDENCIES:");
+				output.push("-".repeat(60));
+				for (const error of cycleErrors) {
+					output.push(`  ✗ ${error}`);
+				}
+				output.push("");
+			}
+
+			// Health breakdown
+			if (healthScore) {
+				output.push("HEALTH BREAKDOWN:");
+				output.push("-".repeat(60));
+				output.push(`  Coverage: ${healthScore.breakdown.coverage}/100`);
+				output.push(`  Dependencies: ${healthScore.breakdown.dependencies}/100`);
+				output.push(`  Validation: ${healthScore.breakdown.validation}/100`);
+				output.push("");
+				if (healthScore.recommendations.length > 0) {
+					output.push("  Recommendations:");
+					for (const rec of healthScore.recommendations) {
+						output.push(`    - ${rec}`);
+					}
+					output.push("");
+				}
 			}
 
 			return {
