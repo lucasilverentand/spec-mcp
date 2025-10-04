@@ -45,7 +45,7 @@ const ComponentFiltersSchema = z.object({
 		.array(z.enum(["app", "service", "library"]))
 		.optional()
 		.describe("Filter by component type"),
-	folder: z.string().optional().describe("Filter by folder path"),
+	folder: z.string().optional().describe("Filter by folder path (supports hierarchy - matches folder and all subfolders)"),
 });
 
 const ConstitutionFiltersSchema = z.object({
@@ -327,9 +327,17 @@ function applyFilters(entities: AnyEntity[], filters: Filters): AnyEntity[] {
 			if (
 				filters.folder &&
 				"folder" in entity &&
-				entity.folder !== filters.folder
-			)
-				return false;
+				typeof entity.folder === "string"
+			) {
+				// Support folder hierarchy filtering
+				const entityFolder = entity.folder;
+				const filterFolder = filters.folder;
+
+				// Exact match or parent folder match
+				if (entityFolder !== filterFolder && !entityFolder.startsWith(filterFolder + "/")) {
+					return false;
+				}
+			}
 		}
 
 		// Constitution filters - constitutions don't have status or applies_to at entity level
@@ -508,6 +516,39 @@ function projectToSummary(entity: AnyEntity): Partial<AnyEntity> {
 			: "in-progress";
 
 	return summary;
+}
+
+/**
+ * Project to custom mode with include/exclude fields
+ */
+function projectToCustom(
+	entity: AnyEntity,
+	includeFields?: string[],
+	excludeFields?: string[],
+): Partial<AnyEntity> {
+	const entityObj = entity as Record<string, unknown>;
+	const result: Record<string, unknown> = {};
+
+	if (includeFields && includeFields.length > 0) {
+		// Include only specified fields
+		for (const field of includeFields) {
+			if (field in entityObj) {
+				result[field] = entityObj[field];
+			}
+		}
+	} else if (excludeFields && excludeFields.length > 0) {
+		// Include all except excluded fields
+		for (const [key, value] of Object.entries(entityObj)) {
+			if (!excludeFields.includes(key)) {
+				result[key] = value;
+			}
+		}
+	} else {
+		// No filtering, return all fields
+		return entity;
+	}
+
+	return result as Partial<AnyEntity>;
 }
 
 /**
@@ -739,6 +780,8 @@ async function handleSearch(
 	includeFacets: boolean,
 	facetFields: ("type" | "priority" | "status" | "folder")[] | undefined,
 	mode: "summary" | "full" | "custom" | undefined,
+	includeFields: string[] | undefined,
+	excludeFields: string[] | undefined,
 	operations: SpecOperations,
 ): Promise<ReturnType<typeof formatResult>> {
 	const entitiesResult = await operations.getAllEntities();
@@ -746,8 +789,8 @@ async function handleSearch(
 		return formatResult(entitiesResult);
 	}
 
-	const { requirements, plans, components } = entitiesResult.data;
-	let allEntities: AnyEntity[] = [...requirements, ...plans, ...components];
+	const { requirements, plans, components, constitutions } = entitiesResult.data;
+	let allEntities: AnyEntity[] = [...requirements, ...plans, ...components, ...constitutions];
 
 	// Apply type filter
 	if (types && types.length > 0) {
@@ -780,10 +823,14 @@ async function handleSearch(
 	const paginated = returnAll ? sorted : sorted.slice(offset, offset + limit);
 
 	// Apply mode
-	const projected =
-		mode === "summary"
-			? paginated.map((r) => projectToSummary(r as unknown as AnyEntity))
-			: paginated;
+	let projected: (Partial<AnyEntity> | SearchResult)[];
+	if (mode === "summary") {
+		projected = paginated.map((r) => projectToSummary(r as unknown as AnyEntity));
+	} else if (mode === "custom") {
+		projected = paginated.map((r) => projectToCustom(r as unknown as AnyEntity, includeFields, excludeFields));
+	} else {
+		projected = paginated;
+	}
 
 	return formatResult({
 		success: true,
@@ -822,6 +869,8 @@ async function handleFilteredList(
 	offset: number,
 	returnAll: boolean,
 	mode: "summary" | "full" | "custom" | undefined,
+	includeFields: string[] | undefined,
+	excludeFields: string[] | undefined,
 	operations: SpecOperations,
 ): Promise<ReturnType<typeof formatResult>> {
 	const entitiesResult = await operations.getAllEntities();
@@ -829,8 +878,8 @@ async function handleFilteredList(
 		return formatResult(entitiesResult);
 	}
 
-	const { requirements, plans, components } = entitiesResult.data;
-	let allEntities: AnyEntity[] = [...requirements, ...plans, ...components];
+	const { requirements, plans, components, constitutions } = entitiesResult.data;
+	let allEntities: AnyEntity[] = [...requirements, ...plans, ...components, ...constitutions];
 
 	// Apply type filter
 	if (types && types.length > 0) {
@@ -871,10 +920,14 @@ async function handleFilteredList(
 	const paginated = returnAll ? sorted : sorted.slice(offset, offset + limit);
 
 	// Apply mode
-	const projected =
-		mode === "summary"
-			? paginated.map((r) => projectToSummary(r as unknown as AnyEntity))
-			: paginated;
+	let projected: (Partial<AnyEntity> | SearchResult)[];
+	if (mode === "summary") {
+		projected = paginated.map((r) => projectToSummary(r as unknown as AnyEntity));
+	} else if (mode === "custom") {
+		projected = paginated.map((r) => projectToCustom(r as unknown as AnyEntity, includeFields, excludeFields));
+	} else {
+		projected = paginated;
+	}
 
 	return formatResult({
 		success: true,
@@ -1057,6 +1110,8 @@ export function registerQueryTool(
 				offset = 0,
 				return_all = false,
 				mode,
+				include_fields,
+				exclude_fields,
 				expand,
 				include_facets = false,
 				facet_fields,
@@ -1120,6 +1175,8 @@ export function registerQueryTool(
 						include_facets,
 						facet_fields,
 						mode,
+						include_fields,
+						exclude_fields,
 						operations,
 					);
 				}
@@ -1136,6 +1193,8 @@ export function registerQueryTool(
 					offset,
 					return_all,
 					mode,
+					include_fields,
+					exclude_fields,
 					operations,
 				);
 			},

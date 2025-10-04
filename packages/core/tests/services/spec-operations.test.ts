@@ -648,6 +648,7 @@ describe("SpecOperations", () => {
 				expect(result.data?.requirements).toBeInstanceOf(Array);
 				expect(result.data?.plans).toBeInstanceOf(Array);
 				expect(result.data?.components).toBeInstanceOf(Array);
+				expect(result.data?.constitutions).toBeInstanceOf(Array);
 				expect(result.data?.requirements.length).toBe(1);
 				expect(result.data?.plans.length).toBe(1);
 				expect(result.data?.components.length).toBe(1);

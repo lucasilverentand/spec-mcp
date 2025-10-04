@@ -443,13 +443,24 @@ export class SpecOperations {
 			requirements: Requirement[];
 			plans: Plan[];
 			components: AnyComponent[];
+			constitutions: Constitution[];
 		}>
 	> {
 		try {
 			const entities = await this.manager.getAllEntities();
+			let constitutions: Constitution[] = [];
+			try {
+				constitutions = await this.manager.listConstitutions();
+			} catch (constitutionError) {
+				// Constitutions are optional - if the manager doesn't support them, return empty array
+				console.warn("Failed to load constitutions:", constitutionError);
+			}
 			return {
 				success: true,
-				data: entities,
+				data: {
+					...entities,
+					constitutions,
+				},
 			};
 		} catch (error) {
 			return {
