@@ -1,5 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { SpecOperations } from "@spec-mcp/core";
+import { computeEntityId, type EntityType } from "@spec-mcp/data";
 import { z } from "zod";
 import { wrapToolHandler } from "../utils/tool-wrapper.js";
 import type { ToolContext } from "./index.js";
@@ -63,7 +64,7 @@ function formatValidationResults(validations: Array<{
 
 	for (const validation of validations) {
 		const entity = validation.entity;
-		const entityId = `${entity.type}-${entity.number.toString().padStart(3, "0")}-${entity.slug}`;
+		const entityId = computeEntityId(entity.type as EntityType, entity.number, entity.slug);
 		const fileName = `${entity.slug}.yaml`;
 		const hasErrors = validation.errors.length > 0;
 		const hasWarnings = validation.warnings.length > 0;
@@ -144,7 +145,7 @@ export function registerValidateTool(
 			if (args.entity_id) {
 				const allEntities = [...requirements, ...plans, ...components];
 				const entity = allEntities.find((e) => {
-					const id = `${e.type}-${e.number.toString().padStart(3, "0")}-${e.slug}`;
+					const id = computeEntityId(e.type, e.number, e.slug);
 					return id === args.entity_id || e.slug === args.entity_id;
 				});
 

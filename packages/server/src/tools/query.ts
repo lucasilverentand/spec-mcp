@@ -950,7 +950,7 @@ export function registerQueryTool(
 					.array(z.string())
 					.optional()
 					.describe(
-						"Fields to search in (default: ['name', 'description']). Options: name, description, slug",
+						"Fields to search in (default: ['name', 'description']). Options: name, description",
 					),
 				fuzzy: z
 					.boolean()
