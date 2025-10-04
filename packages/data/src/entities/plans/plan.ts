@@ -100,3 +100,4 @@ export type PlanId = z.infer<typeof PlanIdSchema>;
 export type PlanPriority = z.infer<typeof PlanPrioritySchema>;
 export type CriteriaReference = z.infer<typeof CriteriaReferenceSchema>;
 export type Plan = z.infer<typeof PlanSchema>;
+export type PlanInput = z.input<typeof PlanStorageSchema>;

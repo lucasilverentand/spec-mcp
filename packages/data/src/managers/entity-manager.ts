@@ -325,6 +325,104 @@ export class EntityManager {
 
 	// === UPDATE OPERATIONS ===
 
+	/**
+	 * Check if updates only contain progress boolean fields that are allowed even when locked
+	 */
+	private isProgressBooleanUpdate(
+		updates: UpdateOptions,
+		entityType: EntityType,
+	): { allowed: boolean; disallowedFields?: string[] } {
+		const updateKeys = Object.keys(updates);
+
+		// Fields that are always allowed for progress tracking
+		const allowedProgressFields = new Set<string>([
+			"updated_at", // Always allow timestamp updates
+		]);
+
+		// Entity-specific progress fields
+		if (entityType === "plan") {
+			allowedProgressFields.add("completed");
+			allowedProgressFields.add("approved");
+			allowedProgressFields.add("completed_at");
+		}
+
+		// Check if updates contain nested task/file updates
+		const hasTaskUpdates = "tasks" in updates;
+
+		if (hasTaskUpdates) {
+			// For task updates, we need to check if only progress booleans are being updated
+			const tasks = updates.tasks;
+			if (Array.isArray(tasks)) {
+				for (const task of tasks) {
+					if (typeof task === "object" && task !== null) {
+						const taskKeys = Object.keys(task);
+						const allowedTaskFields = new Set([
+							"id", // Need ID to identify task
+							"completed",
+							"verified",
+							"completed_at",
+							"verified_at",
+							"notes", // Allow adding notes
+							"files", // Need to check files separately
+						]);
+
+						// Check task-level fields
+						const disallowedTaskFields = taskKeys.filter(
+							(key) => !allowedTaskFields.has(key),
+						);
+						if (disallowedTaskFields.length > 0) {
+							return {
+								allowed: false,
+								disallowedFields: disallowedTaskFields.map(
+									(f) => `tasks.${f}`,
+								),
+							};
+						}
+
+						// Check file-level updates if present
+						if ("files" in task && Array.isArray(task.files)) {
+							for (const file of task.files) {
+								if (typeof file === "object" && file !== null) {
+									const fileKeys = Object.keys(file);
+									const allowedFileFields = new Set([
+										"path", // Need path to identify file
+										"applied",
+									]);
+
+									const disallowedFileFields = fileKeys.filter(
+										(key) => !allowedFileFields.has(key),
+									);
+									if (disallowedFileFields.length > 0) {
+										return {
+											allowed: false,
+											disallowedFields: disallowedFileFields.map(
+												(f) => `tasks.files.${f}`,
+											),
+										};
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+
+			// If we got here, tasks updates are valid
+			allowedProgressFields.add("tasks");
+		}
+
+		// Check all update keys against allowed fields
+		const disallowedFields = updateKeys.filter(
+			(key) => !allowedProgressFields.has(key),
+		);
+
+		if (disallowedFields.length > 0) {
+			return { allowed: false, disallowedFields };
+		}
+
+		return { allowed: true };
+	}
+
 	async update(
 		entityType: EntityType,
 		id: string,
@@ -343,6 +441,23 @@ export class EntityManager {
 					success: false,
 					error: `${this.getEntityTypeName(entityType)} with ID '${id}' not found`,
 				};
+			}
+
+			// Check if entity is locked
+			const isLocked = (existingEntity as Record<string, unknown>).locked === true;
+
+			// Special handling: Allow updates to lock/unlock the entity itself
+			const isLockingUpdate = "locked" in updates;
+
+			if (isLocked && !isLockingUpdate) {
+				// Entity is locked, check if updates are only progress booleans
+				const progressCheck = this.isProgressBooleanUpdate(updates, entityType);
+				if (!progressCheck.allowed) {
+					return {
+						success: false,
+						error: `Entity is locked. Only progress tracking fields can be updated. Disallowed fields: ${progressCheck.disallowedFields?.join(", ")}`,
+					};
+				}
 			}
 
 			// Apply updates

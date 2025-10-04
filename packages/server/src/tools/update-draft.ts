@@ -64,6 +64,26 @@ export function registerUpdateDraftTool(
 					};
 				}
 
+				// Prevent locking drafts - only finalized specs can be locked
+				if (field === "locked") {
+					return {
+						content: [
+							{
+								type: "text",
+								text: JSON.stringify(
+									{
+										success: false,
+										error: "Drafts cannot be locked. Only finalized specs can be locked.",
+									},
+									null,
+									2,
+								),
+							},
+						],
+						isError: true,
+					};
+				}
+
 				// Sanitize string values
 				let sanitizedValue = value;
 				if (typeof value === "string") {

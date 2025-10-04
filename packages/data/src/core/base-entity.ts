@@ -46,6 +46,20 @@ export const BaseSchema = z.object({
 		.string()
 		.datetime()
 		.describe("Timestamp when entity was last updated"),
+	locked: z
+		.boolean()
+		.optional()
+		.describe("Whether the entity is locked from updates (except progress booleans). Defaults to false if not specified."),
+	locked_at: z
+		.string()
+		.datetime()
+		.optional()
+		.describe("Timestamp when entity was locked"),
+	locked_by: z
+		.string()
+		.min(1)
+		.optional()
+		.describe("User or system that locked the entity"),
 });
 
 // Base schema with computed ID field (for runtime use)

@@ -19,7 +19,8 @@ export function registerUpdateSpecTool(
 			title: "Update Spec",
 			description:
 				"Update a finalized specification (requirement, plan, or component) with full validation. " +
-				"Provide the spec ID and the fields to update. The tool will validate the entire spec after updating.",
+				"Provide the spec ID and the fields to update. The tool will validate the entire spec after updating. " +
+				"Note: If a spec is locked (locked: true), only progress tracking fields can be updated (e.g., completed, approved for plans; completed, verified for tasks).",
 			inputSchema: {
 				id: z
 					.string()

@@ -65,6 +65,13 @@ export class CreationFlowHelper {
 			return { error: `Draft not found: ${draft_id}` };
 		}
 
+		// Prevent locking drafts - only finalized specs can be locked
+		if ("locked" in data) {
+			return {
+				error: "Drafts cannot be locked. Only finalized specs can be locked.",
+			};
+		}
+
 		const steps = getStepDefinitions(draft.type);
 		const currentStepIndex = draft.current_step - 1;
 

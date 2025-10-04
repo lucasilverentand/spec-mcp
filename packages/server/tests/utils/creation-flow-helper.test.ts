@@ -504,4 +504,51 @@ describe("CreationFlowHelper", () => {
 			expect(draft?.validation_results.length).toBeGreaterThan(0);
 		});
 	});
+
+	describe("Locking Prevention", () => {
+		it("should reject attempt to set locked field on draft", async () => {
+			const startResponse = await helper.start("plan");
+			const draft_id = startResponse.draft_id;
+
+			const stepResponse = await helper.step(draft_id, {
+				locked: true,
+			});
+
+			expect("error" in stepResponse).toBe(true);
+			if ("error" in stepResponse) {
+				expect(stepResponse.error).toContain("locked");
+				expect(stepResponse.error).toContain("finalized");
+			}
+		});
+
+		it("should reject locked field even with other valid data", async () => {
+			const startResponse = await helper.start("plan");
+			const draft_id = startResponse.draft_id;
+
+			// Try to set locked along with valid description
+			const stepResponse = await helper.step(draft_id, {
+				description: "Valid description",
+				locked: true,
+			});
+
+			expect("error" in stepResponse).toBe(true);
+			if ("error" in stepResponse) {
+				expect(stepResponse.error).toContain("locked");
+			}
+		});
+
+		it("should allow draft to proceed normally without locked field", async () => {
+			const startResponse = await helper.start("plan");
+			const draft_id = startResponse.draft_id;
+
+			// First step expects description field
+			const stepResponse = await helper.step(draft_id, {
+				description: "Users need a plan to implement feature X because it solves a critical problem",
+			});
+
+			expect("error" in stepResponse).toBe(false);
+			// Step 1 is still valid - check it didn't error
+			expect(stepResponse).toHaveProperty("step");
+		});
+	});
 });

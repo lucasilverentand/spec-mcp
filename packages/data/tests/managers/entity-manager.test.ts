@@ -1414,4 +1414,197 @@ describe("EntityManager", () => {
 			expect(result.success).toBe(true);
 		});
 	});
+
+	describe("Locking", () => {
+		it("should prevent updates to locked plan except progress booleans", async () => {
+			// Create a plan
+			const planData = createValidPlanData();
+			const createResult = await manager.create("plan", planData);
+			expect(createResult.success).toBe(true);
+
+			const planId = (createResult as { success: true; data: AnyEntity }).data
+				.id;
+
+			// Lock the plan
+			const lockResult = await manager.update("plan", planId, {
+				locked: true,
+				locked_at: new Date().toISOString(),
+				locked_by: "test-user",
+			});
+			expect(lockResult.success).toBe(true);
+
+			// Try to update name (should fail)
+			const updateNameResult = await manager.update("plan", planId, {
+				name: "New Name",
+			});
+			expect(updateNameResult.success).toBe(false);
+			expect(
+				(updateNameResult as { success: false; error: string }).error,
+			).toContain("locked");
+			expect(
+				(updateNameResult as { success: false; error: string }).error,
+			).toContain("name");
+
+			// Update progress boolean (should succeed)
+			const updateProgressResult = await manager.update("plan", planId, {
+				completed: true,
+				completed_at: new Date().toISOString(),
+			});
+			expect(updateProgressResult.success).toBe(true);
+		});
+
+		it("should allow unlocking a locked plan", async () => {
+			// Create and lock a plan
+			const planData = createValidPlanData();
+			const createResult = await manager.create("plan", planData);
+			expect(createResult.success).toBe(true);
+
+			const planId = (createResult as { success: true; data: AnyEntity }).data
+				.id;
+
+			await manager.update("plan", planId, {
+				locked: true,
+				locked_at: new Date().toISOString(),
+			});
+
+			// Unlock the plan
+			const unlockResult = await manager.update("plan", planId, {
+				locked: false,
+			});
+			expect(unlockResult.success).toBe(true);
+
+			// Now regular updates should work
+			const updateResult = await manager.update("plan", planId, {
+				name: "Updated Name",
+			});
+			expect(updateResult.success).toBe(true);
+			expect(
+				(updateResult as { success: true; data: AnyEntity }).data.name,
+			).toBe("Updated Name");
+		});
+
+		it("should allow updating approved and completed on locked plan", async () => {
+			// Create a plan
+			const planData = createValidPlanData({
+				completed: false,
+				approved: false,
+			});
+			const createResult = await manager.create("plan", planData);
+			expect(createResult.success).toBe(true);
+
+			const planId = (createResult as { success: true; data: AnyEntity }).data
+				.id;
+
+			// Lock the plan
+			await manager.update("plan", planId, {
+				locked: true,
+				locked_at: new Date().toISOString(),
+			});
+
+			// Update approved (should succeed)
+			const approveResult = await manager.update("plan", planId, {
+				approved: true,
+			});
+			expect(approveResult.success).toBe(true);
+
+			// Update completed (should succeed)
+			const completeResult = await manager.update("plan", planId, {
+				completed: true,
+				completed_at: new Date().toISOString(),
+			});
+			expect(completeResult.success).toBe(true);
+		});
+
+		it("should block task description updates on locked plan", async () => {
+			// Create a plan with tasks
+			const planData = createValidPlanData({
+				tasks: [
+					{
+						id: "task-001",
+						description: "Original description",
+						priority: "medium" as const,
+						depends_on: [],
+						considerations: [],
+						references: [],
+						files: [],
+						completed: false,
+						verified: false,
+						notes: [],
+					},
+				],
+			});
+			const createResult = await manager.create("plan", planData);
+			expect(createResult.success).toBe(true);
+
+			const planId = (createResult as { success: true; data: AnyEntity }).data
+				.id;
+
+			// Lock the plan
+			await manager.update("plan", planId, {
+				locked: true,
+				locked_at: new Date().toISOString(),
+			});
+
+			// Try to update task description (should fail)
+			const updateTasksResult = await manager.update("plan", planId, {
+				tasks: [
+					{
+						id: "task-001",
+						description: "New description",
+					},
+				],
+			});
+			expect(updateTasksResult.success).toBe(false);
+			expect(
+				(updateTasksResult as { success: false; error: string }).error,
+			).toContain("locked");
+		});
+
+
+		it("should block multiple field updates including disallowed fields on locked plan", async () => {
+			// Create a plan
+			const planData = createValidPlanData();
+			const createResult = await manager.create("plan", planData);
+			expect(createResult.success).toBe(true);
+
+			const planId = (createResult as { success: true; data: AnyEntity }).data
+				.id;
+
+			// Lock the plan
+			await manager.update("plan", planId, {
+				locked: true,
+				locked_at: new Date().toISOString(),
+			});
+
+			// Try to update both allowed and disallowed fields
+			const updateResult = await manager.update("plan", planId, {
+				completed: true, // Allowed
+				name: "New Name", // Not allowed
+			});
+			expect(updateResult.success).toBe(false);
+			expect(
+				(updateResult as { success: false; error: string }).error,
+			).toContain("locked");
+			expect(
+				(updateResult as { success: false; error: string }).error,
+			).toContain("name");
+		});
+
+
+		it("should work with locked=false by default for new entities", async () => {
+			// Create a plan without specifying locked
+			const planData = createValidPlanData();
+			const createResult = await manager.create("plan", planData);
+			expect(createResult.success).toBe(true);
+
+			const planId = (createResult as { success: true; data: AnyEntity }).data
+				.id;
+
+			// Should be able to update normally
+			const updateResult = await manager.update("plan", planId, {
+				name: "New Name",
+			});
+			expect(updateResult.success).toBe(true);
+		});
+	});
 });
