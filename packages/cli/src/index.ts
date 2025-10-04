@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
-import { Command } from "commander";
-import { SpecService } from "@spec-mcp/core";
-import type { AnyEntity } from "@spec-mcp/core";
 import { resolve } from "node:path";
+import type { AnyEntity } from "@spec-mcp/core";
+import { SpecService } from "@spec-mcp/core";
+import { Command } from "commander";
 
 const program = new Command();
 
@@ -156,11 +156,15 @@ program
 					`${icon} ${colors.dim}${fileName}${colors.reset} ${colors.dim}(${entityId})${colors.reset}`,
 				);
 
-				const hasIssues = validation.errors.length > 0 || validation.warnings.length > 0;
+				const hasIssues =
+					validation.errors.length > 0 || validation.warnings.length > 0;
 				if (hasIssues) {
 					const errorFields = parseValidationErrors(validation.errors);
 					const warningFields = parseValidationErrors(validation.warnings);
-					const allFields = new Set([...errorFields.keys(), ...warningFields.keys()]);
+					const allFields = new Set([
+						...errorFields.keys(),
+						...warningFields.keys(),
+					]);
 					const fieldArray = Array.from(allFields);
 
 					for (let i = 0; i < fieldArray.length; i++) {
@@ -219,11 +223,15 @@ program
 					`${icon} ${colors.dim}${fileName}${colors.reset} ${colors.dim}(${entityId})${colors.reset}`,
 				);
 
-				const hasIssues = validation.errors.length > 0 || validation.warnings.length > 0;
+				const hasIssues =
+					validation.errors.length > 0 || validation.warnings.length > 0;
 				if (hasIssues) {
 					const errorFields = parseValidationErrors(validation.errors);
 					const warningFields = parseValidationErrors(validation.warnings);
-					const allFields = new Set([...errorFields.keys(), ...warningFields.keys()]);
+					const allFields = new Set([
+						...errorFields.keys(),
+						...warningFields.keys(),
+					]);
 					const fieldArray = Array.from(allFields);
 
 					for (let i = 0; i < fieldArray.length; i++) {
@@ -282,11 +290,15 @@ program
 					`${icon} ${colors.dim}${fileName}${colors.reset} ${colors.dim}(${entityId})${colors.reset}`,
 				);
 
-				const hasIssues = validation.errors.length > 0 || validation.warnings.length > 0;
+				const hasIssues =
+					validation.errors.length > 0 || validation.warnings.length > 0;
 				if (hasIssues) {
 					const errorFields = parseValidationErrors(validation.errors);
 					const warningFields = parseValidationErrors(validation.warnings);
-					const allFields = new Set([...errorFields.keys(), ...warningFields.keys()]);
+					const allFields = new Set([
+						...errorFields.keys(),
+						...warningFields.keys(),
+					]);
 					const fieldArray = Array.from(allFields);
 
 					for (let i = 0; i < fieldArray.length; i++) {
@@ -327,7 +339,9 @@ program
 			// Summary
 			console.log(`${colors.cyan}Summary:${colors.reset}`);
 			if (totalErrors > 0) {
-				console.log(`  ${colors.red}Total Errors: ${totalErrors}${colors.reset}`);
+				console.log(
+					`  ${colors.red}Total Errors: ${totalErrors}${colors.reset}`,
+				);
 			}
 			if (totalWarnings > 0) {
 				console.log(
