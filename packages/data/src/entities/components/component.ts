@@ -1,9 +1,7 @@
 import z from "zod";
 import { BaseSchema, computeEntityId } from "../../core/base-entity.js";
-import {
-	ComponentScopeSchema,
-	DeploymentSchema,
-} from "../shared/index.js";
+import { ComponentScopeSchema } from "../shared/scope-schema.js";
+import { DeploymentSchema } from "../shared/deployment-schema.js";
 
 export const ComponentIdSchema = z
 	.string()

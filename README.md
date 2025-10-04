@@ -55,13 +55,13 @@ Use the MCP tools through your AI assistant:
 
 ```typescript
 // Start creating a requirement
-start_spec({
+start_draft({
   type: "requirement",
   slug: "user-authentication"
 })
 
 // Follow the guided 4-step flow
-update_spec({
+update_draft({
   draft_id: "req-user-authentication-...",
   field: "slug_and_name",
   value: {
@@ -100,8 +100,9 @@ analyze({
 ## Available Tools
 
 ### Creation & Management
-- `start_spec` - Begin creating a new specification with guided flow
-- `update_spec` - Update a draft specification field by field
+- `start_draft` - Begin creating a new specification with guided flow
+- `update_draft` - Update a draft specification field by field
+- `update_spec` - Update a finalized specification with validation
 - `delete_spec` - Delete a specification or draft
 
 ### Querying

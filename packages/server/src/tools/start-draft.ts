@@ -14,17 +14,17 @@ const SpecTypeSchema = z.enum([
 ]);
 
 /**
- * Register start_spec tool - initiates a new spec draft
+ * Register start_draft tool - initiates a new spec draft
  */
-export function registerStartSpecTool(
+export function registerStartDraftTool(
 	server: McpServer,
 	_operations: SpecOperations,
 	context: ToolContext,
 ) {
 	server.registerTool(
-		"start_spec",
+		"start_draft",
 		{
-			title: "Start Spec",
+			title: "Start Draft",
 			description:
 				"Start creating a new specification (requirement, component, plan, constitution, or decision). " +
 				"Creates a draft and returns the first field to fill. Drafts are persisted as .draft.yml files.",
@@ -47,7 +47,7 @@ export function registerStartSpecTool(
 			},
 		},
 		wrapToolHandler(
-			"start_spec",
+			"start_draft",
 			async ({ type, slug, name }) => {
 				// Validate slug if provided
 				const validatedSlug = slug

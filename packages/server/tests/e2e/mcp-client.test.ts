@@ -61,7 +61,7 @@ describe("MCP E2E Tests", () => {
 			expect(tools.tools.length).toBeGreaterThan(0);
 
 			const toolNames = tools.tools.map((t) => t.name);
-			expect(toolNames).toContain("start_spec");
+			expect(toolNames).toContain("start_draft");
 			expect(toolNames).toContain("update_spec");
 			expect(toolNames).toContain("delete_spec");
 			expect(toolNames).toContain("query");
@@ -76,7 +76,7 @@ describe("MCP E2E Tests", () => {
 		it("should create a requirement using creation flow", async () => {
 			// Step 1: Start the draft
 			const startResult = await client.callTool({
-				name: "start_spec",
+				name: "start_draft",
 				arguments: {
 					type: "requirement",
 					slug: "test-requirement",
@@ -91,7 +91,7 @@ describe("MCP E2E Tests", () => {
 
 			// Step 2: Fill in name
 			await client.callTool({
-				name: "update_spec",
+				name: "update_draft",
 				arguments: {
 					draft_id: draftId,
 					field: "name",
@@ -101,7 +101,7 @@ describe("MCP E2E Tests", () => {
 
 			// Step 3: Fill in description (must be at least 50 chars with rationale)
 			await client.callTool({
-				name: "update_spec",
+				name: "update_draft",
 				arguments: {
 					draft_id: draftId,
 					field: "description",
@@ -112,7 +112,7 @@ describe("MCP E2E Tests", () => {
 
 			// Step 4: Fill in priority
 			await client.callTool({
-				name: "update_spec",
+				name: "update_draft",
 				arguments: {
 					draft_id: draftId,
 					field: "priority",
@@ -122,7 +122,7 @@ describe("MCP E2E Tests", () => {
 
 			// Step 5: Add acceptance criteria (need at least 2, measurable)
 			const finalResult = await client.callTool({
-				name: "update_spec",
+				name: "update_draft",
 				arguments: {
 					draft_id: draftId,
 					field: "criteria",
@@ -219,7 +219,7 @@ describe("MCP E2E Tests", () => {
 		it("should sanitize input strings", async () => {
 			// Start draft
 			const startResult = await client.callTool({
-				name: "start_spec",
+				name: "start_draft",
 				arguments: {
 					type: "requirement",
 					slug: "test-sanitize",
@@ -233,7 +233,7 @@ describe("MCP E2E Tests", () => {
 			// The first field for requirements is "description"
 			// Try to set description with null bytes
 			const descResult = await client.callTool({
-				name: "update_spec",
+				name: "update_draft",
 				arguments: {
 					draft_id: testDraftId,
 					field: "description",
@@ -274,7 +274,7 @@ describe("MCP E2E Tests", () => {
 			// Start draft without slug
 			try {
 				await client.callTool({
-					name: "start_spec",
+					name: "start_draft",
 					arguments: {
 						type: "requirement",
 						// Missing slug - should be optional but validation may catch it

@@ -1,13 +1,11 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { SpecOperations } from "@spec-mcp/core";
 import { z } from "zod";
-import { formatResult } from "../utils/result-formatter.js";
 import { wrapToolHandler } from "../utils/tool-wrapper.js";
-import { creationFlowHelper } from "../utils/creation-flow-helper.js";
 import type { ToolContext } from "./index.js";
 
 /**
- * Register update_spec tool - updates a draft one field at a time
+ * Register update_spec tool - updates a finalized spec with full validation
  */
 export function registerUpdateSpecTool(
 	server: McpServer,
@@ -19,297 +17,80 @@ export function registerUpdateSpecTool(
 		{
 			title: "Update Spec",
 			description:
-				"Update a spec draft by providing ONE field value at a time. " +
-				"The tool validates the field, saves to .draft.yml, and returns guidance for the next field. " +
-				"When all required fields are complete, the spec is automatically finalized and created.",
+				"Update a finalized specification (requirement, plan, or component) with full validation. " +
+				"Provide the spec ID and the fields to update. The tool will validate the entire spec after updating.",
 			inputSchema: {
-				draft_id: z
+				id: z
 					.string()
 					.describe(
-						"Draft ID returned from start_spec (e.g., 'req-auth-1234567890')",
+						"Spec ID (e.g., 'req-001-auth', 'pln-002-api', 'lib-003-utils')",
 					),
-				field: z
-					.string()
+				updates: z
+					.record(z.unknown())
 					.describe(
-						"Field name to update (use the 'current_field' from the previous response)",
-					),
-				value: z
-					.unknown()
-					.describe(
-						"Value for the field. Can be string, number, boolean, array, or object depending on the field type.",
+						"Object containing the fields to update and their new values",
 					),
 			},
 		},
 		wrapToolHandler(
 			"update_spec",
-			async ({ draft_id, field, value }) => {
-				// Get the draft to check its type
-				const draft = creationFlowHelper.getDraft(draft_id);
-				if (!draft) {
-					return {
-						content: [
-							{
-								type: "text",
-								text: JSON.stringify(
-									{
-										success: false,
-										error: `Draft not found: ${draft_id}`,
-									},
-									null,
-									2,
-								),
-							},
-						],
-						isError: true,
-					};
-				}
+			async ({ id, updates }) => {
+				try {
+					// Determine entity type from ID prefix
+					const prefix = id.split("-")[0];
+					let result;
 
-				// Sanitize string values
-				let sanitizedValue = value;
-				if (typeof value === "string") {
-					sanitizedValue = context.inputValidator.sanitizeString(value);
-				}
-
-				// Process the creation flow step with the field data
-				const stepData = { [field]: sanitizedValue };
-				const stepResponse = await creationFlowHelper.step(draft_id, stepData);
-
-				if ("error" in stepResponse) {
-					return {
-						content: [
-							{
-								type: "text",
-								text: JSON.stringify(
-									{
-										success: false,
-										error: stepResponse.error,
-									},
-									null,
-									2,
-								),
-							},
-						],
-						isError: true,
-					};
-				}
-
-				// Check if validation failed
-				if (
-					stepResponse.validation &&
-					!stepResponse.validation.passed &&
-					stepResponse.validation.issues
-				) {
-					return {
-						content: [
-							{
-								type: "text",
-								text: JSON.stringify(
-									{
-										success: false,
-										draft_id,
-										field,
-										validation_issues: stepResponse.validation.issues,
-										suggestions: stepResponse.validation.suggestions || [],
-										instructions:
-											"Please correct the field value and try again.",
-									},
-									null,
-									2,
-								),
-							},
-						],
-						isError: true,
-					};
-				}
-
-				// Check if all steps are completed (auto-finalize)
-				if (stepResponse.completed) {
-					// Finalize the spec
-					const finalizedDraft = creationFlowHelper.getDraft(draft_id);
-					if (!finalizedDraft) {
-						return {
-							content: [
-								{
-									type: "text",
-									text: JSON.stringify(
-										{
-											success: false,
-											error: `Draft not found during finalization: ${draft_id}`,
-										},
-										null,
-										2,
-									),
-								},
-							],
-							isError: true,
-						};
-					}
-
-					// Create the spec based on type
-					const draftData = finalizedDraft.data;
-					const specType = finalizedDraft.type;
-					let result: unknown;
-
-					try {
-						switch (specType) {
-							case "requirement": {
-								const validatedSlug = context.inputValidator.validateSlug(
-									(draftData.slug as string) || "",
-								);
-								const validatedName = context.inputValidator.sanitizeString(
-									(draftData.name as string) || "",
-								);
-								const validatedDescription =
-									context.inputValidator.sanitizeString(
-										(draftData.description as string) || "",
-									);
-
-								const reqData = {
-									type: "requirement" as const,
-									slug: validatedSlug,
-									name: validatedName,
-									description: validatedDescription,
-									created_at: new Date().toISOString(),
-									updated_at: new Date().toISOString(),
-									priority:
-										(draftData.priority as
-											| "critical"
-											| "required"
-											| "ideal"
-											| "optional") || "required",
-									criteria: (draftData.criteria as unknown[]) || [],
-								};
-
-								// @ts-expect-error - Type system limitation
-								result = await operations.createRequirement(reqData);
-								break;
+					// Sanitize string values in updates
+					const sanitizedUpdates = Object.entries(updates).reduce(
+						(acc, [key, value]) => {
+							if (typeof value === "string") {
+								acc[key] = context.inputValidator.sanitizeString(value);
+							} else {
+								acc[key] = value;
 							}
+							return acc;
+						},
+						{} as Record<string, unknown>,
+					);
 
-							case "plan": {
-								const validatedSlug = context.inputValidator.validateSlug(
-									(draftData.slug as string) || "",
-								);
-								const validatedName = context.inputValidator.sanitizeString(
-									(draftData.name as string) || "",
-								);
-								const validatedDescription =
-									context.inputValidator.sanitizeString(
-										(draftData.description as string) || "",
-									);
-								const validatedCriteria = context.inputValidator.sanitizeString(
-									(draftData.acceptance_criteria as string) || "",
-								);
+					// Update timestamps
+					sanitizedUpdates.updated_at = new Date().toISOString();
 
-								const planData = {
-									type: "plan" as const,
-									slug: validatedSlug,
-									name: validatedName,
-									description: validatedDescription,
-									criteria_id: (draftData.criteria_id as string) || undefined,
-									created_at: new Date().toISOString(),
-									updated_at: new Date().toISOString(),
-									priority:
-										(draftData.priority as
-											| "critical"
-											| "high"
-											| "medium"
-											| "low") || "medium",
-									acceptance_criteria: validatedCriteria,
-									depends_on: (draftData.depends_on as string[]) || [],
-									tasks: (draftData.tasks as unknown[]) || [],
-								};
-
-								// @ts-expect-error - Type system limitation
-								result = await operations.createPlan(planData);
-								break;
-							}
-
-							case "component": {
-								const validatedSlug = context.inputValidator.validateSlug(
-									(draftData.slug as string) || "",
-								);
-								const validatedName = context.inputValidator.sanitizeString(
-									(draftData.name as string) || "",
-								);
-								const validatedDescription =
-									context.inputValidator.sanitizeString(
-										(draftData.description as string) || "",
-									);
-								const validatedFolder = context.inputValidator.sanitizeString(
-									(draftData.folder as string) || ".",
-								);
-
-								const compData = {
-									type:
-										(draftData.type as "app" | "service" | "library") ||
-										"service",
-									slug: validatedSlug,
-									name: validatedName,
-									description: validatedDescription,
-									created_at: new Date().toISOString(),
-									updated_at: new Date().toISOString(),
-									folder: validatedFolder,
-									tech_stack: (draftData.tech_stack as string[]) || [],
-									depends_on: (draftData.depends_on as string[]) || [],
-									external_dependencies:
-										(draftData.external_dependencies as string[]) || [],
-									capabilities: (draftData.capabilities as string[]) || [],
-									constraints: (draftData.constraints as string[]) || [],
-								};
-
-								// @ts-expect-error - Type system limitation
-								result = await operations.createComponent(compData);
-								break;
-							}
-
-							default:
-								return {
-									content: [
-										{
-											type: "text",
-											text: JSON.stringify(
-												{
-													success: false,
-													error: `Unsupported spec type: ${specType}`,
-												},
-												null,
-												2,
-											),
-										},
-									],
-									isError: true,
-								};
-						}
-
-						// Delete draft after successful creation
-						// @ts-expect-error - Result can be any entity type
-						if (result.success) {
-							await creationFlowHelper.deleteDraft(draft_id);
+					switch (prefix) {
+						case "req":
+							result = await operations.updateRequirement(id, sanitizedUpdates);
+							break;
+						case "pln":
+							result = await operations.updatePlan(id, sanitizedUpdates);
+							break;
+						case "lib":
+						case "svc":
+						case "app":
+							result = await operations.updateComponent(id, sanitizedUpdates);
+							break;
+						case "con":
+							result = await operations.updateConstitution(id, sanitizedUpdates);
+							break;
+						default:
 							return {
 								content: [
 									{
 										type: "text",
 										text: JSON.stringify(
 											{
-												success: true,
-												completed: true,
-												message: `${specType} created successfully!`,
-												// @ts-expect-error - Result can be any entity type
-												spec_id: result.data?.id,
-												// @ts-expect-error - Result can be any entity type
-												spec: result.data,
+												success: false,
+												error: `Unknown entity type for ID: ${id}`,
 											},
 											null,
 											2,
 										),
 									},
 								],
+								isError: true,
 							};
-						}
+					}
 
-						// @ts-expect-error - Result can be any entity type, formatResult handles all
-						return formatResult(result);
-					} catch (error) {
+					if (!result.success) {
 						return {
 							content: [
 								{
@@ -317,7 +98,7 @@ export function registerUpdateSpecTool(
 									text: JSON.stringify(
 										{
 											success: false,
-											error: `Failed to create ${specType}: ${error instanceof Error ? error.message : String(error)}`,
+											error: result.error || "Failed to update spec",
 										},
 										null,
 										2,
@@ -327,39 +108,74 @@ export function registerUpdateSpecTool(
 							isError: true,
 						};
 					}
-				}
 
-				// Return next step guidance
-				return {
-					content: [
-						{
-							type: "text",
-							text: JSON.stringify(
-								{
-									success: true,
-									draft_id,
-									step: stepResponse.step,
-									total_steps: stepResponse.total_steps,
-									current_field: stepResponse.current_step_name,
-									instructions: stepResponse.prompt,
-									validation:
-										stepResponse.validation?.passed === false
-											? {
-													passed: false,
-													issues: stepResponse.validation.issues,
-													suggestions: stepResponse.validation.suggestions,
-												}
-											: { passed: true },
-									draft_file: `.specs/.drafts/${draft_id}.draft.yml`,
-									next_action:
-										"Use update_spec again to provide the next field value",
-								},
-								null,
-								2,
-							),
-						},
-					],
-				};
+					// Validate the updated spec
+					const { SpecService } = await import("@spec-mcp/core");
+					const service = new SpecService({
+						specsPath: operations.getManager().config.path ?? "./specs",
+					});
+					await service.initialize();
+
+					// Get the updated entity
+					const entitiesResult = await service.getAllEntities();
+					if (!entitiesResult.success || !entitiesResult.data) {
+						throw new Error("Failed to load entities");
+					}
+
+					const { requirements, plans, components } = entitiesResult.data;
+					const allEntities = [...requirements, ...plans, ...components];
+					const entity = allEntities.find((e) => {
+						const entityId = `${e.type}-${e.number.toString().padStart(3, "0")}-${e.slug}`;
+						return entityId === id || e.slug === id;
+					});
+
+					if (!entity) {
+						throw new Error(`Entity not found: ${id}`);
+					}
+
+					const validation = await service.validateEntity(entity);
+
+					return {
+						content: [
+							{
+								type: "text",
+								text: JSON.stringify(
+									{
+										success: true,
+										data: result.data,
+										validation: {
+											passed: validation.valid,
+											errors: validation.errors || [],
+											warnings: validation.warnings || [],
+										},
+										message: validation.valid
+											? "Spec updated and validated successfully"
+											: "Spec updated but has validation issues",
+									},
+									null,
+									2,
+								),
+							},
+						],
+					};
+				} catch (error) {
+					return {
+						content: [
+							{
+								type: "text",
+								text: JSON.stringify(
+									{
+										success: false,
+										error: `Failed to update spec: ${error instanceof Error ? error.message : String(error)}`,
+									},
+									null,
+									2,
+								),
+							},
+						],
+						isError: true,
+					};
+				}
 			},
 			context,
 		),

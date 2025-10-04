@@ -6,7 +6,8 @@ import type { RateLimiter } from "../middleware/rate-limiter.js";
 import { registerAnalyzeTool } from "./analyze.js";
 import { registerDeleteSpecTool } from "./delete-spec.js";
 import { registerQueryTool } from "./query.js";
-import { registerStartSpecTool } from "./start-spec.js";
+import { registerStartDraftTool } from "./start-draft.js";
+import { registerUpdateDraftTool } from "./update-draft.js";
 import { registerUpdateSpecTool } from "./update-spec.js";
 import { registerValidateTool } from "./validate.js";
 
@@ -24,9 +25,10 @@ export function registerAllTools(
 	operations: SpecOperations,
 	context: ToolContext,
 ) {
-	// Simplified creation flow CRUD tools (3 tools)
-	registerStartSpecTool(server, operations, context); // start_spec - create a draft
-	registerUpdateSpecTool(server, operations, context); // update_spec - fill fields one at a time
+	// Simplified creation flow CRUD tools (4 tools)
+	registerStartDraftTool(server, operations, context); // start_draft - create a draft
+	registerUpdateDraftTool(server, operations, context); // update_draft - fill draft fields one at a time
+	registerUpdateSpecTool(server, operations, context); // update_spec - update finalized specs with validation
 	registerDeleteSpecTool(server, operations, context); // delete_spec - delete draft or finalized spec
 
 	// Analysis tool

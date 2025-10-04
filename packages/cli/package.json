@@ -1,0 +1,37 @@
+{
+	"name": "@spec-mcp/cli",
+	"version": "0.1.0",
+	"description": "CLI tool for validating spec-mcp specifications",
+	"type": "module",
+	"bin": {
+		"spec-validate": "./dist/index.js"
+	},
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"import": "./dist/index.js",
+			"types": "./dist/index.d.ts"
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "tsc",
+		"dev": "tsc --watch",
+		"clean": "rm -rf dist",
+		"typecheck": "tsc --noEmit"
+	},
+	"dependencies": {
+		"@spec-mcp/core": "workspace:*",
+		"commander": "^12.1.0"
+	},
+	"devDependencies": {
+		"@types/node": "^24.5.2",
+		"typescript": "^5.9.2"
+	},
+	"engines": {
+		"node": ">=18.0.0"
+	}
+}
