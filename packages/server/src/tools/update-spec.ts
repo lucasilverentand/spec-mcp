@@ -1,5 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { SpecOperations } from "@spec-mcp/core";
+import { computeEntityId } from "@spec-mcp/data";
 import { z } from "zod";
 import { wrapToolHandler } from "../utils/tool-wrapper.js";
 import type { ToolContext } from "./index.js";
@@ -125,7 +126,7 @@ export function registerUpdateSpecTool(
 					const { requirements, plans, components } = entitiesResult.data;
 					const allEntities = [...requirements, ...plans, ...components];
 					const entity = allEntities.find((e) => {
-						const entityId = `${e.type}-${e.number.toString().padStart(3, "0")}-${e.slug}`;
+						const entityId = computeEntityId(e.type, e.number, e.slug);
 						return entityId === id || e.slug === id;
 					});
 
