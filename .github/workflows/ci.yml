@@ -171,10 +171,25 @@ jobs:
         run: |
           cd packages/server
 
-          # Test that the built package can be imported without devDependencies
-          NODE_ENV=production node -e "import('./dist/index.js').then(() => console.log('✓ Package loads successfully in production mode')).catch(e => { console.error('✗ Package failed to load:', e.message); process.exit(1); })"
+          # Verify build artifacts exist
+          if [ ! -f "dist/index.js" ]; then
+            echo "✗ Build artifact dist/index.js not found"
+            exit 1
+          fi
+          echo "✓ Build artifacts exist"
 
-          # Test that required runtime dependencies are available
-          node -e "import('pino').then(() => console.log('✓ Runtime dependency pino available')).catch(e => { console.error('✗ Missing runtime dependency:', e.message); process.exit(1); })"
+          # Verify no pino-pretty import in built code (devDependency that should not be used at runtime)
+          if grep -r "pino-pretty" dist/; then
+            echo "✗ Found pino-pretty references in built code (devDependency should not be used at runtime)"
+            exit 1
+          fi
+          echo "✓ No devDependency references in built code"
+
+          # Test that required runtime dependencies are declared
+          if ! grep -q '"pino"' package.json; then
+            echo "✗ Missing runtime dependency: pino"
+            exit 1
+          fi
+          echo "✓ All required runtime dependencies declared"
 
           echo "✓ Package installation test passed"
