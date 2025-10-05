@@ -13,21 +13,6 @@ const pinoOptions: Record<string, unknown> = {
 	},
 };
 
-// Disable pretty printing when running via MCP Inspector or in production
-// MCP protocol requires stdout to be reserved for JSON messages only
-const isMcpMode =
-	process.env.MCP_MODE === "true" || process.stdin.isTTY === false;
-if (process.env.NODE_ENV !== "production" && !isMcpMode) {
-	pinoOptions.transport = {
-		target: "pino-pretty",
-		options: {
-			colorize: true,
-			translateTime: "HH:MM:ss Z",
-			ignore: "pid,hostname",
-		},
-	};
-}
-
 export const logger = pino(
 	pinoOptions,
 	// Ensure logs go to stderr to not interfere with stdio MCP communication
