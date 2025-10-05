@@ -1,6 +1,13 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { SpecOperations } from "@spec-mcp/core";
 import { finalizeDraft } from "@spec-mcp/core";
+import type {
+	AnyComponent,
+	Constitution,
+	Decision,
+	Plan,
+	Requirement,
+} from "@spec-mcp/data";
 import { z } from "zod";
 import type { ServerConfig } from "../config/index.js";
 import { getCreationFlowHelper } from "../utils/creation-flow-helper.js";
@@ -88,32 +95,33 @@ export function registerFinalizeDraftTool(
 			try {
 				switch (draft.type) {
 					case "requirement":
-						// @ts-expect-error - Type system limitation
 						result = await operations.createRequirement(
-							finalizationResult.data,
+							finalizationResult.data as Omit<Requirement, "number">,
 						);
 						break;
 
 					case "plan":
-						// @ts-expect-error - Type system limitation
-						result = await operations.createPlan(finalizationResult.data);
+						result = await operations.createPlan(
+							finalizationResult.data as Omit<Plan, "number">,
+						);
 						break;
 
 					case "component":
-						// @ts-expect-error - Type system limitation
-						result = await operations.createComponent(finalizationResult.data);
+						result = await operations.createComponent(
+							finalizationResult.data as Omit<AnyComponent, "number">,
+						);
 						break;
 
 					case "constitution":
-						// @ts-expect-error - Type system limitation
 						result = await operations.createConstitution(
-							finalizationResult.data,
+							finalizationResult.data as Omit<Constitution, "number">,
 						);
 						break;
 
 					case "decision":
-						// @ts-expect-error - Type system limitation
-						result = await operations.createDecision(finalizationResult.data);
+						result = await operations.createDecision(
+							finalizationResult.data as Omit<Decision, "number">,
+						);
 						break;
 
 					default:
