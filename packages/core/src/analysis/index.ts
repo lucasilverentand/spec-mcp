@@ -1,6 +1,5 @@
 // Re-export types for convenience
 export type * from "../shared/types/analyzer.js";
-export { BaseAnalyzer } from "./base-analyzer.js";
 export { CoverageAnalyzer } from "./coverage-analyzer.js";
 export { CycleDetector } from "./cycle-detector.js";
 export { DependencyAnalyzer } from "./dependency-analyzer.js";

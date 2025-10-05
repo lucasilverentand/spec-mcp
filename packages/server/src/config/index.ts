@@ -9,28 +9,11 @@ import { logger } from "../utils/logger.js";
 /**
  * Configuration schema for MCP server
  */
-export const ConfigSchema = z.object({
+const ConfigSchema = z.object({
 	specsPath: z.string().min(1, "Specs path cannot be empty"),
 });
 
 export type ServerConfig = z.infer<typeof ConfigSchema>;
-
-/**
- * Validate that a path is safe (no path traversal)
- */
-export function validateSafePath(basePath: string, targetPath: string): string {
-	const resolvedBase = resolve(basePath);
-	const resolvedTarget = resolve(basePath, targetPath);
-
-	if (!resolvedTarget.startsWith(resolvedBase)) {
-		throw new McpError(ErrorCode.PATH_TRAVERSAL, "Path traversal detected", {
-			basePath,
-			targetPath,
-		});
-	}
-
-	return resolvedTarget;
-}
 
 /**
  * Validate that specs path exists and is writable

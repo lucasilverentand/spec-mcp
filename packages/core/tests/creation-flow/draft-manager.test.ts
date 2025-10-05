@@ -367,9 +367,13 @@ describe("DraftManager", () => {
 		it("should automatically cleanup expired drafts", async () => {
 			// Create draft and immediately expire it
 			const draft = await draftManager.create("requirement");
-			await draftManager.update(draft.id, {
+			const updated = await draftManager.update(draft.id, {
 				expires_at: new Date(Date.now() - 1000).toISOString(),
 			});
+
+			// Verify the update worked
+			expect(updated).not.toBeNull();
+			expect(new Date(updated!.expires_at).getTime()).toBeLessThan(Date.now());
 
 			// Manually trigger cleanup (normally runs every hour)
 			// @ts-expect-error - Accessing private method for testing

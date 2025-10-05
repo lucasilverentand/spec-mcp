@@ -35,13 +35,6 @@ export const logger = pino(
 );
 
 /**
- * Create a child logger with additional context
- */
-export function createChildLogger(context: Record<string, unknown>) {
-	return logger.child(context);
-}
-
-/**
  * Create a logger with correlation ID for request tracking
  */
 export function createRequestLogger(correlationId: string) {
