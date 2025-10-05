@@ -824,7 +824,9 @@ export class StepValidator {
 
 				if (tasks.length === 0) {
 					issues.push("At least one task is required");
-					suggestions.push("Break down the plan into specific, actionable tasks");
+					suggestions.push(
+						"Break down the plan into specific, actionable tasks",
+					);
 					return;
 				}
 
@@ -832,17 +834,13 @@ export class StepValidator {
 				const tasksWithEstimates = tasks.filter((task) => {
 					if (task && typeof task === "object" && "estimated_days" in task) {
 						const t = task as { estimated_days: unknown };
-						return (
-							typeof t.estimated_days === "number" && t.estimated_days > 0
-						);
+						return typeof t.estimated_days === "number" && t.estimated_days > 0;
 					}
 					return false;
 				});
 
 				if (tasksWithEstimates.length > 0) {
-					strengths.push(
-						`${tasks.length} tasks defined with effort estimates`,
-					);
+					strengths.push(`${tasks.length} tasks defined with effort estimates`);
 				} else {
 					strengths.push(`${tasks.length} tasks defined`);
 				}
