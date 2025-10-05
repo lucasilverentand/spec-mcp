@@ -50,15 +50,23 @@ export const GUIDE_RESOURCES = [
  * Load guide content from file system
  */
 export async function loadGuideContent(filePath: string): Promise<string> {
-	// Navigate from packages/server/src/resources/ to docs/guides/
-	const guidesDir = join(__dirname, "../../../../docs/guides");
+	// In production (dist), guides are at dist/guides/
+	// In development, guides are at ../../docs/guides relative to src/resources/
+	const guidesDir = join(__dirname, "../guides");
 	const fullPath = join(guidesDir, filePath);
 
 	try {
 		return await readFile(fullPath, "utf-8");
 	} catch (error) {
-		throw new Error(
-			`Failed to load guide from ${fullPath}: ${error instanceof Error ? error.message : String(error)}`,
-		);
+		// Fallback to dev location if not found in dist
+		const devGuidesDir = join(__dirname, "../../../../docs/guides");
+		const devFullPath = join(devGuidesDir, filePath);
+		try {
+			return await readFile(devFullPath, "utf-8");
+		} catch {
+			throw new Error(
+				`Failed to load guide from ${fullPath}: ${error instanceof Error ? error.message : String(error)}`,
+			);
+		}
 	}
 }

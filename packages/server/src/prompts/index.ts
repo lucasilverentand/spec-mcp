@@ -10,11 +10,11 @@ export function registerPrompts(
 	server: McpServer,
 	_config: ServerConfig,
 ): void {
-	// Register setup-project prompt
+	// Register setup prompt
 	server.registerPrompt(
-		"setup-project",
+		"setup",
 		{
-			title: "Setup Spec-Driven Development",
+			title: "Setup",
 			description:
 				"Interview-style setup guide that asks about your project context and provides tailored instructions for directory structure, constitutions, and Claude Code agents",
 			argsSchema: setupArgsSchema,
