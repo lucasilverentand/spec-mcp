@@ -4,6 +4,8 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { SpecOperations } from "@spec-mcp/core";
 import { loadConfig } from "./config/index.js";
+import { registerPrompts } from "./prompts/index.js";
+import { registerResources } from "./resources/index.js";
 import { registerAllTools } from "./tools/index.js";
 import { ErrorCode, McpError } from "./utils/error-codes.js";
 import { logger } from "./utils/logger.js";
@@ -155,6 +157,10 @@ async function main() {
 		const server = new McpServer({
 			name: "spec-mcp",
 			version: VERSION,
+			capabilities: {
+				resources: {},
+				prompts: {},
+			},
 		});
 
 		// Initialize spec operations
@@ -162,8 +168,10 @@ async function main() {
 			specsPath: config.specsPath,
 		});
 
-		// Register all tools
+		// Register all tools, resources, and prompts
 		registerAllTools(server, operations, config);
+		registerResources(server, config);
+		registerPrompts(server, config);
 
 		// Set up connection with retry logic
 		const transport = new StdioServerTransport();

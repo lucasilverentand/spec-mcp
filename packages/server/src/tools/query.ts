@@ -38,6 +38,10 @@ const PlanFiltersSchema = z.object({
 		.boolean()
 		.optional()
 		.describe("Filter plans that are linked to requirement criteria"),
+	criteria_id: z
+		.string()
+		.optional()
+		.describe("Filter plans by specific criteria ID (e.g., 'req-001-user-auth/crit-001')"),
 });
 
 const ComponentFiltersSchema = z.object({
@@ -254,7 +258,7 @@ function detectEntityType(
 }
 
 /**
- * Detect sub-entity type from ID
+ * Detect sub-entity type from ID (supports both short and full path formats)
  */
 function detectSubEntityType(
 	subEntityId: string,
@@ -266,12 +270,23 @@ function detectSubEntityType(
 	| "data_model"
 	| "criteria"
 	| null {
-	if (/^task-\d{3}$/.test(subEntityId)) return "task";
-	if (/^tc-\d{3}$/.test(subEntityId)) return "test_case";
-	if (/^flow-\d{3}$/.test(subEntityId)) return "flow";
-	if (/^api-\d{3}$/.test(subEntityId)) return "api_contract";
-	if (/^dm-\d{3}$/.test(subEntityId)) return "data_model";
+	// Extract just the sub-entity part if full path is provided
+	const parts = subEntityId.split("/");
+	const actualSubId = parts.length > 1 ? parts[parts.length - 1] : subEntityId;
+
+	if (!actualSubId) return null;
+
+	// Check patterns
+	if (/^task-\d{3}$/.test(actualSubId)) return "task";
+	if (/^tc-\d{3}$/.test(actualSubId)) return "test_case";
+	if (/^flow-\d{3}$/.test(actualSubId)) return "flow";
+	if (/^api-\d{3}$/.test(actualSubId)) return "api_contract";
+	if (/^dm-\d{3}$/.test(actualSubId)) return "data_model";
+	if (/^crit-\d{3}$/.test(actualSubId)) return "criteria";
+
+	// Also support full criteria format
 	if (/^req-\d{3}-.+\/crit-\d{3}$/.test(subEntityId)) return "criteria";
+
 	return null;
 }
 
@@ -295,6 +310,161 @@ async function getUncoveredEntities(operations: SpecOperations): Promise<Set<str
 		return new Set();
 	}
 	return new Set(coverageResult.data.report.uncoveredSpecs);
+}
+
+/**
+ * Expand dependencies recursively
+ */
+async function expandDependencies(
+	entity: AnyEntity,
+	operations: SpecOperations,
+	depth: number = 1,
+	visited: Set<string> = new Set(),
+): Promise<AnyEntity[]> {
+	if (depth <= 0 || visited.has(entity.id)) return [];
+	visited.add(entity.id);
+
+	const dependencies: AnyEntity[] = [];
+	let depIds: string[] = [];
+
+	// Get dependency IDs based on entity type
+	if (entity.type === "plan") {
+		const plan = entity as Plan;
+		depIds = plan.depends_on || [];
+	}
+
+	// Fetch dependency entities
+	for (const depId of depIds) {
+		const type = detectEntityType(depId);
+		if (!type) continue;
+
+		let depEntity: AnyEntity | null = null;
+
+		switch (type) {
+			case "requirement": {
+				const result = await operations.getRequirement(depId);
+				if (result.success && result.data) depEntity = result.data;
+				break;
+			}
+			case "plan": {
+				const result = await operations.getPlan(depId);
+				if (result.success && result.data) depEntity = result.data;
+				break;
+			}
+			case "component": {
+				const result = await operations.getComponent(depId);
+				if (result.success && result.data) depEntity = result.data;
+				break;
+			}
+		}
+
+		if (depEntity) {
+			dependencies.push(depEntity);
+
+			// Recursively expand
+			if (depth > 1) {
+				const subDeps = await expandDependencies(
+					depEntity,
+					operations,
+					depth - 1,
+					visited,
+				);
+				dependencies.push(...subDeps);
+			}
+		}
+	}
+
+	return dependencies;
+}
+
+/**
+ * Calculate dependency metrics
+ */
+async function calculateDependencyMetrics(
+	entity: AnyEntity,
+	allEntities: AnyEntity[],
+): Promise<{
+	fan_in: number;
+	fan_out: number;
+	coupling: number;
+	stability: number;
+}> {
+	// Fan-out: number of entities this entity depends on
+	let fanOut = 0;
+	if (entity.type === "plan") {
+		const plan = entity as Plan;
+		fanOut = (plan.depends_on || []).length;
+	}
+
+	// Fan-in: number of entities that depend on this entity
+	let fanIn = 0;
+	for (const other of allEntities) {
+		if (other.type === "plan") {
+			const plan = other as Plan;
+			if (plan.depends_on && plan.depends_on.includes(entity.id)) {
+				fanIn++;
+			}
+		}
+	}
+
+	// Coupling: total dependencies
+	const coupling = fanIn + fanOut;
+
+	// Stability: fan-out / (fan-in + fan-out)
+	// 0 = maximally stable (no dependencies, many dependents)
+	// 1 = maximally unstable (many dependencies, no dependents)
+	const stability = coupling === 0 ? 0 : fanOut / coupling;
+
+	return {
+		fan_in: fanIn,
+		fan_out: fanOut,
+		coupling,
+		stability: Math.round(stability * 100) / 100,
+	};
+}
+
+/**
+ * Find references to entity
+ */
+async function findReferences(
+	entity: AnyEntity,
+	operations: SpecOperations,
+): Promise<AnyEntity[]> {
+	const references: AnyEntity[] = [];
+	const entitiesResult = await operations.getAllEntities();
+
+	if (!entitiesResult.success || !entitiesResult.data) {
+		return references;
+	}
+
+	const { requirements, plans, components } = entitiesResult.data;
+	const allEntities: AnyEntity[] = [...requirements, ...plans, ...components];
+
+	for (const other of allEntities) {
+		if (other.id === entity.id) continue;
+
+		// Check if this entity references our entity
+		let hasReference = false;
+
+		// Check plan dependencies
+		if (other.type === "plan") {
+			const plan = other as Plan;
+			if (plan.depends_on && plan.depends_on.includes(entity.id)) {
+				hasReference = true;
+			}
+
+			// Check criteria_id for requirements
+			if (entity.type === "requirement" && plan.criteria_id?.startsWith(entity.id)) {
+				hasReference = true;
+			}
+		}
+
+		if (hasReference) {
+			references.push(other);
+		}
+	}
+
+	return references;
 }
 
 /**
@@ -349,6 +519,11 @@ function applyFilters(entities: AnyEntity[], filters: Filters): AnyEntity[] {
 			if (
 				filters.has_criteria_id !== undefined &&
 				(!!plan.criteria_id) !== filters.has_criteria_id
+			)
+				return false;
+			if (
+				filters.criteria_id !== undefined &&
+				plan.criteria_id !== filters.criteria_id
 			)
 				return false;
 		}
@@ -408,6 +583,90 @@ interface SearchResult {
 }
 
 /**
+ * Get searchable text from sub-entities
+ */
+function getSubEntitySearchText(entity: AnyEntity): string {
+	const texts: string[] = [];
+
+	// Extract text from plans
+	if (entity.type === "plan") {
+		const plan = entity as Plan;
+
+		// Tasks
+		if (plan.tasks) {
+			for (const task of plan.tasks) {
+				texts.push(task.description);
+				if (task.considerations) {
+					texts.push(...task.considerations);
+				}
+			}
+		}
+
+		// Test cases
+		if (plan.test_cases) {
+			for (const tc of plan.test_cases) {
+				texts.push(tc.name, tc.description);
+				if (tc.steps) {
+					texts.push(...tc.steps);
+				}
+				if (tc.expected_result) {
+					texts.push(tc.expected_result);
+				}
+			}
+		}
+
+		// Flows
+		if (plan.flows) {
+			for (const flow of plan.flows) {
+				texts.push(flow.name);
+				if (flow.description) texts.push(flow.description);
+				if (flow.steps) {
+					for (const step of flow.steps) {
+						if (step.description) texts.push(step.description);
+					}
+				}
+			}
+		}
+
+		// API Contracts
+		if (plan.api_contracts) {
+			for (const api of plan.api_contracts) {
+				texts.push(api.name, api.description);
+			}
+		}
+
+		// Data Models
+		if (plan.data_models) {
+			for (const dm of plan.data_models) {
+				texts.push(dm.name, dm.description);
+			}
+		}
+	}
+
+	// Extract text from requirements
+	if (entity.type === "requirement") {
+		const req = entity as Requirement;
+		if (req.criteria) {
+			for (const crit of req.criteria) {
+				texts.push(crit.description);
+			}
+		}
+	}
+
+	// Extract text from constitutions
+	if (entity.type === "constitution") {
+		const con = entity as { articles?: Array<{ title: string; principle: string; rationale: string }> };
+		if (con.articles) {
+			for (const article of con.articles) {
+				texts.push(article.title, article.principle, article.rationale);
+			}
+		}
+	}
+
+	return texts.join(" ");
+}
+
+/**
  * Search entity
  */
 function searchEntity(
@@ -426,32 +685,129 @@ function searchEntity(
 		if (typeof value !== "string") continue;
 
 		const fieldText = value.toLowerCase();
+		const fieldTokens = tokenize(fieldText);
 		let hasMatch = false;
 		const highlights: string[] = [];
 
-		// Exact substring matching
+		// Exact substring matching (highest score)
 		if (fieldText.includes(searchQuery)) {
 			hasMatch = true;
 			highlights.push(highlightMatches(value, query));
 			const position = fieldText.indexOf(searchQuery);
 			const positionWeight = 1 - position / fieldText.length;
-			score += 1 + positionWeight;
-		} else if (fuzzy && fuzzyMatch(fieldText, searchQuery, 2)) {
+			score += 2 + positionWeight; // Higher score for exact phrase match
+		}
+		// Fuzzy matching (medium-high score)
+		else if (fuzzy && fuzzyMatch(fieldText, searchQuery, 2)) {
 			hasMatch = true;
 			highlights.push(highlightMatches(value, query));
-			score += 0.5;
+			score += 1;
 		}
+		// Token matching - all tokens must be present (medium score)
+		else {
+			let allTokensFound = true;
+			const matchedTokens: string[] = [];
 
-		// Token matching
-		for (const token of queryTokens) {
-			if (token === searchQuery) continue;
-			if (fieldText.includes(token)) {
-				score += 0.3;
+			for (const queryToken of queryTokens) {
+				let tokenFound = false;
+
+				// Check if any field token contains the query token
+				for (const fieldToken of fieldTokens) {
+					if (fieldToken.includes(queryToken)) {
+						tokenFound = true;
+						matchedTokens.push(queryToken);
+						break;
+					}
+				}
+
+				// Also check fuzzy match for tokens if enabled
+				if (!tokenFound && fuzzy) {
+					for (const fieldToken of fieldTokens) {
+						if (levenshteinDistance(queryToken, fieldToken) <= 2) {
+							tokenFound = true;
+							matchedTokens.push(queryToken);
+							break;
+						}
+					}
+				}
+
+				if (!tokenFound) {
+					allTokensFound = false;
+					break;
+				}
+			}
+
+			if (allTokensFound && queryTokens.length > 0) {
+				hasMatch = true;
+				highlights.push(`Matched tokens: ${matchedTokens.join(", ")}`);
+				// Score based on number of tokens matched
+				score += 0.5 * queryTokens.length;
 			}
 		}
 
 		if (hasMatch) {
 			matches.push({ field, highlights });
+		}
+	}
+
+	// Search sub-entity content (lower weight)
+	const subEntityText = getSubEntitySearchText(entity);
+	if (subEntityText) {
+		const subEntityTextLower = subEntityText.toLowerCase();
+		const subEntityTokens = tokenize(subEntityTextLower);
+
+		// Exact substring matching in sub-entities
+		if (subEntityTextLower.includes(searchQuery)) {
+			score += 0.6; // Lower weight than direct fields
+			matches.push({
+				field: "sub_entities",
+				highlights: ["Matched exact phrase in tasks, test cases, or other sub-entities"],
+			});
+		}
+		// Fuzzy matching in sub-entities
+		else if (fuzzy && fuzzyMatch(subEntityTextLower, searchQuery, 2)) {
+			score += 0.3;
+			matches.push({
+				field: "sub_entities",
+				highlights: ["Fuzzy matched phrase in tasks, test cases, or other sub-entities"],
+			});
+		}
+		// Token matching in sub-entities
+		else {
+			let allTokensFound = true;
+
+			for (const queryToken of queryTokens) {
+				let tokenFound = false;
+
+				for (const subToken of subEntityTokens) {
+					if (subToken.includes(queryToken)) {
+						tokenFound = true;
+						break;
+					}
+				}
+
+				if (!tokenFound && fuzzy) {
+					for (const subToken of subEntityTokens) {
+						if (levenshteinDistance(queryToken, subToken) <= 2) {
+							tokenFound = true;
+							break;
+						}
+					}
+				}
+
+				if (!tokenFound) {
+					allTokensFound = false;
+					break;
+				}
+			}
+
+			if (allTokensFound && queryTokens.length > 0) {
+				score += 0.2 * queryTokens.length;
+				matches.push({
+					field: "sub_entities",
+					highlights: ["Matched tokens in tasks, test cases, or other sub-entities"],
+				});
+			}
 		}
 	}
 
@@ -623,6 +979,12 @@ function calculateFacets(
 async function handleEntityIdLookup(
 	entityId: string,
 	operations: SpecOperations,
+	expand?: {
+		dependencies?: boolean;
+		references?: boolean;
+		depth?: number;
+		dependency_metrics?: boolean;
+	},
 ): Promise<ReturnType<typeof formatResult>> {
 	const type = detectEntityType(entityId);
 
@@ -633,24 +995,75 @@ async function handleEntityIdLookup(
 		});
 	}
 
+	let entity: AnyEntity | null = null;
+
 	switch (type) {
 		case "requirement": {
 			const result = await operations.getRequirement(entityId);
-			return formatResult(result);
+			if (result.success && result.data) entity = result.data;
+			else return formatResult(result);
+			break;
 		}
 		case "plan": {
 			const result = await operations.getPlan(entityId);
-			return formatResult(result);
+			if (result.success && result.data) entity = result.data;
+			else return formatResult(result);
+			break;
 		}
 		case "component": {
 			const result = await operations.getComponent(entityId);
-			return formatResult(result);
+			if (result.success && result.data) entity = result.data;
+			else return formatResult(result);
+			break;
 		}
 		case "constitution": {
 			const result = await operations.getConstitution(entityId);
-			return formatResult(result);
+			if (result.success && result.data) entity = result.data;
+			else return formatResult(result);
+			break;
 		}
 	}
+
+	if (!entity) {
+		return formatResult({
+			success: false,
+			error: `Entity '${entityId}' not found`,
+		});
+	}
+
+	// Build response with expansions
+	const response: Record<string, unknown> = { ...entity };
+
+	if (expand) {
+		if (expand.dependencies) {
+			const depth = expand.depth || 1;
+			const deps = await expandDependencies(entity, operations, depth);
+			response._expanded_dependencies = deps;
+		}
+
+		if (expand.references) {
+			const refs = await findReferences(entity, operations);
+			response._expanded_references = refs;
+		}
+
+		if (expand.dependency_metrics) {
+			const entitiesResult = await operations.getAllEntities();
+			if (entitiesResult.success && entitiesResult.data) {
+				const allEntities = [
+					...entitiesResult.data.requirements,
+					...entitiesResult.data.plans,
+					...entitiesResult.data.components,
+				];
+				const metrics = await calculateDependencyMetrics(entity, allEntities);
+				response._dependency_metrics = metrics;
+			}
+		}
+	}
+
+	return formatResult({
+		success: true,
+		data: response,
+	});
 }
 
 /**
@@ -694,6 +1107,17 @@ async function handleSubEntityLookup(
 	expandParent: boolean,
 	operations: SpecOperations,
 ): Promise<ReturnType<typeof formatResult>> {
+	// Parse full path format (e.g., "pln-001-auth-impl/task-001")
+	let actualSubEntityId = subEntityId;
+	let actualParentId = parentPlanId;
+
+	const pathParts = subEntityId.split("/");
+	if (pathParts.length === 2) {
+		// Full path format provided
+		actualParentId = pathParts[0];
+		actualSubEntityId = pathParts[1] || "";
+	}
+
 	const subEntityType = detectSubEntityType(subEntityId);
 
 	if (!subEntityType) {
@@ -705,52 +1129,106 @@ async function handleSubEntityLookup(
 
 	// Handle criteria lookup
 	if (subEntityType === "criteria") {
-		const parts = subEntityId.split("/");
-		const reqId = parts[0];
-		if (!reqId) {
+		let reqId: string | undefined;
+		let critId: string;
+
+		// Parse criteria ID format
+		if (subEntityId.includes("/")) {
+			const parts = subEntityId.split("/");
+			if (parts.length >= 2) {
+				// Could be "req-001-auth/crit-001" or "pln-001-auth/req-001-auth/crit-001"
+				// Find the requirement ID (starts with "req-")
+				const reqPart = parts.find((p) => p.startsWith("req-"));
+				if (reqPart) {
+					reqId = reqPart;
+					critId = parts[parts.length - 1] || "";
+				} else {
+					return formatResult({
+						success: false,
+						error: `Invalid criteria ID format: ${subEntityId}`,
+					});
+				}
+			} else {
+				return formatResult({
+					success: false,
+					error: `Invalid criteria ID format: ${subEntityId}`,
+				});
+			}
+		} else {
+			// Just "crit-001" format - need to search all requirements
+			critId = subEntityId;
+		}
+
+		// If we have a requirement ID, look it up directly
+		if (reqId) {
+			const reqResult = await operations.getRequirement(reqId);
+
+			if (!reqResult.success || !reqResult.data) {
+				return formatResult(reqResult);
+			}
+
+			const criteria = reqResult.data.criteria.find((c) => c.id === critId);
+
+			if (!criteria) {
+				return formatResult({
+					success: false,
+					error: `Criteria '${critId}' not found in requirement '${reqId}'`,
+				});
+			}
+
 			return formatResult({
-				success: false,
-				error: `Invalid criteria ID format: ${subEntityId}`,
+				success: true,
+				data: {
+					type: "acceptance_criteria",
+					parent_requirement: expandParent
+						? reqResult.data
+						: {
+								id: reqResult.data.id,
+								name: reqResult.data.name,
+								slug: reqResult.data.slug,
+							},
+					...criteria,
+				},
 			});
-		}
-		const reqResult = await operations.getRequirement(reqId);
+		} else {
+			// Search all requirements for the criteria
+			const reqsResult = await operations.listRequirements();
+			if (!reqsResult.success || !reqsResult.data) {
+				return formatResult(reqsResult);
+			}
 
-		if (!reqResult.success || !reqResult.data) {
-			return formatResult(reqResult);
-		}
-
-		const criteria = reqResult.data.criteria.find(
-			(c) => c.id === subEntityId,
-		);
-
-		if (!criteria) {
-			return formatResult({
-				success: false,
-				error: `Criteria '${subEntityId}' not found`,
-			});
-		}
-
-		return formatResult({
-			success: true,
-			data: {
-				type: "acceptance_criteria",
-				parent_requirement: expandParent
-					? reqResult.data
-					: {
-							id: reqResult.data.id,
-							name: reqResult.data.name,
-							slug: reqResult.data.slug,
+			for (const req of reqsResult.data) {
+				const criteria = req.criteria.find((c) => c.id === critId);
+				if (criteria) {
+					return formatResult({
+						success: true,
+						data: {
+							type: "acceptance_criteria",
+							parent_requirement: expandParent
+								? req
+								: {
+										id: req.id,
+										name: req.name,
+										slug: req.slug,
+									},
+							...criteria,
 						},
-				...criteria,
-			},
-		});
+					});
+				}
+			}
+
+			return formatResult({
+				success: false,
+				error: `Criteria '${critId}' not found`,
+			});
+		}
 	}
 
 	// Handle plan sub-entities
 	let plans: Plan[];
 
-	if (parentPlanId) {
-		const planResult = await operations.getPlan(parentPlanId);
+	if (actualParentId) {
+		const planResult = await operations.getPlan(actualParentId);
 		plans = planResult.success && planResult.data ? [planResult.data] : [];
 	} else {
 		const plansResult = await operations.listPlans();
@@ -762,19 +1240,19 @@ async function handleSubEntityLookup(
 
 		switch (subEntityType) {
 			case "task":
-				subEntity = plan.tasks?.find((t) => t.id === subEntityId);
+				subEntity = plan.tasks?.find((t) => t.id === actualSubEntityId);
 				break;
 			case "test_case":
-				subEntity = plan.test_cases?.find((tc) => tc.id === subEntityId);
+				subEntity = plan.test_cases?.find((tc) => tc.id === actualSubEntityId);
 				break;
 			case "flow":
-				subEntity = plan.flows?.find((f) => f.id === subEntityId);
+				subEntity = plan.flows?.find((f) => f.id === actualSubEntityId);
 				break;
 			case "api_contract":
-				subEntity = plan.api_contracts?.find((ac) => ac.id === subEntityId);
+				subEntity = plan.api_contracts?.find((ac) => ac.id === actualSubEntityId);
 				break;
 			case "data_model":
-				subEntity = plan.data_models?.find((dm) => dm.id === subEntityId);
+				subEntity = plan.data_models?.find((dm) => dm.id === actualSubEntityId);
 				break;
 		}
 
@@ -798,7 +1276,7 @@ async function handleSubEntityLookup(
 
 	return formatResult({
 		success: false,
-		error: `Sub-entity '${subEntityId}' not found`,
+		error: `Sub-entity '${actualSubEntityId}' not found`,
 	});
 }
 
@@ -918,6 +1396,8 @@ async function handleFilteredList(
 	limit: number,
 	offset: number,
 	returnAll: boolean,
+	includeFacets: boolean,
+	facetFields: ("type" | "priority" | "status" | "folder")[] | undefined,
 	mode: "summary" | "full" | "custom" | undefined,
 	includeFields: string[] | undefined,
 	excludeFields: string[] | undefined,
@@ -977,6 +1457,12 @@ async function handleFilteredList(
 	// Sort
 	const sorted = applySorting(asResults, sortBy);
 
+	// Calculate facets before pagination
+	let facets = null;
+	if (includeFacets) {
+		facets = calculateFacets(sorted, facetFields);
+	}
+
 	// Paginate (or return all)
 	const total = sorted.length;
 	const paginated = returnAll ? sorted : sorted.slice(offset, offset + limit);
@@ -1011,6 +1497,7 @@ async function handleFilteredList(
 						next_offset: offset + limit < total ? offset + limit : null,
 						prev_offset: offset > 0 ? Math.max(0, offset - limit) : null,
 					},
+			...(facets && { facets }),
 		},
 	});
 }
@@ -1340,17 +1827,36 @@ export function registerQueryTool(
 					});
 				}
 
-				if (primaryMethods.length === 0 && !types && !filters) {
+				if (primaryMethods.length === 0 && !types && !filters && !include_facets) {
 					return formatResult({
 						success: false,
 						error:
-							"Must specify at least one of: entity_id, entity_ids, sub_entity_id, search_terms, types, or filters",
+							"Must specify at least one of: entity_id, entity_ids, sub_entity_id, search_terms, types, filters, or include_facets",
 					});
 				}
 
 				// Route to appropriate handler
 				if (entity_id) {
-					return await handleEntityIdLookup(entity_id, operations);
+					const expandWithoutParent = expand
+						? (Object.fromEntries(
+								Object.entries({
+									dependencies: expand.dependencies,
+									references: expand.references,
+									depth: expand.depth,
+									dependency_metrics: expand.dependency_metrics,
+								}).filter(([, value]) => value !== undefined),
+							) as {
+								dependencies?: boolean;
+								references?: boolean;
+								depth?: number;
+								dependency_metrics?: boolean;
+							})
+						: undefined;
+					return await handleEntityIdLookup(
+						entity_id,
+						operations,
+						expandWithoutParent,
+					);
 				}
 
 				if (entity_ids) {
@@ -1400,6 +1906,8 @@ export function registerQueryTool(
 					limit,
 					offset,
 					return_all,
+					include_facets,
+					facet_fields,
 					mode,
 					include_fields,
 					exclude_fields,
