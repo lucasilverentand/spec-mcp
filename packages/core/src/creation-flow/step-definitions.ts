@@ -1,12 +1,66 @@
 import type { StepDefinition } from "./types.js";
 
 /**
- * Step definitions for Requirements (7 steps)
+ * Step definitions for Requirements (10 steps)
  */
 export const REQUIREMENT_STEPS: StepDefinition[] = [
 	{
-		id: "problem_identification",
+		id: "research_similar_requirements",
 		order: 1,
+		name: "Research Similar Requirements",
+		description: "Search for existing requirements that might already address this need",
+		question:
+			"Search for existing requirements that might already address this need. Have you checked if similar requirements already exist?",
+		guidance:
+			"Use the query tool to search for related requirements. Review the results to confirm this requirement is unique or explain how it differs from existing ones. This prevents duplicate work and ensures proper scoping.",
+		next_step: "constitution_review",
+		tool_hints: {
+			query_examples: [
+				"query({ search_terms: 'authentication user login', types: ['requirement'], mode: 'summary' })",
+				"query({ search_terms: '<key terms from your requirement>', types: ['requirement'] })",
+			],
+		},
+	},
+	{
+		id: "constitution_review",
+		order: 2,
+		name: "Constitution Review",
+		description: "Identify constitution articles that apply to this requirement",
+		question:
+			"Which constitution articles apply to this requirement? Are there any guiding principles you must follow?",
+		guidance:
+			"Use the query tool to list all constitutions and review their articles. Identify any that apply to this requirement and reference their specific article IDs (e.g., con-001-architecture/art-002). If no constitutions exist yet, state 'none exist'.",
+		next_step: "technology_research",
+		tool_hints: {
+			query_examples: [
+				"query({ types: ['constitution'], mode: 'full' })",
+			],
+		},
+	},
+	{
+		id: "technology_research",
+		order: 3,
+		name: "Technology Research",
+		description: "Research available libraries and solutions (optional for technical requirements)",
+		question:
+			"For technical requirements, research available libraries, frameworks, and solutions. What options exist?",
+		guidance:
+			"If this requirement involves external libraries or frameworks, use context7 to research them: First resolve the library name with resolve-library-id, then get docs with get-library-docs. For architectural patterns or standards, use WebFetch. Document your findings to inform implementation decisions.",
+		next_step: "problem_identification",
+		tool_hints: {
+			context7_examples: [
+				"resolve-library-id({ libraryName: 'passport' }) → get-library-docs({ context7CompatibleLibraryID: '/jaredhanson/passport' })",
+				"For auth: research passport.js, auth0, firebase-auth",
+			],
+			webfetch_examples: [
+				"WebFetch OAuth 2.0 standards and best practices",
+				"WebFetch OWASP authentication guidelines",
+			],
+		},
+	},
+	{
+		id: "problem_identification",
+		order: 4,
 		name: "Identify Problem",
 		description: "Define the problem or opportunity",
 		question:
@@ -17,7 +71,7 @@ export const REQUIREMENT_STEPS: StepDefinition[] = [
 	},
 	{
 		id: "avoid_implementation",
-		order: 2,
+		order: 5,
 		name: "Avoid Implementation Details",
 		description: "Ensure requirement is implementation-agnostic",
 		question:
@@ -28,7 +82,7 @@ export const REQUIREMENT_STEPS: StepDefinition[] = [
 	},
 	{
 		id: "measurability",
-		order: 3,
+		order: 6,
 		name: "Define Measurability",
 		description: "Add measurable success criteria",
 		question:
@@ -39,7 +93,7 @@ export const REQUIREMENT_STEPS: StepDefinition[] = [
 	},
 	{
 		id: "specific_language",
-		order: 4,
+		order: 7,
 		name: "Use Specific Language",
 		description: "Remove vague terms",
 		question:
@@ -50,7 +104,7 @@ export const REQUIREMENT_STEPS: StepDefinition[] = [
 	},
 	{
 		id: "acceptance_criteria",
-		order: 5,
+		order: 8,
 		name: "Finalize Acceptance Criteria",
 		description: "Ensure criteria are complete and testable",
 		question:
@@ -61,7 +115,7 @@ export const REQUIREMENT_STEPS: StepDefinition[] = [
 	},
 	{
 		id: "priority_assignment",
-		order: 6,
+		order: 9,
 		name: "Assign Priority",
 		description: "Set appropriate priority level",
 		question:
@@ -72,7 +126,7 @@ export const REQUIREMENT_STEPS: StepDefinition[] = [
 	},
 	{
 		id: "review_and_refine",
-		order: 7,
+		order: 10,
 		name: "Review and Finalize",
 		description: "Final review before creation",
 		question:
@@ -84,23 +138,93 @@ export const REQUIREMENT_STEPS: StepDefinition[] = [
 ];
 
 /**
- * Step definitions for Components (10 steps)
+ * Step definitions for Components (14 steps)
  */
 export const COMPONENT_STEPS: StepDefinition[] = [
 	{
-		id: "analyze_requirements",
+		id: "research_existing_components",
 		order: 1,
+		name: "Research Existing Components",
+		description: "Search for similar components that might already fulfill this need",
+		question:
+			"Search for similar components. Have you checked if a component like this already exists?",
+		guidance:
+			"Use the query tool to search for similar components across all types (app, service, library). Review the results to confirm this component is needed and not redundant.",
+		next_step: "library_research",
+		tool_hints: {
+			query_examples: [
+				"query({ search_terms: 'authentication service', types: ['app', 'service', 'library'], mode: 'summary' })",
+				"query({ search_terms: '<component purpose>', types: ['service', 'library'] })",
+			],
+		},
+	},
+	{
+		id: "library_research",
+		order: 2,
+		name: "Library Research",
+		description: "Research third-party libraries that could provide this functionality",
+		question:
+			"Research third-party libraries that could provide this functionality. What external solutions exist?",
+		guidance:
+			"Before building custom solutions, research available libraries using context7. First resolve the library name with resolve-library-id, then get comprehensive docs with get-library-docs. Document your findings and explain why you're building custom vs using a library.",
+		next_step: "constitution_alignment",
+		tool_hints: {
+			context7_examples: [
+				"resolve-library-id({ libraryName: 'express' }) → get-library-docs({ context7CompatibleLibraryID: '/expressjs/express' })",
+				"Research: framework options, utility libraries, SDKs",
+			],
+			query_examples: [
+				"query({ types: ['library'] }) to see what internal libraries exist",
+			],
+		},
+	},
+	{
+		id: "constitution_alignment",
+		order: 3,
+		name: "Constitution Alignment",
+		description: "Verify component design aligns with project principles",
+		question:
+			"Which constitution articles guide this component's design? How does it align with architectural principles?",
+		guidance:
+			"Query all constitutions and identify relevant articles (especially architecture, quality, and design principles). Reference specific article IDs (e.g., con-001-architecture/art-001 for library-first principle). Explain how this component aligns with or differs from these principles.",
+		next_step: "duplicate_prevention",
+		tool_hints: {
+			query_examples: [
+				"query({ types: ['constitution'], mode: 'full' })",
+			],
+		},
+	},
+	{
+		id: "duplicate_prevention",
+		order: 4,
+		name: "Duplicate Prevention",
+		description: "Confirm component is unique and necessary",
+		question:
+			"Based on your research, confirm this component is unique and necessary. Why can't existing components or libraries be used?",
+		guidance:
+			"Reference your findings from the research and library research steps. Explicitly justify why a new component is needed rather than: (1) using an existing internal component, (2) using a third-party library, or (3) extending an existing component.",
+		next_step: "analyze_requirements",
+	},
+	{
+		id: "analyze_requirements",
+		order: 5,
 		name: "Analyze Requirements",
 		description: "Review which requirements this component satisfies",
 		question:
 			"Which requirements does this component satisfy and how?",
 		guidance:
-			"List the requirement IDs and explain how this component addresses them. Describe the connection between requirements and this component's purpose.",
+			"Use the query tool to find and review relevant requirements. List the requirement IDs and explain how this component addresses them. Describe the connection between requirements and this component's purpose.",
 		next_step: "define_boundaries",
+		tool_hints: {
+			query_examples: [
+				"query({ entity_id: 'req-001-...' }) to get specific requirement",
+				"query({ types: ['requirement'], search_terms: '...' }) to search requirements",
+			],
+		},
 	},
 	{
 		id: "define_boundaries",
-		order: 2,
+		order: 6,
 		name: "Define Boundaries",
 		description: "Apply single responsibility principle",
 		question:
@@ -111,7 +235,7 @@ export const COMPONENT_STEPS: StepDefinition[] = [
 	},
 	{
 		id: "define_responsibilities",
-		order: 3,
+		order: 7,
 		name: "Define Responsibilities",
 		description: "List what the component does and doesn't do",
 		question:
@@ -122,7 +246,7 @@ export const COMPONENT_STEPS: StepDefinition[] = [
 	},
 	{
 		id: "define_interfaces",
-		order: 4,
+		order: 8,
 		name: "Define Interfaces",
 		description: "Specify inputs, outputs, and contracts",
 		question:
@@ -133,7 +257,7 @@ export const COMPONENT_STEPS: StepDefinition[] = [
 	},
 	{
 		id: "map_dependencies",
-		order: 5,
+		order: 9,
 		name: "Map Dependencies",
 		description: "Identify internal and external dependencies",
 		question:
@@ -144,7 +268,7 @@ export const COMPONENT_STEPS: StepDefinition[] = [
 	},
 	{
 		id: "define_ownership",
-		order: 6,
+		order: 10,
 		name: "Define Ownership",
 		description: "Specify state management and data ownership",
 		question:
@@ -155,7 +279,7 @@ export const COMPONENT_STEPS: StepDefinition[] = [
 	},
 	{
 		id: "identify_patterns",
-		order: 7,
+		order: 11,
 		name: "Identify Patterns",
 		description: "List architectural patterns used",
 		question:
@@ -166,7 +290,7 @@ export const COMPONENT_STEPS: StepDefinition[] = [
 	},
 	{
 		id: "quality_attributes",
-		order: 8,
+		order: 12,
 		name: "Define Quality Attributes",
 		description: "Specify performance, security, and testability requirements",
 		question:
@@ -177,7 +301,7 @@ export const COMPONENT_STEPS: StepDefinition[] = [
 	},
 	{
 		id: "trace_requirements",
-		order: 9,
+		order: 13,
 		name: "Trace to Requirements",
 		description: "Create traceability matrix",
 		question:
@@ -188,7 +312,7 @@ export const COMPONENT_STEPS: StepDefinition[] = [
 	},
 	{
 		id: "validate_refine",
-		order: 10,
+		order: 14,
 		name: "Validate and Refine",
 		description: "Final review before creation",
 		question:
@@ -200,23 +324,95 @@ export const COMPONENT_STEPS: StepDefinition[] = [
 ];
 
 /**
- * Step definitions for Plans (12 steps)
+ * Step definitions for Plans (16 steps)
  */
 export const PLAN_STEPS: StepDefinition[] = [
 	{
-		id: "review_context",
+		id: "context_discovery",
 		order: 1,
-		name: "Review Context",
-		description: "Review requirements and components",
+		name: "Context Discovery",
+		description: "Search and review related requirements and components",
 		question:
-			"What acceptance criteria are you fulfilling and what's the context?",
+			"Search and review the requirements and components this plan will implement. What's the full context?",
 		guidance:
-			"Identify the acceptance criteria this plan addresses. Explain which requirements and components are relevant to this plan and how they relate.",
+			"Use the query tool to find and review: (1) The specific requirement(s) this plan addresses, (2) Related components that will be affected or used. Understanding the full context is critical for proper planning.",
+		next_step: "technology_stack_research",
+		tool_hints: {
+			query_examples: [
+				"query({ entity_id: 'req-001-...' }) to get specific requirement",
+				"query({ types: ['service', 'app', 'library'], search_terms: '...' }) to find relevant components",
+				"query({ entity_id: 'req-001-.../crit-001' }) to get specific criteria",
+			],
+		},
+	},
+	{
+		id: "technology_stack_research",
+		order: 2,
+		name: "Technology Stack Research",
+		description: "Research libraries, frameworks, and tools needed",
+		question:
+			"Research the libraries, frameworks, and tools needed for implementation. What technologies will you use?",
+		guidance:
+			"For each major technology: use context7 to get latest docs (resolve-library-id then get-library-docs). For architectural patterns, use WebFetch to review best practices. Document all findings to inform your implementation approach.",
+		next_step: "constitution_compliance",
+		tool_hints: {
+			context7_examples: [
+				"resolve-library-id({ libraryName: 'jest' }) → get-library-docs({ context7CompatibleLibraryID: '/jestjs/jest' })",
+				"Research all third-party dependencies needed",
+			],
+			webfetch_examples: [
+				"WebFetch microservices best practices",
+				"WebFetch REST API design patterns",
+			],
+		},
+	},
+	{
+		id: "constitution_compliance",
+		order: 3,
+		name: "Constitution Compliance",
+		description: "Verify approach aligns with project standards",
+		question:
+			"Which constitution articles apply to this implementation? How does your approach comply with project standards?",
+		guidance:
+			"Query all constitutions and verify your implementation approach aligns with project standards (testing requirements, architecture principles, quality standards, security guidelines). Reference specific article IDs.",
+		next_step: "similar_plans_review",
+		tool_hints: {
+			query_examples: [
+				"query({ types: ['constitution'], mode: 'full' })",
+			],
+		},
+	},
+	{
+		id: "similar_plans_review",
+		order: 4,
+		name: "Similar Plans Review",
+		description: "Learn from similar or related plans",
+		question:
+			"Search for similar or related plans. What can you learn from existing plans to avoid duplication and improve estimates?",
+		guidance:
+			"Use query to find similar plans and review them for: (1) Task breakdown patterns, (2) Estimation accuracy (compare estimates vs actual), (3) Common risks encountered, (4) Successful approaches. Reference helpful plan IDs.",
+		next_step: "review_context",
+		tool_hints: {
+			query_examples: [
+				"query({ types: ['plan'], search_terms: 'authentication', mode: 'summary' })",
+				"query({ types: ['plan'], filters: { plan_completed: true } }) to learn from completed plans",
+			],
+		},
+	},
+	{
+		id: "review_context",
+		order: 5,
+		name: "Review Context",
+		description: "Summarize context and criteria being addressed",
+		question:
+			"What acceptance criteria are you fulfilling and what's the context summary?",
+		guidance:
+			"Based on your research (step 1), summarize: the acceptance criteria this plan addresses, relevant requirements and components, and the overall implementation context.",
 		next_step: "identify_phases",
 	},
 	{
 		id: "identify_phases",
-		order: 2,
+		order: 6,
 		name: "Identify Phases",
 		description: "Break work into major phases",
 		question:
@@ -227,7 +423,7 @@ export const PLAN_STEPS: StepDefinition[] = [
 	},
 	{
 		id: "analyze_dependencies",
-		order: 3,
+		order: 7,
 		name: "Analyze Dependencies",
 		description: "Create dependency graph and ordering",
 		question:
@@ -238,7 +434,7 @@ export const PLAN_STEPS: StepDefinition[] = [
 	},
 	{
 		id: "break_down_tasks",
-		order: 4,
+		order: 8,
 		name: "Break Down Tasks",
 		description: "Create actionable tasks (0.5-3 days each)",
 		question:
@@ -249,7 +445,7 @@ export const PLAN_STEPS: StepDefinition[] = [
 	},
 	{
 		id: "estimate_effort",
-		order: 5,
+		order: 9,
 		name: "Estimate Effort",
 		description: "Add effort estimates with buffer",
 		question:
@@ -260,7 +456,7 @@ export const PLAN_STEPS: StepDefinition[] = [
 	},
 	{
 		id: "define_acceptance",
-		order: 6,
+		order: 10,
 		name: "Define Acceptance Criteria",
 		description: "Add acceptance criteria for the plan",
 		question:
@@ -271,7 +467,7 @@ export const PLAN_STEPS: StepDefinition[] = [
 	},
 	{
 		id: "identify_milestones",
-		order: 7,
+		order: 11,
 		name: "Identify Milestones",
 		description: "Define major checkpoints",
 		question:
@@ -282,7 +478,7 @@ export const PLAN_STEPS: StepDefinition[] = [
 	},
 	{
 		id: "plan_testing",
-		order: 8,
+		order: 12,
 		name: "Plan Testing Strategy",
 		description: "Define how work will be tested",
 		question:
@@ -293,7 +489,7 @@ export const PLAN_STEPS: StepDefinition[] = [
 	},
 	{
 		id: "plan_risks",
-		order: 9,
+		order: 13,
 		name: "Plan for Risks",
 		description: "Identify risks and mitigation strategies",
 		question:
@@ -304,7 +500,7 @@ export const PLAN_STEPS: StepDefinition[] = [
 	},
 	{
 		id: "create_timeline",
-		order: 10,
+		order: 14,
 		name: "Create Timeline",
 		description: "Build schedule and critical path",
 		question:
@@ -315,7 +511,7 @@ export const PLAN_STEPS: StepDefinition[] = [
 	},
 	{
 		id: "trace_specs",
-		order: 11,
+		order: 15,
 		name: "Trace to Specs",
 		description: "Link to requirements and components",
 		question:
@@ -326,7 +522,7 @@ export const PLAN_STEPS: StepDefinition[] = [
 	},
 	{
 		id: "validate_refine",
-		order: 12,
+		order: 16,
 		name: "Validate and Refine",
 		description: "Final review before creation",
 		question:
@@ -338,51 +534,158 @@ export const PLAN_STEPS: StepDefinition[] = [
 ];
 
 /**
- * Step definitions for Constitutions (3 steps)
+ * Step definitions for Constitutions (7 steps)
  */
 export const CONSTITUTION_STEPS: StepDefinition[] = [
 	{
-		id: "basic_info",
+		id: "research_existing_constitutions",
 		order: 1,
+		name: "Research Existing Constitutions",
+		description: "Review all existing constitutions and principles",
+		question:
+			"What constitutions and principles already exist in this project? Have you reviewed all existing articles?",
+		guidance:
+			"Use the query tool to list all existing constitutions and carefully review their articles. This prevents creating conflicting or duplicate principles. Document what you find.",
+		next_step: "best_practices_research",
+		tool_hints: {
+			query_examples: [
+				"query({ types: ['constitution'], mode: 'full' })",
+			],
+		},
+	},
+	{
+		id: "best_practices_research",
+		order: 2,
+		name: "Best Practices Research",
+		description: "Research industry standards for these types of principles",
+		question:
+			"Research industry standards and best practices for these types of principles. What established frameworks exist?",
+		guidance:
+			"Use WebFetch to research established frameworks relevant to your principles. Examples: SOLID principles, 12-factor apps, OWASP security principles, Google SRE practices, Clean Architecture. Document your findings.",
+		next_step: "framework_review",
+		tool_hints: {
+			webfetch_examples: [
+				"WebFetch SOLID principles",
+				"WebFetch 12-factor app methodology",
+				"WebFetch OWASP top 10 security principles",
+				"WebFetch Google SRE best practices",
+			],
+		},
+	},
+	{
+		id: "framework_review",
+		order: 3,
+		name: "Framework Review",
+		description: "Review framework-specific best practices if applicable",
+		question:
+			"Are you establishing principles around specific technologies or frameworks? If so, research their recommended practices.",
+		guidance:
+			"If your principles involve specific libraries/frameworks (e.g., React, Node.js, PostgreSQL), use context7 to review their official best practices: resolve-library-id then get-library-docs. Align your principles with framework recommendations. If not applicable, state 'not applicable'.",
+		next_step: "basic_info",
+		tool_hints: {
+			context7_examples: [
+				"resolve-library-id({ libraryName: 'react' }) → get-library-docs({ context7CompatibleLibraryID: '/facebook/react', topic: 'best practices' })",
+				"For React principles: research React docs",
+				"For Node.js principles: research Node.js best practices",
+			],
+		},
+	},
+	{
+		id: "basic_info",
+		order: 4,
 		name: "Basic Information",
 		description: "Provide basic constitution information",
 		question:
 			"What is this constitution about and what will it govern?",
 		guidance:
-			"Provide a name and description for this constitution. Explain what principles it will establish and what aspects of development it will govern.",
+			"Provide a name and description for this constitution. Explain what principles it will establish and what aspects of development it will govern. Ensure this fills a unique gap not covered by existing constitutions.",
 		next_step: "articles",
 	},
 	{
 		id: "articles",
-		order: 2,
+		order: 5,
 		name: "Define Articles",
 		description: "Create the core principles/articles",
 		question:
 			"What are the core principles or articles of this constitution?",
 		guidance:
 			"Define the articles (core principles) that make up this constitution. For each article, include: title, the principle itself, rationale explaining why it exists, optional examples demonstrating it, optional exceptions where it doesn't apply, and status (needs-review, active, or archived).",
+		next_step: "conflict_check",
+	},
+	{
+		id: "conflict_check",
+		order: 6,
+		name: "Conflict Check",
+		description: "Verify no conflicts with existing constitutional principles",
+		question:
+			"Do any of your articles conflict with or duplicate existing constitutional principles?",
+		guidance:
+			"Review the articles from your initial research (step 1). For each of your new articles, explicitly state: (1) 'No conflicts' if it's unique, OR (2) 'Conflicts with con-XXX/art-XXX: [explanation]' if it supersedes or modifies an existing principle. You must reference specific existing articles or explicitly confirm no conflicts.",
 		next_step: "finalize",
+		tool_hints: {
+			query_examples: [
+				"query({ types: ['constitution'], mode: 'full' }) to review existing articles again",
+			],
+		},
 	},
 	{
 		id: "finalize",
-		order: 3,
+		order: 7,
 		name: "Finalize",
 		description: "Review and create the constitution",
 		question:
 			"Ready to create this constitution? Let's do a final review.",
 		guidance:
-			"This is the final step. Review the constitution name, description, and all articles to ensure they're complete and accurate.",
+			"This is the final step. Review the constitution name, description, all articles, and conflict analysis to ensure they're complete and accurate.",
 		next_step: null,
 	},
 ];
 
 /**
- * Step definitions for Decisions (6 steps)
+ * Step definitions for Decisions (8 steps)
  */
 export const DECISION_STEPS: StepDefinition[] = [
 	{
-		id: "basic_info",
+		id: "related_decisions_research",
 		order: 1,
+		name: "Related Decisions Research",
+		description: "Search for related or similar decisions",
+		question:
+			"Search for related or similar decisions already made. Have you checked if this decision already exists or modifies a previous one?",
+		guidance:
+			"Use the query tool to search for related decisions. Check if: (1) this decision already exists, (2) this modifies/supersedes a previous decision (use 'supersedes' field if so), or (3) there are related decisions to reference.",
+		next_step: "technology_options_research",
+		tool_hints: {
+			query_examples: [
+				"query({ types: ['decision'], search_terms: 'database postgresql', mode: 'summary' })",
+				"query({ types: ['decision'], search_terms: '<key terms>' })",
+			],
+		},
+	},
+	{
+		id: "technology_options_research",
+		order: 2,
+		name: "Technology Options Research",
+		description: "Research each alternative being considered",
+		question:
+			"For each alternative/option being considered, research using appropriate tools. What are the detailed capabilities and trade-offs?",
+		guidance:
+			"For libraries/frameworks: use context7 (resolve-library-id then get-library-docs). For architectural patterns: use WebFetch for comparisons and best practices. Document findings for each option to support your decision.",
+		next_step: "basic_info",
+		tool_hints: {
+			context7_examples: [
+				"resolve-library-id({ libraryName: 'postgresql' }) → get-library-docs({ context7CompatibleLibraryID: '/postgres/postgres' })",
+				"Research each technology option being considered",
+			],
+			webfetch_examples: [
+				"WebFetch comparison: PostgreSQL vs MySQL",
+				"WebFetch REST vs GraphQL architecture",
+			],
+		},
+	},
+	{
+		id: "basic_info",
+		order: 3,
 		name: "Basic Information",
 		description: "Provide basic decision information",
 		question:
@@ -393,7 +696,7 @@ export const DECISION_STEPS: StepDefinition[] = [
 	},
 	{
 		id: "decision_statement",
-		order: 2,
+		order: 4,
 		name: "Decision Statement",
 		description: "State what was decided",
 		question:
@@ -404,7 +707,7 @@ export const DECISION_STEPS: StepDefinition[] = [
 	},
 	{
 		id: "context",
-		order: 3,
+		order: 5,
 		name: "Context",
 		description: "Explain the situation that prompted this decision",
 		question:
@@ -415,35 +718,40 @@ export const DECISION_STEPS: StepDefinition[] = [
 	},
 	{
 		id: "alternatives_and_consequences",
-		order: 4,
+		order: 6,
 		name: "Alternatives and Consequences",
 		description: "Document alternatives considered and consequences",
 		question:
 			"What alternatives were considered and what are the consequences?",
 		guidance:
-			"List the alternatives that were considered but not chosen. Then describe the consequences: positive outcomes, negative outcomes or costs, risks, and mitigation strategies for those risks.",
+			"Reference your research from step 2. List the alternatives that were considered but not chosen. Then describe the consequences: positive outcomes, negative outcomes or costs, risks, and mitigation strategies for those risks.",
 		next_step: "relationships",
 	},
 	{
 		id: "relationships",
-		order: 5,
+		order: 7,
 		name: "Relationships",
-		description: "Link to affected entities and informing articles",
+		description: "Link to affected entities and informing constitution articles",
 		question:
-			"What does this decision impact and what principles informed it?",
+			"What does this decision impact and which constitution articles informed it? (Constitution references are required)",
 		guidance:
-			"Specify what this decision affects: which components, requirements, and plans are impacted? Which constitution articles informed this decision? Does it supersede any previous decisions?",
+			"Specify what this decision affects: which components, requirements, and plans are impacted? REQUIRED: Identify which constitution articles informed this decision (or explicitly state why none apply if no constitutions exist). Does it supersede any previous decisions?",
 		next_step: "finalize",
+		tool_hints: {
+			query_examples: [
+				"query({ types: ['constitution'], mode: 'full' }) to find relevant articles",
+			],
+		},
 	},
 	{
 		id: "finalize",
-		order: 6,
+		order: 8,
 		name: "Finalize",
 		description: "Review and create the decision",
 		question:
 			"Ready to create this decision? Let's do a final review.",
 		guidance:
-			"This is the final step. Review all the decision details to ensure they're complete and accurate.",
+			"This is the final step. Review all the decision details to ensure they're complete and accurate, including constitution article references.",
 		next_step: null,
 	},
 ];

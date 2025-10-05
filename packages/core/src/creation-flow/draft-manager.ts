@@ -2,6 +2,7 @@ import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import { formatYaml, parseYaml } from "@spec-mcp/data";
 import type { Draft } from "./types.js";
+import { getStepDefinitions } from "./step-definitions.js";
 
 /**
  * Manages creation flow draft state with file-based persistence
@@ -101,17 +102,9 @@ export class DraftManager {
 		const now = new Date();
 		const expiresAt = new Date(now.getTime() + 24 * 60 * 60 * 1000); // 24 hours
 
-		// Determine total steps based on type
-		const totalSteps =
-			type === "requirement"
-				? 7
-				: type === "component"
-					? 10
-					: type === "plan"
-						? 12
-						: type === "constitution"
-							? 3
-							: 6; // decision
+		// Get total steps from step definitions (single source of truth)
+		const steps = getStepDefinitions(type);
+		const totalSteps = steps.length;
 
 		const initialData: Record<string, unknown> = {};
 		if (slug) initialData.slug = slug;

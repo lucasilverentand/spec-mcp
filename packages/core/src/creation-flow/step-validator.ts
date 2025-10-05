@@ -96,6 +96,15 @@ export class StepValidator {
 		strengths: string[],
 	): void {
 		switch (stepId) {
+			case "research_similar_requirements":
+				this.validateResearchSimilarRequirements(data, issues, suggestions, strengths);
+				break;
+			case "constitution_review":
+				this.validateConstitutionReview(data, issues, suggestions, strengths);
+				break;
+			case "technology_research":
+				this.validateTechnologyResearch(data, suggestions, strengths);
+				break;
 			case "problem_identification":
 				this.validateProblemIdentification(data, issues, suggestions, strengths);
 				break;
@@ -326,6 +335,158 @@ export class StepValidator {
 		}
 	}
 
+	private validateResearchSimilarRequirements(
+		data: Record<string, unknown>,
+		issues: string[],
+		suggestions: string[],
+		strengths: string[],
+	): void {
+		const research = data.research_findings as string | undefined;
+		const similarRequirements = data.similar_requirements as unknown[] | undefined;
+
+		if (!research && !similarRequirements) {
+			issues.push("Research findings are required");
+			suggestions.push("Use query tool to search for similar requirements and document your findings");
+			return;
+		}
+
+		if (research && research.includes("query")) {
+			strengths.push("Research conducted using query tool");
+		}
+
+		if (similarRequirements && Array.isArray(similarRequirements) && similarRequirements.length > 0) {
+			strengths.push(`Found ${similarRequirements.length} similar requirement(s) for comparison`);
+		}
+	}
+
+	private validateConstitutionReview(
+		data: Record<string, unknown>,
+		issues: string[],
+		suggestions: string[],
+		strengths: string[],
+	): void {
+		const constitutionArticles = data.constitution_articles as string | string[] | undefined;
+		const noConstitutions = data.no_constitutions as boolean | undefined;
+
+		if (!constitutionArticles && !noConstitutions) {
+			issues.push("Constitution review is required");
+			suggestions.push("Query constitutions and reference relevant article IDs, or state 'none exist'");
+			return;
+		}
+
+		if (noConstitutions) {
+			strengths.push("Confirmed no constitutions exist");
+		} else if (constitutionArticles) {
+			const articles = Array.isArray(constitutionArticles) ? constitutionArticles : [constitutionArticles];
+			const validArticleIds = articles.filter(a => typeof a === "string" && a.match(/con-\d{3}-.+\/art-\d{3}/));
+
+			if (validArticleIds.length > 0) {
+				strengths.push(`Referenced ${validArticleIds.length} constitution article(s)`);
+			} else {
+				issues.push("Invalid article ID format");
+				suggestions.push("Use format: con-001-slug/art-001");
+			}
+		}
+	}
+
+	private validateTechnologyResearch(
+		data: Record<string, unknown>,
+		suggestions: string[],
+		strengths: string[],
+	): void {
+		const research = data.technology_research as string | undefined;
+		const notApplicable = data.not_applicable as boolean | undefined;
+
+		if (!research && !notApplicable) {
+			suggestions.push("For technical requirements, use context7 to research available libraries");
+			return;
+		}
+
+		if (notApplicable) {
+			strengths.push("Confirmed technology research not applicable");
+		} else if (research) {
+			if (research.includes("context7") || research.includes("resolve-library-id")) {
+				strengths.push("Researched using context7 for library documentation");
+			}
+			if (research.includes("WebFetch")) {
+				strengths.push("Researched best practices and standards");
+			}
+		}
+	}
+
+	private validateResearchExistingComponents(
+		data: Record<string, unknown>,
+		issues: string[],
+		suggestions: string[],
+		strengths: string[],
+	): void {
+		const research = data.component_research as string | undefined;
+		if (!research) {
+			issues.push("Component research is required");
+			suggestions.push("Use query to search for similar components across all types");
+			return;
+		}
+
+		if (research.includes("query")) {
+			strengths.push("Searched for existing components");
+		}
+	}
+
+	private validateLibraryResearch(
+		data: Record<string, unknown>,
+		issues: string[],
+		suggestions: string[],
+		strengths: string[],
+	): void {
+		const research = data.library_research as string | undefined;
+		if (!research) {
+			issues.push("Library research is required");
+			suggestions.push("Use context7 to research third-party libraries before building custom");
+			return;
+		}
+
+		if (research.includes("context7") || research.includes("resolve-library-id")) {
+			strengths.push("Researched third-party libraries using context7");
+		}
+	}
+
+	private validateComponentConstitutionAlignment(
+		data: Record<string, unknown>,
+		issues: string[],
+		suggestions: string[],
+		strengths: string[],
+	): void {
+		const articles = data.constitution_articles as string | string[] | undefined;
+		if (!articles) {
+			issues.push("Constitution alignment check is required");
+			suggestions.push("Query constitutions and identify relevant architectural principles");
+			return;
+		}
+
+		const articleList = Array.isArray(articles) ? articles : [articles];
+		if (articleList.length > 0) {
+			strengths.push(`Aligned with ${articleList.length} constitution article(s)`);
+		}
+	}
+
+	private validateDuplicatePrevention(
+		data: Record<string, unknown>,
+		issues: string[],
+		suggestions: string[],
+		strengths: string[],
+	): void {
+		const justification = data.justification as string | undefined;
+		if (!justification) {
+			issues.push("Justification for new component is required");
+			suggestions.push("Explain why existing components or libraries cannot be used");
+			return;
+		}
+
+		if (justification.length > 50) {
+			strengths.push("Clear justification provided for new component");
+		}
+	}
+
 	private validateComponentStep(
 		stepId: string,
 		data: Record<string, unknown>,
@@ -334,6 +495,22 @@ export class StepValidator {
 		strengths: string[],
 	): void {
 		switch (stepId) {
+			case "research_existing_components":
+				this.validateResearchExistingComponents(data, issues, suggestions, strengths);
+				break;
+
+			case "library_research":
+				this.validateLibraryResearch(data, issues, suggestions, strengths);
+				break;
+
+			case "constitution_alignment":
+				this.validateComponentConstitutionAlignment(data, issues, suggestions, strengths);
+				break;
+
+			case "duplicate_prevention":
+				this.validateDuplicatePrevention(data, issues, suggestions, strengths);
+				break;
+
 			case "analyze_requirements":
 				if (data.description && typeof data.description === "string" && data.description.length > 20) {
 					strengths.push("Clear requirement traceability established");
@@ -406,6 +583,16 @@ export class StepValidator {
 		strengths: string[],
 	): void {
 		switch (stepId) {
+			case "context_discovery":
+			case "technology_stack_research":
+			case "constitution_compliance":
+			case "similar_plans_review":
+				// Research steps - lenient validation
+				if (Object.keys(data).length > 0) {
+					strengths.push("Research step completed");
+				}
+				break;
+
 			case "review_context":
 				const criteriaId = data.criteria_id as string | undefined;
 				if (criteriaId && typeof criteriaId === "string") {
@@ -450,6 +637,16 @@ export class StepValidator {
 		strengths: string[],
 	): void {
 		switch (stepId) {
+			case "research_existing_constitutions":
+			case "best_practices_research":
+			case "framework_review":
+			case "conflict_check":
+				// Research steps - lenient validation
+				if (Object.keys(data).length > 0) {
+					strengths.push("Research step completed");
+				}
+				break;
+
 			case "basic_info":
 				const description = data.description as string | undefined;
 				if (description && description.length < 20) {
@@ -482,6 +679,14 @@ export class StepValidator {
 		strengths: string[],
 	): void {
 		switch (stepId) {
+			case "related_decisions_research":
+			case "technology_options_research":
+				// Research steps - lenient validation
+				if (Object.keys(data).length > 0) {
+					strengths.push("Research step completed");
+				}
+				break;
+
 			case "decision_statement":
 				const decision = data.decision as string | undefined;
 				if (decision && typeof decision === "string") {
@@ -510,38 +715,25 @@ export class StepValidator {
 				const affectsRequirements = (data.affects_requirements as unknown[] | undefined) || [];
 				const affectsPlans = (data.affects_plans as unknown[] | undefined) || [];
 				const informedByArticles = (data.informed_by_articles as unknown[] | undefined) || [];
+				const noConstitutionsExist = data.no_constitutions_exist as boolean | undefined;
 
 				const totalImpact =
 					(Array.isArray(affectsComponents) ? affectsComponents.length : 0) +
 					(Array.isArray(affectsRequirements) ? affectsRequirements.length : 0) +
 					(Array.isArray(affectsPlans) ? affectsPlans.length : 0);
 
-				// Check if all fields are provided (even if empty)
-				const hasAllFields =
-					"affects_components" in data &&
-					"affects_requirements" in data &&
-					"affects_plans" in data &&
-					"informed_by_articles" in data;
+				// Constitution articles are now REQUIRED (or explicit statement that none exist)
+				if (!informedByArticles && !noConstitutionsExist) {
+					issues.push("Constitution article references are required for all decisions");
+					suggestions.push("Query constitutions and reference relevant articles, or state 'no constitutions exist'");
+				} else if (noConstitutionsExist) {
+					strengths.push("Confirmed no constitutions exist to reference");
+				} else if (informedByArticles && Array.isArray(informedByArticles) && informedByArticles.length > 0) {
+					strengths.push(`Aligned with ${informedByArticles.length} guiding principle(s)`);
+				}
 
-				if (hasAllFields) {
-					// If explicitly provided (even if empty), that's fine
-					if (totalImpact > 0) {
-						strengths.push(`Impact documented across ${totalImpact} entities`);
-					}
-					if (informedByArticles && Array.isArray(informedByArticles) && informedByArticles.length > 0) {
-						strengths.push(`Aligned with ${informedByArticles.length} guiding principle(s)`);
-					}
-				} else if (totalImpact === 0 && (!informedByArticles || informedByArticles.length === 0)) {
-					// Only fail if nothing is provided at all
-					issues.push("At least one relationship should be defined (or explicitly state if none)");
-					suggestions.push("Document what this decision affects or which principles it aligns with");
-				} else {
-					if (totalImpact > 0) {
-						strengths.push(`Impact documented across ${totalImpact} entities`);
-					}
-					if (informedByArticles && Array.isArray(informedByArticles) && informedByArticles.length > 0) {
-						strengths.push(`Aligned with ${informedByArticles.length} guiding principle(s)`);
-					}
+				if (totalImpact > 0) {
+					strengths.push(`Impact documented across ${totalImpact} entities`);
 				}
 				break;
 		}

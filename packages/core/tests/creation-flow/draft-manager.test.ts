@@ -36,7 +36,7 @@ describe("DraftManager", () => {
 			expect(draft.id).toMatch(/^req-\d+-[a-z0-9]+$/);
 			expect(draft.type).toBe("requirement");
 			expect(draft.current_step).toBe(1);
-			expect(draft.total_steps).toBe(7);
+			expect(draft.total_steps).toBe(10);
 			expect(draft.data).toEqual({});
 			expect(draft.validation_results).toEqual([]);
 			expect(draft.created_at).toBeDefined();
@@ -49,7 +49,7 @@ describe("DraftManager", () => {
 
 			expect(draft.id).toMatch(/^cmp-\d+-[a-z0-9]+$/);
 			expect(draft.type).toBe("component");
-			expect(draft.total_steps).toBe(10);
+			expect(draft.total_steps).toBe(14);
 		});
 
 		it("should create a plan draft with 12 total steps", async () => {
@@ -57,7 +57,7 @@ describe("DraftManager", () => {
 
 			expect(draft.id).toMatch(/^pln-\d+-[a-z0-9]+$/);
 			expect(draft.type).toBe("plan");
-			expect(draft.total_steps).toBe(12);
+			expect(draft.total_steps).toBe(16);
 		});
 
 		it("should create a constitution draft with 3 total steps", async () => {
@@ -65,7 +65,7 @@ describe("DraftManager", () => {
 
 			expect(draft.id).toMatch(/^con-\d+-[a-z0-9]+$/);
 			expect(draft.type).toBe("constitution");
-			expect(draft.total_steps).toBe(3);
+			expect(draft.total_steps).toBe(7);
 		});
 
 		it("should create a decision draft with 6 total steps", async () => {
@@ -73,7 +73,7 @@ describe("DraftManager", () => {
 
 			expect(draft.id).toMatch(/^dec-\d+-[a-z0-9]+$/);
 			expect(draft.type).toBe("decision");
-			expect(draft.total_steps).toBe(6);
+			expect(draft.total_steps).toBe(8);
 		});
 
 		it("should create draft with slug in data when provided", async () => {

@@ -28,8 +28,13 @@ export function registerStartDraftTool(
 			description:
 				"Begin creating a specification through a guided Q&A workflow. Returns the draft ID and first question.\n\n" +
 				"Response format: { draft_id: 'draft-id', question: 'first question', guidance: 'how to answer', step: 1, total_steps: N }\n\n" +
-				"The creation flow guides you through a series of questions to gather information. After all questions are answered, " +
-				"you'll receive schema instructions to map the collected data and call create_spec.\n\n" +
+				"The creation flow guides you through a series of questions to gather information. The first steps focus on RESEARCH:\n" +
+				"- Search for similar/existing specs to prevent duplicates\n" +
+				"- Review constitution articles for alignment with project principles\n" +
+				"- Research libraries using context7 (for third-party docs) and WebFetch (for best practices)\n" +
+				"- Use query tool to search internal specifications\n\n" +
+				"After research steps, you'll define the specification details. Finally, you'll receive schema instructions to map " +
+				"the collected data and call create_spec.\n\n" +
 				"Example: To create a requirement, call start_draft with type='requirement', then use update_draft to answer each question.",
 			inputSchema: {
 				type: SpecTypeSchema.describe(

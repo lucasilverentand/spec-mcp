@@ -18,6 +18,11 @@ export interface StepDefinition {
 	question: string; // Q&A format: What question to ask the user
 	guidance: string; // Additional guidance on how to answer
 	next_step: string | null;
+	tool_hints?: {
+		query_examples?: string[];
+		context7_examples?: string[];
+		webfetch_examples?: string[];
+	};
 }
 
 export interface Draft {

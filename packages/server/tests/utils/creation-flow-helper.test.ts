@@ -31,42 +31,42 @@ describe("CreationFlowHelper", () => {
 
 			expect(response.draft_id).toMatch(/^req-/);
 			expect(response.step).toBe(1);
-			expect(response.total_steps).toBe(7);
-			expect(response.current_step_name).toBe("Identify Problem");
+			expect(response.total_steps).toBe(10);
+			expect(response.current_step_name).toBe("Research Similar Requirements");
 			expect(response.prompt).toBeDefined();
 			expect(response.field_hints).toBeDefined();
 			expect(response.examples).toBeDefined();
-			expect(response.progress_summary).toContain("Step 1/7");
+			expect(response.progress_summary).toContain("Step 1/10");
 		});
 
 		it("should start component creation flow with 10 steps", async () => {
 			const response = await helper.start("component");
 
 			expect(response.step).toBe(1);
-			expect(response.total_steps).toBe(10);
-			expect(response.current_step_name).toBe("Analyze Requirements");
+			expect(response.total_steps).toBe(14);
+			expect(response.current_step_name).toBe("Research Existing Components");
 		});
 
 		it("should start plan creation flow with 12 steps", async () => {
 			const response = await helper.start("plan");
 
 			expect(response.step).toBe(1);
-			expect(response.total_steps).toBe(12);
-			expect(response.current_step_name).toBe("Review Context");
+			expect(response.total_steps).toBe(16);
+			expect(response.current_step_name).toBe("Context Discovery");
 		});
 
 		it("should start constitution creation flow with 3 steps", async () => {
 			const response = await helper.start("constitution");
 
 			expect(response.step).toBe(1);
-			expect(response.total_steps).toBe(3);
+			expect(response.total_steps).toBe(7);
 		});
 
 		it("should start decision creation flow with 6 steps", async () => {
 			const response = await helper.start("decision");
 
 			expect(response.step).toBe(1);
-			expect(response.total_steps).toBe(6);
+			expect(response.total_steps).toBe(8);
 		});
 
 		it("should include slug in draft when provided", async () => {
@@ -79,14 +79,14 @@ describe("CreationFlowHelper", () => {
 			const response = await helper.start("requirement");
 
 			expect(response.field_hints).toBeDefined();
-			expect(response.field_hints?.description).toBeDefined();
+			expect(response.field_hints?.research_findings).toBeDefined();
 		});
 
 		it("should provide examples for first step", async () => {
 			const response = await helper.start("requirement");
 
 			expect(response.examples).toBeDefined();
-			expect(response.examples?.description).toBeDefined();
+			expect(response.examples?.research_findings).toBeDefined();
 		});
 	});
 
@@ -96,8 +96,7 @@ describe("CreationFlowHelper", () => {
 			const draft_id = startResponse.draft_id;
 
 			const stepResponse = await helper.step(draft_id, {
-				description:
-					"Users need secure authentication because we handle sensitive financial data",
+				research_findings: "No similar requirements found",
 			});
 
 			expect("error" in stepResponse).toBe(false);
@@ -105,7 +104,7 @@ describe("CreationFlowHelper", () => {
 				expect(stepResponse.step).toBe(2);
 				expect(stepResponse.validation?.passed).toBe(true);
 				expect(stepResponse.current_step_name).toBe(
-					"Avoid Implementation Details",
+					"Constitution Review",
 				);
 			}
 		});
@@ -186,14 +185,29 @@ describe("CreationFlowHelper", () => {
 			const startResponse = await helper.start("constitution");
 			const draft_id = startResponse.draft_id;
 
-			// Step 1: Basic info
+			// Step 1: Research Existing Constitutions
+			await helper.step(draft_id, {
+				existing_constitutions: "Reviewed all existing constitutions",
+			});
+
+			// Step 2: Best Practices Research
+			await helper.step(draft_id, {
+				best_practices_notes: "Researched industry standards",
+			});
+
+			// Step 3: Framework Review
+			await helper.step(draft_id, {
+				framework_notes: "N/A - not framework-specific",
+			});
+
+			// Step 4: Basic Information
 			await helper.step(draft_id, {
 				name: "Engineering Principles",
 				description:
 					"Core principles that guide our development decisions and practices",
 			});
 
-			// Step 2: Articles
+			// Step 5: Define Articles
 			await helper.step(draft_id, {
 				articles: [
 					{
@@ -208,7 +222,12 @@ describe("CreationFlowHelper", () => {
 				],
 			});
 
-			// Step 3: Finalize
+			// Step 6: Conflict Check
+			await helper.step(draft_id, {
+				conflicts_checked: true,
+			});
+
+			// Step 7: Finalize
 			const finalResponse = await helper.step(draft_id, {
 				name: "Engineering Principles",
 			});
@@ -235,14 +254,13 @@ describe("CreationFlowHelper", () => {
 			const draft_id = startResponse.draft_id;
 
 			const step1Response = await helper.step(draft_id, {
-				description:
-					"Users need authentication because security is required for sensitive operations",
+				research_findings: "No similar requirements found",
 			});
 
 			expect("error" in step1Response).toBe(false);
 			if (!("error" in step1Response)) {
-				expect(step1Response.progress_summary).toContain("Step 2/7");
-				expect(step1Response.progress_summary).toContain("29%");
+				expect(step1Response.progress_summary).toContain("Step 2/10");
+				expect(step1Response.progress_summary).toContain("20%");
 			}
 		});
 	});
@@ -252,10 +270,9 @@ describe("CreationFlowHelper", () => {
 			const startResponse = await helper.start("requirement");
 			const draft_id = startResponse.draft_id;
 
-			// Add some data
+			// Add some data (step 1: Research Similar Requirements)
 			await helper.step(draft_id, {
-				description:
-					"Users need authentication because we handle sensitive data",
+				research_findings: "No similar requirements found",
 			});
 
 			const validation = helper.validate(draft_id);
@@ -360,17 +377,16 @@ describe("CreationFlowHelper", () => {
 	describe("generateProgressSummary", () => {
 		it("should calculate correct progress percentage", async () => {
 			const startResponse = await helper.start("requirement");
-			expect(startResponse.progress_summary).toContain("14%"); // 1/7
+			expect(startResponse.progress_summary).toContain("10%"); // 1/10
 
 			const draft_id = startResponse.draft_id;
 			const step2 = await helper.step(draft_id, {
-				description:
-					"Users need authentication because we handle sensitive financial data",
+				research_findings: "No similar requirements found",
 			});
 
 			expect("error" in step2).toBe(false);
 			if (!("error" in step2)) {
-				expect(step2.progress_summary).toContain("29%"); // 2/7
+				expect(step2.progress_summary).toContain("20%"); // 2/10
 			}
 		});
 
@@ -390,22 +406,40 @@ describe("CreationFlowHelper", () => {
 			const startResponse = await helper.start("requirement");
 			const draft_id = startResponse.draft_id;
 
-			// Step 1: Problem identification
+			// Step 1: Research Similar Requirements
 			const step1 = await helper.step(draft_id, {
-				description:
-					"Users need secure authentication because we handle sensitive financial data and must verify identity",
+				research_findings: "No similar requirements found",
 			});
 			expect("error" in step1).toBe(false);
 
-			// Step 2: Avoid implementation
+			// Step 2: Constitution Review
 			const step2 = await helper.step(draft_id, {
-				description:
-					"System must verify user identity and maintain secure session state",
+				no_constitutions: true,
 			});
 			expect("error" in step2).toBe(false);
 
-			// Step 3: Measurability
+			// Step 3: Technology Research
 			const step3 = await helper.step(draft_id, {
+				technology_notes: "Will use standard authentication libraries",
+			});
+			expect("error" in step3).toBe(false);
+
+			// Step 4: Identify Problem
+			const step4 = await helper.step(draft_id, {
+				description:
+					"Users need secure authentication because we handle sensitive financial data and must verify identity",
+			});
+			expect("error" in step4).toBe(false);
+
+			// Step 5: Avoid Implementation
+			const step5 = await helper.step(draft_id, {
+				description:
+					"System must verify user identity and maintain secure session state",
+			});
+			expect("error" in step5).toBe(false);
+
+			// Step 6: Define Measurability
+			const step6 = await helper.step(draft_id, {
 				criteria: [
 					{
 						id: "crit-001",
@@ -421,10 +455,10 @@ describe("CreationFlowHelper", () => {
 					},
 				],
 			});
-			expect("error" in step3).toBe(false);
+			expect("error" in step6).toBe(false);
 
-			// Step 4: Specific language
-			const step4 = await helper.step(draft_id, {
+			// Step 7: Use Specific Language
+			const step7 = await helper.step(draft_id, {
 				description:
 					"Authentication must complete in under 3 seconds with 200ms response time",
 				criteria: [
@@ -440,10 +474,10 @@ describe("CreationFlowHelper", () => {
 					},
 				],
 			});
-			expect("error" in step4).toBe(false);
+			expect("error" in step7).toBe(false);
 
-			// Step 5: Acceptance criteria (already set in step 3, just confirm)
-			const step5 = await helper.step(draft_id, {
+			// Step 8: Finalize Acceptance Criteria
+			const step8 = await helper.step(draft_id, {
 				criteria: [
 					{
 						id: "crit-001",
@@ -457,16 +491,16 @@ describe("CreationFlowHelper", () => {
 					},
 				],
 			});
-			expect("error" in step5).toBe(false);
+			expect("error" in step8).toBe(false);
 
-			// Step 6: Priority
-			const step6 = await helper.step(draft_id, {
+			// Step 9: Assign Priority
+			const step9 = await helper.step(draft_id, {
 				priority: "critical",
 			});
-			expect("error" in step6).toBe(false);
+			expect("error" in step9).toBe(false);
 
-			// Step 7: Review and refine
-			const step7 = await helper.step(draft_id, {
+			// Step 10: Review and Finalize
+			const step10 = await helper.step(draft_id, {
 				slug: "user-authentication",
 				name: "User Authentication",
 				description:
@@ -481,9 +515,9 @@ describe("CreationFlowHelper", () => {
 				],
 			});
 
-			expect("error" in step7).toBe(false);
-			if (!("error" in step7)) {
-				expect(step7.completed).toBe(true);
+			expect("error" in step10).toBe(false);
+			if (!("error" in step10)) {
+				expect(step10.completed).toBe(true);
 			}
 		});
 
@@ -491,13 +525,14 @@ describe("CreationFlowHelper", () => {
 			const startResponse = await helper.start("requirement");
 			const draft_id = startResponse.draft_id;
 
+			// Step 1: Research Similar Requirements
 			await helper.step(draft_id, {
-				description:
-					"Users need authentication because security is critical",
+				research_findings: "No similar requirements found",
 			});
 
+			// Step 2: Constitution Review
 			await helper.step(draft_id, {
-				description: "System must authenticate users securely",
+				no_constitutions: true,
 			});
 
 			const draft = helper.getDraft(draft_id);

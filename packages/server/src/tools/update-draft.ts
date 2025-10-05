@@ -17,11 +17,16 @@ export function registerUpdateDraftTool(
 			title: "Update Draft",
 			description:
 				"Answer a question in the creation flow Q&A process. Provide data to answer the current question.\n\n" +
+				"IMPORTANT: The first steps of any spec creation flow are RESEARCH steps:\n" +
+				"- Use query tool to search for similar specs and review constitutions\n" +
+				"- Use context7 (resolve-library-id → get-library-docs) to research third-party libraries\n" +
+				"- Use WebFetch to research best practices, standards, and architectural patterns\n" +
+				"- Document your findings thoroughly to prevent duplicates and ensure alignment\n\n" +
 				"Success response: { draft_id, question: 'next question', guidance: '...', step: N, total_steps: M }\n" +
 				"Validation error: { draft_id, issues: ['error messages'], suggestions: ['helpful tips'] }\n" +
 				"Completion: { draft_id, completed: true, next_action: 'Call create_spec...', finalization_instructions: '...' }\n\n" +
 				"When completed=true, review the finalization_instructions which contain schema details, then map the collected Q&A data to the schema and call create_spec.\n\n" +
-				"Example: update_draft({ draft_id: 'req-...', data: { problem_statement: 'Users need authentication because...' } })",
+				"Example: update_draft({ draft_id: 'req-...', data: { research_findings: 'Found similar req-003...', constitution_articles: ['con-001/art-002'] } })",
 			inputSchema: {
 				draft_id: z
 					.string()

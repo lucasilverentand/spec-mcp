@@ -95,20 +95,68 @@ describe("MCP E2E Tests", () => {
 			// update_draft field param should be the actual schema field name, not the step name
 			// We'll provide full data objects for each step
 
-			// Fill in description
+			// Step 1: Research Similar Requirements
 			let result = await client.callTool({
 				name: "update_draft",
 				arguments: {
 					draft_id: draftId,
 					data: {
-						description:
-							"A comprehensive test requirement for E2E testing. This is needed because we must validate the creation flow works correctly and handles all validation steps properly. The requirement should test end-to-end flow through all validation stages.",
+						research_findings: "No similar requirements found",
 					},
 				},
 			});
 			let response = JSON.parse(result.content[0].text);
 
-			// Fill in criteria
+			// Step 2: Constitution Review
+			result = await client.callTool({
+				name: "update_draft",
+				arguments: {
+					draft_id: draftId,
+					data: {
+						no_constitutions: true,
+					},
+				},
+			});
+			response = JSON.parse(result.content[0].text);
+
+			// Step 3: Technology Research
+			result = await client.callTool({
+				name: "update_draft",
+				arguments: {
+					draft_id: draftId,
+					data: {
+						technology_notes: "Standard web technologies",
+					},
+				},
+			});
+			response = JSON.parse(result.content[0].text);
+
+			// Step 4: Identify Problem
+			result = await client.callTool({
+				name: "update_draft",
+				arguments: {
+					draft_id: draftId,
+					data: {
+						description:
+							"A comprehensive test requirement for E2E testing. This is needed because we must validate the creation flow works correctly and handles all validation steps properly.",
+					},
+				},
+			});
+			response = JSON.parse(result.content[0].text);
+
+			// Step 5: Avoid Implementation
+			result = await client.callTool({
+				name: "update_draft",
+				arguments: {
+					draft_id: draftId,
+					data: {
+						description: "System must complete E2E validation without implementation details",
+					},
+				},
+			});
+			response = JSON.parse(result.content[0].text);
+
+			// Step 6: Define Measurability
 			result = await client.callTool({
 				name: "update_draft",
 				arguments: {
@@ -118,10 +166,12 @@ describe("MCP E2E Tests", () => {
 							{
 								id: "crit-001",
 								description: "System returns response in under 200ms",
+								status: "active",
 							},
 							{
 								id: "crit-002",
 								description: "API returns 201 status code on success",
+								status: "active",
 							},
 						],
 					},
@@ -129,7 +179,44 @@ describe("MCP E2E Tests", () => {
 			});
 			response = JSON.parse(result.content[0].text);
 
-			// Fill in priority
+			// Step 7: Use Specific Language
+			result = await client.callTool({
+				name: "update_draft",
+				arguments: {
+					draft_id: draftId,
+					data: {
+						description: "API responds in under 200ms with 201 status code",
+						criteria: [
+							{
+								id: "crit-001",
+								description: "Response time under 200ms",
+								status: "active",
+							},
+						],
+					},
+				},
+			});
+			response = JSON.parse(result.content[0].text);
+
+			// Step 8: Finalize Acceptance Criteria
+			result = await client.callTool({
+				name: "update_draft",
+				arguments: {
+					draft_id: draftId,
+					data: {
+						criteria: [
+							{
+								id: "crit-001",
+								description: "Response time under 200ms",
+								status: "active",
+							},
+						],
+					},
+				},
+			});
+			response = JSON.parse(result.content[0].text);
+
+			// Step 9: Assign Priority
 			result = await client.callTool({
 				name: "update_draft",
 				arguments: {
@@ -141,22 +228,27 @@ describe("MCP E2E Tests", () => {
 			});
 			response = JSON.parse(result.content[0].text);
 
-			// Handle any remaining validation steps by confirming
-			let iterations = 0;
-			while (response.question && !response.completed && iterations++ < 10) {
-				console.log(`Validation step: ${response.question}`);
-				result = await client.callTool({
-					name: "update_draft",
-					arguments: {
-						draft_id: draftId,
-						data: {
-							confirm: true,
-						},
+			// Step 10: Review and Finalize
+			result = await client.callTool({
+				name: "update_draft",
+				arguments: {
+					draft_id: draftId,
+					data: {
+						slug: uniqueSlug,
+						name: "Test Requirement for E2E Validation",
+						description: "API responds in under 200ms with 201 status code",
+						priority: "required",
+						criteria: [
+							{
+								id: "crit-001",
+								description: "Response time under 200ms",
+								status: "active",
+							},
+						],
 					},
-				});
-				response = JSON.parse(result.content[0].text);
-				console.log("Response:", response);
-			}
+				},
+			});
+			response = JSON.parse(result.content[0].text);
 
 			const finalResponse = response;
 			console.log("Final response:", finalResponse);
