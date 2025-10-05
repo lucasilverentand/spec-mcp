@@ -172,25 +172,12 @@ jobs:
           cd packages/server
 
           # Verify build artifacts exist
-          if [ ! -f "dist/index.js" ]; then
-            echo "✗ Build artifact dist/index.js not found"
-            exit 1
-          fi
-          echo "✓ Build artifacts exist"
+          [ -f "dist/index.js" ] && echo "✓ Build artifacts exist" || (echo "✗ dist/index.js not found" && exit 1)
 
-          # Verify no pino-pretty import in built code (devDependency that should not be used at runtime)
-          if grep -r "pino-pretty" dist/ 2>/dev/null; then
-            echo "✗ Found pino-pretty references in built code (devDependency should not be used at runtime)"
-            exit 1
-          fi
-          echo "✓ No devDependency references in built code"
+          # Verify no pino-pretty in built code (it's a devDependency)
+          ! grep -rq "pino-pretty" dist/ && echo "✓ No devDependency refs in build" || (echo "✗ Found pino-pretty in build" && exit 1)
 
-          # Test that required runtime dependencies are declared
-          if grep -q '"pino"' package.json; then
-            echo "✓ All required runtime dependencies declared"
-          else
-            echo "✗ Missing runtime dependency: pino"
-            exit 1
-          fi
+          # Verify runtime dependencies declared
+          grep -q '"pino"' package.json && echo "✓ Runtime deps declared" || (echo "✗ Missing pino" && exit 1)
 
-          echo "✓ Package installation test passed"
+          echo "✓ Package test passed"
