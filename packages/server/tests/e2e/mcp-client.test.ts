@@ -234,6 +234,8 @@ describe("MCP E2E Tests", () => {
 				arguments: {
 					draft_id: draftId,
 					data: {
+						type: "requirement",
+						number: 1,
 						slug: uniqueSlug,
 						name: "Test Requirement for E2E Validation",
 						description: "API responds in under 200ms with 201 status code",
@@ -254,31 +256,11 @@ describe("MCP E2E Tests", () => {
 			console.log("Final response:", finalResponse);
 			expect(finalResponse.completed).toBe(true);
 
-			// Now call create_spec to finalize the specification
+			// Now call finalize_draft to finalize the specification
 			const createResult = await client.callTool({
-				name: "create_spec",
+				name: "finalize_draft",
 				arguments: {
 					draft_id: draftId,
-					type: "requirement",
-					data: {
-						type: "requirement",
-						number: 1,
-						slug: uniqueSlug,
-						name: "Test Requirement for E2E Validation",
-						description:
-							"A comprehensive test requirement for E2E testing. This is needed because we must validate the creation flow works correctly and handles all validation steps properly. The requirement should test end-to-end flow through all validation stages.",
-						priority: "required",
-						criteria: [
-							{
-								id: "crit-001",
-								description: "System returns response in under 200ms",
-							},
-							{
-								id: "crit-002",
-								description: "API returns 201 status code on success",
-							},
-						],
-					},
 				},
 			});
 

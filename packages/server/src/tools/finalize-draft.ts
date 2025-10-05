@@ -8,49 +8,37 @@ import { wrapToolHandler } from "../utils/tool-wrapper.js";
 import { getCreationFlowHelper } from "../utils/creation-flow-helper.js";
 
 /**
- * Register create_spec tool - creates a specification from finalized draft data
+ * Register finalize_draft tool - finalizes a draft and creates the specification
  */
-export function registerCreateSpecTool(
+export function registerFinalizeDraftTool(
 	server: McpServer,
 	operations: SpecOperations,
 	config: ServerConfig,
 ) {
 	server.registerTool(
-		"create_spec",
+		"finalize_draft",
 		{
-			title: "Create Specification",
+			title: "Finalize Draft",
 			description:
-				"Creates a specification from finalized creation flow data. This tool is called after completing all creation flow steps.\n\n" +
-				"The LLM should map the collected Q&A data to the proper schema structure and call this tool with the formatted data.\n\n" +
-				"Example: After completing all requirement steps, call create_spec with:\n" +
+				"Finalizes a completed draft and creates the specification. This tool automatically:\n" +
+				"1. Retrieves the draft data\n" +
+				"2. Validates the data against the schema\n" +
+				"3. Creates the specification\n" +
+				"4. Cleans up the draft\n\n" +
+				"This tool should be called after completing all creation flow steps (when update_draft returns completed: true).\n\n" +
+				"Example: After completing all requirement steps, call finalize_draft with:\n" +
 				"{\n" +
-				'  "draft_id": "req-...",\n' +
-				'  "type": "requirement",\n' +
-				'  "data": {\n' +
-				'    "slug": "user-authentication",\n' +
-				'    "name": "User Authentication",\n' +
-				'    "description": "System must authenticate users...",\n' +
-				'    "priority": "critical",\n' +
-				'    "criteria": [...]\n' +
-				"  }\n" +
+				'  "draft_id": "req-1234567890-xyz"\n' +
 				"}",
 			inputSchema: {
 				draft_id: z
 					.string()
 					.describe("Draft ID from the creation flow"),
-				type: z
-					.enum(["requirement", "component", "plan", "constitution", "decision"])
-					.describe("Type of specification to create"),
-				data: z
-					.record(z.unknown())
-					.describe(
-						"Specification data formatted according to the schema. This should contain all required fields for the spec type.",
-					),
 			},
 		},
 		wrapToolHandler(
-			"create_spec",
-			async ({ draft_id, type, data }) => {
+			"finalize_draft",
+			async ({ draft_id }) => {
 				// Create helper with resolved specs path
 				const helper = getCreationFlowHelper(config.specsPath);
 
@@ -75,28 +63,8 @@ export function registerCreateSpecTool(
 					};
 				}
 
-				// Verify draft type matches requested type
-				if (draft.type !== type) {
-					return {
-						content: [
-							{
-								type: "text",
-								text: JSON.stringify(
-									{
-										success: false,
-										error: `Draft type mismatch: draft is type '${draft.type}' but you're trying to create type '${type}'`,
-									},
-									null,
-									2,
-								),
-							},
-						],
-						isError: true,
-					};
-				}
-
-				// Validate and finalize using schema
-				const finalizationResult = finalizeDraft(type, data as Record<string, unknown>);
+				// Use the draft's data for validation
+				const finalizationResult = finalizeDraft(draft.type, draft.data);
 
 				if (!finalizationResult.success) {
 					return {
@@ -122,7 +90,7 @@ export function registerCreateSpecTool(
 				let result: unknown;
 
 				try {
-					switch (type) {
+					switch (draft.type) {
 						case "requirement":
 							// @ts-expect-error - Type system limitation
 							result = await operations.createRequirement(finalizationResult.data);
@@ -156,7 +124,7 @@ export function registerCreateSpecTool(
 										text: JSON.stringify(
 											{
 												success: false,
-												error: `Unsupported spec type: ${type}`,
+												error: `Unsupported spec type: ${draft.type}`,
 											},
 											null,
 											2,
@@ -178,7 +146,7 @@ export function registerCreateSpecTool(
 									text: JSON.stringify(
 										{
 											success: true,
-											message: `${type} created successfully!`,
+											message: `${draft.type} created successfully!`,
 											// @ts-expect-error - Result can be any entity type
 											spec_id: result.data?.id,
 											// @ts-expect-error - Result can be any entity type
@@ -202,7 +170,7 @@ export function registerCreateSpecTool(
 								text: JSON.stringify(
 									{
 										success: false,
-										error: `Failed to create ${type}: ${error instanceof Error ? error.message : String(error)}`,
+										error: `Failed to create ${draft.type}: ${error instanceof Error ? error.message : String(error)}`,
 									},
 									null,
 									2,

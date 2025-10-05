@@ -24,8 +24,8 @@ export function registerUpdateDraftTool(
 				"- Document your findings thoroughly to prevent duplicates and ensure alignment\n\n" +
 				"Success response: { draft_id, question: 'next question', guidance: '...', step: N, total_steps: M }\n" +
 				"Validation error: { draft_id, issues: ['error messages'], suggestions: ['helpful tips'] }\n" +
-				"Completion: { draft_id, completed: true, next_action: 'Call create_spec...', finalization_instructions: '...' }\n\n" +
-				"When completed=true, review the finalization_instructions which contain schema details, then map the collected Q&A data to the schema and call create_spec.\n\n" +
+				"Completion: { draft_id, completed: true, next_action: 'Call finalize_draft...', finalization_instructions: '...' }\n\n" +
+				"When completed=true, review the finalization_instructions which contain schema details, then map the collected Q&A data to the schema and call finalize_draft.\n\n" +
 				"Example: update_draft({ draft_id: 'req-...', data: { research_findings: 'Found similar req-003...', constitution_articles: ['con-001/art-002'] } })",
 			inputSchema: {
 				draft_id: z
@@ -183,7 +183,7 @@ export function registerUpdateDraftTool(
 				// Check if all steps are completed
 				if (stepResponse.completed) {
 					// Return finalization instructions for LLM
-					// The LLM will map the Q&A data to the schema and call create_spec()
+					// The LLM will map the Q&A data to the schema and call finalize_draft()
 					return {
 						content: [
 							{
@@ -193,7 +193,7 @@ export function registerUpdateDraftTool(
 										draft_id,
 										completed: true,
 										message: "All creation flow steps completed!",
-										next_action: "Call the create_spec tool with the properly formatted specification data",
+										next_action: "Call the finalize_draft tool to finalize and create the specification",
 										finalization_instructions: stepResponse.finalization_instructions,
 										collected_data: stepResponse.guidance, // Contains schema instructions
 									},
