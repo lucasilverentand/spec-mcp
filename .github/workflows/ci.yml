@@ -179,17 +179,18 @@ jobs:
           echo "✓ Build artifacts exist"
 
           # Verify no pino-pretty import in built code (devDependency that should not be used at runtime)
-          if grep -r "pino-pretty" dist/; then
+          if grep -r "pino-pretty" dist/ 2>/dev/null; then
             echo "✗ Found pino-pretty references in built code (devDependency should not be used at runtime)"
             exit 1
           fi
           echo "✓ No devDependency references in built code"
 
           # Test that required runtime dependencies are declared
-          if ! grep -q '"pino"' package.json; then
+          if grep -q '"pino"' package.json; then
+            echo "✓ All required runtime dependencies declared"
+          else
             echo "✗ Missing runtime dependency: pino"
             exit 1
           fi
-          echo "✓ All required runtime dependencies declared"
 
           echo "✓ Package installation test passed"
