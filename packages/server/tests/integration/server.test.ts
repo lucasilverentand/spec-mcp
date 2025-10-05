@@ -1,22 +1,37 @@
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, afterEach, describe, expect, it } from "vitest";
 import { loadConfig } from "../../src/config/index.js";
 import { ErrorCode, McpError } from "../../src/utils/error-codes.js";
+import { createTestSpecsPath, cleanupTestSpecs } from "../test-helpers.js";
 
 describe("Server Configuration", () => {
+	const testPaths: string[] = [];
+
+	afterEach(async () => {
+		// Clean up all test paths created during tests
+		for (const path of testPaths) {
+			await cleanupTestSpecs(path);
+		}
+		testPaths.length = 0;
+	});
+
 	it("should load configuration from environment", async () => {
-		process.env.SPECS_PATH = "test-specs";
+		const testPath = createTestSpecsPath("config-test-1");
+		testPaths.push(testPath);
+		process.env.SPECS_PATH = testPath;
 
 		const config = await loadConfig();
 
 		expect(config.specsPath).toBeDefined();
-		expect(config.specsPath).toContain("test-specs");
+		expect(config.specsPath).toContain(testPath);
 	});
 
 	it("should create specs directory if it doesn't exist", async () => {
-		process.env.SPECS_PATH = "test-specs-new";
+		const testPath = createTestSpecsPath("config-test-2");
+		testPaths.push(testPath);
+		process.env.SPECS_PATH = testPath;
 		const config = await loadConfig();
 		expect(config.specsPath).toBeDefined();
-		expect(config.specsPath).toContain("test-specs-new");
+		expect(config.specsPath).toContain(testPath);
 	});
 
 	it("should validate configuration schema", async () => {

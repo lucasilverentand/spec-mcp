@@ -1,14 +1,17 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { DependencyAnalyzer } from "../../src/analysis/dependency-analyzer.js";
 import type { SpecConfig } from "../../src/interfaces/config.js";
+import { createTestSpecsPath } from "../test-helpers.js";
 
 describe("DependencyAnalyzer", () => {
 	let analyzer: DependencyAnalyzer;
-	const config: SpecConfig = {
-		specsPath: "./test-specs",
-	};
+	let testSpecsPath: string;
 
 	beforeEach(() => {
+		testSpecsPath = createTestSpecsPath("dependency-analyzer-test");
+		const config: SpecConfig = {
+			specsPath: testSpecsPath,
+		};
 		analyzer = new DependencyAnalyzer(config);
 	});
 
@@ -147,7 +150,7 @@ describe("DependencyAnalyzer", () => {
 
 		it("should handle errors gracefully", async () => {
 			const badAnalyzer = new DependencyAnalyzer({
-				specsPath: "/nonexistent/path",
+				specsPath: createTestSpecsPath("nonexistent"),
 			});
 			const result = await badAnalyzer.analyze();
 
@@ -266,7 +269,7 @@ describe("DependencyAnalyzer", () => {
 
 		it("should handle errors gracefully", async () => {
 			const badAnalyzer = new DependencyAnalyzer({
-				specsPath: "/invalid/path",
+				specsPath: createTestSpecsPath("invalid-path"),
 			});
 			const result = await badAnalyzer.generateGraph();
 
@@ -348,7 +351,7 @@ describe("DependencyAnalyzer", () => {
 
 		it("should handle graph generation errors", async () => {
 			const badAnalyzer = new DependencyAnalyzer({
-				specsPath: "/invalid/path",
+				specsPath: createTestSpecsPath("invalid-path"),
 			});
 			const result = await badAnalyzer.detectCycles();
 
@@ -448,7 +451,7 @@ describe("DependencyAnalyzer", () => {
 
 		it("should handle graph generation errors", async () => {
 			const badAnalyzer = new DependencyAnalyzer({
-				specsPath: "/invalid/path",
+				specsPath: createTestSpecsPath("invalid-path"),
 			});
 			const result = await badAnalyzer.analyzeDepth();
 
@@ -496,7 +499,7 @@ describe("DependencyAnalyzer", () => {
 
 		it("should handle analysis failures", async () => {
 			const badAnalyzer = new DependencyAnalyzer({
-				specsPath: "/invalid/path",
+				specsPath: createTestSpecsPath("invalid-path"),
 			});
 			const result = await badAnalyzer.analyzeDependencyHealth();
 
@@ -531,7 +534,7 @@ describe("DependencyAnalyzer", () => {
 	describe("error handling", () => {
 		it("should handle invalid specs path", async () => {
 			const invalidAnalyzer = new DependencyAnalyzer({
-				specsPath: "/invalid/nonexistent/path",
+				specsPath: createTestSpecsPath("invalid-path"),
 			});
 			const result = await invalidAnalyzer.analyze();
 
@@ -549,7 +552,7 @@ describe("DependencyAnalyzer", () => {
 
 		it("should wrap errors in AnalysisResult", async () => {
 			const badAnalyzer = new DependencyAnalyzer({
-				specsPath: "/invalid/path",
+				specsPath: createTestSpecsPath("invalid-path"),
 			});
 			const result = await badAnalyzer.analyze();
 
@@ -562,7 +565,7 @@ describe("DependencyAnalyzer", () => {
 
 		it("should include error details in failed results", async () => {
 			const badAnalyzer = new DependencyAnalyzer({
-				specsPath: "/invalid/path",
+				specsPath: createTestSpecsPath("invalid-path"),
 			});
 			const result = await badAnalyzer.analyze();
 
@@ -575,7 +578,7 @@ describe("DependencyAnalyzer", () => {
 
 		it("should maintain metadata even on errors", async () => {
 			const badAnalyzer = new DependencyAnalyzer({
-				specsPath: "/invalid/path",
+				specsPath: createTestSpecsPath("invalid-path"),
 			});
 			const result = await badAnalyzer.analyze();
 

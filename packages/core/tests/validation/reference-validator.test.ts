@@ -1,6 +1,7 @@
 import type { AnyEntity } from "@spec-mcp/data";
 import { beforeEach, describe, expect, it } from "vitest";
 import { ReferenceValidator } from "../../src/validation/validators/reference-validator.js";
+import { createTestSpecsPath } from "../test-helpers.js";
 
 describe("ReferenceValidator", () => {
 	let validator: ReferenceValidator;
@@ -19,7 +20,7 @@ describe("ReferenceValidator", () => {
 
 		it("should initialize with custom config", () => {
 			const customValidator = new ReferenceValidator({
-				specsPath: "/custom/path",
+				specsPath: createTestSpecsPath("custom-path"),
 			});
 			expect(customValidator).toBeDefined();
 		});

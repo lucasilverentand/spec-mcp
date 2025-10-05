@@ -1,27 +1,18 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { SpecOperations } from "@spec-mcp/core";
-import * as fs from "node:fs/promises";
+import { createTestSpecsPath, cleanupTestSpecs } from "../test-helpers.js";
 
 describe("Spec Locking Integration Tests", () => {
 	let operations: SpecOperations;
-	const testSpecsDir = ".test-specs-locking";
+	let testSpecsDir: string;
 
 	beforeEach(async () => {
+		testSpecsDir = createTestSpecsPath("locking-tests");
 		operations = new SpecOperations({ specsPath: testSpecsDir });
-		// Clean up test directory
-		try {
-			await fs.rm(testSpecsDir, { recursive: true, force: true });
-		} catch {
-			// Ignore if doesn't exist
-		}
 	});
 
 	afterEach(async () => {
-		try {
-			await fs.rm(testSpecsDir, { recursive: true, force: true });
-		} catch {
-			// Ignore cleanup errors
-		}
+		await cleanupTestSpecs(testSpecsDir);
 	});
 
 	describe("Plan Locking", () => {

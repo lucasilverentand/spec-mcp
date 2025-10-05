@@ -47,6 +47,8 @@ temp/
 # Test artifacts (ensure test-generated files don't get committed)
 test-specs/
 **/test-specs/
+test-specs-*/
+.test-specs*/
 test-output/
 **/test-output/
 packages/*/specs/
@@ -58,6 +60,11 @@ specs/.drafts/
 specs/requirements/*-test*.yml
 specs/components/*-test*.yml
 specs/plans/*-test*.yml
+**/*-test*.yml
+**/*-test-*.yml
+
+# Prevent absolute path artifacts (Users folder bug)
+Users/
 
 # Package manager
 .pnpm-debug.log*

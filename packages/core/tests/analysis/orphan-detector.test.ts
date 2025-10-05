@@ -1,14 +1,17 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { OrphanDetector } from "../../src/analysis/orphan-detector.js";
 import type { SpecConfig } from "../../src/interfaces/config.js";
+import { createTestSpecsPath } from "../test-helpers.js";
 
 describe("OrphanDetector", () => {
 	let detector: OrphanDetector;
-	const config: SpecConfig = {
-		specsPath: "./test-specs",
-	};
+	let testSpecsPath: string;
 
 	beforeEach(() => {
+		testSpecsPath = createTestSpecsPath("orphan-detector-test");
+		const config: SpecConfig = {
+			specsPath: testSpecsPath,
+		};
 		detector = new OrphanDetector(config);
 	});
 
@@ -128,7 +131,7 @@ describe("OrphanDetector", () => {
 
 		it("should handle errors gracefully", async () => {
 			const badDetector = new OrphanDetector({
-				specsPath: "/nonexistent/path",
+				specsPath: createTestSpecsPath("nonexistent"),
 			});
 			const result = await badDetector.analyze();
 
@@ -140,7 +143,7 @@ describe("OrphanDetector", () => {
 
 		it("should handle invalid specsPath gracefully", async () => {
 			const invalidDetector = new OrphanDetector({
-				specsPath: "/invalid/nonexistent/path/xyz",
+				specsPath: createTestSpecsPath("invalid-path"),
 			});
 			const result = await invalidDetector.analyze();
 
@@ -208,7 +211,7 @@ describe("OrphanDetector", () => {
 
 		it("should handle errors in detectOrphans gracefully", async () => {
 			const badDetector = new OrphanDetector({
-				specsPath: "/nonexistent/path",
+				specsPath: createTestSpecsPath("nonexistent"),
 			});
 			const result = await badDetector.detectOrphans();
 
@@ -261,7 +264,7 @@ describe("OrphanDetector", () => {
 
 		it("should handle errors gracefully", async () => {
 			const badDetector = new OrphanDetector({
-				specsPath: "/nonexistent/path",
+				specsPath: createTestSpecsPath("nonexistent"),
 			});
 			const result = await badDetector.findUnreferencedEntities();
 
@@ -291,14 +294,14 @@ describe("OrphanDetector", () => {
 
 		it("should have consistent name property", () => {
 			const detector1 = new OrphanDetector();
-			const detector2 = new OrphanDetector(config);
+			const detector2 = new OrphanDetector({ specsPath: testSpecsPath });
 			expect(detector1.name).toBe(detector2.name);
 			expect(detector1.name).toBe("OrphanDetector");
 		});
 
 		it("should have consistent version property", () => {
 			const detector1 = new OrphanDetector();
-			const detector2 = new OrphanDetector(config);
+			const detector2 = new OrphanDetector({ specsPath: testSpecsPath });
 			expect(detector1.version).toBe(detector2.version);
 			expect(detector1.version).toBe("2.0.0");
 		});
@@ -320,7 +323,7 @@ describe("OrphanDetector", () => {
 
 		it("should provide error details on failure", async () => {
 			const badDetector = new OrphanDetector({
-				specsPath: "/nonexistent/path",
+				specsPath: createTestSpecsPath("nonexistent"),
 			});
 			const result = await badDetector.analyze();
 
@@ -336,7 +339,7 @@ describe("OrphanDetector", () => {
 
 		it("should maintain proper metadata even on errors", async () => {
 			const badDetector = new OrphanDetector({
-				specsPath: "/nonexistent/path",
+				specsPath: createTestSpecsPath("nonexistent"),
 			});
 			const result = await badDetector.analyze();
 
@@ -364,7 +367,7 @@ describe("OrphanDetector", () => {
 
 		it("should allow reuse after error", async () => {
 			const badDetector = new OrphanDetector({
-				specsPath: "/nonexistent/path",
+				specsPath: createTestSpecsPath("nonexistent"),
 			});
 
 			// First call with bad config

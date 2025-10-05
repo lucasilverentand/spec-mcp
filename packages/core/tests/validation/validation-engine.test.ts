@@ -1,15 +1,27 @@
 import type { AnyEntity } from "@spec-mcp/data";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi, afterEach } from "vitest";
 import type { IValidator } from "../../src/interfaces/validator.js";
 import { ValidationEngine } from "../../src/validation/validation-engine.js";
+import { createTestSpecsPath, cleanupTestSpecs } from "../test-helpers.js";
 
 describe("ValidationEngine", () => {
 	let engine: ValidationEngine;
+	let testSpecsPath: string;
+	const testPaths: string[] = [];
 
 	beforeEach(() => {
+		testSpecsPath = createTestSpecsPath("validation-engine");
+		testPaths.push(testSpecsPath);
 		engine = new ValidationEngine({
-			specsPath: "./test-specs",
+			specsPath: testSpecsPath,
 		});
+	});
+
+	afterEach(async () => {
+		for (const path of testPaths) {
+			await cleanupTestSpecs(path);
+		}
+		testPaths.length = 0;
 	});
 
 	describe("constructor and configuration", () => {
@@ -19,14 +31,18 @@ describe("ValidationEngine", () => {
 		});
 
 		it("should initialize with custom config", () => {
+			const customPath = createTestSpecsPath("validation-custom");
+			testPaths.push(customPath);
 			const customEngine = new ValidationEngine({
-				specsPath: "/custom/path",
+				specsPath: customPath,
 			});
 			expect(customEngine).toBeDefined();
 		});
 
 		it("should configure engine after initialization", () => {
-			engine.configure({ specsPath: "/new/path" });
+			const newPath = createTestSpecsPath("validation-new");
+			testPaths.push(newPath);
+			engine.configure({ specsPath: newPath });
 			expect(engine).toBeDefined();
 		});
 	});
@@ -295,7 +311,7 @@ describe("ValidationEngine", () => {
 		it("should handle errors during getAllEntities", async () => {
 			// Create an engine with an invalid config that will cause errors
 			const brokenEngine = new ValidationEngine({
-				specsPath: "/non/existent/path/that/does/not/exist",
+				specsPath: createTestSpecsPath("nonexistent"),
 			});
 
 			const result = await brokenEngine.validateAll();
@@ -340,7 +356,7 @@ describe("ValidationEngine", () => {
 		it("should handle reference validation errors", async () => {
 			// Create an engine with an invalid config
 			const brokenEngine = new ValidationEngine({
-				specsPath: "/non/existent/path",
+				specsPath: createTestSpecsPath("nonexistent"),
 			});
 
 			const result = await brokenEngine.validateReferences();
@@ -380,7 +396,7 @@ describe("ValidationEngine", () => {
 
 		it("should handle validation errors gracefully", async () => {
 			const brokenEngine = new ValidationEngine({
-				specsPath: "/non/existent/path",
+				specsPath: createTestSpecsPath("nonexistent"),
 			});
 
 			const result = await brokenEngine.validateBusinessRules();
@@ -409,7 +425,7 @@ describe("ValidationEngine", () => {
 
 		it("should handle validation failures gracefully", async () => {
 			const brokenEngine = new ValidationEngine({
-				specsPath: "/non/existent/path",
+				specsPath: createTestSpecsPath("nonexistent"),
 			});
 
 			const result = await brokenEngine.runFullValidation();

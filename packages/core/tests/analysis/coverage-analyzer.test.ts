@@ -1,14 +1,17 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { CoverageAnalyzer } from "../../src/analysis/coverage-analyzer.js";
 import type { SpecConfig } from "../../src/interfaces/config.js";
+import { createTestSpecsPath } from "../test-helpers.js";
 
 describe("CoverageAnalyzer", () => {
 	let analyzer: CoverageAnalyzer;
-	const config: SpecConfig = {
-		specsPath: "./test-specs",
-	};
+	let testSpecsPath: string;
 
 	beforeEach(() => {
+		testSpecsPath = createTestSpecsPath("coverage-analyzer-test");
+		const config: SpecConfig = {
+			specsPath: testSpecsPath,
+		};
 		analyzer = new CoverageAnalyzer(config);
 	});
 
@@ -53,7 +56,7 @@ describe("CoverageAnalyzer", () => {
 
 		it("should handle errors gracefully", async () => {
 			const badAnalyzer = new CoverageAnalyzer({
-				specsPath: "/nonexistent/path",
+				specsPath: createTestSpecsPath("nonexistent"),
 			});
 			const result = await badAnalyzer.analyze();
 

@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, afterEach } from "vitest";
 import type { ServiceConfig } from "../../src/interfaces/config.js";
 import {
 	defaultContainer,
@@ -7,17 +7,24 @@ import {
 	ServiceContainer,
 	type ServiceFactory,
 } from "../../src/services/container.js";
+import { createTestSpecsPath, cleanupTestSpecs } from "../test-helpers.js";
 
 describe("ServiceContainer", () => {
 	let container: ServiceContainer;
 	let config: Partial<ServiceConfig>;
+	let testSpecsPath: string;
 
 	beforeEach(() => {
+		testSpecsPath = createTestSpecsPath("container-test");
 		config = {
-			specsPath: "./test-specs",
+			specsPath: testSpecsPath,
 			schemaValidation: true,
 		};
 		container = new ServiceContainer(config);
+	});
+
+	afterEach(async () => {
+		await cleanupTestSpecs(testSpecsPath);
 	});
 
 	describe("Constructor", () => {
@@ -101,7 +108,7 @@ describe("ServiceContainer", () => {
 
 			const instance = container.resolve("ConfigService");
 			expect(instance.config).toBeDefined();
-			expect(instance.config?.specsPath).toBe("./test-specs");
+			expect(instance.config?.specsPath).toBe(testSpecsPath);
 		});
 
 		it("should cache singleton instances", () => {
@@ -251,11 +258,12 @@ describe("ServiceContainer", () => {
 			container.register("ConfigService", (cfg) => ({ config: cfg }));
 			const instance1 = container.resolve("ConfigService");
 
-			container.updateConfig({ specsPath: "./updated-path" });
+			const updatedPath = "./updated-path";
+			container.updateConfig({ specsPath: updatedPath });
 			const instance2 = container.resolve("ConfigService");
 
-			expect(instance1.config?.specsPath).toBe("./test-specs");
-			expect(instance2.config?.specsPath).toBe("./updated-path");
+			expect(instance1.config?.specsPath).toBe(testSpecsPath);
+			expect(instance2.config?.specsPath).toBe(updatedPath);
 		});
 
 		it("should clear singleton instances on config update", () => {
@@ -304,15 +312,16 @@ describe("ServiceContainer", () => {
 		it("should create child container with custom config", () => {
 			container.register("ConfigService", (cfg) => ({ config: cfg }));
 
+			const childSpecsPath = "./child-specs";
 			const childContainer = container.createChildContainer({
-				specsPath: "./child-specs",
+				specsPath: childSpecsPath,
 			});
 
 			const parentInstance = container.resolve("ConfigService");
 			const childInstance = childContainer.resolve("ConfigService");
 
-			expect(parentInstance.config?.specsPath).toBe("./test-specs");
-			expect(childInstance.config?.specsPath).toBe("./child-specs");
+			expect(parentInstance.config?.specsPath).toBe(testSpecsPath);
+			expect(childInstance.config?.specsPath).toBe(childSpecsPath);
 		});
 
 		it("should not share singleton instances with parent", () => {
