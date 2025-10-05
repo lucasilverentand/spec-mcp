@@ -116,7 +116,7 @@ export const AppComponentStorageSchema = _BaseComponentStorageSchema.extend({
 		.array(z.enum(["development", "staging", "production"]))
 		.default(["development", "staging", "production"])
 		.describe("Environment-specific configuration"),
-});
+}).strict();
 
 export const ServiceComponentStorageSchema = _BaseComponentStorageSchema.extend(
 	{
@@ -128,14 +128,14 @@ export const ServiceComponentStorageSchema = _BaseComponentStorageSchema.extend(
 			.optional()
 			.describe("Local development port"),
 	},
-);
+).strict();
 
 export const LibraryComponentStorageSchema = _BaseComponentStorageSchema.extend(
 	{
 		type: z.literal("library"),
 		package_name: z.string().min(1).optional(),
 	},
-);
+).strict();
 
 // Runtime schemas (with computed ID)
 export const AppComponentSchema = AppComponentStorageSchema.transform(

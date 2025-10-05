@@ -45,16 +45,12 @@ export const REQUIREMENT_STEPS: StepDefinition[] = [
 		question:
 			"For technical requirements, research available libraries, frameworks, and solutions. What options exist?",
 		guidance:
-			"If this requirement involves external libraries or frameworks, use context7 to research them: First resolve the library name with resolve-library-id, then get docs with get-library-docs. For architectural patterns or standards, use WebFetch. Document your findings to inform implementation decisions.",
+			"If this requirement involves external libraries or frameworks, research them to inform your decisions. You can use context7 to get up-to-date docs (resolve-library-id then get-library-docs) or describe what you know. If not technical, mark as 'not applicable'.",
 		next_step: "problem_identification",
 		tool_hints: {
 			context7_examples: [
-				"resolve-library-id({ libraryName: 'passport' }) → get-library-docs({ context7CompatibleLibraryID: '/jaredhanson/passport' })",
-				"For auth: research passport.js, auth0, firebase-auth",
-			],
-			webfetch_examples: [
-				"WebFetch OAuth 2.0 standards and best practices",
-				"WebFetch OWASP authentication guidelines",
+				"Preferred: resolve-library-id({ libraryName: 'passport' }) → get-library-docs({ context7CompatibleLibraryID: '/jaredhanson/passport' })",
+				"Alternative: Describe library options from your knowledge",
 			],
 		},
 	},
@@ -128,11 +124,11 @@ export const REQUIREMENT_STEPS: StepDefinition[] = [
 		id: "review_and_refine",
 		order: 10,
 		name: "Review and Finalize",
-		description: "Final review before creation",
+		description: "Create complete requirement schema",
 		question:
-			"Ready to create this requirement? Let's do a final review.",
+			"Create the complete requirement specification using all information from previous steps.",
 		guidance:
-			"This is the final step. Review all the information you've provided to ensure it's complete and accurate. Make any final adjustments needed.",
+			"Final step: Create a complete requirement object with ALL fields properly structured. Use the schema provided in the finalization instructions. Ensure criteria have IDs (crit-001, crit-002, etc.), type is 'requirement', and all data from previous steps is included. The system will validate this against the schema.",
 		next_step: null,
 	},
 ];
@@ -166,12 +162,12 @@ export const COMPONENT_STEPS: StepDefinition[] = [
 		question:
 			"Research third-party libraries that could provide this functionality. What external solutions exist?",
 		guidance:
-			"Before building custom solutions, research available libraries using context7. First resolve the library name with resolve-library-id, then get comprehensive docs with get-library-docs. Document your findings and explain why you're building custom vs using a library.",
+			"Before building custom solutions, research available libraries. Use context7 for up-to-date documentation (resolve-library-id then get-library-docs preferred) or describe options from your knowledge. Document your findings and explain why you're building custom vs using a library.",
 		next_step: "constitution_alignment",
 		tool_hints: {
 			context7_examples: [
-				"resolve-library-id({ libraryName: 'express' }) → get-library-docs({ context7CompatibleLibraryID: '/expressjs/express' })",
-				"Research: framework options, utility libraries, SDKs",
+				"Preferred: resolve-library-id({ libraryName: 'express' }) → get-library-docs({ context7CompatibleLibraryID: '/expressjs/express' })",
+				"Alternative: Describe library options from knowledge",
 			],
 			query_examples: [
 				"query({ types: ['library'] }) to see what internal libraries exist",
@@ -263,7 +259,7 @@ export const COMPONENT_STEPS: StepDefinition[] = [
 		question:
 			"What does this component depend on?",
 		guidance:
-			"List both internal dependencies (other components in your system) and external dependencies (third-party libraries, services, databases). Be specific about versions where applicable.",
+			"List both internal dependencies (other components in your system) and external dependencies (third-party libraries with versions). If none, provide empty arrays: depends_on: [], external_dependencies: [].",
 		next_step: "define_ownership",
 	},
 	{
@@ -314,17 +310,17 @@ export const COMPONENT_STEPS: StepDefinition[] = [
 		id: "validate_refine",
 		order: 14,
 		name: "Validate and Refine",
-		description: "Final review before creation",
+		description: "Create complete component schema",
 		question:
-			"Ready to create this component? Let's do a final review.",
+			"Create the complete component specification using all information from previous steps.",
 		guidance:
-			"This is the final step. Review everything: boundaries are clear, dependencies are mapped, capabilities are defined, quality attributes are specified, and traceability is complete.",
+			"Final step: Create a complete component object with ALL fields properly structured. Use the schema provided in the finalization instructions. Ensure type is 'app', 'service', or 'library', number is set, and all data from previous steps is included. The system will validate this against the schema.",
 		next_step: null,
 	},
 ];
 
 /**
- * Step definitions for Plans (16 steps)
+ * Step definitions for Plans (15 steps)
  */
 export const PLAN_STEPS: StepDefinition[] = [
 	{
@@ -353,16 +349,12 @@ export const PLAN_STEPS: StepDefinition[] = [
 		question:
 			"Research the libraries, frameworks, and tools needed for implementation. What technologies will you use?",
 		guidance:
-			"For each major technology: use context7 to get latest docs (resolve-library-id then get-library-docs). For architectural patterns, use WebFetch to review best practices. Document all findings to inform your implementation approach.",
+			"For each major technology, research to inform your approach. Use context7 for up-to-date library docs (resolve-library-id then get-library-docs preferred) or describe from knowledge. Document all findings.",
 		next_step: "constitution_compliance",
 		tool_hints: {
 			context7_examples: [
-				"resolve-library-id({ libraryName: 'jest' }) → get-library-docs({ context7CompatibleLibraryID: '/jestjs/jest' })",
-				"Research all third-party dependencies needed",
-			],
-			webfetch_examples: [
-				"WebFetch microservices best practices",
-				"WebFetch REST API design patterns",
+				"Preferred: resolve-library-id({ libraryName: 'jest' }) → get-library-docs({ context7CompatibleLibraryID: '/jestjs/jest' })",
+				"Alternative: Describe technologies from knowledge",
 			],
 		},
 	},
@@ -429,7 +421,7 @@ export const PLAN_STEPS: StepDefinition[] = [
 		question:
 			"What dependencies exist for this plan?",
 		guidance:
-			"List what other plans must complete before this one starts. Also consider task dependencies within this plan - which tasks must happen before others?",
+			"List what other plans must complete before this one starts. If there are no dependencies, provide an empty array []. Also consider task dependencies within this plan - which tasks must happen before others?",
 		next_step: "break_down_tasks",
 	},
 	{
@@ -438,25 +430,14 @@ export const PLAN_STEPS: StepDefinition[] = [
 		name: "Break Down Tasks",
 		description: "Create actionable tasks (0.5-3 days each)",
 		question:
-			"What specific tasks need to be completed?",
+			"What specific tasks need to be completed with effort estimates?",
 		guidance:
-			"Break down the work into specific, actionable tasks. Each task should be: 0.5-3 days of effort, independently testable, and clearly described. Provide task IDs and descriptions.",
-		next_step: "estimate_effort",
-	},
-	{
-		id: "estimate_effort",
-		order: 9,
-		name: "Estimate Effort",
-		description: "Add effort estimates with buffer",
-		question:
-			"How much effort will each task require?",
-		guidance:
-			"Estimate effort for each task in days. Be realistic and add a 20% buffer for unknowns. Consider complexity, uncertainty, and team experience.",
+			"Break down the work into specific, actionable tasks. Each task should be: 0.5-3 days of effort, independently testable, and clearly described. Provide task IDs, descriptions, and estimated_days (be realistic and add a 20% buffer for unknowns).",
 		next_step: "define_acceptance",
 	},
 	{
 		id: "define_acceptance",
-		order: 10,
+		order: 9,
 		name: "Define Acceptance Criteria",
 		description: "Add acceptance criteria for the plan",
 		question:
@@ -467,7 +448,7 @@ export const PLAN_STEPS: StepDefinition[] = [
 	},
 	{
 		id: "identify_milestones",
-		order: 11,
+		order: 10,
 		name: "Identify Milestones",
 		description: "Define major checkpoints",
 		question:
@@ -478,7 +459,7 @@ export const PLAN_STEPS: StepDefinition[] = [
 	},
 	{
 		id: "plan_testing",
-		order: 12,
+		order: 11,
 		name: "Plan Testing Strategy",
 		description: "Define how work will be tested",
 		question:
@@ -489,7 +470,7 @@ export const PLAN_STEPS: StepDefinition[] = [
 	},
 	{
 		id: "plan_risks",
-		order: 13,
+		order: 12,
 		name: "Plan for Risks",
 		description: "Identify risks and mitigation strategies",
 		question:
@@ -500,7 +481,7 @@ export const PLAN_STEPS: StepDefinition[] = [
 	},
 	{
 		id: "create_timeline",
-		order: 14,
+		order: 13,
 		name: "Create Timeline",
 		description: "Build schedule and critical path",
 		question:
@@ -511,7 +492,7 @@ export const PLAN_STEPS: StepDefinition[] = [
 	},
 	{
 		id: "trace_specs",
-		order: 15,
+		order: 14,
 		name: "Trace to Specs",
 		description: "Link to requirements and components",
 		question:
@@ -522,13 +503,13 @@ export const PLAN_STEPS: StepDefinition[] = [
 	},
 	{
 		id: "validate_refine",
-		order: 16,
+		order: 15,
 		name: "Validate and Refine",
-		description: "Final review before creation",
+		description: "Create complete plan schema",
 		question:
-			"Ready to create this plan? Let's do a final review.",
+			"Create the complete plan specification using all information from previous steps.",
 		guidance:
-			"This is the final step. Verify: all tasks are defined, dependencies are mapped, 20% buffer is included in estimates, traceability is complete.",
+			"Final step: Create a complete plan object with ALL fields properly structured. Use the schema provided in the finalization instructions. Ensure type is 'plan', number is set, tasks have IDs and structure, and all data from previous steps is included. The system will validate this against the schema.",
 		next_step: null,
 	},
 ];
@@ -561,16 +542,8 @@ export const CONSTITUTION_STEPS: StepDefinition[] = [
 		question:
 			"Research industry standards and best practices for these types of principles. What established frameworks exist?",
 		guidance:
-			"Use WebFetch to research established frameworks relevant to your principles. Examples: SOLID principles, 12-factor apps, OWASP security principles, Google SRE practices, Clean Architecture. Document your findings.",
+			"Research established frameworks relevant to your principles (SOLID, 12-factor apps, OWASP, etc.). Describe from your knowledge or web research. Examples: SOLID principles, 12-factor apps, OWASP security, Google SRE best practices.",
 		next_step: "framework_review",
-		tool_hints: {
-			webfetch_examples: [
-				"WebFetch SOLID principles",
-				"WebFetch 12-factor app methodology",
-				"WebFetch OWASP top 10 security principles",
-				"WebFetch Google SRE best practices",
-			],
-		},
 	},
 	{
 		id: "framework_review",
@@ -580,13 +553,12 @@ export const CONSTITUTION_STEPS: StepDefinition[] = [
 		question:
 			"Are you establishing principles around specific technologies or frameworks? If so, research their recommended practices.",
 		guidance:
-			"If your principles involve specific libraries/frameworks (e.g., React, Node.js, PostgreSQL), use context7 to review their official best practices: resolve-library-id then get-library-docs. Align your principles with framework recommendations. If not applicable, state 'not applicable'.",
+			"If your principles involve specific libraries/frameworks, research their best practices. Use context7 for latest docs (resolve-library-id then get-library-docs preferred) or describe from knowledge. If not applicable, state 'not applicable'.",
 		next_step: "basic_info",
 		tool_hints: {
 			context7_examples: [
-				"resolve-library-id({ libraryName: 'react' }) → get-library-docs({ context7CompatibleLibraryID: '/facebook/react', topic: 'best practices' })",
-				"For React principles: research React docs",
-				"For Node.js principles: research Node.js best practices",
+				"Preferred: resolve-library-id({ libraryName: 'react' }) → get-library-docs({ context7CompatibleLibraryID: '/facebook/react', topic: 'best practices' })",
+				"Alternative: Describe framework best practices from knowledge",
 			],
 		},
 	},
@@ -632,11 +604,11 @@ export const CONSTITUTION_STEPS: StepDefinition[] = [
 		id: "finalize",
 		order: 7,
 		name: "Finalize",
-		description: "Review and create the constitution",
+		description: "Create complete constitution schema",
 		question:
-			"Ready to create this constitution? Let's do a final review.",
+			"Create the complete constitution specification using all information from previous steps.",
 		guidance:
-			"This is the final step. Review the constitution name, description, all articles, and conflict analysis to ensure they're complete and accurate.",
+			"Final step: Create a complete constitution object with ALL fields properly structured. Use the schema provided in the finalization instructions. Ensure type is 'constitution', articles array has proper IDs and structure, and all data from previous steps is included. The system will validate this against the schema.",
 		next_step: null,
 	},
 ];
@@ -668,18 +640,14 @@ export const DECISION_STEPS: StepDefinition[] = [
 		name: "Technology Options Research",
 		description: "Research each alternative being considered",
 		question:
-			"For each alternative/option being considered, research using appropriate tools. What are the detailed capabilities and trade-offs?",
+			"For each alternative/option being considered, research the detailed capabilities and trade-offs. What are the pros and cons?",
 		guidance:
-			"For libraries/frameworks: use context7 (resolve-library-id then get-library-docs). For architectural patterns: use WebFetch for comparisons and best practices. Document findings for each option to support your decision.",
+			"For each option, research capabilities and trade-offs. Use context7 for library docs (resolve-library-id then get-library-docs preferred) or describe from knowledge. Document findings to support your decision.",
 		next_step: "basic_info",
 		tool_hints: {
 			context7_examples: [
-				"resolve-library-id({ libraryName: 'postgresql' }) → get-library-docs({ context7CompatibleLibraryID: '/postgres/postgres' })",
-				"Research each technology option being considered",
-			],
-			webfetch_examples: [
-				"WebFetch comparison: PostgreSQL vs MySQL",
-				"WebFetch REST vs GraphQL architecture",
+				"Preferred: resolve-library-id({ libraryName: 'postgresql' }) → get-library-docs({ context7CompatibleLibraryID: '/postgres/postgres' })",
+				"Alternative: Describe technology options from knowledge",
 			],
 		},
 	},
@@ -747,11 +715,11 @@ export const DECISION_STEPS: StepDefinition[] = [
 		id: "finalize",
 		order: 8,
 		name: "Finalize",
-		description: "Review and create the decision",
+		description: "Create complete decision schema",
 		question:
-			"Ready to create this decision? Let's do a final review.",
+			"Create the complete decision specification using all information from previous steps.",
 		guidance:
-			"This is the final step. Review all the decision details to ensure they're complete and accurate, including constitution article references.",
+			"Final step: Create a complete decision object with ALL fields properly structured. Use the schema provided in the finalization instructions. Ensure type is 'decision', number is set, consequences object is properly structured, and all data from previous steps is included. The system will validate this against the schema.",
 		next_step: null,
 	},
 ];

@@ -50,7 +50,7 @@ export const ConstitutionStorageSchema = BaseSchema.extend({
 		.array(ArticleSchema)
 		.min(1)
 		.describe("Core principles that govern all development decisions"),
-});
+}).strict();
 
 // Schema for runtime constitutions (with computed ID)
 export const ConstitutionSchema = ConstitutionStorageSchema.transform(

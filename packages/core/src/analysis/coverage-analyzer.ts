@@ -60,7 +60,11 @@ export class CoverageAnalyzer
 
 			// Analyze plan coverage
 			const planCoverage = await this.analyzePlanCoverage(
-				requirements as Array<{ criteria: Array<{ id: string }> }>,
+				requirements as Array<{
+				number: number;
+				slug: string;
+				criteria: Array<{ id: string }>;
+			}>,
 				plans as Array<{
 					number: number;
 					slug: string;
@@ -159,7 +163,8 @@ export class CoverageAnalyzer
 
 		for (const requirement of requirements) {
 			const hasLinkedPlans = requirement.criteria.some((criteria) => {
-				return plans.some((plan) => plan.criteria_id === criteria.id);
+				const fullCriteriaId = `req-${requirement.number.toString().padStart(3, "0")}-${requirement.slug}/${criteria.id}`;
+			return plans.some((plan) => plan.criteria_id === fullCriteriaId);
 			});
 
 			if (hasLinkedPlans) {
@@ -175,7 +180,11 @@ export class CoverageAnalyzer
 	}
 
 	private async analyzePlanCoverage(
-		requirements: Array<{ criteria: Array<{ id: string }> }>,
+		requirements: Array<{
+			number: number;
+			slug: string;
+			criteria: Array<{ id: string }>;
+		}>,
 		plans: Array<{
 			number: number;
 			slug: string;
@@ -187,11 +196,12 @@ export class CoverageAnalyzer
 		let covered = 0;
 		const orphaned: string[] = [];
 
-		// Get all criteria IDs from requirements
+		// Get all criteria IDs from requirements (with full paths)
 		const criteriaIds = new Set<string>();
 		for (const requirement of requirements) {
+			const reqId = `req-${requirement.number.toString().padStart(3, "0")}-${requirement.slug}`;
 			for (const criteria of requirement.criteria) {
-				criteriaIds.add(criteria.id);
+				criteriaIds.add(`${reqId}/${criteria.id}`);
 			}
 		}
 

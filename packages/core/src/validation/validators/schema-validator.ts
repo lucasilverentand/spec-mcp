@@ -1,12 +1,4 @@
-import type {
-	AnyEntity,
-	AppComponent,
-	Decision,
-	LibraryComponent,
-	Plan,
-	Requirement,
-	ServiceComponent,
-} from "@spec-mcp/data";
+import type { AnyEntity } from "@spec-mcp/data";
 import {
 	AppComponentSchema,
 	ConstitutionSchema,
@@ -142,7 +134,7 @@ function validatePartialEntity(
 ): ValidationResult {
 	try {
 		// Create a minimal valid entity for the type to test against
-		const baseEntity = createBaseEntity(entityType);
+		const baseEntity = createBaseEntity(entityType) as Record<string, unknown>;
 		const mergedEntity = { ...baseEntity, ...partialEntity } as AnyEntity;
 
 		return validateEntity(mergedEntity);
@@ -169,6 +161,10 @@ function getSchemaForType(entityType: string): z.Schema {
 			return ServiceComponentSchema as unknown as z.Schema;
 		case "library":
 			return LibraryComponentSchema as unknown as z.Schema;
+		case "constitution":
+			return ConstitutionSchema as unknown as z.Schema;
+		case "decision":
+			return DecisionSchema as unknown as z.Schema;
 		default:
 			throw new Error(`Unknown entity type: ${entityType}`);
 	}
@@ -328,9 +324,6 @@ function validateEntityStructure(entity: unknown): ValidationResult {
 		case "app":
 		case "service":
 		case "library":
-			if (!record.capabilities || !Array.isArray(record.capabilities)) {
-				warnings.push("Components should have capabilities array");
-			}
 			break;
 	}
 
@@ -343,9 +336,8 @@ function validateEntityStructure(entity: unknown): ValidationResult {
 	};
 }
 
-function createBaseEntity(entityType: string): AnyEntity {
+function createBaseEntity(entityType: string): unknown {
 	const baseFields = {
-		id: "test-entity-001",
 		name: "Test Entity",
 		slug: "test-entity",
 		description: "Test description",
@@ -367,7 +359,7 @@ function createBaseEntity(entityType: string): AnyEntity {
 						status: "active",
 					},
 				],
-			} as Requirement;
+			};
 
 		case "plan":
 			return {
@@ -385,7 +377,7 @@ function createBaseEntity(entityType: string): AnyEntity {
 				references: [],
 				completed: false,
 				approved: false,
-			} as Plan;
+			};
 
 		case "app":
 			return {
@@ -412,7 +404,7 @@ function createBaseEntity(entityType: string): AnyEntity {
 				external_dependencies: [],
 				deployment_targets: [],
 				environments: ["development"],
-			} as AppComponent;
+			};
 
 		case "service":
 			return {
@@ -437,7 +429,7 @@ function createBaseEntity(entityType: string): AnyEntity {
 				},
 				depends_on: [],
 				external_dependencies: [],
-			} as ServiceComponent;
+			};
 
 		case "library":
 			return {
@@ -462,7 +454,24 @@ function createBaseEntity(entityType: string): AnyEntity {
 				},
 				depends_on: [],
 				external_dependencies: [],
-			} as LibraryComponent;
+			};
+
+		case "constitution":
+			return {
+				...baseFields,
+				type: "constitution",
+				articles: [
+					{
+						id: "art-001",
+						title: "Test Article",
+						principle: "Test principle",
+						rationale: "Test rationale",
+						examples: [],
+						exceptions: [],
+						status: "active",
+					},
+				],
+			};
 
 		case "decision":
 			return {
@@ -483,7 +492,7 @@ function createBaseEntity(entityType: string): AnyEntity {
 				affects_plans: [],
 				informed_by_articles: [],
 				references: [],
-			} as Decision;
+			};
 
 		default:
 			throw new Error(`Unknown entity type: ${entityType}`);

@@ -65,8 +65,6 @@ describe("SchemaValidator", () => {
 				folder: "./apps/test",
 				depends_on: [],
 				external_dependencies: [],
-				capabilities: [],
-				constraints: [],
 				tech_stack: [],
 				deployment_targets: [],
 				environments: ["development"],
@@ -112,8 +110,6 @@ describe("SchemaValidator", () => {
 				folder: "./services/test",
 				depends_on: [],
 				external_dependencies: [],
-				capabilities: [],
-				constraints: [],
 				tech_stack: [],
 				testing_setup: {
 					frameworks: ["Vitest"],
@@ -157,8 +153,6 @@ describe("SchemaValidator", () => {
 				folder: "./libs/test",
 				depends_on: [],
 				external_dependencies: [],
-				capabilities: [],
-				constraints: [],
 				tech_stack: [],
 				testing_setup: {
 					frameworks: ["Vitest"],
@@ -679,9 +673,7 @@ describe("SchemaValidator", () => {
 			};
 
 			const result = SchemaValidator.validateEntityStructure(entity);
-			expect(result.warnings).toContain(
-				"Components should have capabilities array",
-			);
+		expect(result.valid).toBe(true);
 		});
 
 		it("should handle string type check", () => {
@@ -717,8 +709,9 @@ describe("SchemaValidator", () => {
 			} as unknown as AnyEntity;
 
 			const result = SchemaValidator.validateEntity(requirement);
-			// Zod strips extra fields by default
-			expect(result.valid).toBe(true);
+			// Schemas use .strict() so extra fields are rejected
+			expect(result.valid).toBe(false);
+			expect(result.errors.some(e => e.includes("extraField"))).toBe(true);
 		});
 
 		it("should handle deeply nested validation errors", () => {

@@ -57,7 +57,7 @@ describe("DraftManager", () => {
 
 			expect(draft.id).toMatch(/^pln-\d+-[a-z0-9]+$/);
 			expect(draft.type).toBe("plan");
-			expect(draft.total_steps).toBe(16);
+			expect(draft.total_steps).toBe(15);
 		});
 
 		it("should create a constitution draft with 3 total steps", async () => {

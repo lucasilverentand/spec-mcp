@@ -262,6 +262,117 @@ export function finalizeDraft(
 		const componentType = draftData.type as ComponentType | undefined;
 		const schema = getSchemaForType(type, componentType);
 
+		// Auto-convert criteria to proper format for requirements
+		if (type === "requirement" && draftData.criteria) {
+			const criteria = draftData.criteria as Array<string | { id?: string; description: string }>;
+			draftData.criteria = criteria.map((item, index) => {
+				if (typeof item === "string") {
+					// String criteria -> convert to object with ID
+					return {
+						id: `crit-${String(index + 1).padStart(3, "0")}`,
+						description: item,
+					};
+				} else if (typeof item === "object" && !item.id) {
+					// Object with description but no ID -> add ID
+					return {
+						id: `crit-${String(index + 1).padStart(3, "0")}`,
+						description: item.description,
+					};
+				}
+				// Already has ID -> keep as is
+				return item;
+			});
+		}
+
+		// Auto-fill empty arrays only for fields that exist in the schema
+		// Get the schema shape to check which fields are actually in the schema
+		const schemaShape = schema instanceof z.ZodObject ? schema.shape : {};
+		const fieldsWithEmptyArrayDefault = [
+			"depends_on",
+			"external_dependencies",
+			"tech_stack",
+			"tasks",
+			"flows",
+			"test_cases",
+			"api_contracts",
+			"data_models",
+			"references",
+			"alternatives",
+			"affects_components",
+			"affects_requirements",
+			"affects_plans",
+			"informed_by_articles",
+		];
+
+		for (const field of fieldsWithEmptyArrayDefault) {
+			// Only add the field if it exists in the schema AND isn't already in draftData
+			if (field in schemaShape && !(field in draftData)) {
+				draftData[field] = [];
+			}
+			// Remove the field if it exists in draftData but NOT in the schema
+			else if (!(field in schemaShape) && field in draftData) {
+				delete draftData[field];
+			}
+		}
+
+		// Auto-fill deployment object for components if missing
+		// DeploymentSchema requires platform (min 1 char), others have defaults
+		if ((type === "component") && !draftData.deployment) {
+			draftData.deployment = {
+				platform: (draftData.platform as string) || "unknown",
+				environment_vars: (draftData.environment_vars as string[]) || [],
+				secrets: (draftData.secrets as string[]) || [],
+			};
+		}
+
+		// Auto-fill scope object for components if missing
+		// Note: ComponentScopeSchema requires min(1) for both arrays, so only auto-fill if we have data
+		if ((type === "component") && !draftData.scope) {
+			const inScope = draftData.in_scope as unknown[] | undefined;
+			const outScope = draftData.out_of_scope as unknown[] | undefined;
+
+			// Only create scope if we have at least one item in each array (schema requires min 1)
+			if (inScope && outScope && inScope.length > 0 && outScope.length > 0) {
+				draftData.scope = {
+					in_scope: inScope,
+					out_of_scope: outScope,
+				};
+			}
+			// If scope data was collected but not structured, let validation fail with clear message
+		}
+
+		// Auto-fill consequences object for decisions if missing
+		if (type === "decision" && !draftData.consequences) {
+			draftData.consequences = {
+				positive: draftData.positive || [],
+				negative: draftData.negative || [],
+				risks: draftData.risks || [],
+				mitigation: draftData.mitigation || [],
+			};
+		}
+
+		// Remove flow-specific fields that aren't part of the entity schema
+		const flowSpecificFields = [
+			"research_findings",
+			"no_constitutions",
+			"technology_notes",
+			"in_scope",
+			"out_of_scope",
+			"environment_vars",
+			"secrets",
+			"platform",
+			"positive",
+			"negative",
+			"risks",
+			"mitigation",
+		];
+
+		for (const field of flowSpecificFields) {
+			if (!(field in schemaShape) && field in draftData) {
+				delete draftData[field];
+			}
+		}
+
 		// Add automatic timestamps if not present
 		const dataWithTimestamps = {
 			...draftData,

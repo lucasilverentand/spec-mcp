@@ -315,10 +315,27 @@ export class StepValidator {
 		suggestions: string[],
 		strengths: string[],
 	): void {
+		// Validate that complete schema fields are provided
+		const type = data.type as string | undefined;
+		const number = data.number as number | undefined;
 		const slug = data.slug as string | undefined;
 		const name = data.name as string | undefined;
+		const description = data.description as string | undefined;
+		const priority = data.priority as string | undefined;
+		const criteria = data.criteria as unknown[] | undefined;
 
-		if (slug && typeof slug === "string") {
+		// Required fields check
+		if (!type || type !== "requirement") {
+			issues.push("type must be 'requirement'");
+		}
+
+		if (!number || typeof number !== "number") {
+			issues.push("number is required and must be a number");
+		}
+
+		if (!slug || typeof slug !== "string") {
+			issues.push("slug is required");
+		} else {
 			const slugRegex = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 			if (!slugRegex.test(slug)) {
 				issues.push("Slug must be lowercase with hyphens, no special characters");
@@ -326,12 +343,40 @@ export class StepValidator {
 			}
 		}
 
-		if (name && typeof name === "string" && name.length > 0) {
-			strengths.push("Name provided");
+		if (!name || typeof name !== "string") {
+			issues.push("name is required");
+		}
+
+		if (!description || typeof description !== "string") {
+			issues.push("description is required");
+		}
+
+		if (priority && !["critical", "required", "ideal", "optional"].includes(priority)) {
+			issues.push("priority must be one of: critical, required, ideal, optional");
+		}
+
+		// Validate criteria structure
+		if (!criteria || !Array.isArray(criteria) || criteria.length === 0) {
+			issues.push("criteria array is required with at least one criterion");
+		} else {
+			// Check that each criterion has an id and description
+			criteria.forEach((criterion, index) => {
+				if (typeof criterion !== "object" || criterion === null) {
+					issues.push(`Criterion at index ${index} must be an object`);
+				} else {
+					const crit = criterion as Record<string, unknown>;
+					if (!crit.id || typeof crit.id !== "string") {
+						issues.push(`Criterion at index ${index} missing 'id' field (should be crit-001, crit-002, etc.)`);
+					}
+					if (!crit.description || typeof crit.description !== "string") {
+						issues.push(`Criterion at index ${index} missing 'description' field`);
+					}
+				}
+			});
 		}
 
 		if (issues.length === 0) {
-			strengths.push("All required fields complete and validated");
+			strengths.push("Complete requirement schema validated successfully");
 		}
 	}
 
@@ -368,21 +413,28 @@ export class StepValidator {
 		const constitutionArticles = data.constitution_articles as string | string[] | undefined;
 		const noConstitutions = data.no_constitutions as boolean | undefined;
 
-		if (!constitutionArticles && !noConstitutions) {
+		if (constitutionArticles === undefined && !noConstitutions) {
 			issues.push("Constitution review is required");
-			suggestions.push("Query constitutions and reference relevant article IDs, or state 'none exist'");
+			suggestions.push("Query constitutions and reference relevant article IDs with empty array [] if none exist");
 			return;
 		}
 
 		if (noConstitutions) {
 			strengths.push("Confirmed no constitutions exist");
-		} else if (constitutionArticles) {
+		} else if (constitutionArticles !== undefined) {
 			const articles = Array.isArray(constitutionArticles) ? constitutionArticles : [constitutionArticles];
+
+			// Empty array is valid (no constitutions exist)
+			if (articles.length === 0) {
+				strengths.push("Confirmed no constitutions exist");
+				return;
+			}
+
 			const validArticleIds = articles.filter(a => typeof a === "string" && a.match(/con-\d{3}-.+\/art-\d{3}/));
 
 			if (validArticleIds.length > 0) {
 				strengths.push(`Referenced ${validArticleIds.length} constitution article(s)`);
-			} else {
+			} else if (validArticleIds.length === 0 && articles.length > 0) {
 				issues.push("Invalid article ID format");
 				suggestions.push("Use format: con-001-slug/art-001");
 			}
@@ -540,16 +592,19 @@ export class StepValidator {
 				break;
 
 			case "map_dependencies":
-				const dependsOn = (data.depends_on as unknown[] | undefined) || [];
-				const externalDeps = (data.external_dependencies as unknown[] | undefined) || [];
+				const dependsOn = data.depends_on as unknown[] | undefined;
+				const externalDeps = data.external_dependencies as unknown[] | undefined;
 
-				const internalCount = Array.isArray(dependsOn) ? dependsOn.length : 0;
-				const externalCount = Array.isArray(externalDeps) ? externalDeps.length : 0;
+				// Accept undefined as "not provided yet" and empty arrays as "no dependencies"
+				if (dependsOn !== undefined || externalDeps !== undefined) {
+					const internalCount = Array.isArray(dependsOn) ? dependsOn.length : 0;
+					const externalCount = Array.isArray(externalDeps) ? externalDeps.length : 0;
 
-				if (internalCount === 0 && externalCount === 0) {
-					strengths.push("No external dependencies - self-contained component");
-				} else {
-					strengths.push(`Dependencies mapped: ${internalCount} internal, ${externalCount} external`);
+					if (internalCount === 0 && externalCount === 0) {
+						strengths.push("No dependencies - self-contained component");
+					} else {
+						strengths.push(`Dependencies mapped: ${internalCount} internal, ${externalCount} external`);
+					}
 				}
 				break;
 
@@ -609,17 +664,22 @@ export class StepValidator {
 			case "break_down_tasks":
 				const tasks = data.tasks as unknown[] | undefined;
 				if (tasks && Array.isArray(tasks) && tasks.length > 0) {
-					strengths.push(`${tasks.length} tasks defined with clear descriptions`);
+					// Check if tasks have estimated_days
+					const tasksWithEstimates = tasks.filter((t: unknown) =>
+						typeof t === "object" && t !== null && "estimated_days" in t
+					);
+					if (tasksWithEstimates.length === tasks.length) {
+						strengths.push(`${tasks.length} tasks defined with effort estimates`);
+					} else {
+						strengths.push(`${tasks.length} tasks defined`);
+						if (tasksWithEstimates.length === 0) {
+							issues.push("Tasks should include estimated_days field");
+							suggestions.push("Add estimated_days (0.5-3 days) for each task");
+						}
+					}
 				} else {
 					issues.push("Tasks array is required");
-					suggestions.push("Break down the work into specific tasks");
-				}
-				break;
-
-			case "estimate_effort":
-				const tasksWithEstimates = data.tasks as unknown[] | undefined;
-				if (tasksWithEstimates && Array.isArray(tasksWithEstimates)) {
-					strengths.push(`Effort estimates provided for ${tasksWithEstimates.length} tasks`);
+					suggestions.push("Break down the work into specific tasks with estimates");
 				}
 				break;
 

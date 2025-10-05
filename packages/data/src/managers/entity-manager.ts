@@ -463,16 +463,19 @@ export class EntityManager {
 				}
 			}
 
-			// Apply updates
+			// Apply updates (exclude 'id' from updates as it's not stored)
+			const { id: _updateId, ...updatesWithoutId } = updates as Record<
+				string,
+				unknown
+			>;
 			const updatedEntity: AnyEntity = {
 				...existingEntity,
-				...updates,
-				id: existingEntity.id, // Preserve original ID
+				...updatesWithoutId,
 				created_at: existingEntity.created_at, // Preserve creation time
 				updated_at: new Date().toISOString(),
 			} as AnyEntity;
 
-			// Validate updated entity
+			// Validate updated entity (without id field since it's not stored)
 			const validationResult = await this.validationManager.validateEntity(
 				entityType,
 				updatedEntity,
@@ -487,7 +490,8 @@ export class EntityManager {
 			// Write updated entity
 			await this.fileManager.writeEntity(entityType, id, updatedEntity);
 
-			return { success: true, data: updatedEntity };
+			// Return with computed ID
+			return { success: true, data: { ...updatedEntity, id } };
 		} catch (error) {
 			return {
 				success: false,
@@ -1074,9 +1078,14 @@ export class EntityManager {
 	// === VALIDATION METHODS (from ValidationFacade) ===
 
 	async validateEntityReferences(entity: AnyEntity): Promise<void> {
+		// Remove 'id' field before validation (it's not stored)
+		const { id: _entityId, ...entityWithoutId } = entity as Record<
+			string,
+			unknown
+		>;
 		const result = await this.validationManager.validateEntity(
 			entity.type as EntityType,
-			entity,
+			entityWithoutId as AnyEntity,
 		);
 		if (!result.success) {
 			throw new Error(result.error);
@@ -1236,23 +1245,26 @@ export class EntityManager {
 	> {
 		// Generate ID and number if not provided
 		let number = (data as { number?: number }).number;
+		let id: string;
 		if (!data.id) {
 			number = await this.fileManager.getNextNumber(entityType);
 			const slug = generateSlug(data.name || "untitled");
-			data.id = generateId(entityType, number, slug);
+			id = generateId(entityType, number, slug);
+		} else {
+			id = data.id as string;
 		}
 
-		// Set metadata
+		// Set metadata (exclude 'id' from the entity for validation)
 		const now = new Date().toISOString();
+		const { id: _dataId, ...dataWithoutId } = data as Record<string, unknown>;
 		const entity: AnyEntity = {
-			...data,
-			id: data.id,
+			...dataWithoutId,
 			number: number,
 			created_at: now,
 			updated_at: now,
 		} as AnyEntity;
 
-		// Validate entity
+		// Validate entity (without id field since it's not stored)
 		const validationResult = await this.validationManager.validateEntity(
 			entityType,
 			entity,
@@ -1265,15 +1277,16 @@ export class EntityManager {
 		}
 
 		// Check if entity already exists
-		const exists = await this.fileManager.entityExists(entityType, entity.id);
+		const exists = await this.fileManager.entityExists(entityType, id);
 		if (exists) {
 			return {
 				success: false,
-				error: `${this.getEntityTypeName(entityType)} with ID '${entity.id}' already exists`,
+				error: `${this.getEntityTypeName(entityType)} with ID '${id}' already exists`,
 			};
 		}
 
-		return { success: true, data: entity };
+		// Return with computed ID
+		return { success: true, data: { ...entity, id } };
 	}
 
 	private async prepareEntityForUpdate(
@@ -1289,16 +1302,19 @@ export class EntityManager {
 			return { success: false, error: `Entity with ID '${id}' not found` };
 		}
 
-		// Apply updates
+		// Apply updates (exclude 'id' from updates as it's not stored)
+		const { id: _updateId, ...updatesWithoutId } = updates as Record<
+			string,
+			unknown
+		>;
 		const updatedEntity: AnyEntity = {
 			...existingEntity,
-			...updates,
-			id: existingEntity.id, // Preserve original ID
+			...updatesWithoutId,
 			created_at: existingEntity.created_at, // Preserve creation time
 			updated_at: new Date().toISOString(),
 		} as AnyEntity;
 
-		// Validate updated entity
+		// Validate updated entity (without id field since it's not stored)
 		const validationResult = await this.validationManager.validateEntity(
 			entityType,
 			updatedEntity,
@@ -1310,7 +1326,8 @@ export class EntityManager {
 			};
 		}
 
-		return { success: true, data: updatedEntity };
+		// Return with computed ID
+		return { success: true, data: { ...updatedEntity, id } };
 	}
 
 }

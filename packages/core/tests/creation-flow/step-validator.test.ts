@@ -254,6 +254,8 @@ describe("StepValidator", () => {
 		describe("review_and_refine", () => {
 			it("should pass with all required fields", () => {
 				const result = validator.validate("requirement", "review_and_refine", {
+					type: "requirement",
+					number: 1,
 					slug: "user-authentication",
 					name: "User Authentication",
 					description:
@@ -270,12 +272,14 @@ describe("StepValidator", () => {
 
 				expect(result.passed).toBe(true);
 				expect(result.strengths).toContain(
-					"All required fields complete and validated",
+					"Complete requirement schema validated successfully",
 				);
 			});
 
 			it("should fail with invalid slug format", () => {
 				const result = validator.validate("requirement", "review_and_refine", {
+					type: "requirement",
+					number: 1,
 					slug: "User Authentication",
 					name: "User Authentication",
 					description: "Test description with rationale because of security",
@@ -385,7 +389,7 @@ describe("StepValidator", () => {
 
 				expect(result.passed).toBe(true);
 				expect(result.strengths).toContain(
-					"No external dependencies - self-contained component",
+					"No dependencies - self-contained component",
 				);
 			});
 		});
@@ -459,14 +463,14 @@ describe("StepValidator", () => {
 			it("should pass with task array", () => {
 				const result = validator.validate("plan", "break_down_tasks", {
 					tasks: [
-						{ id: "task-001", description: "Setup dependencies" },
-						{ id: "task-002", description: "Implement core logic" },
+						{ id: "task-001", description: "Setup dependencies", estimated_days: 1 },
+						{ id: "task-002", description: "Implement core logic", estimated_days: 2 },
 					],
 				});
 
 				expect(result.passed).toBe(true);
 				expect(result.strengths).toContain(
-					"2 tasks defined with clear descriptions",
+					"2 tasks defined with effort estimates",
 				);
 			});
 
@@ -476,28 +480,6 @@ describe("StepValidator", () => {
 				});
 
 				expect(result.passed).toBe(false);
-			});
-		});
-
-		describe("estimate_effort", () => {
-			it("should pass with task estimates", () => {
-				const result = validator.validate("plan", "estimate_effort", {
-					tasks: [
-						{
-							id: "task-001",
-							description: "Setup",
-							estimated_days: 0.5,
-						},
-						{
-							id: "task-002",
-							description: "Implementation",
-							estimated_days: 2.0,
-						},
-					],
-				});
-
-				expect(result.passed).toBe(true);
-				expect(result.strengths).toContain("Effort estimates provided for 2 tasks");
 			});
 		});
 

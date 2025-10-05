@@ -74,7 +74,10 @@ describe("SpecsManager", () => {
 		slug: "test-component",
 		name: "Test Component",
 		description: "Test description",
-		capabilities: [] as string[],
+		folder: ".",
+		depends_on: [],
+		external_dependencies: [],
+		tech_stack: [],
 		testing_setup: {
 			frameworks: ["Vitest"],
 			coverage_target: 90,
@@ -83,6 +86,8 @@ describe("SpecsManager", () => {
 		},
 		deployment: {
 			platform: "Test Platform",
+			environment_vars: [],
+			secrets: [],
 		},
 		scope: {
 			in_scope: [

@@ -121,6 +121,8 @@ describe("Creation Flow Integration Tests", () => {
 
 			// Step 10: Review and Finalize
 			const finalStep = await creationFlowHelper.step(draft_id, {
+				type: "requirement",
+				number: 1,
 				slug: "user-auth",
 				name: "User Authentication",
 				description: "Authentication completes in under 3 seconds",
@@ -256,7 +258,7 @@ describe("Creation Flow Integration Tests", () => {
 			const draft_id = startResponse.draft_id;
 
 			expect(startResponse.step).toBe(1);
-			expect(startResponse.total_steps).toBe(16);
+			expect(startResponse.total_steps).toBe(15);
 
 			// Step 1: Context Discovery
 			await creationFlowHelper.step(draft_id, {

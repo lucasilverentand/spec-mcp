@@ -47,11 +47,11 @@ describe("CreationFlowHelper", () => {
 			expect(response.current_step_name).toBe("Research Existing Components");
 		});
 
-		it("should start plan creation flow with 12 steps", async () => {
+		it("should start plan creation flow with 15 steps", async () => {
 			const response = await helper.start("plan");
 
 			expect(response.step).toBe(1);
-			expect(response.total_steps).toBe(16);
+			expect(response.total_steps).toBe(15);
 			expect(response.current_step_name).toBe("Context Discovery");
 		});
 
@@ -501,6 +501,8 @@ describe("CreationFlowHelper", () => {
 
 			// Step 10: Review and Finalize
 			const step10 = await helper.step(draft_id, {
+				type: "requirement",
+				number: 1,
 				slug: "user-authentication",
 				name: "User Authentication",
 				description:

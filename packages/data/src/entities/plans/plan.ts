@@ -88,7 +88,7 @@ export const PlanStorageSchema = BaseSchema.extend({
 		.boolean()
 		.default(false)
 		.describe("Whether the plan has been approved"),
-});
+}).strict();
 
 // Schema for runtime plans (with computed ID)
 export const PlanSchema = PlanStorageSchema.transform((data) => ({

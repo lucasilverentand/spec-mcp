@@ -249,16 +249,19 @@ export class ValidationManager {
 		entityType: EntityType,
 		entity: AnyEntity,
 	): AnyEntity {
-		// Start with base fields that all entities should have
+		// Start with base fields that all entities should have (excluding id - it's computed)
+		const entityRecord = entity as Record<string, unknown>;
 		const baseFields = {
 			type: entity.type,
 			number: entity.number,
 			slug: entity.slug,
 			name: entity.name,
 			description: entity.description,
-			id: entity.id,
 			created_at: entity.created_at,
 			updated_at: entity.updated_at,
+			...(entityRecord.locked !== undefined ? { locked: entityRecord.locked } : {}),
+			...(entityRecord.locked_at !== undefined ? { locked_at: entityRecord.locked_at } : {}),
+			...(entityRecord.locked_by !== undefined ? { locked_by: entityRecord.locked_by } : {}),
 		};
 
 		// Add entity-specific fields based on type

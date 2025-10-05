@@ -91,7 +91,7 @@ export const DecisionStorageSchema = BaseSchema.extend({
 		.array(ReferenceSchema)
 		.default([])
 		.describe("Supporting documentation, research, benchmarks"),
-});
+}).strict();
 
 // Schema for runtime decisions (with computed ID)
 export const DecisionSchema = DecisionStorageSchema.transform((data) => ({

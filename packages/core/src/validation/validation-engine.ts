@@ -154,9 +154,11 @@ export class ValidationEngine implements IValidationEngine {
 
 			// Validate requirement coverage
 			for (const requirement of requirements) {
+				const reqId = `req-${requirement.number.toString().padStart(3, "0")}-${requirement.slug}`;
 				const hasLinkedPlans = requirement.criteria.some(
 					(criteria: { id: string }) => {
-						return plans.some((plan) => plan.criteria_id === criteria.id);
+						const fullCriteriaId = `${reqId}/${criteria.id}`;
+						return plans.some((plan) => plan.criteria_id === fullCriteriaId);
 					},
 				);
 

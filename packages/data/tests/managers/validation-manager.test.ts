@@ -151,10 +151,8 @@ describe("ValidationManager", () => {
 			name: "Test Component",
 			description: "Test description",
 			folder: ".",
-			capabilities: [],
 			depends_on: [],
 			external_dependencies: [],
-			constraints: [],
 			tech_stack: [],
 			testing_setup: {
 				frameworks: ["Vitest"],
@@ -164,6 +162,8 @@ describe("ValidationManager", () => {
 			},
 			deployment: {
 				platform: "Test Platform",
+				environment_vars: [],
+				secrets: [],
 			},
 			scope: {
 				in_scope: [
