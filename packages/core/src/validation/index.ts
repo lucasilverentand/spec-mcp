@@ -1,5 +1,5 @@
 // Re-export types for convenience
-export type * from "../interfaces/validator.js";
+export type * from "../shared/types/validator.js";
 export { ValidationEngine } from "./validation-engine.js";
 // Export individual validators
 export { BusinessRulesValidator } from "./validators/business-rules-validator.js";

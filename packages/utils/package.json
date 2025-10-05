@@ -1,0 +1,35 @@
+{
+	"name": "@spec-mcp/utils",
+	"version": "0.1.0",
+	"description": "Shared utilities for MCP specification management",
+	"type": "module",
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"import": "./dist/index.js",
+			"types": "./dist/index.d.ts"
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "tsc",
+		"dev": "tsc --watch",
+		"clean": "rm -rf dist",
+		"typecheck": "tsc --noEmit"
+	},
+	"dependencies": {
+		"@spec-mcp/data": "workspace:*",
+		"yaml": "^2.4.5"
+	},
+	"devDependencies": {
+		"@spec-mcp/tsconfig": "workspace:*",
+		"@types/node": "^24.5.2",
+		"typescript": "^5.9.2"
+	},
+	"engines": {
+		"node": ">=18.0.0"
+	}
+}

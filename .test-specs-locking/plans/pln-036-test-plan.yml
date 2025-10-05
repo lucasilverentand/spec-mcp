@@ -1,0 +1,21 @@
+type: plan
+number: 36
+slug: test-plan
+name: Test Plan
+description: A test plan
+created_at: 2025-10-05T02:24:10.771Z
+updated_at: 2025-10-05T02:24:10.779Z
+priority: medium
+acceptance_criteria: Should be lockable
+depends_on: []
+tasks: []
+flows: []
+test_cases: []
+api_contracts: []
+data_models: []
+references: []
+completed: false
+approved: false
+locked: true
+locked_at: 2025-10-05T02:24:10.775Z
+locked_by: integration-test

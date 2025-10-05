@@ -1156,8 +1156,13 @@ export function registerQueryTool(
 		{
 			title: "Query Specs",
 			description:
-				"Comprehensive query tool with explicit schema-based parameters for entity lookups, searches, and filtering. " +
-				"Supports entity IDs, sub-entity IDs, batch lookups, text search, filtering, sorting, pagination, and facets.",
+				"Search and retrieve specifications with flexible filtering, sorting, and pagination.\n\n" +
+				"Common use cases:\n" +
+				"• Get by ID: { entity_id: 'req-001-auth' }\n" +
+				"• Search: { search_terms: 'authentication', types: ['requirement'] }\n" +
+				"• List all: { types: ['plan'], limit: 50 }\n" +
+				"• Filter: { filters: { plan_priority: ['critical', 'high'] } }\n" +
+				"• Next task: { next_task: true }",
 			inputSchema: {
 				// Direct lookups (mutually exclusive)
 				entity_id: z

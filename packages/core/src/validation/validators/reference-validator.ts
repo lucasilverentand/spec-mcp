@@ -5,8 +5,9 @@ import type {
 	Requirement,
 } from "@spec-mcp/data";
 import { SpecsManager } from "@spec-mcp/data";
-import type { SpecConfig } from "../../interfaces/config.js";
-import type { ValidationResult } from "../../interfaces/results.js";
+import { toDataConfig } from "../../shared/types/config.js";
+import type { SpecConfig } from "../../shared/types/config.js";
+import type { ValidationResult } from "../../shared/types/results.js";
 
 export interface ReferenceValidationOptions {
 	checkExistence?: boolean;
@@ -19,7 +20,7 @@ export class ReferenceValidator {
 	private manager: SpecsManager;
 
 	constructor(config: SpecConfig = {}) {
-		this.manager = new SpecsManager(config);
+		this.manager = new SpecsManager(toDataConfig(config));
 	}
 
 	async validateEntityReferences(
@@ -103,9 +104,11 @@ export class ReferenceValidator {
 		}
 
 		return {
+			success: errors.length === 0,
 			valid: errors.length === 0,
 			errors,
 			warnings,
+			...(errors.length > 0 && { error: errors.join(", ") }),
 		};
 	}
 
@@ -125,20 +128,25 @@ export class ReferenceValidator {
 							warnings?: string[];
 						})
 					: {};
+			const isValid = resultObj.valid ?? resultObj.success ?? false;
+			const errors = resultObj.errors ?? (resultObj.error ? [resultObj.error] : []);
+			const warnings = resultObj.warnings ?? [];
 			return {
-				valid: resultObj.valid ?? resultObj.success ?? false,
-				errors: resultObj.errors ?? (resultObj.error ? [resultObj.error] : []),
-				warnings: resultObj.warnings ?? [],
+				success: isValid,
+				valid: isValid,
+				errors,
+				warnings,
+				...(errors.length > 0 && { error: errors.join(", ") }),
 			};
 		} catch (error) {
+			const errorMsg = error instanceof Error
+				? error.message
+				: "Reference validation failed";
 			return {
+				success: false,
 				valid: false,
-				errors: [
-					error instanceof Error
-						? error.message
-						: "Reference validation failed",
-				],
-				warnings: [],
+				errors: [errorMsg],
+				error: errorMsg,
 			};
 		}
 	}
@@ -319,9 +327,11 @@ export class ReferenceValidator {
 		}
 
 		return {
+			success: errors.length === 0,
 			valid: errors.length === 0,
 			errors,
 			warnings,
+			...(errors.length > 0 && { error: errors.join(", ") }),
 		};
 	}
 

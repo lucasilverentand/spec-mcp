@@ -1,30 +1,30 @@
 import type { AnyEntity } from "@spec-mcp/data";
 import { SpecsManager } from "@spec-mcp/data";
+import { toDataConfig } from "../shared/types/config.js";
 import { CoverageAnalyzer } from "../analysis/coverage-analyzer.js";
 import { CycleDetector } from "../analysis/cycle-detector.js";
 import { DependencyAnalyzer } from "../analysis/dependency-analyzer.js";
 import { OrphanDetector } from "../analysis/orphan-detector.js";
-import { ErrorFactory } from "../domain/errors.js";
+import { ErrorFactory } from "../shared/errors/index.js";
 import type {
 	CoverageAnalysisResult,
 	CycleAnalysis,
 	DependencyAnalysisResult,
 	OrphanAnalysis,
-} from "../interfaces/analyzer.js";
-import type { ServiceConfig } from "../interfaces/config.js";
+} from "../shared/types/analyzer.js";
+import type { ServiceConfig } from "../shared/types/config.js";
 import type {
 	OperationResult,
 	ValidationResult,
-} from "../interfaces/results.js";
+} from "../shared/types/results.js";
 import type {
 	EntityCollection,
 	HealthScore,
-	ISpecService,
 	SpecReport,
-} from "../interfaces/service.js";
+} from "../shared/types/service.js";
 import { ValidationEngine } from "../validation/validation-engine.js";
 
-export class SpecService implements ISpecService {
+export class SpecService {
 	readonly name = "SpecService";
 	readonly version = "2.0.0";
 
@@ -41,7 +41,7 @@ export class SpecService implements ISpecService {
 
 	constructor(config: Partial<ServiceConfig> = {}) {
 		this.config = config;
-		this.manager = new SpecsManager(config);
+		this.manager = new SpecsManager(toDataConfig(config));
 
 		// Initialize analysis components
 		this.dependencyAnalyzer = new DependencyAnalyzer(config);
@@ -595,7 +595,7 @@ export class SpecService implements ISpecService {
 	}
 
 	private reconfigureComponents(): void {
-		this.manager = new SpecsManager(this.config);
+		this.manager = new SpecsManager(toDataConfig(this.config));
 		this.dependencyAnalyzer.configure(this.config);
 		this.coverageAnalyzer.configure(this.config);
 		this.cycleDetector.configure(this.config);

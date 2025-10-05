@@ -18,6 +18,7 @@ export const ValidationResultSchema = z.object({
 		.array(z.string())
 		.optional()
 		.describe("Warning messages from validation"),
+	timestamp: z.string().optional().describe("Timestamp of validation"),
 	// Legacy format for backward compatibility
 	valid: z.boolean().describe("Legacy field for backward compatibility"),
 	errors: z.array(z.string()).describe("List of validation errors"),

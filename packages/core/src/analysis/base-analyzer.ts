@@ -1,8 +1,9 @@
 import { SpecsManager } from "@spec-mcp/data";
-import { AnalysisError, ErrorFactory } from "../domain/errors.js";
-import type { IAnalyzer } from "../interfaces/analyzer.js";
-import type { SpecConfig } from "../interfaces/config.js";
-import type { AnalysisResult } from "../interfaces/results.js";
+import { AnalysisError, ErrorFactory } from "../shared/errors/index.js";
+import type { IAnalyzer } from "../shared/types/analyzer.js";
+import { toDataConfig } from "../shared/types/config.js";
+import type { SpecConfig } from "../shared/types/config.js";
+import type { AnalysisResult } from "../shared/types/results.js";
 
 export abstract class BaseAnalyzer<TResult = unknown>
 	implements IAnalyzer<TResult>
@@ -17,14 +18,14 @@ export abstract class BaseAnalyzer<TResult = unknown>
 
 	constructor(config: Partial<SpecConfig> = {}) {
 		this.config = config;
-		this.manager = new SpecsManager(config);
+		this.manager = new SpecsManager(toDataConfig(config));
 	}
 
 	abstract analyze(): Promise<AnalysisResult<TResult>>;
 
 	configure(config: Partial<SpecConfig>): void {
 		this.config = { ...this.config, ...config };
-		this.manager = new SpecsManager(this.config);
+		this.manager = new SpecsManager(toDataConfig(this.config));
 	}
 
 	reset(): void {

@@ -1,7 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { ServerConfig } from "../config/index.js";
 import type { SpecOperations } from "@spec-mcp/core";
-import { computeEntityId } from "@spec-mcp/data";
+import { computeEntityId, type AnyEntity, type EntityType } from "@spec-mcp/data";
 import { z } from "zod";
 import { wrapToolHandler } from "../utils/tool-wrapper.js";
 
@@ -18,9 +18,9 @@ export function registerUpdateSpecTool(
 		{
 			title: "Update Spec",
 			description:
-				"Update a finalized specification (requirement, plan, or component) with full validation. " +
-				"Provide the spec ID and the fields to update. The tool will validate the entire spec after updating. " +
-				"Note: If a spec is locked (locked: true), only progress tracking fields can be updated (e.g., completed, approved for plans; completed, verified for tasks).",
+				"Modify fields of a finalized specification. Validates changes before applying.\n\n" +
+				"Example: { id: 'req-001-auth', updates: { priority: 'critical', description: 'New description' } }\n\n" +
+				"Note: Locked specs only allow progress tracking updates (completed, approved, verified).",
 			inputSchema: {
 				id: z
 					.string()
@@ -40,7 +40,7 @@ export function registerUpdateSpecTool(
 				try {
 					// Determine entity type from ID prefix
 					const prefix = id.split("-")[0];
-					let result: { success: boolean; data?: unknown; error?: string };
+					let result: { success: boolean; data?: unknown; error?: string | undefined };
 
 					// Sanitize string values in updates
 					const sanitizedUpdates = Object.entries(updates).reduce(
@@ -125,9 +125,13 @@ export function registerUpdateSpecTool(
 					}
 
 					const { requirements, plans, components } = entitiesResult.data;
-					const allEntities = [...requirements, ...plans, ...components];
+					const allEntities: AnyEntity[] = [
+						...(requirements as AnyEntity[]),
+						...(plans as AnyEntity[]),
+						...(components as AnyEntity[])
+					];
 					const entity = allEntities.find((e) => {
-						const entityId = computeEntityId(e.type, e.number, e.slug);
+						const entityId = computeEntityId(e.type as EntityType, e.number, e.slug);
 						return entityId === id || e.slug === id;
 					});
 

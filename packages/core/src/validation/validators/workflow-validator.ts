@@ -1,6 +1,6 @@
 import type { Plan } from "@spec-mcp/data";
-import type { ValidationResult } from "../../interfaces/results.js";
-import type { WorkflowValidationOptions } from "../../interfaces/validator.js";
+import type { ValidationResult } from "../../shared/types/results.js";
+import type { WorkflowValidationOptions } from "../../shared/types/validator.js";
 
 export interface WorkflowContext {
 	plans: Plan[];
@@ -50,9 +50,11 @@ function validatePlanWorkflow(
 	}
 
 	return {
+		success: errors.length === 0,
 		valid: errors.length === 0,
 		errors,
-		warnings,
+		...(errors.length > 0 && { error: errors.join(", ") }),
+		...(warnings.length > 0 && { warnings }),
 	};
 }
 
@@ -66,8 +68,9 @@ function validateFlowExecution(
 
 	const flow = plan.flows.find((f) => f.id === flowId);
 	if (!flow) {
-		errors.push(`Flow '${flowId}' not found in plan`);
-		return { valid: false, errors, warnings };
+		const errorMsg = `Flow '${flowId}' not found in plan`;
+		errors.push(errorMsg);
+		return { success: false, valid: false, errors, error: errorMsg, ...(warnings.length > 0 && { warnings }) };
 	}
 
 	// Validate flow structure
@@ -97,9 +100,11 @@ function validateFlowExecution(
 	}
 
 	return {
+		success: errors.length === 0,
 		valid: errors.length === 0,
 		errors,
-		warnings,
+		...(errors.length > 0 && { error: errors.join(", ") }),
+		...(warnings.length > 0 && { warnings }),
 	};
 }
 
@@ -179,9 +184,11 @@ function validateTaskSequence(
 	});
 
 	return {
+		success: errors.length === 0,
 		valid: errors.length === 0,
 		errors,
-		warnings,
+		...(errors.length > 0 && { error: errors.join(", ") }),
+		...(warnings.length > 0 && { warnings }),
 	};
 }
 

@@ -1,25 +1,8 @@
 {
+	"extends": "@spec-mcp/tsconfig/app.json",
 	"compilerOptions": {
-		"target": "ES2022",
-		"module": "ESNext",
-		"moduleResolution": "node",
-		"lib": ["ES2022"],
-		"declaration": true,
-		"declarationMap": true,
 		"outDir": "./dist",
-		"rootDir": "./src",
-		"noEmit": false,
-		"isolatedModules": true,
-		"strict": true,
-		"noUnusedLocals": true,
-		"noUnusedParameters": true,
-		"noImplicitReturns": true,
-		"noFallthroughCasesInSwitch": true,
-		"skipLibCheck": true,
-		"forceConsistentCasingInFileNames": true,
-		"esModuleInterop": true,
-		"allowSyntheticDefaultImports": true,
-		"resolveJsonModule": true
+		"rootDir": "./src"
 	},
 	"include": ["src/**/*"],
 	"exclude": ["node_modules", "dist"]

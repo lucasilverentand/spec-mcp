@@ -1,8 +1,9 @@
 import type { AnyEntity } from "@spec-mcp/data";
 import { SpecsManager } from "@spec-mcp/data";
-import type { SpecConfig } from "../interfaces/config.js";
-import type { ValidationResult } from "../interfaces/results.js";
-import type { IValidationEngine, IValidator } from "../interfaces/validator.js";
+import { toDataConfig } from "../shared/types/config.js";
+import type { SpecConfig } from "../shared/types/config.js";
+import type { ValidationResult } from "../shared/types/results.js";
+import type { IValidationEngine, IValidator } from "../shared/types/validator.js";
 
 export class ValidationEngine implements IValidationEngine {
 	private manager: SpecsManager;
@@ -11,18 +12,21 @@ export class ValidationEngine implements IValidationEngine {
 
 	constructor(config: Partial<SpecConfig> = {}) {
 		this.config = config;
-		this.manager = new SpecsManager(config);
+		this.manager = new SpecsManager(toDataConfig(config));
+	}
+
+	private addTimestamp(): string {
+		return new Date().toISOString();
 	}
 
 	configure(config: Partial<SpecConfig>): void {
 		this.config = { ...this.config, ...config };
-		this.manager = new SpecsManager(this.config);
+		this.manager = new SpecsManager(toDataConfig(this.config));
 	}
 
 	async validateEntity(entity: AnyEntity): Promise<ValidationResult> {
 		const errors: string[] = [];
 		const warnings: string[] = [];
-		const timestamp = new Date();
 
 		try {
 			// Use registered validators
@@ -30,7 +34,9 @@ export class ValidationEngine implements IValidationEngine {
 				if (validator.supports(entity)) {
 					const result = await validator.validate(entity);
 					errors.push(...result.errors);
-					warnings.push(...result.warnings);
+					if (result.warnings) {
+						warnings.push(...result.warnings);
+					}
 				}
 			}
 
@@ -46,21 +52,24 @@ export class ValidationEngine implements IValidationEngine {
 			}
 
 			return {
+				success: errors.length === 0,
 				valid: errors.length === 0,
 				errors,
+				timestamp: this.addTimestamp(),
 				warnings,
-				timestamp,
+				...(errors.length > 0 && { error: errors.join(", ") }),
 			};
 		} catch (error) {
+			const errorMsg = error instanceof Error
+				? error.message
+				: "Entity validation failed with unknown error";
 			return {
+				success: false,
 				valid: false,
-				errors: [
-					error instanceof Error
-						? error.message
-						: "Entity validation failed with unknown error",
-				],
+				errors: [errorMsg],
+				error: errorMsg,
+				timestamp: this.addTimestamp(),
 				warnings,
-				timestamp,
 			};
 		}
 	}
@@ -80,24 +89,26 @@ export class ValidationEngine implements IValidationEngine {
 			);
 
 			const allErrors = results.flatMap((r) => r.errors);
-			const allWarnings = results.flatMap((r) => r.warnings);
+			const allWarnings = results.flatMap((r) => r.warnings || []);
 
 			return {
+				success: allErrors.length === 0,
 				valid: allErrors.length === 0,
 				errors: allErrors,
+				timestamp: this.addTimestamp(),
 				warnings: allWarnings,
-				timestamp: new Date(),
+				...(allErrors.length > 0 && { error: allErrors.join(", ") }),
 			};
 		} catch (error) {
+			const errorMsg = error instanceof Error
+				? error.message
+				: "Failed to validate all entities";
 			return {
+				success: false,
 				valid: false,
-				errors: [
-					error instanceof Error
-						? error.message
-						: "Failed to validate all entities",
-				],
-				warnings: [],
-				timestamp: new Date(),
+				errors: [errorMsg],
+				error: errorMsg,
+				timestamp: this.addTimestamp(),
 			};
 		}
 	}
@@ -106,21 +117,19 @@ export class ValidationEngine implements IValidationEngine {
 		try {
 			const result = await this.manager.validateReferences();
 			return {
-				valid: result.success,
-				errors: result.errors || [],
-				warnings: result.warnings || [],
-				timestamp: new Date(),
+				...result,
+				timestamp: this.addTimestamp(),
 			};
 		} catch (error) {
+			const errorMsg = error instanceof Error
+				? error.message
+				: "Reference validation failed";
 			return {
+				success: false,
 				valid: false,
-				errors: [
-					error instanceof Error
-						? error.message
-						: "Reference validation failed",
-				],
-				warnings: [],
-				timestamp: new Date(),
+				errors: [errorMsg],
+				error: errorMsg,
+				timestamp: this.addTimestamp(),
 			};
 		}
 	}
@@ -128,7 +137,6 @@ export class ValidationEngine implements IValidationEngine {
 	async validateBusinessRules(): Promise<ValidationResult> {
 		const errors: string[] = [];
 		const warnings: string[] = [];
-		const timestamp = new Date();
 
 		try {
 			const { requirements, plans, components } =
@@ -233,21 +241,24 @@ export class ValidationEngine implements IValidationEngine {
 			}
 
 			return {
+				success: errors.length === 0,
 				valid: errors.length === 0,
 				errors,
+				timestamp: this.addTimestamp(),
 				warnings,
-				timestamp,
+				...(errors.length > 0 && { error: errors.join(", ") }),
 			};
 		} catch (error) {
+			const errorMsg = error instanceof Error
+				? error.message
+				: "Business rule validation failed";
 			return {
+				success: false,
 				valid: false,
-				errors: [
-					error instanceof Error
-						? error.message
-						: "Business rule validation failed",
-				],
-				warnings,
-				timestamp,
+				errors: [errorMsg],
+				error: errorMsg,
+				timestamp: this.addTimestamp(),
+				...(warnings.length > 0 && { warnings }),
 			};
 		}
 	}
@@ -268,25 +279,27 @@ export class ValidationEngine implements IValidationEngine {
 			];
 
 			const allWarnings = [
-				...entityValidation.warnings,
-				...referenceValidation.warnings,
-				...businessValidation.warnings,
+				...(entityValidation.warnings || []),
+				...(referenceValidation.warnings || []),
+				...(businessValidation.warnings || []),
 			];
 
 			return {
+				success: allErrors.length === 0,
 				valid: allErrors.length === 0,
 				errors: allErrors,
+				timestamp: this.addTimestamp(),
 				warnings: allWarnings,
-				timestamp: new Date(),
+				...(allErrors.length > 0 && { error: allErrors.join(", ") }),
 			};
 		} catch (error) {
+			const errorMsg = error instanceof Error ? error.message : "Full validation failed";
 			return {
+				success: false,
 				valid: false,
-				errors: [
-					error instanceof Error ? error.message : "Full validation failed",
-				],
-				warnings: [],
-				timestamp: new Date(),
+				errors: [errorMsg],
+				error: errorMsg,
+				timestamp: this.addTimestamp(),
 			};
 		}
 	}

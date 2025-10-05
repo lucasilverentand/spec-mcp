@@ -30,8 +30,9 @@ function parseValidationErrors(errors: string[]): Map<string, string[]> {
 			for (const part of parts) {
 				// Extract field path and message
 				const match = part.match(/^(.+?):\s*(.+)$/);
-				if (match) {
-					const [, field, message] = match;
+				if (match?.[1] && match[2]) {
+					const field = match[1];
+					const message = match[2];
 					if (!fieldErrors.has(field)) {
 						fieldErrors.set(field, []);
 					}
@@ -41,8 +42,9 @@ function parseValidationErrors(errors: string[]): Map<string, string[]> {
 		} else {
 			// Single error, try to extract field
 			const match = error.match(/^(.+?):\s*(.+)$/);
-			if (match) {
-				const [, field, message] = match;
+			if (match?.[1] && match[2]) {
+				const field = match[1];
+				const message = match[2];
 				if (!fieldErrors.has(field)) {
 					fieldErrors.set(field, []);
 				}
@@ -103,30 +105,30 @@ program
 			const planValidations: EntityValidation[] = [];
 			const componentValidations: EntityValidation[] = [];
 
-			for (const req of requirements) {
+			for (const req of requirements as AnyEntity[]) {
 				const result = await service.validateEntity(req);
 				requirementValidations.push({
 					entity: req,
-					errors: result.errors,
-					warnings: result.warnings,
+					errors: result.errors ?? [],
+					warnings: result.warnings ?? [],
 				});
 			}
 
-			for (const plan of plans) {
+			for (const plan of plans as AnyEntity[]) {
 				const result = await service.validateEntity(plan);
 				planValidations.push({
 					entity: plan,
-					errors: result.errors,
-					warnings: result.warnings,
+					errors: result.errors ?? [],
+					warnings: result.warnings ?? [],
 				});
 			}
 
-			for (const component of components) {
+			for (const component of components as AnyEntity[]) {
 				const result = await service.validateEntity(component);
 				componentValidations.push({
 					entity: component,
-					errors: result.errors,
-					warnings: result.warnings,
+					errors: result.errors ?? [],
+					warnings: result.warnings ?? [],
 				});
 			}
 
@@ -169,6 +171,8 @@ program
 
 					for (let i = 0; i < fieldArray.length; i++) {
 						const field = fieldArray[i];
+						if (!field) continue;
+
 						const isLast = i === fieldArray.length - 1;
 						const prefix = isLast ? "└─" : "├─";
 						const fieldName = field === "_general" ? "general" : field;
@@ -182,12 +186,14 @@ program
 						totalWarnings += warnings.length;
 
 						const allMessages = [
-							...errors.map((e) => ({ type: "error", message: e })),
-							...warnings.map((w) => ({ type: "warning", message: w })),
+							...errors.map((e) => ({ type: "error" as const, message: e })),
+							...warnings.map((w) => ({ type: "warning" as const, message: w })),
 						];
 
 						for (let j = 0; j < allMessages.length; j++) {
 							const msg = allMessages[j];
+							if (!msg) continue;
+
 							const msgIsLast = j === allMessages.length - 1;
 							const continuation = isLast ? "  " : "│ ";
 							const msgPrefix = msgIsLast ? "└─" : "├─";
@@ -236,6 +242,8 @@ program
 
 					for (let i = 0; i < fieldArray.length; i++) {
 						const field = fieldArray[i];
+						if (!field) continue;
+
 						const isLast = i === fieldArray.length - 1;
 						const prefix = isLast ? "└─" : "├─";
 						const fieldName = field === "_general" ? "general" : field;
@@ -249,12 +257,14 @@ program
 						totalWarnings += warnings.length;
 
 						const allMessages = [
-							...errors.map((e) => ({ type: "error", message: e })),
-							...warnings.map((w) => ({ type: "warning", message: w })),
+							...errors.map((e) => ({ type: "error" as const, message: e })),
+							...warnings.map((w) => ({ type: "warning" as const, message: w })),
 						];
 
 						for (let j = 0; j < allMessages.length; j++) {
 							const msg = allMessages[j];
+							if (!msg) continue;
+
 							const msgIsLast = j === allMessages.length - 1;
 							const continuation = isLast ? "  " : "│ ";
 							const msgPrefix = msgIsLast ? "└─" : "├─";
@@ -303,6 +313,8 @@ program
 
 					for (let i = 0; i < fieldArray.length; i++) {
 						const field = fieldArray[i];
+						if (!field) continue;
+
 						const isLast = i === fieldArray.length - 1;
 						const prefix = isLast ? "└─" : "├─";
 						const fieldName = field === "_general" ? "general" : field;
@@ -316,12 +328,14 @@ program
 						totalWarnings += warnings.length;
 
 						const allMessages = [
-							...errors.map((e) => ({ type: "error", message: e })),
-							...warnings.map((w) => ({ type: "warning", message: w })),
+							...errors.map((e) => ({ type: "error" as const, message: e })),
+							...warnings.map((w) => ({ type: "warning" as const, message: w })),
 						];
 
 						for (let j = 0; j < allMessages.length; j++) {
 							const msg = allMessages[j];
+							if (!msg) continue;
+
 							const msgIsLast = j === allMessages.length - 1;
 							const continuation = isLast ? "  " : "│ ";
 							const msgPrefix = msgIsLast ? "└─" : "├─";

@@ -1,0 +1,14 @@
+type: requirement
+number: 11
+slug: test-req
+name: Test Requirement
+description: A test requirement
+created_at: 2025-10-05T02:23:24.027Z
+updated_at: 2025-10-05T02:23:24.029Z
+priority: required
+criteria:
+  - id: crit-001
+    description: First criterion
+    status: active
+locked: true
+locked_at: 2025-10-05T02:23:24.028Z

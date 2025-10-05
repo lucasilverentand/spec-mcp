@@ -1,8 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { ServerConfig } from "../config/index.js";
-import type { SpecOperations } from "@spec-mcp/core";
 import { z } from "zod";
-import { formatResult } from "../utils/result-formatter.js";
 import { wrapToolHandler } from "../utils/tool-wrapper.js";
 import { getCreationFlowHelper } from "../utils/creation-flow-helper.js";
 
@@ -11,7 +9,6 @@ import { getCreationFlowHelper } from "../utils/creation-flow-helper.js";
  */
 export function registerUpdateDraftTool(
 	server: McpServer,
-	operations: SpecOperations,
 	config: ServerConfig,
 ) {
 	server.registerTool(
@@ -19,30 +16,28 @@ export function registerUpdateDraftTool(
 		{
 			title: "Update Draft",
 			description:
-				"Update a spec draft by providing ONE field value at a time. " +
-				"The tool validates the field, saves to .draft.yml, and returns guidance for the next field. " +
-				"When all required fields are complete, the spec is automatically finalized and created.",
+				"Answer a question in the creation flow Q&A process. Provide data to answer the current question.\n\n" +
+				"Success response: { draft_id, question: 'next question', guidance: '...', step: N, total_steps: M }\n" +
+				"Validation error: { draft_id, issues: ['error messages'], suggestions: ['helpful tips'] }\n" +
+				"Completion: { draft_id, completed: true, next_action: 'Call create_spec...', finalization_instructions: '...' }\n\n" +
+				"When completed=true, review the finalization_instructions which contain schema details, then map the collected Q&A data to the schema and call create_spec.\n\n" +
+				"Example: update_draft({ draft_id: 'req-...', data: { problem_statement: 'Users need authentication because...' } })",
 			inputSchema: {
 				draft_id: z
 					.string()
 					.describe(
-						"Draft ID returned from start_spec (e.g., 'req-auth-1234567890')",
+						"Draft ID returned from start_draft",
 					),
-				field: z
-					.string()
+				data: z
+					.record(z.unknown())
 					.describe(
-						"Field name to update (use the 'current_field' from the previous response)",
-					),
-				value: z
-					.unknown()
-					.describe(
-						"Value for the field. Can be string, number, boolean, array, or object depending on the field type.",
+						"Data to answer the current question. Can be any structure - string, object, array, etc. The key names are flexible.",
 					),
 			},
 		},
 		wrapToolHandler(
 			"update_draft",
-			async ({ draft_id, field, value }) => {
+			async ({ draft_id, data }) => {
 				// Create helper with resolved specs path
 				const helper = getCreationFlowHelper(config.specsPath);
 
@@ -68,7 +63,7 @@ export function registerUpdateDraftTool(
 				}
 
 				// Prevent locking drafts - only finalized specs can be locked
-				if (field === "locked") {
+				if ("locked" in data) {
 					return {
 						content: [
 							{
@@ -86,12 +81,6 @@ export function registerUpdateDraftTool(
 						isError: true,
 					};
 				}
-
-				// Sanitize string values and parse JSON if needed
-				let sanitizedValue = value;
-
-				// Debug: Log the type and value
-				console.error(`[DEBUG] Field: ${field}, Type: ${typeof value}, Value:`, value);
 
 				/**
 				 * Recursively parse JSON strings to ensure proper data structure
@@ -136,12 +125,11 @@ export function registerUpdateDraftTool(
 					return val;
 				};
 
-				sanitizedValue = deepParseJson(value);
-				console.error(`[DEBUG] After deep parse:`, sanitizedValue);
+				// Sanitize the entire data object
+				const sanitizedData = deepParseJson(data) as Record<string, unknown>;
 
-				// Process the creation flow step with the field data
-				const stepData = { [field]: sanitizedValue };
-				const stepResponse = await helper.step(draft_id, stepData);
+				// Process the creation flow step with the data
+				const stepResponse = await helper.step(draft_id, sanitizedData);
 
 				if ("error" in stepResponse) {
 					return {
@@ -174,13 +162,9 @@ export function registerUpdateDraftTool(
 								type: "text",
 								text: JSON.stringify(
 									{
-										success: false,
-										draft_id,
-										field,
-										validation_issues: stepResponse.validation.issues,
+										id: draft_id,
+										issues: stepResponse.validation.issues,
 										suggestions: stepResponse.validation.suggestions || [],
-										instructions:
-											"Please correct the field value and try again.",
 									},
 									null,
 									2,
@@ -191,172 +175,29 @@ export function registerUpdateDraftTool(
 					};
 				}
 
-				// Check if all steps are completed (auto-finalize)
+				// Check if all steps are completed
 				if (stepResponse.completed) {
-					// Finalize the spec
-					const finalizedDraft = helper.getDraft(draft_id);
-					if (!finalizedDraft) {
-						return {
-							content: [
-								{
-									type: "text",
-									text: JSON.stringify(
-										{
-											success: false,
-											error: `Draft not found during finalization: ${draft_id}`,
-										},
-										null,
-										2,
-									),
-								},
-							],
-							isError: true,
-						};
-					}
-
-					// Create the spec based on type
-					const draftData = finalizedDraft.data;
-					const specType = finalizedDraft.type;
-					let result: unknown;
-
-					try {
-						switch (specType) {
-							case "requirement": {
-								const reqData = {
-									type: "requirement" as const,
-									slug: (draftData.slug as string) || "",
-									name: (draftData.name as string) || "",
-									description: (draftData.description as string) || "",
-									created_at: new Date().toISOString(),
-									updated_at: new Date().toISOString(),
-									priority:
-										(draftData.priority as
-											| "critical"
-											| "required"
-											| "ideal"
-											| "optional") || "required",
-									criteria: (draftData.criteria as unknown[]) || [],
-								};
-
-								// @ts-expect-error - Type system limitation
-								result = await operations.createRequirement(reqData);
-								break;
-							}
-
-							case "plan": {
-								const planData = {
-									type: "plan" as const,
-									slug: (draftData.slug as string) || "",
-									name: (draftData.name as string) || "",
-									description: (draftData.description as string) || "",
-									criteria_id: (draftData.criteria_id as string) || undefined,
-									created_at: new Date().toISOString(),
-									updated_at: new Date().toISOString(),
-									priority:
-										(draftData.priority as
-											| "critical"
-											| "high"
-											| "medium"
-											| "low") || "medium",
-									acceptance_criteria: (draftData.acceptance_criteria as string) || "",
-									depends_on: (draftData.depends_on as string[]) || [],
-									tasks: (draftData.tasks as unknown[]) || [],
-								};
-
-								// @ts-expect-error - Type system limitation
-								result = await operations.createPlan(planData);
-								break;
-							}
-
-							case "component": {
-								const compData = {
-									type:
-										(draftData.type as "app" | "service" | "library") ||
-										"service",
-									slug: (draftData.slug as string) || "",
-									name: (draftData.name as string) || "",
-									description: (draftData.description as string) || "",
-									created_at: new Date().toISOString(),
-									updated_at: new Date().toISOString(),
-									folder: (draftData.folder as string) || ".",
-									tech_stack: (draftData.tech_stack as string[]) || [],
-									depends_on: (draftData.depends_on as string[]) || [],
-									external_dependencies:
-										(draftData.external_dependencies as string[]) || [],
-									capabilities: (draftData.capabilities as string[]) || [],
-									constraints: (draftData.constraints as string[]) || [],
-								};
-
-								// @ts-expect-error - Type system limitation
-								result = await operations.createComponent(compData);
-								break;
-							}
-
-							default:
-								return {
-									content: [
-										{
-											type: "text",
-											text: JSON.stringify(
-												{
-													success: false,
-													error: `Unsupported spec type: ${specType}`,
-												},
-												null,
-												2,
-											),
-										},
-									],
-									isError: true,
-								};
-						}
-
-						// Delete draft after successful creation
-						// @ts-expect-error - Result can be any entity type
-						if (result.success) {
-							await helper.deleteDraft(draft_id);
-							return {
-								content: [
+					// Return finalization instructions for LLM
+					// The LLM will map the Q&A data to the schema and call create_spec()
+					return {
+						content: [
+							{
+								type: "text",
+								text: JSON.stringify(
 									{
-										type: "text",
-										text: JSON.stringify(
-											{
-												success: true,
-												completed: true,
-												message: `${specType} created successfully!`,
-												// @ts-expect-error - Result can be any entity type
-												spec_id: result.data?.id,
-												// @ts-expect-error - Result can be any entity type
-												spec: result.data,
-											},
-											null,
-											2,
-										),
+										draft_id,
+										completed: true,
+										message: "All creation flow steps completed!",
+										next_action: "Call the create_spec tool with the properly formatted specification data",
+										finalization_instructions: stepResponse.finalization_instructions,
+										collected_data: stepResponse.guidance, // Contains schema instructions
 									},
-								],
-							};
-						}
-
-						// @ts-expect-error - Result can be any entity type, formatResult handles all
-						return formatResult(result);
-					} catch (error) {
-						return {
-							content: [
-								{
-									type: "text",
-									text: JSON.stringify(
-										{
-											success: false,
-											error: `Failed to create ${specType}: ${error instanceof Error ? error.message : String(error)}`,
-										},
-										null,
-										2,
-									),
-								},
-							],
-							isError: true,
-						};
-					}
+									null,
+									2,
+								),
+							},
+						],
+					};
 				}
 
 				// Return next step guidance
@@ -366,23 +207,13 @@ export function registerUpdateDraftTool(
 							type: "text",
 							text: JSON.stringify(
 								{
-									success: true,
 									draft_id,
 									step: stepResponse.step,
 									total_steps: stepResponse.total_steps,
-									current_field: stepResponse.current_step_name,
-									instructions: stepResponse.prompt,
-									validation:
-										stepResponse.validation?.passed === false
-											? {
-													passed: false,
-													issues: stepResponse.validation.issues,
-													suggestions: stepResponse.validation.suggestions,
-												}
-											: { passed: true },
-									draft_file: `${config.specsPath}/.drafts/${draft_id}.draft.yml`,
-									next_action:
-										"Use update_draft again to provide the next field value",
+									current_step_name: stepResponse.current_step_name,
+									question: stepResponse.question,
+									guidance: stepResponse.guidance,
+									progress_summary: stepResponse.progress_summary,
 								},
 								null,
 								2,

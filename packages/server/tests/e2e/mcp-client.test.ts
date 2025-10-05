@@ -74,77 +74,128 @@ describe("MCP E2E Tests", () => {
 		let createdId: string | undefined;
 
 		it("should create a requirement using creation flow", async () => {
-			// Step 1: Start the draft
+			// Step 1: Start the draft with type, name, and slug
+			const uniqueSlug = `test-requirement-${Date.now()}`;
 			const startResult = await client.callTool({
 				name: "start_draft",
 				arguments: {
 					type: "requirement",
-					slug: "test-requirement",
+					name: "Test Requirement for E2E Validation",
+					slug: uniqueSlug,
 				},
 			});
 
 			expect(startResult).toBeDefined();
 			const startResponse = JSON.parse(startResult.content[0].text);
-			expect(startResponse.success).toBe(true);
-			expect(startResponse.data.draft_id).toBeDefined();
-			draftId = startResponse.data.draft_id;
+			expect(startResponse.draft_id).toBeDefined();
+			expect(startResponse.question).toBeDefined();
+			draftId = startResponse.draft_id;
 
-			// Step 2: Fill in name
-			await client.callTool({
+			// The creation flow guides us through steps sequentially
+			// update_draft field param should be the actual schema field name, not the step name
+			// We'll provide full data objects for each step
+
+			// Fill in description
+			let result = await client.callTool({
 				name: "update_draft",
 				arguments: {
 					draft_id: draftId,
-					field: "name",
-					value: "Test Requirement",
+					data: {
+						description:
+							"A comprehensive test requirement for E2E testing. This is needed because we must validate the creation flow works correctly and handles all validation steps properly. The requirement should test end-to-end flow through all validation stages.",
+					},
 				},
 			});
+			let response = JSON.parse(result.content[0].text);
 
-			// Step 3: Fill in description (must be at least 50 chars with rationale)
-			await client.callTool({
+			// Fill in criteria
+			result = await client.callTool({
 				name: "update_draft",
 				arguments: {
 					draft_id: draftId,
-					field: "description",
-					value:
-						"A comprehensive test requirement for E2E testing because we need to validate the creation flow works correctly",
+					data: {
+						criteria: [
+							{
+								id: "crit-001",
+								description: "System returns response in under 200ms",
+							},
+							{
+								id: "crit-002",
+								description: "API returns 201 status code on success",
+							},
+						],
+					},
 				},
 			});
+			response = JSON.parse(result.content[0].text);
 
-			// Step 4: Fill in priority
-			await client.callTool({
+			// Fill in priority
+			result = await client.callTool({
 				name: "update_draft",
 				arguments: {
 					draft_id: draftId,
-					field: "priority",
-					value: "required",
+					data: {
+						priority: "required",
+					},
 				},
 			});
+			response = JSON.parse(result.content[0].text);
 
-			// Step 5: Add acceptance criteria (need at least 2, measurable)
-			const finalResult = await client.callTool({
-				name: "update_draft",
-				arguments: {
-					draft_id: draftId,
-					field: "criteria",
-					value: [
-						{
-							id: "crit-001",
-							description: "System returns response in under 200ms",
+			// Handle any remaining validation steps by confirming
+			let iterations = 0;
+			while (response.question && !response.completed && iterations++ < 10) {
+				console.log(`Validation step: ${response.question}`);
+				result = await client.callTool({
+					name: "update_draft",
+					arguments: {
+						draft_id: draftId,
+						data: {
+							confirm: true,
 						},
-						{
-							id: "crit-002",
-							description: "API returns 201 status code on success",
-						},
-					],
-				},
-			});
-
-			const finalResponse = JSON.parse(finalResult.content[0].text);
-			expect(finalResponse.success).toBe(true);
-			if (finalResponse.completed) {
-				createdId = finalResponse.spec_id;
-				expect(createdId).toMatch(/^req-\d{3}-test-requirement$/);
+					},
+				});
+				response = JSON.parse(result.content[0].text);
+				console.log("Response:", response);
 			}
+
+			const finalResponse = response;
+			console.log("Final response:", finalResponse);
+			expect(finalResponse.completed).toBe(true);
+
+			// Now call create_spec to finalize the specification
+			const createResult = await client.callTool({
+				name: "create_spec",
+				arguments: {
+					draft_id: draftId,
+					type: "requirement",
+					data: {
+						type: "requirement",
+						number: 1,
+						slug: uniqueSlug,
+						name: "Test Requirement for E2E Validation",
+						description:
+							"A comprehensive test requirement for E2E testing. This is needed because we must validate the creation flow works correctly and handles all validation steps properly. The requirement should test end-to-end flow through all validation stages.",
+						priority: "required",
+						criteria: [
+							{
+								id: "crit-001",
+								description: "System returns response in under 200ms",
+							},
+							{
+								id: "crit-002",
+								description: "API returns 201 status code on success",
+							},
+						],
+					},
+				},
+			});
+
+			const createResponse = JSON.parse(createResult.content[0].text);
+			console.log("Create response:", createResponse);
+			expect(createResponse.success).toBe(true);
+			expect(createResponse.spec_id).toBeDefined();
+			createdId = createResponse.spec_id;
+			expect(createdId).toMatch(/^req-\d{3}-test-requirement-\d+$/);
 		});
 
 		it("should retrieve the created requirement", async () => {
@@ -162,7 +213,7 @@ describe("MCP E2E Tests", () => {
 
 			const response = JSON.parse(result.content[0].text);
 			expect(response.success).toBe(true);
-			expect(response.data.name).toBe("Test Requirement");
+			expect(response.data.name).toBe("Test Requirement for E2E Validation");
 		});
 
 		it("should list requirements", async () => {

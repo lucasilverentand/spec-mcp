@@ -75,6 +75,7 @@ export type {
 	AnyComponent,
 	ComponentFilter,
 	ConstitutionFilter,
+	DecisionFilter,
 	EntityFilter,
 	PlanFilter,
 	RequirementFilter,
@@ -82,6 +83,7 @@ export type {
 export {
 	ComponentFilterSchema,
 	ConstitutionFilterSchema,
+	DecisionFilterSchema,
 	EntityFilterSchema,
 	PlanFilterSchema,
 	RequirementFilterSchema,

@@ -25,13 +25,15 @@
 		"inspector": "cd packages/server && pnpm inspector",
 		"workspace:list": "pnpm list -r --depth=-1",
 		"workspace:graph": "pnpm list -r --depth=-1 --json",
-		"version:sync": "node scripts/sync-versions.js"
+		"version:sync": "node scripts/sync-versions.js",
+		"knip": "knip"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.2.4",
 		"@types/node": "^24.5.2",
 		"@vitest/coverage-v8": "^3.2.4",
 		"@vitest/ui": "^3.2.4",
+		"knip": "^5.64.1",
 		"tsx": "^4.20.6",
 		"turbo": "^2.5.8",
 		"typescript": "^5.9.2",

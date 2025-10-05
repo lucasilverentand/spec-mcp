@@ -1,6 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { SpecOperations } from "@spec-mcp/core";
 import type { ServerConfig } from "../config/index.js";
+import { registerCreateSpecTool } from "./create-spec.js";
 import { registerDeleteSpecTool } from "./delete-spec.js";
 import { registerQueryTool } from "./query.js";
 import { registerStartDraftTool } from "./start-draft.js";
@@ -16,9 +17,12 @@ export function registerAllTools(
 	operations: SpecOperations,
 	config: ServerConfig,
 ) {
-	// Simplified creation flow CRUD tools (4 tools)
-	registerStartDraftTool(server, operations, config); // start_draft - create a draft
-	registerUpdateDraftTool(server, operations, config); // update_draft - fill draft fields one at a time
+	// Creation flow tools (Q&A-based guided creation)
+	registerStartDraftTool(server, operations, config); // start_draft - start Q&A flow
+	registerUpdateDraftTool(server, config); // update_draft - answer questions, collect data
+	registerCreateSpecTool(server, operations, config); // create_spec - LLM maps Q&A data to schema and creates spec
+
+	// Spec management tools
 	registerUpdateSpecTool(server, operations, config); // update_spec - update finalized specs with validation
 	registerDeleteSpecTool(server, operations, config); // delete_spec - delete draft or finalized spec
 

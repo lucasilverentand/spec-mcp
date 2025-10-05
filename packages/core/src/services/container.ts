@@ -1,5 +1,5 @@
-import { ErrorFactory } from "../domain/errors.js";
-import type { ServiceConfig } from "../interfaces/config.js";
+import { ErrorFactory } from "../shared/errors/index.js";
+import type { ServiceConfig } from "../shared/types/config.js";
 
 export type ServiceFactory<T = unknown> = (
 	config?: Partial<ServiceConfig>,

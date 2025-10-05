@@ -1,0 +1,14 @@
+type: requirement
+number: 16
+slug: test-req-2
+name: Updated After Unlock
+description: Unlockable requirement
+created_at: 2025-10-05T02:24:10.881Z
+updated_at: 2025-10-05T02:24:10.884Z
+priority: ideal
+criteria:
+  - id: crit-001
+    description: Test criterion
+    status: active
+locked: false
+locked_at: 2025-10-05T02:24:10.882Z

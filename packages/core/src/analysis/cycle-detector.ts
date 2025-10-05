@@ -1,6 +1,6 @@
 import type { AnyComponent } from "@spec-mcp/data";
-import type { CycleAnalysis, ICycleDetector } from "../interfaces/analyzer.js";
-import type { AnalysisResult } from "../interfaces/results.js";
+import type { CycleAnalysis, ICycleDetector } from "../shared/types/analyzer.js";
+import type { AnalysisResult } from "../shared/types/results.js";
 import { BaseAnalyzer } from "./base-analyzer.js";
 
 export class CycleDetector

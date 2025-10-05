@@ -25,10 +25,12 @@
 	},
 	"dependencies": {
 		"@spec-mcp/data": "workspace:*",
+		"@spec-mcp/utils": "workspace:*",
 		"yaml": "^2.4.5",
 		"zod": "3.23.8"
 	},
 	"devDependencies": {
+		"@spec-mcp/tsconfig": "workspace:*",
 		"@types/node": "^24.5.2",
 		"typescript": "^5.9.2",
 		"vitest": "^3.2.4"

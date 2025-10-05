@@ -33,8 +33,8 @@ export function registerDeleteSpecTool(
 		{
 			title: "Delete Spec",
 			description:
-				"Delete a specification or draft. " +
-				"Automatically detects whether the ID is a draft or finalized spec and deletes accordingly.",
+				"Remove a specification or draft from the system. Auto-detects spec type from ID.\n\n" +
+				"Example: { id: 'req-001-auth' } or { id: 'con-1759622110977-o2iwt1' }",
 			inputSchema: {
 				id: z
 					.string()

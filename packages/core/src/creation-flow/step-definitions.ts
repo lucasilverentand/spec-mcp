@@ -9,9 +9,10 @@ export const REQUIREMENT_STEPS: StepDefinition[] = [
 		order: 1,
 		name: "Identify Problem",
 		description: "Define the problem or opportunity",
-		prompt:
-			"What problem are we solving? What's the business value? Include rationale using 'because' or 'needed'.",
-		required_fields: ["description"],
+		question:
+			"What problem are we solving and why is it important?",
+		guidance:
+			"Explain the problem or opportunity this requirement addresses. Include the business value and rationale using words like 'because', 'needed', or 'so that'.",
 		next_step: "avoid_implementation",
 	},
 	{
@@ -19,9 +20,10 @@ export const REQUIREMENT_STEPS: StepDefinition[] = [
 		order: 2,
 		name: "Avoid Implementation Details",
 		description: "Ensure requirement is implementation-agnostic",
-		prompt:
-			"Review the description to ensure no implementation details (like specific technologies, databases, or UI frameworks) are mentioned. Focus on WHAT, not HOW.",
-		required_fields: ["description"],
+		question:
+			"What needs to happen, without specifying how it should be implemented?",
+		guidance:
+			"Describe WHAT the system should do, not HOW it should do it. Avoid mentioning specific technologies, databases, frameworks, or UI components. Focus on outcomes and behavior.",
 		next_step: "measurability",
 	},
 	{
@@ -29,9 +31,10 @@ export const REQUIREMENT_STEPS: StepDefinition[] = [
 		order: 3,
 		name: "Define Measurability",
 		description: "Add measurable success criteria",
-		prompt:
-			"Define 2-4 measurable acceptance criteria. Each should be specific, testable, and define what success looks like.",
-		required_fields: ["criteria"],
+		question:
+			"How will you know when this requirement is successfully met?",
+		guidance:
+			"Define 2-4 measurable acceptance criteria. Each should be specific, testable, and clearly define what success looks like. Use concrete metrics where possible.",
 		next_step: "specific_language",
 	},
 	{
@@ -39,9 +42,10 @@ export const REQUIREMENT_STEPS: StepDefinition[] = [
 		order: 4,
 		name: "Use Specific Language",
 		description: "Remove vague terms",
-		prompt:
-			"Review description and criteria for vague terms like 'fast', 'easy', 'simple'. Replace with specific, quantifiable language.",
-		required_fields: ["description", "criteria"],
+		question:
+			"Can you make the description and criteria more specific and quantifiable?",
+		guidance:
+			"Replace vague terms like 'fast', 'easy', 'simple', 'good' with specific, measurable language. For example: instead of 'fast', use 'completes in under 2 seconds'; instead of 'easy', use 'requires no more than 3 clicks'.",
 		next_step: "acceptance_criteria",
 	},
 	{
@@ -49,9 +53,10 @@ export const REQUIREMENT_STEPS: StepDefinition[] = [
 		order: 5,
 		name: "Finalize Acceptance Criteria",
 		description: "Ensure criteria are complete and testable",
-		prompt:
-			"Review acceptance criteria. Each should be: (1) Testable, (2) Independent, (3) Clear, (4) Achievable.",
-		required_fields: ["criteria"],
+		question:
+			"Are all acceptance criteria testable, independent, clear, and achievable?",
+		guidance:
+			"Review each acceptance criterion to ensure it is: (1) Testable - can be verified objectively, (2) Independent - doesn't depend on other criteria, (3) Clear - unambiguous, (4) Achievable - realistic to implement.",
 		next_step: "priority_assignment",
 	},
 	{
@@ -59,19 +64,21 @@ export const REQUIREMENT_STEPS: StepDefinition[] = [
 		order: 6,
 		name: "Assign Priority",
 		description: "Set appropriate priority level",
-		prompt:
-			"Assign a priority: critical (must-have for launch), required (needed soon), ideal (nice to have), optional (future consideration).",
-		required_fields: ["priority"],
+		question:
+			"What is the priority of this requirement?",
+		guidance:
+			"Choose a priority level: 'critical' (must-have for launch), 'required' (needed soon after launch), 'ideal' (nice to have), 'optional' (future consideration). Consider business value and urgency.",
 		next_step: "review_and_refine",
 	},
 	{
 		id: "review_and_refine",
 		order: 7,
 		name: "Review and Finalize",
-		description: "Final validation before creation",
-		prompt:
-			"Final review: Ensure all fields are complete, description is clear, criteria are measurable, and priority is appropriate.",
-		required_fields: ["slug", "name", "description", "priority", "criteria"],
+		description: "Final review before creation",
+		question:
+			"Ready to create this requirement? Let's do a final review.",
+		guidance:
+			"This is the final step. Review all the information you've provided to ensure it's complete and accurate. Make any final adjustments needed.",
 		next_step: null,
 	},
 ];
@@ -85,9 +92,10 @@ export const COMPONENT_STEPS: StepDefinition[] = [
 		order: 1,
 		name: "Analyze Requirements",
 		description: "Review which requirements this component satisfies",
-		prompt:
-			"Which requirements does this component satisfy? List the requirement IDs and explain how this component addresses them.",
-		required_fields: ["description"],
+		question:
+			"Which requirements does this component satisfy and how?",
+		guidance:
+			"List the requirement IDs and explain how this component addresses them. Describe the connection between requirements and this component's purpose.",
 		next_step: "define_boundaries",
 	},
 	{
@@ -95,9 +103,10 @@ export const COMPONENT_STEPS: StepDefinition[] = [
 		order: 2,
 		name: "Define Boundaries",
 		description: "Apply single responsibility principle",
-		prompt:
-			"Define clear boundaries: What is this component responsible for? What is NOT its responsibility?",
-		required_fields: ["description"],
+		question:
+			"What is this component responsible for, and what is NOT its responsibility?",
+		guidance:
+			"Define clear boundaries using the single responsibility principle. Be explicit about what this component handles AND what it delegates to other components.",
 		next_step: "define_responsibilities",
 	},
 	{
@@ -105,9 +114,10 @@ export const COMPONENT_STEPS: StepDefinition[] = [
 		order: 3,
 		name: "Define Responsibilities",
 		description: "List what the component does and doesn't do",
-		prompt:
-			"List specific responsibilities (capabilities) this component handles. Be clear about what it does AND what it delegates to other components.",
-		required_fields: ["capabilities"],
+		question:
+			"What specific capabilities does this component provide?",
+		guidance:
+			"List the specific responsibilities or capabilities this component handles. For each capability, be clear about whether it's handled directly or delegated.",
 		next_step: "define_interfaces",
 	},
 	{
@@ -115,9 +125,10 @@ export const COMPONENT_STEPS: StepDefinition[] = [
 		order: 4,
 		name: "Define Interfaces",
 		description: "Specify inputs, outputs, and contracts",
-		prompt:
-			"Define the component's interface: What inputs does it accept? What outputs does it produce? What contracts/APIs does it expose?",
-		required_fields: ["description"],
+		question:
+			"What are this component's inputs, outputs, and contracts?",
+		guidance:
+			"Describe the component's interface: What inputs does it accept? What outputs does it produce? What APIs or contracts does it expose? Include data formats and protocols.",
 		next_step: "map_dependencies",
 	},
 	{
@@ -125,9 +136,10 @@ export const COMPONENT_STEPS: StepDefinition[] = [
 		order: 5,
 		name: "Map Dependencies",
 		description: "Identify internal and external dependencies",
-		prompt:
-			"List dependencies: (1) Internal component dependencies (depends_on), (2) External/third-party dependencies (external_dependencies).",
-		required_fields: ["depends_on", "external_dependencies"],
+		question:
+			"What does this component depend on?",
+		guidance:
+			"List both internal dependencies (other components in your system) and external dependencies (third-party libraries, services, databases). Be specific about versions where applicable.",
 		next_step: "define_ownership",
 	},
 	{
@@ -135,9 +147,10 @@ export const COMPONENT_STEPS: StepDefinition[] = [
 		order: 6,
 		name: "Define Ownership",
 		description: "Specify state management and data ownership",
-		prompt:
-			"Define ownership: What data does this component own? What state does it manage? What data does it borrow from other components?",
-		required_fields: ["description"],
+		question:
+			"What data and state does this component own versus borrow?",
+		guidance:
+			"Define data ownership clearly: What data does this component create and manage? What state is it responsible for? What data does it access from other components?",
 		next_step: "identify_patterns",
 	},
 	{
@@ -145,9 +158,10 @@ export const COMPONENT_STEPS: StepDefinition[] = [
 		order: 7,
 		name: "Identify Patterns",
 		description: "List architectural patterns used",
-		prompt:
-			"What architectural patterns does this component use? (e.g., Repository, Service, Factory, Observer, etc.)",
-		required_fields: ["description"],
+		question:
+			"What architectural patterns does this component use?",
+		guidance:
+			"List the architectural patterns employed (e.g., Repository, Service, Factory, Observer, Singleton, Strategy). Explain why each pattern was chosen.",
 		next_step: "quality_attributes",
 	},
 	{
@@ -155,9 +169,10 @@ export const COMPONENT_STEPS: StepDefinition[] = [
 		order: 8,
 		name: "Define Quality Attributes",
 		description: "Specify performance, security, and testability requirements",
-		prompt:
-			"Define quality attributes: Performance requirements, security considerations, testability concerns, scalability needs.",
-		required_fields: ["constraints"],
+		question:
+			"What are the quality requirements for this component?",
+		guidance:
+			"Define quality attributes: Performance targets (response time, throughput), security requirements, testability needs, scalability goals, reliability expectations.",
 		next_step: "trace_requirements",
 	},
 	{
@@ -165,26 +180,21 @@ export const COMPONENT_STEPS: StepDefinition[] = [
 		order: 9,
 		name: "Trace to Requirements",
 		description: "Create traceability matrix",
-		prompt:
-			"Explicitly link this component back to requirement IDs. Ensure every capability traces to at least one requirement.",
-		required_fields: ["description"],
+		question:
+			"How do the capabilities trace back to requirements?",
+		guidance:
+			"Create a traceability map linking each capability to the requirement(s) it satisfies. Ensure complete coverage - every capability should trace to at least one requirement.",
 		next_step: "validate_refine",
 	},
 	{
 		id: "validate_refine",
 		order: 10,
 		name: "Validate and Refine",
-		description: "Final validation before creation",
-		prompt:
-			"Final review: Ensure all fields are complete, boundaries are clear, dependencies are mapped, and traceability is established.",
-		required_fields: [
-			"type",
-			"slug",
-			"name",
-			"description",
-			"capabilities",
-			"tech_stack",
-		],
+		description: "Final review before creation",
+		question:
+			"Ready to create this component? Let's do a final review.",
+		guidance:
+			"This is the final step. Review everything: boundaries are clear, dependencies are mapped, capabilities are defined, quality attributes are specified, and traceability is complete.",
 		next_step: null,
 	},
 ];
@@ -198,9 +208,10 @@ export const PLAN_STEPS: StepDefinition[] = [
 		order: 1,
 		name: "Review Context",
 		description: "Review requirements and components",
-		prompt:
-			"Review the acceptance criteria (criteria_id) you're fulfilling. What requirements and components are relevant to this plan?",
-		required_fields: ["criteria_id", "description"],
+		question:
+			"What acceptance criteria are you fulfilling and what's the context?",
+		guidance:
+			"Identify the acceptance criteria this plan addresses. Explain which requirements and components are relevant to this plan and how they relate.",
 		next_step: "identify_phases",
 	},
 	{
@@ -208,9 +219,10 @@ export const PLAN_STEPS: StepDefinition[] = [
 		order: 2,
 		name: "Identify Phases",
 		description: "Break work into major phases",
-		prompt:
-			"Break this plan into 2-5 major phases (e.g., Setup, Core Implementation, Testing, Documentation).",
-		required_fields: ["description"],
+		question:
+			"What are the major phases of work for this plan?",
+		guidance:
+			"Break the plan into 2-5 major phases (e.g., Setup, Core Implementation, Testing, Documentation). Describe what each phase accomplishes.",
 		next_step: "analyze_dependencies",
 	},
 	{
@@ -218,9 +230,10 @@ export const PLAN_STEPS: StepDefinition[] = [
 		order: 3,
 		name: "Analyze Dependencies",
 		description: "Create dependency graph and ordering",
-		prompt:
-			"List dependencies: What other plans must complete before this one? What tasks within this plan depend on each other?",
-		required_fields: ["depends_on"],
+		question:
+			"What dependencies exist for this plan?",
+		guidance:
+			"List what other plans must complete before this one starts. Also consider task dependencies within this plan - which tasks must happen before others?",
 		next_step: "break_down_tasks",
 	},
 	{
@@ -228,9 +241,10 @@ export const PLAN_STEPS: StepDefinition[] = [
 		order: 4,
 		name: "Break Down Tasks",
 		description: "Create actionable tasks (0.5-3 days each)",
-		prompt:
-			"Break down work into specific tasks. Each task should be: 0.5-3 days of effort, independently testable, clearly described.",
-		required_fields: ["tasks"],
+		question:
+			"What specific tasks need to be completed?",
+		guidance:
+			"Break down the work into specific, actionable tasks. Each task should be: 0.5-3 days of effort, independently testable, and clearly described. Provide task IDs and descriptions.",
 		next_step: "estimate_effort",
 	},
 	{
@@ -238,19 +252,21 @@ export const PLAN_STEPS: StepDefinition[] = [
 		order: 5,
 		name: "Estimate Effort",
 		description: "Add effort estimates with buffer",
-		prompt:
-			"For each task, estimate effort in days. Add 20% buffer for unknowns. Be realistic.",
-		required_fields: ["tasks"],
+		question:
+			"How much effort will each task require?",
+		guidance:
+			"Estimate effort for each task in days. Be realistic and add a 20% buffer for unknowns. Consider complexity, uncertainty, and team experience.",
 		next_step: "define_acceptance",
 	},
 	{
 		id: "define_acceptance",
 		order: 6,
 		name: "Define Acceptance Criteria",
-		description: "Add acceptance criteria per task",
-		prompt:
-			"For each task, define clear acceptance criteria. How will you know it's done?",
-		required_fields: ["acceptance_criteria"],
+		description: "Add acceptance criteria for the plan",
+		question:
+			"How will you know when this plan is complete?",
+		guidance:
+			"Define clear acceptance criteria for the overall plan. What conditions must be met to consider this plan done? Be specific and measurable.",
 		next_step: "identify_milestones",
 	},
 	{
@@ -258,9 +274,10 @@ export const PLAN_STEPS: StepDefinition[] = [
 		order: 7,
 		name: "Identify Milestones",
 		description: "Define major checkpoints",
-		prompt:
-			"Identify 2-4 major milestones. These are deliverable checkpoints where stakeholders can review progress.",
-		required_fields: ["description"],
+		question:
+			"What are the major milestones for this plan?",
+		guidance:
+			"Identify 2-4 major milestones - deliverable checkpoints where stakeholders can review progress. Each milestone should represent a meaningful accomplishment.",
 		next_step: "plan_testing",
 	},
 	{
@@ -268,9 +285,10 @@ export const PLAN_STEPS: StepDefinition[] = [
 		order: 8,
 		name: "Plan Testing Strategy",
 		description: "Define how work will be tested",
-		prompt:
-			"Define testing strategy: Unit tests, integration tests, E2E tests. Aim for 90%+ coverage.",
-		required_fields: ["description"],
+		question:
+			"How will you test the work in this plan?",
+		guidance:
+			"Define your testing strategy: unit tests, integration tests, E2E tests. Specify coverage goals (aim for 90%+) and testing approach for each type.",
 		next_step: "plan_risks",
 	},
 	{
@@ -278,9 +296,10 @@ export const PLAN_STEPS: StepDefinition[] = [
 		order: 9,
 		name: "Plan for Risks",
 		description: "Identify risks and mitigation strategies",
-		prompt:
-			"Identify 2-5 key risks and how you'll mitigate them. What could go wrong? How will you handle it?",
-		required_fields: ["description"],
+		question:
+			"What risks could impact this plan and how will you mitigate them?",
+		guidance:
+			"Identify 2-5 key risks: technical challenges, dependencies, resource constraints, etc. For each risk, describe mitigation strategies.",
 		next_step: "create_timeline",
 	},
 	{
@@ -288,9 +307,10 @@ export const PLAN_STEPS: StepDefinition[] = [
 		order: 10,
 		name: "Create Timeline",
 		description: "Build schedule and critical path",
-		prompt:
-			"Create a timeline: When will each phase complete? What's the critical path? When's the target completion date?",
-		required_fields: ["description"],
+		question:
+			"What's the timeline for this plan?",
+		guidance:
+			"Create a timeline: when will each phase complete? What's the critical path (longest sequence of dependent tasks)? What's the target completion date?",
 		next_step: "trace_specs",
 	},
 	{
@@ -298,26 +318,21 @@ export const PLAN_STEPS: StepDefinition[] = [
 		order: 11,
 		name: "Trace to Specs",
 		description: "Link to requirements and components",
-		prompt:
-			"Explicitly link tasks to requirement IDs and component IDs. Ensure full traceability.",
-		required_fields: ["description"],
+		question:
+			"How do the tasks trace to requirements and components?",
+		guidance:
+			"Link each task to requirement IDs and component IDs. Ensure full traceability - every task should support at least one requirement or component.",
 		next_step: "validate_refine",
 	},
 	{
 		id: "validate_refine",
 		order: 12,
 		name: "Validate and Refine",
-		description: "Final validation with 20% buffer check",
-		prompt:
-			"Final review: All tasks defined? Dependencies mapped? 20% buffer included? Traceability complete?",
-		required_fields: [
-			"slug",
-			"name",
-			"description",
-			"criteria_id",
-			"acceptance_criteria",
-			"tasks",
-		],
+		description: "Final review before creation",
+		question:
+			"Ready to create this plan? Let's do a final review.",
+		guidance:
+			"This is the final step. Verify: all tasks are defined, dependencies are mapped, 20% buffer is included in estimates, traceability is complete.",
 		next_step: null,
 	},
 ];
@@ -331,9 +346,10 @@ export const CONSTITUTION_STEPS: StepDefinition[] = [
 		order: 1,
 		name: "Basic Information",
 		description: "Provide basic constitution information",
-		prompt:
-			"Provide a name and description for this constitution. What principles will it govern?",
-		required_fields: ["name", "description"],
+		question:
+			"What is this constitution about and what will it govern?",
+		guidance:
+			"Provide a name and description for this constitution. Explain what principles it will establish and what aspects of development it will govern.",
 		next_step: "articles",
 	},
 	{
@@ -341,9 +357,10 @@ export const CONSTITUTION_STEPS: StepDefinition[] = [
 		order: 2,
 		name: "Define Articles",
 		description: "Create the core principles/articles",
-		prompt:
-			"Define articles (core principles). Each article needs: title, principle, rationale, examples (optional), exceptions (optional), and status (needs-review/active/archived).",
-		required_fields: ["articles"],
+		question:
+			"What are the core principles or articles of this constitution?",
+		guidance:
+			"Define the articles (core principles) that make up this constitution. For each article, include: title, the principle itself, rationale explaining why it exists, optional examples demonstrating it, optional exceptions where it doesn't apply, and status (needs-review, active, or archived).",
 		next_step: "finalize",
 	},
 	{
@@ -351,8 +368,10 @@ export const CONSTITUTION_STEPS: StepDefinition[] = [
 		order: 3,
 		name: "Finalize",
 		description: "Review and create the constitution",
-		prompt: "Review the constitution details and confirm creation.",
-		required_fields: ["name"],
+		question:
+			"Ready to create this constitution? Let's do a final review.",
+		guidance:
+			"This is the final step. Review the constitution name, description, and all articles to ensure they're complete and accurate.",
 		next_step: null,
 	},
 ];
@@ -366,9 +385,10 @@ export const DECISION_STEPS: StepDefinition[] = [
 		order: 1,
 		name: "Basic Information",
 		description: "Provide basic decision information",
-		prompt:
-			"Provide a name and brief description summarizing what this decision is about.",
-		required_fields: ["name", "description"],
+		question:
+			"What is this decision about?",
+		guidance:
+			"Provide a name and brief description summarizing what this decision addresses. Keep it concise but informative.",
 		next_step: "decision_statement",
 	},
 	{
@@ -376,9 +396,10 @@ export const DECISION_STEPS: StepDefinition[] = [
 		order: 2,
 		name: "Decision Statement",
 		description: "State what was decided",
-		prompt:
-			"Provide a clear statement of what was decided (20-500 characters).",
-		required_fields: ["decision"],
+		question:
+			"What exactly was decided?",
+		guidance:
+			"State clearly and concisely what was decided. This should be 20-500 characters - specific enough to be actionable but concise enough to be memorable.",
 		next_step: "context",
 	},
 	{
@@ -386,9 +407,10 @@ export const DECISION_STEPS: StepDefinition[] = [
 		order: 3,
 		name: "Context",
 		description: "Explain the situation that prompted this decision",
-		prompt:
-			"Describe the situation or problem that prompted this decision (20-1000 characters).",
-		required_fields: ["context"],
+		question:
+			"What situation or problem led to this decision?",
+		guidance:
+			"Describe the context that prompted this decision. Explain the problem, opportunity, or situation that needed to be addressed (20-1000 characters).",
 		next_step: "alternatives_and_consequences",
 	},
 	{
@@ -396,9 +418,10 @@ export const DECISION_STEPS: StepDefinition[] = [
 		order: 4,
 		name: "Alternatives and Consequences",
 		description: "Document alternatives considered and consequences",
-		prompt:
-			"List alternatives considered (array), and define consequences (positive, negative, risks, mitigation - all arrays).",
-		required_fields: ["alternatives", "consequences"],
+		question:
+			"What alternatives were considered and what are the consequences?",
+		guidance:
+			"List the alternatives that were considered but not chosen. Then describe the consequences: positive outcomes, negative outcomes or costs, risks, and mitigation strategies for those risks.",
 		next_step: "relationships",
 	},
 	{
@@ -406,9 +429,10 @@ export const DECISION_STEPS: StepDefinition[] = [
 		order: 5,
 		name: "Relationships",
 		description: "Link to affected entities and informing articles",
-		prompt:
-			"Specify: affects_components (array of component IDs), affects_requirements (array of requirement IDs), affects_plans (array of plan IDs), informed_by_articles (array of article references like 'con-001-slug/art-001'), and optionally supersedes (decision ID this replaces).",
-		required_fields: [],
+		question:
+			"What does this decision impact and what principles informed it?",
+		guidance:
+			"Specify what this decision affects: which components, requirements, and plans are impacted? Which constitution articles informed this decision? Does it supersede any previous decisions?",
 		next_step: "finalize",
 	},
 	{
@@ -416,8 +440,10 @@ export const DECISION_STEPS: StepDefinition[] = [
 		order: 6,
 		name: "Finalize",
 		description: "Review and create the decision",
-		prompt: "Review the decision details and confirm creation.",
-		required_fields: ["name"],
+		question:
+			"Ready to create this decision? Let's do a final review.",
+		guidance:
+			"This is the final step. Review all the decision details to ensure they're complete and accurate.",
 		next_step: null,
 	},
 ];

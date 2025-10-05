@@ -1,11 +1,11 @@
 import type { AnyComponent } from "@spec-mcp/data";
-import { ErrorFactory } from "../domain/errors.js";
+import { ErrorFactory } from "../shared/errors/index.js";
 import type {
 	CoverageAnalysisResult,
 	CoverageReport,
 	ICoverageAnalyzer,
-} from "../interfaces/analyzer.js";
-import type { AnalysisResult } from "../interfaces/results.js";
+} from "../shared/types/analyzer.js";
+import type { AnalysisResult } from "../shared/types/results.js";
 import { BaseAnalyzer } from "./base-analyzer.js";
 
 export class CoverageAnalyzer

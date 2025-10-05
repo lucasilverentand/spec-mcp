@@ -1,7 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { ServerConfig } from "../config/index.js";
 import type { SpecOperations } from "@spec-mcp/core";
-import { computeEntityId, type EntityType } from "@spec-mcp/data";
+import { computeEntityId, type EntityType, type AnyEntity } from "@spec-mcp/data";
 import { z } from "zod";
 import { wrapToolHandler } from "../utils/tool-wrapper.js";
 
@@ -56,7 +56,7 @@ function parseValidationErrors(errors: string[]): Map<string, string[]> {
  * Format validation results for LLM consumption
  */
 function formatValidationResults(validations: Array<{
-	entity: { type: string; number: number; slug: string };
+	entity: AnyEntity;
 	errors: string[];
 	warnings: string[];
 }>): string {
@@ -116,8 +116,11 @@ export function registerValidateTool(
 		{
 			title: "Validate Specifications",
 			description:
-				"Validate all specifications or specific entities. Returns structured validation results with errors and warnings grouped by field. " +
-				"Includes reference validation, cycle detection, and health scoring.",
+				"Check specifications for errors, broken references, and circular dependencies.\n\n" +
+				"Examples:\n" +
+				"• Validate all: { check_references: true, check_cycles: true }\n" +
+				"• Validate one: { entity_id: 'req-001-auth' }\n" +
+				"• With health score: { include_health: true }",
 			inputSchema: {
 				entity_id: z
 					.string()
@@ -186,9 +189,13 @@ export function registerValidateTool(
 
 			// If specific entity requested, validate only that one
 			if (args.entity_id) {
-				const allEntities = [...requirements, ...plans, ...components];
+				const allEntities: AnyEntity[] = [
+					...(requirements as AnyEntity[]),
+					...(plans as AnyEntity[]),
+					...(components as AnyEntity[])
+				];
 				const entity = allEntities.find((e) => {
-					const id = computeEntityId(e.type, e.number, e.slug);
+					const id = computeEntityId(e.type as EntityType, e.number, e.slug);
 					return id === args.entity_id || e.slug === args.entity_id;
 				});
 
@@ -200,7 +207,7 @@ export function registerValidateTool(
 				const validation = {
 					entity,
 					errors: result.errors,
-					warnings: result.warnings,
+					warnings: result.warnings || [],
 				};
 
 				const formatted = formatValidationResults([validation]);
@@ -218,34 +225,34 @@ export function registerValidateTool(
 
 			// Validate all entities
 			const requirementValidations = await Promise.all(
-				requirements.map(async (req) => {
+				(requirements as AnyEntity[]).map(async (req) => {
 					const result = await service.validateEntity(req);
 					return {
 						entity: req,
 						errors: result.errors,
-						warnings: result.warnings,
+						warnings: result.warnings || [],
 					};
 				}),
 			);
 
 			const planValidations = await Promise.all(
-				plans.map(async (plan) => {
+				(plans as AnyEntity[]).map(async (plan) => {
 					const result = await service.validateEntity(plan);
 					return {
 						entity: plan,
 						errors: result.errors,
-						warnings: result.warnings,
+						warnings: result.warnings || [],
 					};
 				}),
 			);
 
 			const componentValidations = await Promise.all(
-				components.map(async (component) => {
+				(components as AnyEntity[]).map(async (component) => {
 					const result = await service.validateEntity(component);
 					return {
 						entity: component,
 						errors: result.errors,
-						warnings: result.warnings,
+						warnings: result.warnings || [],
 					};
 				}),
 			);

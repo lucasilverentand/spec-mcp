@@ -17,7 +17,7 @@ import {
 	ServiceComponentSchema,
 } from "@spec-mcp/data";
 import z from "zod";
-import type { ValidationResult } from "../../interfaces/results.js";
+import type { ValidationResult } from "../../shared/types/results.js";
 
 interface FieldRule {
 	type: string;
@@ -69,33 +69,38 @@ function validateEntity(entity: AnyEntity): ValidationResult {
 			default:
 				// This should never happen due to AnyEntity typing
 				entityType satisfies never;
+				const errorMsg = `Unknown entity type: ${String(entityType)}`;
 				return {
+					success: false,
 					valid: false,
-					errors: [`Unknown entity type: ${String(entityType)}`],
-					warnings: [],
+					errors: [errorMsg],
+					error: errorMsg,
 				};
 		}
 
 		return {
+			success: true,
 			valid: true,
 			errors: [],
 			warnings: [],
 		};
 	} catch (error) {
 		if (error instanceof z.ZodError) {
+			const errors = error.errors.map((e) => `${e.path.join(".")}: ${e.message}`);
 			return {
+				success: false,
 				valid: false,
-				errors: error.errors.map((e) => `${e.path.join(".")}: ${e.message}`),
-				warnings: [],
+				errors,
+				error: errors.join(", "),
 			};
 		}
 
+		const errorMsg = error instanceof Error ? error.message : "Unknown validation error";
 		return {
+			success: false,
 			valid: false,
-			errors: [
-				error instanceof Error ? error.message : "Unknown validation error",
-			],
-			warnings: [],
+			errors: [errorMsg],
+			error: errorMsg,
 		};
 	}
 }
@@ -113,17 +118,21 @@ function validateEntityBatch(entities: AnyEntity[]): ValidationResult {
 			);
 		}
 
-		allWarnings.push(
-			...result.warnings.map(
-				(warning: string) => `Entity ${index}: ${warning}`,
-			),
-		);
+		if (result.warnings) {
+			allWarnings.push(
+				...result.warnings.map(
+					(warning: string) => `Entity ${index}: ${warning}`,
+				),
+			);
+		}
 	});
 
 	return {
+		success: allErrors.length === 0,
 		valid: allErrors.length === 0,
 		errors: allErrors,
 		warnings: allWarnings,
+		...(allErrors.length > 0 && { error: allErrors.join(", ") }),
 	};
 }
 
@@ -138,12 +147,12 @@ function validatePartialEntity(
 
 		return validateEntity(mergedEntity);
 	} catch (error) {
+		const errorMsg = error instanceof Error ? error.message : "Unknown validation error";
 		return {
+			success: false,
 			valid: false,
-			errors: [
-				error instanceof Error ? error.message : "Unknown validation error",
-			],
-			warnings: [],
+			errors: [errorMsg],
+			error: errorMsg,
 		};
 	}
 }
@@ -179,25 +188,28 @@ function validateFieldValue(
 		fieldSchema.parse(value);
 
 		return {
+			success: true,
 			valid: true,
 			errors: [],
 			warnings: [],
 		};
 	} catch (error) {
 		if (error instanceof z.ZodError) {
+			const errors = error.errors.map((e) => e.message);
 			return {
+				success: false,
 				valid: false,
-				errors: error.errors.map((e) => e.message),
-				warnings: [],
+				errors,
+				error: errors.join(", "),
 			};
 		}
 
+		const errorMsg = error instanceof Error ? error.message : "Unknown validation error";
 		return {
+			success: false,
 			valid: false,
-			errors: [
-				error instanceof Error ? error.message : "Unknown validation error",
-			],
-			warnings: [],
+			errors: [errorMsg],
+			error: errorMsg,
 		};
 	}
 }
@@ -275,8 +287,9 @@ function validateEntityStructure(entity: unknown): ValidationResult {
 
 	// Check basic structure
 	if (!entity || typeof entity !== "object") {
-		errors.push("Entity must be an object");
-		return { valid: false, errors, warnings };
+		const errorMsg = "Entity must be an object";
+		errors.push(errorMsg);
+		return { success: false, valid: false, errors, warnings, error: errorMsg };
 	}
 
 	// Type guard to narrow entity type
@@ -322,9 +335,11 @@ function validateEntityStructure(entity: unknown): ValidationResult {
 	}
 
 	return {
+		success: errors.length === 0,
 		valid: errors.length === 0,
 		errors,
 		warnings,
+		...(errors.length > 0 && { error: errors.join(", ") }),
 	};
 }
 

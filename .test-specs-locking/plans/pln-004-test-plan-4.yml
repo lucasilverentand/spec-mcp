@@ -1,0 +1,21 @@
+type: plan
+number: 4
+slug: test-plan-4
+name: Test Plan 4
+description: Plan with progress tracking
+created_at: 2025-10-05T02:19:56.587Z
+updated_at: 2025-10-05T02:19:56.590Z
+priority: medium
+acceptance_criteria: Progress should be trackable
+depends_on: []
+tasks: []
+flows: []
+test_cases: []
+api_contracts: []
+data_models: []
+references: []
+completed: true
+approved: false
+locked: true
+locked_at: 2025-10-05T02:19:56.588Z
+completed_at: 2025-10-05T02:19:56.589Z

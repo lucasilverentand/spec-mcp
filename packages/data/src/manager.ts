@@ -1,6 +1,7 @@
 import z from "zod";
 import { ComponentIdSchema } from "./entities/components/component.js";
 import { ConstitutionIdSchema } from "./entities/constitutions/constitution.js";
+import { DecisionIdSchema } from "./entities/decisions/decision.js";
 import { PlanIdSchema } from "./entities/plans/plan.js";
 import { RequirementIdSchema } from "./entities/requirements/requirement.js";
 import { EntityManager } from "./managers/entity-manager.js";
@@ -8,12 +9,14 @@ import type {
 	AnyComponent,
 	ComponentFilter,
 	ConstitutionFilter,
+	DecisionFilter,
 	PlanFilter,
 	RequirementFilter,
 } from "./managers/types.js";
 import {
 	ComponentFilterSchema,
 	ConstitutionFilterSchema,
+	DecisionFilterSchema,
 	PlanFilterSchema,
 	RequirementFilterSchema,
 } from "./managers/types.js";
@@ -224,6 +227,48 @@ export class SpecsManager {
 			ConstitutionFilterSchema.parse(filter);
 		}
 		return this.entityManager.listConstitutions(filter);
+	}
+
+	// === DECISION CRUD OPERATIONS ===
+
+	async createDecision(
+		data: Omit<
+			import("./entities/decisions/decision.js").Decision,
+			"number"
+		>,
+	) {
+		return this.entityManager.createDecision(data);
+	}
+
+	async getDecision(id: string) {
+		// Validate ID format
+		DecisionIdSchema.parse(id);
+		return this.entityManager.getDecision(id);
+	}
+
+	async updateDecision(
+		id: string,
+		data: Partial<
+			import("./entities/decisions/decision.js").Decision
+		>,
+	) {
+		// Validate ID format
+		DecisionIdSchema.parse(id);
+		return this.entityManager.updateDecision(id, data);
+	}
+
+	async deleteDecision(id: string) {
+		// Validate ID format
+		DecisionIdSchema.parse(id);
+		return this.entityManager.deleteDecision(id);
+	}
+
+	async listDecisions(filter?: DecisionFilter) {
+		// Validate filter if provided
+		if (filter !== undefined) {
+			DecisionFilterSchema.parse(filter);
+		}
+		return this.entityManager.listDecisions(filter);
 	}
 
 	// === BATCH OPERATIONS ===

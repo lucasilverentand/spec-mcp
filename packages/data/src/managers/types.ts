@@ -46,11 +46,19 @@ export const ConstitutionFilterSchema = z.object({
 		.describe("Filter by applies_to scope"),
 });
 
+export const DecisionFilterSchema = z.object({
+	status: z
+		.array(z.enum(["proposed", "accepted", "deprecated", "superseded"]))
+		.optional()
+		.describe("Filter by decision status"),
+});
+
 export const EntityFilterSchema = z.union([
 	RequirementFilterSchema,
 	PlanFilterSchema,
 	ComponentFilterSchema,
 	ConstitutionFilterSchema,
+	DecisionFilterSchema,
 ]);
 
 // Export inferred types for backward compatibility
@@ -58,6 +66,7 @@ export type RequirementFilter = z.infer<typeof RequirementFilterSchema>;
 export type PlanFilter = z.infer<typeof PlanFilterSchema>;
 export type ComponentFilter = z.infer<typeof ComponentFilterSchema>;
 export type ConstitutionFilter = z.infer<typeof ConstitutionFilterSchema>;
+export type DecisionFilter = z.infer<typeof DecisionFilterSchema>;
 export type EntityFilter = z.infer<typeof EntityFilterSchema>;
 
 // Re-export component types

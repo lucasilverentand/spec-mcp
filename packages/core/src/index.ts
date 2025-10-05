@@ -1,6 +1,29 @@
-// Core schemas and types (single source of truth)
+// ============================================================================
+// SPEC-MCP CORE
+// Feature-based architecture for specification management
+// ============================================================================
 
-// Analysis components
+// ----------------------------------------------------------------------------
+// Shared Types & Utilities
+// ----------------------------------------------------------------------------
+export * from "./shared/index.js";
+
+// Re-export utilities from @spec-mcp/utils for convenience
+export {
+	IdGenerator,
+	generateSlug,
+	generateUniqueSlug,
+	validateSlug,
+	parseYaml,
+	stringifyYaml,
+	validateYamlSyntax,
+	convertJsonToYaml,
+	convertYamlToJson,
+} from "@spec-mcp/utils";
+
+// ----------------------------------------------------------------------------
+// Analysis Feature
+// ----------------------------------------------------------------------------
 export {
 	CoverageAnalyzer,
 	CycleDetector,
@@ -8,77 +31,10 @@ export {
 	DependencyResolver,
 	OrphanDetector,
 } from "./analysis/index.js";
-// Error handling
-export {
-	AnalysisError,
-	ConfigurationError,
-	ErrorFactory,
-	IOError,
-	isAnalysisError,
-	isSpecError,
-	isValidationError,
-	SpecError,
-	SystemError,
-	ValidationError,
-} from "./domain/index.js";
-export type {
-	GeneratedPlan,
-	PlanGenerationOptions,
-} from "./generators/plan-generator.js";
-// Generators
-export { PlanGenerator } from "./generators/plan-generator.js";
-// Export only the interface types (not the data types which come from schemas)
-export type {
-	IAnalyzer,
-	ICoverageAnalyzer,
-	ICycleDetector,
-	IDependencyAnalyzer,
-	IOrphanDetector,
-} from "./interfaces/analyzer.js";
-export type {
-	IIdGenerator,
-	ISlugGenerator,
-	ITransformer,
-	IYamlTransformer,
-} from "./interfaces/transformer.js";
-export type {
-	IReferenceValidator,
-	ISchemaValidator,
-	IValidationEngine,
-	IValidator,
-	IWorkflowValidator,
-} from "./interfaces/validator.js";
-export * from "./schemas/index.js";
-export {
-	defaultContainer,
-	SERVICE_TOKENS,
-	ServiceContainer,
-} from "./services/container.js";
-// Main service and entry point
-export { SpecOperations, SpecService } from "./services/index.js";
-// Transformers
-export {
-	convertJsonToYaml,
-	convertYamlToJson,
-	// Backward compatibility functions
-	generateId,
-	generateSlug,
-	generateSlugFromTitle,
-	generateUniqueId,
-	generateUniqueSlug,
-	IdGenerator,
-	parseId,
-	parseYaml,
-	SlugGenerator,
-	stringifyYaml,
-	validateId,
-	validateSlug,
-	validateYamlSyntax,
-	YamlTransformer,
-} from "./transformation/index.js";
-// Utilities
-export * from "./utils/index.js";
-// Validation (consolidated)
+
+// ----------------------------------------------------------------------------
+// Validation Feature
+// ----------------------------------------------------------------------------
 export {
 	BusinessRulesValidator,
 	ReferenceValidator,
@@ -86,24 +42,56 @@ export {
 	ValidationEngine,
 	WorkflowValidator,
 } from "./validation/index.js";
+
+// ----------------------------------------------------------------------------
+// Creation Flow Feature
+// ----------------------------------------------------------------------------
 export type {
 	Draft,
 	StepDefinition,
 	StepResponse,
-	ValidationResult,
+	CreationFlowValidationResult,
+	FinalizationResult,
+	SchemaInstructions,
 } from "./creation-flow/index.js";
-// Creation flow system for step-by-step spec creation
 export {
 	COMPONENT_STEPS,
 	CONSTITUTION_STEPS,
 	DECISION_STEPS,
 	DraftManager,
+	finalizeDraft,
+	formatSchemaFieldsForLLM,
+	generateSchemaInstructions,
+	getFinalizationPrompt,
 	getStepDefinitions,
 	PLAN_STEPS,
 	REQUIREMENT_STEPS,
 	StepValidator,
 } from "./creation-flow/index.js";
 
+// ----------------------------------------------------------------------------
+// Operations Feature
+// ----------------------------------------------------------------------------
+export { SpecOperations } from "./operations/index.js";
+
+// ----------------------------------------------------------------------------
+// Health & Reporting Feature
+// ----------------------------------------------------------------------------
+export { HealthService } from "./health/index.js";
+
+// ----------------------------------------------------------------------------
+// Main Service (orchestrates all features)
+// ----------------------------------------------------------------------------
+export { SpecService } from "./services/index.js";
+export {
+	defaultContainer,
+	SERVICE_TOKENS,
+	ServiceContainer,
+} from "./services/container.js";
+
+// ----------------------------------------------------------------------------
+// Backward Compatibility - Legacy SpecCore class
+// ----------------------------------------------------------------------------
 import {
 	CoverageAnalyzer as CoverageAnalyzerClass,
 	CycleDetector as CycleDetectorClass,
@@ -114,10 +102,9 @@ import {
 	registerCoreServices,
 	ServiceContainer as ServiceContainerClass,
 } from "./services/container.js";
-// Import classes and ServiceContainer needed for SpecCore implementation
 import { SpecService as SpecServiceClass } from "./services/index.js";
+import type { ServiceConfig } from "./shared/types/config.js";
 
-// Backward compatibility - Legacy SpecCore class
 export class SpecCore {
 	private service: SpecServiceClass;
 	private _coverageAnalyzer: CoverageAnalyzerClass;
@@ -125,9 +112,7 @@ export class SpecCore {
 	private _cycleDetector: CycleDetectorClass;
 	private _orphanDetector: OrphanDetectorClass;
 
-	constructor(
-		config?: Partial<import("./interfaces/config.js").ServiceConfig>,
-	) {
+	constructor(config?: Partial<ServiceConfig>) {
 		this.service = new SpecServiceClass(config);
 		this._coverageAnalyzer = new CoverageAnalyzerClass(config);
 		this._dependencyAnalyzer = new DependencyAnalyzerClass(config);
@@ -203,14 +188,14 @@ export class SpecCore {
 
 // Factory function for creating configured service instances
 export function createSpecService(
-	config?: Partial<import("./interfaces/config.js").ServiceConfig>,
+	config?: Partial<ServiceConfig>,
 ): SpecServiceClass {
 	return new SpecServiceClass(config);
 }
 
 // Factory function for creating configured container
 export async function createContainer(
-	config?: Partial<import("./interfaces/config.js").ServiceConfig>,
+	config?: Partial<ServiceConfig>,
 ): Promise<ServiceContainerClass> {
 	const container = new ServiceContainerClass(config);
 	await registerCoreServices(container);

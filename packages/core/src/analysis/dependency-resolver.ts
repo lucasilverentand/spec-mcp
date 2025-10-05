@@ -1,6 +1,6 @@
 import type { AnyComponent } from "@spec-mcp/data";
 import { SpecsManager } from "@spec-mcp/data";
-import type { DependencyGraph, SpecConfig } from "../schemas/index.js";
+import type { DependencyGraph, SpecConfig } from "../shared/types/index.js";
 
 export class DependencyResolver {
 	private manager: SpecsManager;

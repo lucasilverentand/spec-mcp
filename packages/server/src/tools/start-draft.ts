@@ -26,23 +26,30 @@ export function registerStartDraftTool(
 		{
 			title: "Start Draft",
 			description:
-				"Start creating a new specification (requirement, component, plan, constitution, or decision). " +
-				"Creates a draft and returns the first field to fill. Drafts are persisted as .draft.yml files.",
+				"Begin creating a specification through a guided Q&A workflow. Returns the draft ID and first question.\n\n" +
+				"Response format: { draft_id: 'draft-id', question: 'first question', guidance: 'how to answer', step: 1, total_steps: N }\n\n" +
+				"The creation flow guides you through a series of questions to gather information. After all questions are answered, " +
+				"you'll receive schema instructions to map the collected data and call create_spec.\n\n" +
+				"Example: To create a requirement, call start_draft with type='requirement', then use update_draft to answer each question.",
 			inputSchema: {
 				type: SpecTypeSchema.describe(
 					"Type of specification to create: requirement, component, plan, constitution, or decision",
 				),
+				name: z.string().optional().describe("Optional name for the specification"),
+				slug: z.string().optional().describe("Optional slug (URL-friendly identifier) for the specification"),
 			},
 		},
 		wrapToolHandler(
 			"start_draft",
-			async ({ type }) => {
+			async ({ type, name, slug }) => {
 				// Get shared helper instance with resolved specs path
 				const helper = getCreationFlowHelper(config.specsPath);
 
 				// Start creation flow session
 				const response = await helper.start(
 					type as "requirement" | "component" | "plan" | "constitution" | "decision",
+					slug,
+					name,
 				);
 
 				return {
@@ -51,18 +58,13 @@ export function registerStartDraftTool(
 							type: "text",
 							text: JSON.stringify(
 								{
-									success: true,
-									data: {
-										draft_id: response.draft_id,
-										spec_type: type,
-										step: response.step,
-										total_steps: response.total_steps,
-										current_field: response.current_step_name,
-										instructions: response.prompt,
-										draft_file: `${config.specsPath}/.drafts/${response.draft_id}.draft.yml`,
-										next_action:
-											"Use update_draft to provide the value for this field",
-									},
+									draft_id: response.draft_id,
+									step: response.step,
+									total_steps: response.total_steps,
+									current_step_name: response.current_step_name,
+									question: response.question,
+									guidance: response.guidance,
+									progress_summary: response.progress_summary,
 								},
 								null,
 								2,

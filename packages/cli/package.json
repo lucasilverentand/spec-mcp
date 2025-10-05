@@ -28,6 +28,7 @@
 		"commander": "^12.1.0"
 	},
 	"devDependencies": {
+		"@spec-mcp/tsconfig": "workspace:*",
 		"@types/node": "^24.5.2",
 		"typescript": "^5.9.2"
 	},

@@ -1,6 +1,7 @@
 import z from "zod";
 import { ComponentIdSchema } from "../entities/components/component.js";
 import { ConstitutionIdSchema } from "../entities/constitutions/constitution.js";
+import { DecisionIdSchema } from "../entities/decisions/decision.js";
 import type { AnyEntity, EntityType } from "../entities/index.js";
 import { PlanIdSchema } from "../entities/plans/plan.js";
 import { RequirementIdSchema } from "../entities/requirements/requirement.js";
@@ -10,6 +11,7 @@ import { FileManager } from "./file-manager.js";
 import {
 	ComponentFilterSchema,
 	ConstitutionFilterSchema,
+	DecisionFilterSchema,
 	PlanFilterSchema,
 	RequirementFilterSchema,
 } from "./types.js";
@@ -953,6 +955,79 @@ export class EntityManager {
 		return constitutions;
 	}
 
+	// === DECISION CRUD OPERATIONS ===
+
+	async createDecision(
+		data: Omit<
+			import("../entities/decisions/decision.js").Decision,
+			"number"
+		>,
+	): Promise<import("../entities/decisions/decision.js").Decision> {
+		const result = await this.create("decision", {
+			...data,
+			type: "decision",
+		});
+		if (!result.success) {
+			throw new Error(result.error);
+		}
+		return result.data as import("../entities/decisions/decision.js").Decision;
+	}
+
+	async getDecision(
+		id: string,
+	): Promise<import("../entities/decisions/decision.js").Decision | null> {
+		// Validate ID format
+		DecisionIdSchema.parse(id);
+		const result = await this.get("decision", id);
+		if (!result.success) {
+			return null;
+		}
+		return result.data as import("../entities/decisions/decision.js").Decision;
+	}
+
+	async updateDecision(
+		id: string,
+		data: Partial<import("../entities/decisions/decision.js").Decision>,
+	): Promise<import("../entities/decisions/decision.js").Decision> {
+		// Validate ID format
+		DecisionIdSchema.parse(id);
+		const result = await this.update("decision", id, data);
+		if (!result.success) {
+			throw new Error(result.error);
+		}
+		return result.data as import("../entities/decisions/decision.js").Decision;
+	}
+
+	async deleteDecision(id: string): Promise<boolean> {
+		// Validate ID format
+		DecisionIdSchema.parse(id);
+		const result = await this.delete("decision", id);
+		return result.success;
+	}
+
+	async listDecisions(
+		filter?: import("./types.js").DecisionFilter,
+	): Promise<import("../entities/decisions/decision.js").Decision[]> {
+		// Validate filter if provided
+		if (filter !== undefined) {
+			DecisionFilterSchema.parse(filter);
+		}
+
+		const result = await this.list("decision", {
+			...(filter?.status && { status: filter.status }),
+			sortBy: "number",
+			sortOrder: "asc",
+		});
+		if (!result.success) {
+			throw new Error(result.error);
+		}
+
+		const decisions =
+			result.data as import("../entities/decisions/decision.js").Decision[];
+
+		return decisions;
+	}
+
 	// === BATCH OPERATIONS (from OperationManager) ===
 
 	async createMultipleEntities(
@@ -1086,6 +1161,7 @@ export class EntityManager {
 			success: errors.length === 0,
 			valid: errors.length === 0,
 			errors,
+			warnings: [],
 		};
 	}
 
