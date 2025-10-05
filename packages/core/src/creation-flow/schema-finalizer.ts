@@ -361,8 +361,16 @@ export function finalizeDraft(
 		// Remove flow-specific fields that aren't part of the entity schema
 		const flowSpecificFields = [
 			"research_findings",
+			"search_performed",
 			"no_constitutions",
+			"constitution_articles",
+			"constitution_review",
+			"constitution_review_notes",
 			"technology_notes",
+			"technology_research",
+			"problem",
+			"implementation_avoidance_notes",
+			"implementation_notes",
 			"in_scope",
 			"out_of_scope",
 			"environment_vars",
@@ -372,6 +380,14 @@ export function finalizeDraft(
 			"negative",
 			"risks",
 			"mitigation",
+			// Loop-related temporary fields
+			"criteria_descriptions",
+			"articles_descriptions",
+			"tasks_descriptions",
+			"flows_descriptions",
+			"test_cases_descriptions",
+			"api_contracts_descriptions",
+			"data_models_descriptions",
 		];
 
 		for (const field of flowSpecificFields) {

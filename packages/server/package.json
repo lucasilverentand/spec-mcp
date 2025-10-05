@@ -19,6 +19,8 @@
 		"dist"
 	],
 	"scripts": {
+		"embed-guides": "tsx scripts/embed-guides.ts",
+		"prebuild": "pnpm embed-guides",
 		"build": "tsup",
 		"dev": "tsup --watch",
 		"clean": "rm -rf dist",
@@ -40,6 +42,7 @@
 		"@types/node": "^24.5.2",
 		"pino-pretty": "^13.1.1",
 		"tsup": "^8.5.0",
+		"tsx": "^4.20.6",
 		"typescript": "^5.9.2",
 		"vitest": "^3.2.4",
 		"zod": "3.23.8"

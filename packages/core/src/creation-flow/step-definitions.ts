@@ -1,7 +1,8 @@
 import type { StepDefinition } from "./types.js";
 
 /**
- * Step definitions for Requirements (10 steps)
+ * Step definitions for Requirements (9 steps)
+ * Note: criteria_item step repeats for each criterion but counts as 1 step
  */
 export const REQUIREMENT_STEPS: StepDefinition[] = [
 	{
@@ -74,43 +75,32 @@ export const REQUIREMENT_STEPS: StepDefinition[] = [
 			"What needs to happen, without specifying how it should be implemented?",
 		guidance:
 			"Describe WHAT the system should do, not HOW it should do it. Avoid mentioning specific technologies, databases, frameworks, or UI components. Focus on outcomes and behavior.",
-		next_step: "measurability",
+		next_step: "criteria_list",
 	},
 	{
-		id: "measurability",
+		id: "criteria_list",
 		order: 6,
-		name: "Define Measurability",
-		description: "Add measurable success criteria",
-		question: "How will you know when this requirement is successfully met?",
+		name: "List Acceptance Criteria",
+		description: "Provide list of all acceptance criteria descriptions",
+		question:
+			"List all acceptance criteria descriptions for this requirement (2-4 criteria recommended)",
 		guidance:
-			"Define 2-4 measurable acceptance criteria. Each should be specific, testable, and clearly define what success looks like. Use concrete metrics where possible.",
-		next_step: "specific_language",
+			"IMPORTANT: This step collects ONLY the descriptions (just text strings). You'll expand each one with additional details in the next step.\n\nProvide a list of acceptance criteria descriptions. Each should be specific, testable, and clearly define what success looks like. Use concrete metrics where possible.\n\nYou can provide them as:\n- An array: criteria_descriptions: ['First criterion', 'Second criterion']\n- Newline-separated text\n\nExamples:\n- 'User can reset password via email'\n- 'Password reset email arrives within 30 seconds'\n- 'New password must meet security requirements (8+ chars, uppercase, number)'\n\nTo skip (if no criteria needed): criteria_descriptions: []",
+		next_step: "criteria_item",
 	},
 	{
-		id: "specific_language",
+		id: "criteria_item",
 		order: 7,
-		name: "Use Specific Language",
-		description: "Remove vague terms",
-		question:
-			"Can you make the description and criteria more specific and quantifiable?",
+		name: "Expand Criterion Details",
+		description: "Provide additional details for each criterion",
+		question: "Expand the details for this acceptance criterion",
 		guidance:
-			"Replace vague terms like 'fast', 'easy', 'simple', 'good' with specific, measurable language. For example: instead of 'fast', use 'completes in under 2 seconds'; instead of 'easy', use 'requires no more than 3 clicks'.",
-		next_step: "acceptance_criteria",
-	},
-	{
-		id: "acceptance_criteria",
-		order: 8,
-		name: "Finalize Acceptance Criteria",
-		description: "Ensure criteria are complete and testable",
-		question:
-			"Are all acceptance criteria testable, independent, clear, and achievable?",
-		guidance:
-			"Review each acceptance criterion to ensure it is: (1) Testable - can be verified objectively, (2) Independent - doesn't depend on other criteria, (3) Clear - unambiguous, (4) Achievable - realistic to implement.",
+			"For the criterion shown above, provide additional details:\n- status: 'needs-review' (default), 'active', or 'archived'\n\nThe description has already been provided. You can also refine the description to make it more specific and quantifiable. Replace vague terms like 'fast', 'easy', 'simple' with concrete metrics.",
 		next_step: "priority_assignment",
 	},
 	{
 		id: "priority_assignment",
-		order: 9,
+		order: 8,
 		name: "Assign Priority",
 		description: "Set appropriate priority level",
 		question: "What is the priority of this requirement?",
@@ -120,7 +110,7 @@ export const REQUIREMENT_STEPS: StepDefinition[] = [
 	},
 	{
 		id: "review_and_refine",
-		order: 10,
+		order: 9,
 		name: "Review and Finalize",
 		description: "Create complete requirement schema",
 		question:
@@ -408,21 +398,32 @@ export const PLAN_STEPS: StepDefinition[] = [
 		question: "What dependencies exist for this plan?",
 		guidance:
 			"List what other plans must complete before this one starts. If there are no dependencies, provide an empty array []. Also consider task dependencies within this plan - which tasks must happen before others?",
-		next_step: "break_down_tasks",
+		next_step: "tasks_list",
 	},
 	{
-		id: "break_down_tasks",
+		id: "tasks_list",
 		order: 8,
-		name: "Break Down Tasks",
-		description: "Create actionable tasks (0.5-3 days each)",
-		question: "What specific tasks need to be completed with effort estimates?",
+		name: "List Tasks",
+		description: "Provide list of all task descriptions",
+		question:
+			"List all tasks that need to be completed for this plan (one description per task)",
 		guidance:
-			"Break down the work into specific, actionable tasks. Each task should be: 0.5-3 days of effort, independently testable, and clearly described. Provide task IDs, descriptions, and estimated_days (be realistic and add a 20% buffer for unknowns).",
+			"Provide a list of task descriptions. Each task should be: 0.5-3 days of effort, independently testable, and clearly described. You can provide them as an array of strings or one per line. Examples: ['Set up authentication service infrastructure', 'Implement JWT token generation', 'Create user login endpoint', 'Write integration tests for auth flow']",
+		next_step: "tasks_item",
+	},
+	{
+		id: "tasks_item",
+		order: 9,
+		name: "Expand Task Details",
+		description: "Provide additional details for each task",
+		question: "Expand the details for this task",
+		guidance:
+			"For the task shown above, provide additional details:\n- priority: 'critical', 'high', 'medium' (default), or 'low'\n- depends_on: Array of task IDs this depends on (e.g., ['task-001', 'task-002']) or empty array []\n- considerations: Array of things to consider (optional, can be empty array [])\n- references: Array of external references (optional, can be empty array [])\n- files: Array of files to create/modify (optional, can be empty array [])\n\nThe description has already been provided but you can refine it.",
 		next_step: "define_acceptance",
 	},
 	{
 		id: "define_acceptance",
-		order: 9,
+		order: 10,
 		name: "Define Acceptance Criteria",
 		description: "Add acceptance criteria for the plan",
 		question: "How will you know when this plan is complete?",
@@ -432,7 +433,7 @@ export const PLAN_STEPS: StepDefinition[] = [
 	},
 	{
 		id: "identify_milestones",
-		order: 10,
+		order: 11,
 		name: "Identify Milestones",
 		description: "Define major checkpoints",
 		question: "What are the major milestones for this plan?",
@@ -442,7 +443,7 @@ export const PLAN_STEPS: StepDefinition[] = [
 	},
 	{
 		id: "plan_testing",
-		order: 11,
+		order: 12,
 		name: "Plan Testing Strategy",
 		description: "Define how work will be tested",
 		question: "How will you test the work in this plan?",
@@ -452,7 +453,7 @@ export const PLAN_STEPS: StepDefinition[] = [
 	},
 	{
 		id: "plan_risks",
-		order: 12,
+		order: 13,
 		name: "Plan for Risks",
 		description: "Identify risks and mitigation strategies",
 		question:
@@ -463,7 +464,7 @@ export const PLAN_STEPS: StepDefinition[] = [
 	},
 	{
 		id: "create_timeline",
-		order: 13,
+		order: 14,
 		name: "Create Timeline",
 		description: "Build schedule and critical path",
 		question: "What's the timeline for this plan?",
@@ -473,7 +474,7 @@ export const PLAN_STEPS: StepDefinition[] = [
 	},
 	{
 		id: "trace_specs",
-		order: 14,
+		order: 15,
 		name: "Trace to Specs",
 		description: "Link to requirements and components",
 		question: "How do the tasks trace to requirements and components?",
@@ -483,7 +484,7 @@ export const PLAN_STEPS: StepDefinition[] = [
 	},
 	{
 		id: "validate_refine",
-		order: 15,
+		order: 16,
 		name: "Validate and Refine",
 		description: "Create complete plan schema",
 		question:
@@ -548,21 +549,32 @@ export const CONSTITUTION_STEPS: StepDefinition[] = [
 		question: "What is this constitution about and what will it govern?",
 		guidance:
 			"Provide a name and description for this constitution. Explain what principles it will establish and what aspects of development it will govern. Ensure this fills a unique gap not covered by existing constitutions.",
-		next_step: "articles",
+		next_step: "articles_list",
 	},
 	{
-		id: "articles",
+		id: "articles_list",
 		order: 5,
-		name: "Define Articles",
-		description: "Create the core principles/articles",
-		question: "What are the core principles or articles of this constitution?",
+		name: "List Article Titles",
+		description: "Provide list of all article titles/principles",
+		question:
+			"List all article titles or core principles for this constitution",
 		guidance:
-			"Define the articles (core principles) that make up this constitution. For each article, include: title, the principle itself, rationale explaining why it exists, optional examples demonstrating it, optional exceptions where it doesn't apply, and status (needs-review, active, or archived).",
+			"Provide a list of article titles or principle statements. Each should be a clear, concise statement of a core principle. You can provide them as an array of strings or one per line. Examples: ['Library-First Principle', 'Test-Driven Development', 'Security by Default', 'Documentation as Code']",
+		next_step: "articles_item",
+	},
+	{
+		id: "articles_item",
+		order: 6,
+		name: "Expand Article Details",
+		description: "Provide full details for each article",
+		question: "Expand the details for this article",
+		guidance:
+			"For the article shown above, provide full details:\n- title: The article title (can refine the one provided)\n- principle: The core principle or rule this article establishes\n- rationale: Why this principle exists and its benefits\n- examples: Array of concrete examples demonstrating the principle (optional, can be empty array [])\n- exceptions: Array of situations where this doesn't apply (optional, can be empty array [])\n- status: 'needs-review' (default), 'active', or 'archived'",
 		next_step: "conflict_check",
 	},
 	{
 		id: "conflict_check",
-		order: 6,
+		order: 7,
 		name: "Conflict Check",
 		description: "Verify no conflicts with existing constitutional principles",
 		question:
@@ -578,7 +590,7 @@ export const CONSTITUTION_STEPS: StepDefinition[] = [
 	},
 	{
 		id: "finalize",
-		order: 7,
+		order: 8,
 		name: "Finalize",
 		description: "Create complete constitution schema",
 		question:

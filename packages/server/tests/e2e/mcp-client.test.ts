@@ -157,67 +157,46 @@ describe("MCP E2E Tests", () => {
 			});
 			response = JSON.parse(result.content[0].text);
 
-			// Step 6: Define Measurability
+			// Step 6: Criteria List (NEW - collect descriptions)
 			result = await client.callTool({
 				name: "update_draft",
 				arguments: {
 					draft_id: draftId,
 					data: {
 						criteria: [
-							{
-								id: "crit-001",
-								description: "System returns response in under 200ms",
-								status: "active",
-							},
-							{
-								id: "crit-002",
-								description: "API returns 201 status code on success",
-								status: "active",
-							},
+							"System returns response in under 200ms",
+							"API returns 201 status code on success",
 						],
 					},
 				},
 			});
 			response = JSON.parse(result.content[0].text);
 
-			// Step 7: Use Specific Language
+			// Step 7: Criteria Item 1 (NEW - expand first criterion)
 			result = await client.callTool({
 				name: "update_draft",
 				arguments: {
 					draft_id: draftId,
 					data: {
-						description: "API responds in under 200ms with 201 status code",
-						criteria: [
-							{
-								id: "crit-001",
-								description: "Response time under 200ms",
-								status: "active",
-							},
-						],
+						status: "active",
 					},
 				},
 			});
 			response = JSON.parse(result.content[0].text);
 
-			// Step 8: Finalize Acceptance Criteria
+			// Step 7: Criteria Item 2 (NEW - expand second criterion)
 			result = await client.callTool({
 				name: "update_draft",
 				arguments: {
 					draft_id: draftId,
 					data: {
-						criteria: [
-							{
-								id: "crit-001",
-								description: "Response time under 200ms",
-								status: "active",
-							},
-						],
+						status: "active",
 					},
 				},
 			});
 			response = JSON.parse(result.content[0].text);
 
-			// Step 9: Assign Priority
+			// Step 8: Assign Priority
 			result = await client.callTool({
 				name: "update_draft",
 				arguments: {
@@ -229,7 +208,7 @@ describe("MCP E2E Tests", () => {
 			});
 			response = JSON.parse(result.content[0].text);
 
-			// Step 10: Review and Finalize
+			// Step 9: Review and Finalize
 			result = await client.callTool({
 				name: "update_draft",
 				arguments: {
@@ -241,13 +220,6 @@ describe("MCP E2E Tests", () => {
 						name: "Test Requirement for E2E Validation",
 						description: "API responds in under 200ms with 201 status code",
 						priority: "required",
-						criteria: [
-							{
-								id: "crit-001",
-								description: "Response time under 200ms",
-								status: "active",
-							},
-						],
 					},
 				},
 			});

@@ -1,7 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { ServerConfig } from "../config/index.js";
 import { logger } from "../utils/logger.js";
-import { GUIDE_RESOURCES, loadGuideContent } from "./guides.js";
+import { GUIDE_RESOURCES } from "./guides.js";
 
 /**
  * Register all MCP resources for the spec server
@@ -24,14 +24,12 @@ export function registerResources(
 				logger.debug({ uri: uri.href }, "Reading resource");
 
 				try {
-					const content = await loadGuideContent(guide.filePath);
-
 					return {
 						contents: [
 							{
 								uri: uri.href,
 								mimeType: guide.mimeType,
-								text: content,
+								text: guide.content,
 							},
 						],
 					};

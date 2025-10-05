@@ -168,6 +168,25 @@ export class DraftManager {
 	}
 
 	/**
+	 * Clear loop state from a draft
+	 */
+	async clearLoopState(id: string): Promise<Draft | null> {
+		const draft = this.get(id);
+		if (!draft) return null;
+
+		// Create updated draft without loop_state
+		const { loop_state: _, ...draftWithoutLoopState } = draft;
+		const updated: Draft = {
+			...draftWithoutLoopState,
+			updated_at: new Date().toISOString(),
+		};
+
+		this.drafts.set(id, updated);
+		await this.saveDraft(updated);
+		return updated;
+	}
+
+	/**
 	 * Delete a draft
 	 */
 	async delete(id: string): Promise<boolean> {

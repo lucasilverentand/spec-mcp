@@ -25,6 +25,14 @@ export interface StepDefinition {
 	};
 }
 
+export interface LoopState {
+	field_name: string; // e.g., "criteria", "articles", "tasks"
+	total_count: number; // Total number of items to collect
+	current_index: number; // Current item index (0-based)
+	items: unknown[]; // Collected items so far
+	descriptions: string[]; // Original descriptions provided by user
+}
+
 export interface Draft {
 	id: string;
 	type: "requirement" | "component" | "plan" | "constitution" | "decision";
@@ -32,6 +40,7 @@ export interface Draft {
 	total_steps: number;
 	data: Record<string, unknown>;
 	validation_results: CreationFlowValidationResult[];
+	loop_state?: LoopState; // Active loop state for array collection
 	created_at: string;
 	updated_at: string;
 	expires_at: string;

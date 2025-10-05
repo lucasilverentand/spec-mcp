@@ -73,56 +73,30 @@ describe("Creation Flow Integration Tests", () => {
 					"System must verify user identity and maintain session state",
 			});
 
-			// Step 6: Measurability
+			// Step 6: Criteria List (NEW - collect descriptions)
 			await creationFlowHelper.step(draft_id, {
 				criteria: [
-					{
-						id: "crit-001",
-						description: "User authenticates within 3 seconds",
-						status: "active",
-					},
-					{
-						id: "crit-002",
-						description: "Error displays within 1 second",
-						status: "active",
-					},
+					"User authenticates within 3 seconds",
+					"Error displays within 1 second",
 				],
 			});
 
-			// Step 7: Specific Language
+			// Step 7: Criteria Item 1 (NEW - expand first criterion)
 			await creationFlowHelper.step(draft_id, {
-				description: "Authentication completes in under 3 seconds",
-				criteria: [
-					{
-						id: "crit-001",
-						description: "Login accepts 254 char email and 8-128 char password",
-						status: "active",
-					},
-					{
-						id: "crit-002",
-						description: "Response time under 200ms",
-						status: "active",
-					},
-				],
+				status: "active",
 			});
 
-			// Step 8: Finalize Acceptance Criteria
+			// Step 7: Criteria Item 2 (NEW - expand second criterion)
 			await creationFlowHelper.step(draft_id, {
-				criteria: [
-					{
-						id: "crit-001",
-						description: "User authenticates within 3 seconds",
-						status: "active",
-					},
-				],
+				status: "active",
 			});
 
-			// Step 9: Assign Priority
+			// Step 8: Assign Priority
 			await creationFlowHelper.step(draft_id, {
 				priority: "critical",
 			});
 
-			// Step 10: Review and Finalize
+			// Step 9: Review and Finalize
 			const finalStep = await creationFlowHelper.step(draft_id, {
 				type: "requirement",
 				number: 1,
@@ -130,13 +104,6 @@ describe("Creation Flow Integration Tests", () => {
 				name: "User Authentication",
 				description: "Authentication completes in under 3 seconds",
 				priority: "critical",
-				criteria: [
-					{
-						id: "crit-001",
-						description: "User authenticates within 3 seconds",
-						status: "active",
-					},
-				],
 			});
 
 			expect("error" in finalStep).toBe(false);
@@ -264,7 +231,7 @@ describe("Creation Flow Integration Tests", () => {
 			const draft_id = startResponse.draft_id;
 
 			expect(startResponse.step).toBe(1);
-			expect(startResponse.total_steps).toBe(15);
+			expect(startResponse.total_steps).toBe(16);
 
 			// Step 1: Context Discovery
 			await creationFlowHelper.step(draft_id, {
@@ -303,72 +270,78 @@ describe("Creation Flow Integration Tests", () => {
 				depends_on: [],
 			});
 
-			// Step 8: Break Down Tasks
+			// Step 8: Tasks List (NEW - collect task descriptions)
 			await creationFlowHelper.step(draft_id, {
 				tasks: [
-					{ id: "task-001", description: "Setup bcrypt dependency" },
-					{ id: "task-002", description: "Implement JWT logic" },
-					{ id: "task-003", description: "Create login endpoint" },
+					"Setup bcrypt dependency",
+					"Implement JWT logic",
+					"Create login endpoint",
 				],
 			});
 
-			// Step 9: Estimate Effort
+			// Step 9: Task Item 1 (NEW - expand first task)
 			await creationFlowHelper.step(draft_id, {
-				tasks: [
-					{
-						id: "task-001",
-						description: "Setup bcrypt",
-						estimated_days: 0.5,
-					},
-					{
-						id: "task-002",
-						description: "Implement JWT",
-						estimated_days: 1.0,
-					},
-					{
-						id: "task-003",
-						description: "Login endpoint",
-						estimated_days: 1.5,
-					},
-				],
+				priority: "high",
+				depends_on: [],
+				considerations: [],
+				references: [],
+				files: [],
 			});
 
-			// Step 10: Define Acceptance Criteria
+			// Step 9: Task Item 2 (NEW - expand second task)
+			await creationFlowHelper.step(draft_id, {
+				priority: "high",
+				depends_on: ["task-001"],
+				considerations: [],
+				references: [],
+				files: [],
+			});
+
+			// Step 9: Task Item 3 (NEW - expand third task)
+			await creationFlowHelper.step(draft_id, {
+				priority: "medium",
+				depends_on: ["task-002"],
+				considerations: [],
+				references: [],
+				files: [],
+			});
+
+			// Step 13: Define Acceptance Criteria
 			await creationFlowHelper.step(draft_id, {
 				acceptance_criteria: "All tests pass with 90%+ coverage",
 			});
 
-			// Step 11: Identify Milestones
+			// Step 14: Identify Milestones
 			await creationFlowHelper.step(draft_id, {
 				description:
 					"Milestone 1: Core logic complete (Day 2). Milestone 2: Integration done (Day 4)",
 			});
 
-			// Step 12: Plan Testing Strategy
+			// Step 15: Plan Testing Strategy
 			await creationFlowHelper.step(draft_id, {
 				description:
 					"Unit tests for validation logic. Integration tests for API. Target 95% coverage",
 			});
 
-			// Step 13: Plan for Risks
+			// Step 16: Plan for Risks
 			await creationFlowHelper.step(draft_id, {
 				description:
 					"Risk: bcrypt performance → Mitigation: load testing. Risk: token expiry → Mitigation: comprehensive tests",
 			});
 
-			// Step 14: Create Timeline
+			// Step 17: Create Timeline
 			await creationFlowHelper.step(draft_id, {
 				description:
 					"Phase 1 completes Day 1. Phase 2 completes Day 4. Target: Week 2 completion",
 			});
 
-			// Step 15: Trace to Specs
+			// Step 18: Trace to Specs
 			await creationFlowHelper.step(draft_id, {
 				description:
 					"task-001 traces to req-001-auth. task-002 traces to cmp-001-auth-service",
 			});
 
-			// Step 16: Validate and Refine
+			// Step 19: Validate and Refine
 			const finalStep = await creationFlowHelper.step(draft_id, {
 				slug: "implement-auth",
 				name: "Implement Authentication",
@@ -394,7 +367,7 @@ describe("Creation Flow Integration Tests", () => {
 			const draft_id = startResponse.draft_id;
 
 			expect(startResponse.step).toBe(1);
-			expect(startResponse.total_steps).toBe(7);
+			expect(startResponse.total_steps).toBe(8);
 
 			// Step 1: Research Existing Constitutions
 			await creationFlowHelper.step(draft_id, {
@@ -418,27 +391,27 @@ describe("Creation Flow Integration Tests", () => {
 				description: "Core principles guiding development decisions",
 			});
 
-			// Step 5: Define Articles
+			// Step 5: Articles List (NEW - collect article titles)
 			await creationFlowHelper.step(draft_id, {
-				articles: [
-					{
-						id: "art-001",
-						title: "Test-Driven Development",
-						principle: "Write tests before implementation",
-						rationale: "Ensures quality and prevents regressions",
-						examples: ["Unit tests for business logic"],
-						exceptions: ["Prototypes"],
-						status: "active",
-					},
-				],
+				articles: ["Test-Driven Development"],
 			});
 
-			// Step 6: Conflict Check
+			// Step 6: Articles Item 1 (NEW - expand first article)
+			await creationFlowHelper.step(draft_id, {
+				title: "Test-Driven Development",
+				principle: "Write tests before implementation",
+				rationale: "Ensures quality and prevents regressions",
+				examples: ["Unit tests for business logic"],
+				exceptions: ["Prototypes"],
+				status: "active",
+			});
+
+			// Step 7: Conflict Check
 			await creationFlowHelper.step(draft_id, {
 				conflicts_checked: true,
 			});
 
-			// Step 7: Finalize
+			// Step 8: Finalize
 			const finalStep = await creationFlowHelper.step(draft_id, {
 				name: "Engineering Principles",
 			});

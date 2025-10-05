@@ -31,12 +31,12 @@ describe("CreationFlowHelper", () => {
 
 			expect(response.draft_id).toMatch(/^req-/);
 			expect(response.step).toBe(1);
-			expect(response.total_steps).toBe(10);
+			expect(response.total_steps).toBe(9);
 			expect(response.current_step_name).toBe("Research Similar Requirements");
 			expect(response.prompt).toBeDefined();
 			expect(response.field_hints).toBeDefined();
 			expect(response.examples).toBeDefined();
-			expect(response.progress_summary).toContain("Step 1/10");
+			expect(response.progress_summary).toContain("Step 1/9");
 		});
 
 		it("should start component creation flow with 10 steps", async () => {
@@ -51,7 +51,7 @@ describe("CreationFlowHelper", () => {
 			const response = await helper.start("plan");
 
 			expect(response.step).toBe(1);
-			expect(response.total_steps).toBe(15);
+			expect(response.total_steps).toBe(16);
 			expect(response.current_step_name).toBe("Context Discovery");
 		});
 
@@ -59,7 +59,7 @@ describe("CreationFlowHelper", () => {
 			const response = await helper.start("constitution");
 
 			expect(response.step).toBe(1);
-			expect(response.total_steps).toBe(7);
+			expect(response.total_steps).toBe(8);
 		});
 
 		it("should start decision creation flow with 6 steps", async () => {
@@ -205,27 +205,27 @@ describe("CreationFlowHelper", () => {
 					"Core principles that guide our development decisions and practices",
 			});
 
-			// Step 5: Define Articles
+			// Step 5: Articles List (NEW - collect titles)
 			await helper.step(draft_id, {
-				articles: [
-					{
-						id: "art-001",
-						title: "Test-Driven Development",
-						principle: "Write tests before implementation",
-						rationale: "Ensures code quality and prevents regressions",
-						examples: ["Unit tests for all business logic"],
-						exceptions: ["Prototypes and spikes"],
-						status: "active",
-					},
-				],
+				articles: ["Test-Driven Development"],
 			});
 
-			// Step 6: Conflict Check
+			// Step 6: Articles Item 1 (NEW - expand article)
+			await helper.step(draft_id, {
+				title: "Test-Driven Development",
+				principle: "Write tests before implementation",
+				rationale: "Ensures code quality and prevents regressions",
+				examples: ["Unit tests for all business logic"],
+				exceptions: ["Prototypes and spikes"],
+				status: "active",
+			});
+
+			// Step 7: Conflict Check
 			await helper.step(draft_id, {
 				conflicts_checked: true,
 			});
 
-			// Step 7: Finalize
+			// Step 8: Finalize
 			const finalResponse = await helper.step(draft_id, {
 				name: "Engineering Principles",
 			});
@@ -257,8 +257,8 @@ describe("CreationFlowHelper", () => {
 
 			expect("error" in step1Response).toBe(false);
 			if (!("error" in step1Response)) {
-				expect(step1Response.progress_summary).toContain("Step 2/10");
-				expect(step1Response.progress_summary).toContain("20%");
+				expect(step1Response.progress_summary).toContain("Step 2/9");
+				expect(step1Response.progress_summary).toContain("22%");
 			}
 		});
 	});
@@ -375,7 +375,7 @@ describe("CreationFlowHelper", () => {
 	describe("generateProgressSummary", () => {
 		it("should calculate correct progress percentage", async () => {
 			const startResponse = await helper.start("requirement");
-			expect(startResponse.progress_summary).toContain("10%"); // 1/10
+			expect(startResponse.progress_summary).toContain("11%"); // 1/9
 
 			const draft_id = startResponse.draft_id;
 			const step2 = await helper.step(draft_id, {
@@ -384,7 +384,7 @@ describe("CreationFlowHelper", () => {
 
 			expect("error" in step2).toBe(false);
 			if (!("error" in step2)) {
-				expect(step2.progress_summary).toContain("20%"); // 2/10
+				expect(step2.progress_summary).toContain("22%"); // 2/9
 			}
 		});
 
@@ -436,70 +436,35 @@ describe("CreationFlowHelper", () => {
 			});
 			expect("error" in step5).toBe(false);
 
-			// Step 6: Define Measurability
+			// Step 6: Criteria List (NEW - collect descriptions)
 			const step6 = await helper.step(draft_id, {
 				criteria: [
-					{
-						id: "crit-001",
-						description:
-							"User can authenticate with valid credentials within 3 seconds",
-						status: "active",
-					},
-					{
-						id: "crit-002",
-						description:
-							"System displays error within 1 second for invalid credentials",
-						status: "active",
-					},
+					"User can authenticate with valid credentials within 3 seconds",
+					"System displays error within 1 second for invalid credentials",
 				],
 			});
 			expect("error" in step6).toBe(false);
 
-			// Step 7: Use Specific Language
-			const step7 = await helper.step(draft_id, {
-				description:
-					"Authentication must complete in under 3 seconds with 200ms response time",
-				criteria: [
-					{
-						id: "crit-001",
-						description:
-							"Login accepts email (max 254 chars) and password (8-128 chars)",
-						status: "active",
-					},
-					{
-						id: "crit-002",
-						description: "Error displays within 1000ms for invalid input",
-						status: "active",
-					},
-				],
+			// Step 7: Criteria Item 1 (NEW - expand first criterion)
+			const step7a = await helper.step(draft_id, {
+				status: "active",
 			});
-			expect("error" in step7).toBe(false);
+			expect("error" in step7a).toBe(false);
 
-			// Step 8: Finalize Acceptance Criteria
+			// Step 7: Criteria Item 2 (NEW - expand second criterion)
+			const step7b = await helper.step(draft_id, {
+				status: "active",
+			});
+			expect("error" in step7b).toBe(false);
+
+			// Step 8: Assign Priority
 			const step8 = await helper.step(draft_id, {
-				criteria: [
-					{
-						id: "crit-001",
-						description: "Valid credentials authenticate within 3 seconds",
-						status: "active",
-					},
-					{
-						id: "crit-002",
-						description: "Invalid credentials show error within 1 second",
-						status: "active",
-					},
-				],
+				priority: "critical",
 			});
 			expect("error" in step8).toBe(false);
 
-			// Step 9: Assign Priority
+			// Step 9: Review and Finalize
 			const step9 = await helper.step(draft_id, {
-				priority: "critical",
-			});
-			expect("error" in step9).toBe(false);
-
-			// Step 10: Review and Finalize
-			const step10 = await helper.step(draft_id, {
 				type: "requirement",
 				number: 1,
 				slug: "user-authentication",
@@ -507,18 +472,11 @@ describe("CreationFlowHelper", () => {
 				description:
 					"Authentication must complete in under 3 seconds with 200ms response time",
 				priority: "critical",
-				criteria: [
-					{
-						id: "crit-001",
-						description: "Valid credentials authenticate within 3 seconds",
-						status: "active",
-					},
-				],
 			});
 
-			expect("error" in step10).toBe(false);
-			if (!("error" in step10)) {
-				expect(step10.completed).toBe(true);
+			expect("error" in step9).toBe(false);
+			if (!("error" in step9)) {
+				expect(step9.completed).toBe(true);
 			}
 		});
 

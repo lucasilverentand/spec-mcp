@@ -816,28 +816,35 @@ export class StepValidator {
 
 			case "break_down_tasks": {
 				const tasks = data.tasks as unknown[] | undefined;
-				if (tasks && Array.isArray(tasks) && tasks.length > 0) {
-					// Check if tasks have estimated_days
-					const tasksWithEstimates = tasks.filter(
-						(t: unknown) =>
-							typeof t === "object" && t !== null && "estimated_days" in t,
-					);
-					if (tasksWithEstimates.length === tasks.length) {
-						strengths.push(
-							`${tasks.length} tasks defined with effort estimates`,
-						);
-					} else {
-						strengths.push(`${tasks.length} tasks defined`);
-						if (tasksWithEstimates.length === 0) {
-							issues.push("Tasks should include estimated_days field");
-							suggestions.push("Add estimated_days (0.5-3 days) for each task");
-						}
-					}
-				} else {
+				if (!tasks || !Array.isArray(tasks)) {
 					issues.push("Tasks array is required");
-					suggestions.push(
-						"Break down the work into specific tasks with estimates",
+					suggestions.push("Provide a list of tasks to complete this plan");
+					return;
+				}
+
+				if (tasks.length === 0) {
+					issues.push("At least one task is required");
+					suggestions.push("Break down the plan into specific, actionable tasks");
+					return;
+				}
+
+				// Count tasks with effort estimates
+				const tasksWithEstimates = tasks.filter((task) => {
+					if (task && typeof task === "object" && "estimated_days" in task) {
+						const t = task as { estimated_days: unknown };
+						return (
+							typeof t.estimated_days === "number" && t.estimated_days > 0
+						);
+					}
+					return false;
+				});
+
+				if (tasksWithEstimates.length > 0) {
+					strengths.push(
+						`${tasks.length} tasks defined with effort estimates`,
 					);
+				} else {
+					strengths.push(`${tasks.length} tasks defined`);
 				}
 				break;
 			}

@@ -3,6 +3,7 @@ import {
 	DraftManager,
 	getFinalizationPrompt,
 	getStepDefinitions,
+	type StepDefinition,
 	type StepResponse,
 	StepValidator,
 } from "@spec-mcp/core";
@@ -91,6 +92,21 @@ export class CreationFlowHelper {
 			return { error: "Invalid step index" };
 		}
 
+		// Check if this is a loop step (ends with _item)
+		const isLoopStep = currentStep.id.endsWith("_item");
+		const isListStep = currentStep.id.endsWith("_list");
+
+		// Handle list step (phase 1: collect descriptions)
+		if (isListStep) {
+			return this.handleListStep(draft_id, draft, currentStep, data);
+		}
+
+		// Handle loop step (phase 2: expand items)
+		if (isLoopStep && draft.loop_state) {
+			return this.handleLoopStep(draft_id, draft, currentStep, data);
+		}
+
+		// Regular step processing
 		// Merge new data with existing draft data
 		const updatedData = { ...draft.data, ...data };
 
@@ -131,7 +147,292 @@ export class CreationFlowHelper {
 		}
 
 		// Move to next step
+		return this.advanceToNextStep(draft_id, draft, updatedData, validation);
+	}
+
+	/**
+	 * Handle list step (collect array of descriptions)
+	 */
+	private async handleListStep(
+		draft_id: string,
+		draft: Draft,
+		currentStep: StepDefinition,
+		data: Record<string, unknown>,
+	): Promise<StepResponse | { error: string }> {
+		// Extract field name from step id (e.g., "criteria_list" -> "criteria")
+		const fieldName = currentStep.id.replace("_list", "");
+
+		// Parse descriptions from data
+		let descriptions: string[] = [];
+
+		// Check various possible data keys
+		const possibleKeys = [
+			`${fieldName}_descriptions`,
+			`${fieldName}`,
+			"descriptions",
+			"list",
+			"items",
+		];
+
+		for (const key of possibleKeys) {
+			if (data[key]) {
+				const value = data[key];
+				if (Array.isArray(value)) {
+					descriptions = value.filter((v) => typeof v === "string");
+				} else if (typeof value === "string") {
+					// Split by newlines or commas
+					descriptions = value
+						.split(/[\n,]/)
+						.map((s) => s.trim())
+						.filter((s) => s.length > 0);
+				}
+				if (descriptions.length > 0) break;
+			}
+		}
+
+		// If empty array provided, skip the loop and advance to next step
+		if (descriptions.length === 0) {
+			const updatedData = {
+				...draft.data,
+				...data,
+				[fieldName]: [], // Store empty array
+			};
+
+			// Advance by 2 steps: skip both _list and _item steps
+			const nextStepIndex = draft.current_step + 1; // +1 to skip _item step, +1 more in advanceToNextStep
+
+			const updatedDraft = await this.draftManager.update(draft_id, {
+				data: updatedData,
+				current_step: nextStepIndex, // Skip to step after _item
+			});
+
+			if (!updatedDraft) {
+				return { error: `Failed to update draft: ${draft_id}` };
+			}
+
+			// Now advance to the step after _item
+			return this.advanceToNextStep(draft_id, updatedDraft, updatedData, {
+				passed: true,
+				issues: [],
+				suggestions: [],
+				strengths: [`No ${fieldName} provided (empty array)`],
+				step: currentStep.id,
+			});
+		}
+
+		// Initialize loop state and advance to the _item step
+		const updatedDraft = await this.draftManager.update(draft_id, {
+			data: {
+				...draft.data,
+				...data,
+			},
+			current_step: draft.current_step + 1, // Advance to _item step
+			loop_state: {
+				field_name: fieldName,
+				total_count: descriptions.length,
+				current_index: 0,
+				items: [],
+				descriptions,
+			},
+		});
+
+		if (!updatedDraft) {
+			return { error: `Failed to initialize loop state: ${draft_id}` };
+		}
+
+		// Return first item prompt
+		const firstDescription = descriptions[0];
+		if (!firstDescription) {
+			return { error: "First description is undefined" };
+		}
+		return this.generateLoopItemPrompt(
+			draft_id,
+			updatedDraft,
+			fieldName,
+			firstDescription,
+			0,
+			descriptions.length,
+		);
+	}
+
+	/**
+	 * Handle loop step (expand one item)
+	 */
+	private async handleLoopStep(
+		draft_id: string,
+		draft: Draft,
+		currentStep: StepDefinition,
+		data: Record<string, unknown>,
+	): Promise<StepResponse | { error: string }> {
+		const loopState = draft.loop_state;
+		if (!loopState) {
+			return { error: "Loop state not found" };
+		}
+
+		const { field_name, total_count, current_index, items, descriptions } =
+			loopState;
+
+		// Get description for current item
+		const description = descriptions[current_index];
+
+		// Build the item with auto-generated ID
+		const itemId = this.generateItemId(field_name, current_index);
+		const item: Record<string, unknown> = {
+			id: itemId,
+			description,
+			...data,
+		};
+
+		// For articles, map title field
+		if (field_name === "articles" && !item.title && data.title) {
+			item.title = data.title;
+		} else if (field_name === "articles" && !item.title) {
+			item.title = description;
+		}
+
+		// Add item to collected items
+		const newItems = [...items, item];
+
+		// Check if we're done
+		const nextIndex = current_index + 1;
+		if (nextIndex >= total_count) {
+			// Loop complete - store items and clear loop state
+			const updatedData = { ...draft.data };
+			updatedData[field_name] = newItems;
+
+			// Update data first
+			const updatedDraft = await this.draftManager.update(draft_id, {
+				data: updatedData,
+			});
+
+			if (!updatedDraft) {
+				return { error: `Failed to update draft data: ${draft_id}` };
+			}
+
+			// Clear loop state
+			const finalDraft = await this.draftManager.clearLoopState(draft_id);
+
+			if (!finalDraft) {
+				return { error: `Failed to finalize loop: ${draft_id}` };
+			}
+
+			// Advance to next step
+			return this.advanceToNextStep(draft_id, finalDraft, updatedData, {
+				passed: true,
+				issues: [],
+				suggestions: [],
+				strengths: [],
+				step: currentStep.id,
+			});
+		}
+
+		// Update loop state for next iteration
+		const updatedDraft = await this.draftManager.update(draft_id, {
+			loop_state: {
+				...loopState,
+				current_index: nextIndex,
+				items: newItems,
+			},
+		});
+
+		if (!updatedDraft) {
+			return { error: `Failed to update loop state: ${draft_id}` };
+		}
+
+		// Return next item prompt
+		const nextDescription = descriptions[nextIndex];
+		if (!nextDescription) {
+			return { error: "Next description is undefined" };
+		}
+		return this.generateLoopItemPrompt(
+			draft_id,
+			updatedDraft,
+			field_name,
+			nextDescription,
+			nextIndex,
+			total_count,
+		);
+	}
+
+	/**
+	 * Generate ID for array item
+	 */
+	private generateItemId(fieldName: string, index: number): string {
+		const idNum = String(index + 1).padStart(3, "0");
+
+		if (fieldName === "criteria") {
+			return `crit-${idNum}`;
+		} else if (fieldName === "articles") {
+			return `art-${idNum}`;
+		} else if (fieldName === "tasks") {
+			return `task-${idNum}`;
+		} else if (fieldName === "flows") {
+			return `flow-${idNum}`;
+		} else if (fieldName === "test_cases") {
+			return `tc-${idNum}`;
+		} else if (fieldName === "api_contracts") {
+			return `api-${idNum}`;
+		} else if (fieldName === "data_models") {
+			return `dm-${idNum}`;
+		}
+
+		return `item-${idNum}`;
+	}
+
+	/**
+	 * Generate prompt for loop item
+	 */
+	private generateLoopItemPrompt(
+		draft_id: string,
+		draft: Draft,
+		fieldName: string,
+		description: string,
+		currentIndex: number,
+		totalCount: number,
+	): StepResponse {
+		const steps = getStepDefinitions(draft.type);
+		const currentStep = steps[draft.current_step - 1];
+
+		if (!currentStep) {
+			throw new Error("Invalid step");
+		}
+
+		const hints = this.generateFieldHints(draft.type, currentStep.id);
+		const examples = this.generateExamples(draft.type, currentStep.id);
+
+		return {
+			draft_id,
+			step: draft.current_step,
+			total_steps: draft.total_steps,
+			current_step_name: `${currentStep.name} (${currentIndex + 1}/${totalCount})`,
+			question: `${currentStep.question}\n\n**Item ${currentIndex + 1} of ${totalCount}:** "${description}"`,
+			guidance: currentStep.guidance,
+			prompt: currentStep.question,
+			field_hints: hints,
+			examples,
+			progress_summary: `Expanding ${fieldName} item ${currentIndex + 1} of ${totalCount}`,
+		};
+	}
+
+	/**
+	 * Advance to next step
+	 */
+	private async advanceToNextStep(
+		draft_id: string,
+		draft: Draft,
+		updatedData: Record<string, unknown>,
+		validation: {
+			passed: boolean;
+			issues: string[];
+			suggestions: string[];
+			strengths: string[];
+			step: string;
+		},
+	): Promise<StepResponse | { error: string }> {
+		const steps = getStepDefinitions(draft.type);
+		const currentStepIndex = draft.current_step - 1;
 		const nextStepIndex = currentStepIndex + 1;
+
 		if (nextStepIndex >= steps.length) {
 			// All steps complete - return finalization instructions
 			const finalizationInstructions = getFinalizationPrompt(
