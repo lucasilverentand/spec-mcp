@@ -5,8 +5,8 @@ import type {
 	Requirement,
 } from "@spec-mcp/data";
 import { SpecsManager } from "@spec-mcp/data";
-import { toDataConfig } from "../../shared/types/config.js";
 import type { SpecConfig } from "../../shared/types/config.js";
+import { toDataConfig } from "../../shared/types/config.js";
 import type { ValidationResult } from "../../shared/types/results.js";
 
 export interface ReferenceValidationOptions {
@@ -129,7 +129,8 @@ export class ReferenceValidator {
 						})
 					: {};
 			const isValid = resultObj.valid ?? resultObj.success ?? false;
-			const errors = resultObj.errors ?? (resultObj.error ? [resultObj.error] : []);
+			const errors =
+				resultObj.errors ?? (resultObj.error ? [resultObj.error] : []);
 			const warnings = resultObj.warnings ?? [];
 			return {
 				success: isValid,
@@ -139,9 +140,8 @@ export class ReferenceValidator {
 				...(errors.length > 0 && { error: errors.join(", ") }),
 			};
 		} catch (error) {
-			const errorMsg = error instanceof Error
-				? error.message
-				: "Reference validation failed";
+			const errorMsg =
+				error instanceof Error ? error.message : "Reference validation failed";
 			return {
 				success: false,
 				valid: false,

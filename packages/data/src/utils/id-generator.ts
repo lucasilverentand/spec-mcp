@@ -119,7 +119,10 @@ export function generateChildId(
 ): string {
 	// Validate parent ID format only if it's a full entity ID (not a sub-entity ID)
 	// Sub-entity IDs like "flow-001" are valid parents for nested items like steps
-	if (parentId.includes("-") && !parentId.match(/^(flow|task|tc|api|dm|step|crit)-\d{3}$/)) {
+	if (
+		parentId.includes("-") &&
+		!parentId.match(/^(flow|task|tc|api|dm|step|crit)-\d{3}$/)
+	) {
 		const parsed = parseId(parentId);
 		if (!parsed) {
 			throw new Error(`Invalid parent ID format: ${parentId}`);

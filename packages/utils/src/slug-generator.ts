@@ -3,8 +3,7 @@ import {
 	generateUniqueSlug as dataGenerateUniqueSlug,
 	validateSlug as dataValidateSlug,
 } from "@spec-mcp/data";
-import type { OperationResult } from "./types.js";
-import type { ISlugGenerator } from "./types.js";
+import type { ISlugGenerator, OperationResult } from "./types.js";
 
 // Re-export from data package for backward compatibility
 export {
@@ -23,7 +22,6 @@ export class SlugGenerator implements ISlugGenerator {
 		return {
 			success: true,
 			data: this.generateSlug(input),
-			
 		};
 	}
 
@@ -47,4 +45,3 @@ export class SlugGenerator implements ISlugGenerator {
 		return dataValidateSlug(slug);
 	}
 }
-

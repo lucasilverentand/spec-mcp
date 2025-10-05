@@ -1,6 +1,6 @@
+import { rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { rm } from "node:fs/promises";
 
 /**
  * Creates a unique temporary directory path for test specs
@@ -9,8 +9,11 @@ import { rm } from "node:fs/promises";
 export function createTestSpecsPath(testName: string): string {
 	const timestamp = Date.now();
 	const randomId = Math.random().toString(36).substring(7);
-	const sanitizedName = testName.replace(/[^a-z0-9]/gi, '-').toLowerCase();
-	return join(tmpdir(), `spec-mcp-test-${sanitizedName}-${timestamp}-${randomId}`);
+	const sanitizedName = testName.replace(/[^a-z0-9]/gi, "-").toLowerCase();
+	return join(
+		tmpdir(),
+		`spec-mcp-test-${sanitizedName}-${timestamp}-${randomId}`,
+	);
 }
 
 /**

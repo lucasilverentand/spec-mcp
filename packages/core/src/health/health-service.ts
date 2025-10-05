@@ -1,9 +1,9 @@
 import type { SpecsManager } from "@spec-mcp/data";
 import type { CoverageAnalyzer } from "../analysis/coverage-analyzer.js";
 import type { DependencyAnalyzer } from "../analysis/dependency-analyzer.js";
-import type { ValidationEngine } from "../validation/validation-engine.js";
-import type { HealthScore, SpecReport } from "../shared/types/service.js";
 import type { OperationResult } from "../shared/types/results.js";
+import type { HealthScore, SpecReport } from "../shared/types/service.js";
+import type { ValidationEngine } from "../validation/validation-engine.js";
 
 export class HealthService {
 	constructor(
@@ -90,7 +90,9 @@ export class HealthService {
 	async generateReport(
 		getHealthScore: () => Promise<OperationResult<HealthScore>>,
 		analyzeCoverage: () => Promise<
-			OperationResult<import("../shared/types/analyzer.js").CoverageAnalysisResult>
+			OperationResult<
+				import("../shared/types/analyzer.js").CoverageAnalysisResult
+			>
 		>,
 		detectCycles: () => Promise<
 			OperationResult<import("../shared/types/analyzer.js").CycleAnalysis>

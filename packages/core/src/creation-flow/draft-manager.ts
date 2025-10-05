@@ -1,8 +1,8 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import { formatYaml, parseYaml } from "@spec-mcp/data";
-import type { Draft } from "./types.js";
 import { getStepDefinitions } from "./step-definitions.js";
+import type { Draft } from "./types.js";
 
 /**
  * Manages creation flow draft state with file-based persistence
@@ -179,12 +179,7 @@ export class DraftManager {
 	 * List all drafts (optionally filtered by type)
 	 */
 	list(
-		type?:
-			| "requirement"
-			| "component"
-			| "plan"
-			| "constitution"
-			| "decision",
+		type?: "requirement" | "component" | "plan" | "constitution" | "decision",
 	): Draft[] {
 		const allDrafts = Array.from(this.drafts.values());
 		if (!type) return allDrafts;

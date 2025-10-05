@@ -23,10 +23,10 @@ describe("EntityManager", () => {
 		priority: "required" as const,
 		criteria: [
 			{
-					id: "crit-001",
-					description: "Test criteria",
-					status: "active" as const,
-				},
+				id: "crit-001",
+				description: "Test criteria",
+				status: "active" as const,
+			},
 		],
 		...overrides,
 	});
@@ -771,10 +771,10 @@ describe("EntityManager", () => {
 					priority: "required" as const,
 					criteria: [
 						{
-					id: "crit-001",
-					description: "Test criteria",
-					status: "active" as const,
-				},
+							id: "crit-001",
+							description: "Test criteria",
+							status: "active" as const,
+						},
 					],
 				};
 
@@ -790,10 +790,10 @@ describe("EntityManager", () => {
 					description: "Test",
 					criteria: [
 						{
-					id: "crit-001",
-					description: "Test criteria",
-					status: "active" as const,
-				},
+							id: "crit-001",
+							description: "Test criteria",
+							status: "active" as const,
+						},
 					],
 				});
 
@@ -816,10 +816,10 @@ describe("EntityManager", () => {
 					description: "Original",
 					criteria: [
 						{
-					id: "crit-001",
-					description: "Test criteria",
-					status: "active" as const,
-				},
+							id: "crit-001",
+							description: "Test criteria",
+							status: "active" as const,
+						},
 					],
 				});
 
@@ -836,10 +836,10 @@ describe("EntityManager", () => {
 					description: "Test",
 					criteria: [
 						{
-					id: "crit-001",
-					description: "Test criteria",
-					status: "active" as const,
-				},
+							id: "crit-001",
+							description: "Test criteria",
+							status: "active" as const,
+						},
 					],
 				});
 
@@ -855,10 +855,10 @@ describe("EntityManager", () => {
 					priority: "critical",
 					criteria: [
 						{
-					id: "crit-001",
-					description: "Test criteria",
-					status: "active" as const,
-				},
+							id: "crit-001",
+							description: "Test criteria",
+							status: "active" as const,
+						},
 					],
 				});
 				await manager.createRequirement({
@@ -868,10 +868,10 @@ describe("EntityManager", () => {
 					priority: "optional",
 					criteria: [
 						{
-					id: "crit-001",
-					description: "Test criteria",
-					status: "active" as const,
-				},
+							id: "crit-001",
+							description: "Test criteria",
+							status: "active" as const,
+						},
 					],
 				});
 
@@ -889,10 +889,10 @@ describe("EntityManager", () => {
 					description: "Test",
 					criteria: [
 						{
-					id: "crit-001",
-					description: "Test",
-					status: "active" as const,
-				},
+							id: "crit-001",
+							description: "Test",
+							status: "active" as const,
+						},
 					],
 				});
 				await manager.createRequirement({
@@ -901,10 +901,10 @@ describe("EntityManager", () => {
 					description: "Test",
 					criteria: [
 						{
-					id: "crit-001",
-					description: "Test",
-					status: "active" as const,
-				},
+							id: "crit-001",
+							description: "Test",
+							status: "active" as const,
+						},
 					],
 				});
 
@@ -1227,10 +1227,10 @@ describe("EntityManager", () => {
 					description: "Test",
 					criteria: [
 						{
-					id: "crit-001",
-					description: "Test criteria",
-					status: "active" as const,
-				},
+							id: "crit-001",
+							description: "Test criteria",
+							status: "active" as const,
+						},
 					],
 				} as Record<string, unknown>,
 				{
@@ -1261,10 +1261,10 @@ describe("EntityManager", () => {
 				description: "Test",
 				criteria: [
 					{
-					id: "crit-001",
-					description: "Test criteria",
-					status: "active" as const,
-				},
+						id: "crit-001",
+						description: "Test criteria",
+						status: "active" as const,
+					},
 				],
 			});
 			await manager.createPlan({
@@ -1397,10 +1397,10 @@ describe("EntityManager", () => {
 				description: "Test",
 				criteria: [
 					{
-					id: "crit-001",
-					description: "Test criteria",
-					status: "active" as const,
-				},
+						id: "crit-001",
+						description: "Test criteria",
+						status: "active" as const,
+					},
 				],
 			} as Record<string, unknown>);
 			expect(result.success).toBe(true);
@@ -1565,7 +1565,6 @@ describe("EntityManager", () => {
 			).toContain("locked");
 		});
 
-
 		it("should block multiple field updates including disallowed fields on locked plan", async () => {
 			// Create a plan
 			const planData = createValidPlanData();
@@ -1594,7 +1593,6 @@ describe("EntityManager", () => {
 				(updateResult as { success: false; error: string }).error,
 			).toContain("name");
 		});
-
 
 		it("should work with locked=false by default for new entities", async () => {
 			// Create a plan without specifying locked

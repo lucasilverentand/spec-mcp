@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { StepValidator } from "../../src/creation-flow/step-validator.js";
 
 describe("StepValidator", () => {
@@ -11,10 +11,14 @@ describe("StepValidator", () => {
 	describe("Requirement Steps", () => {
 		describe("problem_identification", () => {
 			it("should pass with valid description including rationale", () => {
-				const result = validator.validate("requirement", "problem_identification", {
-					description:
-						"Users need secure authentication because we handle sensitive financial data",
-				});
+				const result = validator.validate(
+					"requirement",
+					"problem_identification",
+					{
+						description:
+							"Users need secure authentication because we handle sensitive financial data",
+					},
+				);
 
 				expect(result.passed).toBe(true);
 				expect(result.issues).toHaveLength(0);
@@ -24,29 +28,41 @@ describe("StepValidator", () => {
 			});
 
 			it("should fail with description under 50 characters", () => {
-				const result = validator.validate("requirement", "problem_identification", {
-					description: "Short description",
-				});
+				const result = validator.validate(
+					"requirement",
+					"problem_identification",
+					{
+						description: "Short description",
+					},
+				);
 
 				expect(result.passed).toBe(false);
 				expect(result.issues.length).toBeGreaterThan(0);
 			});
 
 			it("should fail without rationale keywords", () => {
-				const result = validator.validate("requirement", "problem_identification", {
-					description:
-						"This is a sufficiently long description but it lacks any explanation for creating this feature",
-				});
+				const result = validator.validate(
+					"requirement",
+					"problem_identification",
+					{
+						description:
+							"This is a sufficiently long description but it lacks any explanation for creating this feature",
+					},
+				);
 
 				expect(result.passed).toBe(false);
 				expect(result.issues.some((i) => i.includes("rationale"))).toBe(true);
 			});
 
 			it("should accept 'so that' as rationale", () => {
-				const result = validator.validate("requirement", "problem_identification", {
-					description:
-						"Users need password reset capability so that they can regain access to locked accounts",
-				});
+				const result = validator.validate(
+					"requirement",
+					"problem_identification",
+					{
+						description:
+							"Users need password reset capability so that they can regain access to locked accounts",
+					},
+				);
 
 				expect(result.passed).toBe(true);
 			});
@@ -54,20 +70,30 @@ describe("StepValidator", () => {
 
 		describe("avoid_implementation", () => {
 			it("should pass with implementation-agnostic description", () => {
-				const result = validator.validate("requirement", "avoid_implementation", {
-					description:
-						"System must authenticate users and maintain session state throughout their interaction",
-				});
+				const result = validator.validate(
+					"requirement",
+					"avoid_implementation",
+					{
+						description:
+							"System must authenticate users and maintain session state throughout their interaction",
+					},
+				);
 
 				expect(result.passed).toBe(true);
-				expect(result.strengths).toContain("Implementation-agnostic description");
+				expect(result.strengths).toContain(
+					"Implementation-agnostic description",
+				);
 			});
 
 			it("should fail when mentioning database technologies", () => {
-				const result = validator.validate("requirement", "avoid_implementation", {
-					description:
-						"Store user data in MongoDB with redis for session caching",
-				});
+				const result = validator.validate(
+					"requirement",
+					"avoid_implementation",
+					{
+						description:
+							"Store user data in MongoDB with redis for session caching",
+					},
+				);
 
 				expect(result.passed).toBe(false);
 				expect(
@@ -76,17 +102,25 @@ describe("StepValidator", () => {
 			});
 
 			it("should fail when mentioning frontend frameworks", () => {
-				const result = validator.validate("requirement", "avoid_implementation", {
-					description: "Build a react component for user login",
-				});
+				const result = validator.validate(
+					"requirement",
+					"avoid_implementation",
+					{
+						description: "Build a react component for user login",
+					},
+				);
 
 				expect(result.passed).toBe(false);
 			});
 
 			it("should fail when mentioning specific UI elements", () => {
-				const result = validator.validate("requirement", "avoid_implementation", {
-					description: "Add a login button and form with input fields",
-				});
+				const result = validator.validate(
+					"requirement",
+					"avoid_implementation",
+					{
+						description: "Add a login button and form with input fields",
+					},
+				);
 
 				expect(result.passed).toBe(false);
 			});
@@ -194,24 +228,32 @@ describe("StepValidator", () => {
 
 		describe("acceptance_criteria", () => {
 			it("should pass with defined criteria array", () => {
-				const result = validator.validate("requirement", "acceptance_criteria", {
-					criteria: [
-						{
-							id: "crit-001",
-							description:
-								"Given valid credentials, user is authenticated within 3 seconds",
-							status: "active",
-						},
-					],
-				});
+				const result = validator.validate(
+					"requirement",
+					"acceptance_criteria",
+					{
+						criteria: [
+							{
+								id: "crit-001",
+								description:
+									"Given valid credentials, user is authenticated within 3 seconds",
+								status: "active",
+							},
+						],
+					},
+				);
 
 				expect(result.passed).toBe(true);
 			});
 
 			it("should fail with empty criteria array", () => {
-				const result = validator.validate("requirement", "acceptance_criteria", {
-					criteria: [],
-				});
+				const result = validator.validate(
+					"requirement",
+					"acceptance_criteria",
+					{
+						criteria: [],
+					},
+				);
 
 				expect(result.passed).toBe(false);
 			});
@@ -219,9 +261,13 @@ describe("StepValidator", () => {
 
 		describe("priority_assignment", () => {
 			it("should pass with valid priority", () => {
-				const result = validator.validate("requirement", "priority_assignment", {
-					priority: "critical",
-				});
+				const result = validator.validate(
+					"requirement",
+					"priority_assignment",
+					{
+						priority: "critical",
+					},
+				);
 
 				expect(result.passed).toBe(true);
 				expect(result.strengths).toContain(
@@ -243,9 +289,13 @@ describe("StepValidator", () => {
 			});
 
 			it("should fail with invalid priority", () => {
-				const result = validator.validate("requirement", "priority_assignment", {
-					priority: "high",
-				});
+				const result = validator.validate(
+					"requirement",
+					"priority_assignment",
+					{
+						priority: "high",
+					},
+				);
 
 				expect(result.passed).toBe(false);
 			});
@@ -463,8 +513,16 @@ describe("StepValidator", () => {
 			it("should pass with task array", () => {
 				const result = validator.validate("plan", "break_down_tasks", {
 					tasks: [
-						{ id: "task-001", description: "Setup dependencies", estimated_days: 1 },
-						{ id: "task-002", description: "Implement core logic", estimated_days: 2 },
+						{
+							id: "task-001",
+							description: "Setup dependencies",
+							estimated_days: 1,
+						},
+						{
+							id: "task-002",
+							description: "Implement core logic",
+							estimated_days: 2,
+						},
 					],
 				});
 
@@ -537,7 +595,9 @@ describe("StepValidator", () => {
 				});
 
 				expect(result.passed).toBe(true);
-				expect(result.strengths).toContain("1 principle(s) defined with rationale");
+				expect(result.strengths).toContain(
+					"1 principle(s) defined with rationale",
+				);
 			});
 
 			it("should fail with empty articles", () => {
@@ -629,7 +689,9 @@ describe("StepValidator", () => {
 				});
 
 				expect(result.passed).toBe(true);
-				expect(result.strengths).toContain("Impact documented across 3 entities");
+				expect(result.strengths).toContain(
+					"Impact documented across 3 entities",
+				);
 				expect(result.strengths).toContain(
 					"Aligned with 1 guiding principle(s)",
 				);

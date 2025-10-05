@@ -18,10 +18,13 @@ export type OperationResult<TData = unknown> = Omit<
 
 // Re-export ValidationResult from @spec-mcp/data
 export type {
-	ValidationResult,
 	ValidationManagerConfig,
+	ValidationResult,
 } from "@spec-mcp/data";
-export { ValidationResultSchema, ValidationManagerConfigSchema } from "@spec-mcp/data";
+export {
+	ValidationManagerConfigSchema,
+	ValidationResultSchema,
+} from "@spec-mcp/data";
 
 // Analysis result schema
 export const AnalysisResultSchema = z.object({

@@ -1,8 +1,8 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { ServerConfig } from "../config/index.js";
 import type { SpecOperations } from "@spec-mcp/core";
 import type { AnyEntity, Plan, Requirement } from "@spec-mcp/data";
 import { z } from "zod";
+import type { ServerConfig } from "../config/index.js";
 import { formatResult } from "../utils/result-formatter.js";
 import { wrapToolHandler } from "../utils/tool-wrapper.js";
 
@@ -41,7 +41,9 @@ const PlanFiltersSchema = z.object({
 	criteria_id: z
 		.string()
 		.optional()
-		.describe("Filter plans by specific criteria ID (e.g., 'req-001-user-auth/crit-001')"),
+		.describe(
+			"Filter plans by specific criteria ID (e.g., 'req-001-user-auth/crit-001')",
+		),
 });
 
 const ComponentFiltersSchema = z.object({
@@ -49,7 +51,12 @@ const ComponentFiltersSchema = z.object({
 		.array(z.enum(["app", "service", "library"]))
 		.optional()
 		.describe("Filter by component type"),
-	folder: z.string().optional().describe("Filter by folder path (supports hierarchy - matches folder and all subfolders)"),
+	folder: z
+		.string()
+		.optional()
+		.describe(
+			"Filter by folder path (supports hierarchy - matches folder and all subfolders)",
+		),
 });
 
 const ConstitutionFiltersSchema = z.object({
@@ -103,7 +110,9 @@ const AnalysisFiltersSchema = z.object({
 	uncovered: z
 		.boolean()
 		.optional()
-		.describe("Filter to only uncovered entities (requirements without plans, etc)"),
+		.describe(
+			"Filter to only uncovered entities (requirements without plans, etc)",
+		),
 });
 
 const FiltersSchema = RequirementFiltersSchema.merge(PlanFiltersSchema)
@@ -129,10 +138,7 @@ const ExpansionSchema = z.object({
 		.boolean()
 		.optional()
 		.describe("Include full dependency entities"),
-	references: z
-		.boolean()
-		.optional()
-		.describe("Include referenced entities"),
+	references: z.boolean().optional().describe("Include referenced entities"),
 	parent: z
 		.boolean()
 		.optional()
@@ -147,7 +153,9 @@ const ExpansionSchema = z.object({
 	dependency_metrics: z
 		.boolean()
 		.optional()
-		.describe("Include dependency metrics (fan-in, fan-out, coupling, stability)"),
+		.describe(
+			"Include dependency metrics (fan-in, fan-out, coupling, stability)",
+		),
 });
 
 type Filters = z.infer<typeof FiltersSchema>;
@@ -293,7 +301,9 @@ function detectSubEntityType(
 /**
  * Get orphaned entities
  */
-async function getOrphanedEntities(operations: SpecOperations): Promise<Set<string>> {
+async function getOrphanedEntities(
+	operations: SpecOperations,
+): Promise<Set<string>> {
 	const orphanResult = await operations.detectOrphans();
 	if (!orphanResult.success || !orphanResult.data) {
 		return new Set();
@@ -304,7 +314,9 @@ async function getOrphanedEntities(operations: SpecOperations): Promise<Set<stri
 /**
  * Get uncovered entities
  */
-async function getUncoveredEntities(operations: SpecOperations): Promise<Set<string>> {
+async function getUncoveredEntities(
+	operations: SpecOperations,
+): Promise<Set<string>> {
 	const coverageResult = await operations.analyzeCoverage();
 	if (!coverageResult.success || !coverageResult.data) {
 		return new Set();
@@ -401,7 +413,7 @@ async function calculateDependencyMetrics(
 	for (const other of allEntities) {
 		if (other.type === "plan") {
 			const plan = other as Plan;
-			if (plan.depends_on && plan.depends_on.includes(entity.id)) {
+			if (plan.depends_on?.includes(entity.id)) {
 				fanIn++;
 			}
 		}
@@ -449,12 +461,15 @@ async function findReferences(
 		// Check plan dependencies
 		if (other.type === "plan") {
 			const plan = other as Plan;
-			if (plan.depends_on && plan.depends_on.includes(entity.id)) {
+			if (plan.depends_on?.includes(entity.id)) {
 				hasReference = true;
 			}
 
 			// Check criteria_id for requirements
-			if (entity.type === "requirement" && plan.criteria_id?.startsWith(entity.id)) {
+			if (
+				entity.type === "requirement" &&
+				plan.criteria_id?.startsWith(entity.id)
+			) {
 				hasReference = true;
 			}
 		}
@@ -518,7 +533,7 @@ function applyFilters(entities: AnyEntity[], filters: Filters): AnyEntity[] {
 				return false;
 			if (
 				filters.has_criteria_id !== undefined &&
-				(!!plan.criteria_id) !== filters.has_criteria_id
+				!!plan.criteria_id !== filters.has_criteria_id
 			)
 				return false;
 			if (
@@ -547,7 +562,10 @@ function applyFilters(entities: AnyEntity[], filters: Filters): AnyEntity[] {
 				const filterFolder = filters.folder;
 
 				// Exact match or parent folder match
-				if (entityFolder !== filterFolder && !entityFolder.startsWith(filterFolder + "/")) {
+				if (
+					entityFolder !== filterFolder &&
+					!entityFolder.startsWith(`${filterFolder}/`)
+				) {
 					return false;
 				}
 			}
@@ -655,7 +673,9 @@ function getSubEntitySearchText(entity: AnyEntity): string {
 
 	// Extract text from constitutions
 	if (entity.type === "constitution") {
-		const con = entity as { articles?: Array<{ title: string; principle: string; rationale: string }> };
+		const con = entity as {
+			articles?: Array<{ title: string; principle: string; rationale: string }>;
+		};
 		if (con.articles) {
 			for (const article of con.articles) {
 				texts.push(article.title, article.principle, article.rationale);
@@ -761,7 +781,9 @@ function searchEntity(
 			score += 0.6; // Lower weight than direct fields
 			matches.push({
 				field: "sub_entities",
-				highlights: ["Matched exact phrase in tasks, test cases, or other sub-entities"],
+				highlights: [
+					"Matched exact phrase in tasks, test cases, or other sub-entities",
+				],
 			});
 		}
 		// Fuzzy matching in sub-entities
@@ -769,7 +791,9 @@ function searchEntity(
 			score += 0.3;
 			matches.push({
 				field: "sub_entities",
-				highlights: ["Fuzzy matched phrase in tasks, test cases, or other sub-entities"],
+				highlights: [
+					"Fuzzy matched phrase in tasks, test cases, or other sub-entities",
+				],
 			});
 		}
 		// Token matching in sub-entities
@@ -805,7 +829,9 @@ function searchEntity(
 				score += 0.2 * queryTokens.length;
 				matches.push({
 					field: "sub_entities",
-					highlights: ["Matched tokens in tasks, test cases, or other sub-entities"],
+					highlights: [
+						"Matched tokens in tasks, test cases, or other sub-entities",
+					],
 				});
 			}
 		}
@@ -851,13 +877,11 @@ function applySorting(
 					break;
 				case "created_at":
 					comparison =
-						new Date(a.created_at).getTime() -
-						new Date(b.created_at).getTime();
+						new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
 					break;
 				case "updated_at":
 					comparison =
-						new Date(a.updated_at).getTime() -
-						new Date(b.updated_at).getTime();
+						new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime();
 					break;
 				case "priority": {
 					const priorityOrder: Record<string, number> = {
@@ -903,7 +927,10 @@ function projectToSummary(entity: AnyEntity): Partial<AnyEntity> {
 		updated_at: entity.updated_at,
 	};
 
-	if ("priority" in entity) (summary as { priority: string }).priority = (entity as { priority: string }).priority;
+	if ("priority" in entity)
+		(summary as { priority: string }).priority = (
+			entity as { priority: string }
+		).priority;
 	if ("completed" in entity)
 		(summary as { status: string }).status = (entity as Plan).completed
 			? "completed"
@@ -1249,7 +1276,9 @@ async function handleSubEntityLookup(
 				subEntity = plan.flows?.find((f) => f.id === actualSubEntityId);
 				break;
 			case "api_contract":
-				subEntity = plan.api_contracts?.find((ac) => ac.id === actualSubEntityId);
+				subEntity = plan.api_contracts?.find(
+					(ac) => ac.id === actualSubEntityId,
+				);
 				break;
 			case "data_model":
 				subEntity = plan.data_models?.find((dm) => dm.id === actualSubEntityId);
@@ -1305,8 +1334,14 @@ async function handleSearch(
 		return formatResult(entitiesResult);
 	}
 
-	const { requirements, plans, components, constitutions } = entitiesResult.data;
-	let allEntities: AnyEntity[] = [...requirements, ...plans, ...components, ...constitutions];
+	const { requirements, plans, components, constitutions } =
+		entitiesResult.data;
+	let allEntities: AnyEntity[] = [
+		...requirements,
+		...plans,
+		...components,
+		...constitutions,
+	];
 
 	// Apply type filter
 	if (types && types.length > 0) {
@@ -1353,9 +1388,13 @@ async function handleSearch(
 	// Apply mode
 	let projected: (Partial<AnyEntity> | SearchResult)[];
 	if (mode === "summary") {
-		projected = paginated.map((r) => projectToSummary(r as unknown as AnyEntity));
+		projected = paginated.map((r) =>
+			projectToSummary(r as unknown as AnyEntity),
+		);
 	} else if (mode === "custom") {
-		projected = paginated.map((r) => projectToCustom(r as unknown as AnyEntity, includeFields, excludeFields));
+		projected = paginated.map((r) =>
+			projectToCustom(r as unknown as AnyEntity, includeFields, excludeFields),
+		);
 	} else {
 		projected = paginated;
 	}
@@ -1408,8 +1447,14 @@ async function handleFilteredList(
 		return formatResult(entitiesResult);
 	}
 
-	const { requirements, plans, components, constitutions } = entitiesResult.data;
-	let allEntities: AnyEntity[] = [...requirements, ...plans, ...components, ...constitutions];
+	const { requirements, plans, components, constitutions } =
+		entitiesResult.data;
+	let allEntities: AnyEntity[] = [
+		...requirements,
+		...plans,
+		...components,
+		...constitutions,
+	];
 
 	// Apply type filter
 	if (types && types.length > 0) {
@@ -1470,9 +1515,13 @@ async function handleFilteredList(
 	// Apply mode
 	let projected: (Partial<AnyEntity> | SearchResult)[];
 	if (mode === "summary") {
-		projected = paginated.map((r) => projectToSummary(r as unknown as AnyEntity));
+		projected = paginated.map((r) =>
+			projectToSummary(r as unknown as AnyEntity),
+		);
 	} else if (mode === "custom") {
-		projected = paginated.map((r) => projectToCustom(r as unknown as AnyEntity, includeFields, excludeFields));
+		projected = paginated.map((r) =>
+			projectToCustom(r as unknown as AnyEntity, includeFields, excludeFields),
+		);
 	} else {
 		projected = paginated;
 	}
@@ -1600,7 +1649,9 @@ async function handleNextTask(
 
 	// Sort by priority
 	const priorityOrder = { critical: 0, high: 1, medium: 2, low: 3 };
-	unblocked.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
+	unblocked.sort(
+		(a, b) => priorityOrder[a.priority] - priorityOrder[b.priority],
+	);
 
 	const nextTask = unblocked[0];
 
@@ -1827,7 +1878,12 @@ export function registerQueryTool(
 					});
 				}
 
-				if (primaryMethods.length === 0 && !types && !filters && !include_facets) {
+				if (
+					primaryMethods.length === 0 &&
+					!types &&
+					!filters &&
+					!include_facets
+				) {
 					return formatResult({
 						success: false,
 						error:

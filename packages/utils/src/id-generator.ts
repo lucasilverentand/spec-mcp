@@ -15,10 +15,9 @@ import {
 	parseId as dataParseId,
 	validateId as dataValidateId,
 } from "@spec-mcp/data";
-import type { OperationResult } from "./types.js";
-import type { IIdGenerator } from "./types.js";
-import { calculateStringSimilarity } from "./string-utils.js";
 import { generateSlugFromTitle, generateUniqueSlug } from "./slug-generator.js";
+import { calculateStringSimilarity } from "./string-utils.js";
+import type { IIdGenerator, OperationResult } from "./types.js";
 
 // Re-export from data package for backward compatibility
 export {
@@ -50,7 +49,6 @@ export class IdGenerator implements IIdGenerator {
 		return {
 			success: true,
 			data: id,
-			
 		};
 	}
 

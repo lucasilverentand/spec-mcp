@@ -1,7 +1,7 @@
-import { beforeEach, describe, expect, it, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { CycleDetector } from "../../src/analysis/cycle-detector.js";
 import type { SpecConfig } from "../../src/interfaces/config.js";
-import { createTestSpecsPath, cleanupTestSpecs } from "../test-helpers.js";
+import { cleanupTestSpecs, createTestSpecsPath } from "../test-helpers.js";
 
 describe("CycleDetector", () => {
 	let detector: CycleDetector;
@@ -108,7 +108,9 @@ describe("CycleDetector", () => {
 		});
 
 		it("should handle errors gracefully", async () => {
-			const badDetector = new CycleDetector({ specsPath: createTestSpecsPath("nonexistent") });
+			const badDetector = new CycleDetector({
+				specsPath: createTestSpecsPath("nonexistent"),
+			});
 			const result = await badDetector.analyze();
 
 			// Should either succeed with empty data or fail gracefully
@@ -172,7 +174,9 @@ describe("CycleDetector", () => {
 		});
 
 		it("should handle empty graph", async () => {
-			const emptyDetector = new CycleDetector({ specsPath: createTestSpecsPath("empty-path") });
+			const emptyDetector = new CycleDetector({
+				specsPath: createTestSpecsPath("empty-path"),
+			});
 			const result = await emptyDetector.detectAllCycles();
 
 			expect(result).toBeDefined();
@@ -230,7 +234,9 @@ describe("CycleDetector", () => {
 
 	describe("error handling", () => {
 		it("should handle invalid config gracefully", async () => {
-			const invalidDetector = new CycleDetector({ specsPath: createTestSpecsPath("empty") });
+			const invalidDetector = new CycleDetector({
+				specsPath: createTestSpecsPath("empty"),
+			});
 			const result = await invalidDetector.analyze();
 
 			expect(result).toBeDefined();
@@ -246,7 +252,9 @@ describe("CycleDetector", () => {
 		});
 
 		it("should handle analysis errors without throwing", async () => {
-			const badDetector = new CycleDetector({ specsPath: createTestSpecsPath("dev-null") });
+			const badDetector = new CycleDetector({
+				specsPath: createTestSpecsPath("dev-null"),
+			});
 
 			await expect(async () => {
 				await badDetector.analyze();

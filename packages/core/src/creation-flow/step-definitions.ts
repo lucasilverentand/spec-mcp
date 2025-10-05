@@ -8,7 +8,8 @@ export const REQUIREMENT_STEPS: StepDefinition[] = [
 		id: "research_similar_requirements",
 		order: 1,
 		name: "Research Similar Requirements",
-		description: "Search for existing requirements that might already address this need",
+		description:
+			"Search for existing requirements that might already address this need",
 		question:
 			"Search for existing requirements that might already address this need. Have you checked if similar requirements already exist?",
 		guidance:
@@ -25,23 +26,23 @@ export const REQUIREMENT_STEPS: StepDefinition[] = [
 		id: "constitution_review",
 		order: 2,
 		name: "Constitution Review",
-		description: "Identify constitution articles that apply to this requirement",
+		description:
+			"Identify constitution articles that apply to this requirement",
 		question:
 			"Which constitution articles apply to this requirement? Are there any guiding principles you must follow?",
 		guidance:
 			"Use the query tool to list all constitutions and review their articles. Identify any that apply to this requirement and reference their specific article IDs (e.g., con-001-architecture/art-002). If no constitutions exist yet, state 'none exist'.",
 		next_step: "technology_research",
 		tool_hints: {
-			query_examples: [
-				"query({ types: ['constitution'], mode: 'full' })",
-			],
+			query_examples: ["query({ types: ['constitution'], mode: 'full' })"],
 		},
 	},
 	{
 		id: "technology_research",
 		order: 3,
 		name: "Technology Research",
-		description: "Research available libraries and solutions (optional for technical requirements)",
+		description:
+			"Research available libraries and solutions (optional for technical requirements)",
 		question:
 			"For technical requirements, research available libraries, frameworks, and solutions. What options exist?",
 		guidance:
@@ -59,8 +60,7 @@ export const REQUIREMENT_STEPS: StepDefinition[] = [
 		order: 4,
 		name: "Identify Problem",
 		description: "Define the problem or opportunity",
-		question:
-			"What problem are we solving and why is it important?",
+		question: "What problem are we solving and why is it important?",
 		guidance:
 			"Explain the problem or opportunity this requirement addresses. Include the business value and rationale using words like 'because', 'needed', or 'so that'.",
 		next_step: "avoid_implementation",
@@ -81,8 +81,7 @@ export const REQUIREMENT_STEPS: StepDefinition[] = [
 		order: 6,
 		name: "Define Measurability",
 		description: "Add measurable success criteria",
-		question:
-			"How will you know when this requirement is successfully met?",
+		question: "How will you know when this requirement is successfully met?",
 		guidance:
 			"Define 2-4 measurable acceptance criteria. Each should be specific, testable, and clearly define what success looks like. Use concrete metrics where possible.",
 		next_step: "specific_language",
@@ -114,8 +113,7 @@ export const REQUIREMENT_STEPS: StepDefinition[] = [
 		order: 9,
 		name: "Assign Priority",
 		description: "Set appropriate priority level",
-		question:
-			"What is the priority of this requirement?",
+		question: "What is the priority of this requirement?",
 		guidance:
 			"Choose a priority level: 'critical' (must-have for launch), 'required' (needed soon after launch), 'ideal' (nice to have), 'optional' (future consideration). Consider business value and urgency.",
 		next_step: "review_and_refine",
@@ -141,7 +139,8 @@ export const COMPONENT_STEPS: StepDefinition[] = [
 		id: "research_existing_components",
 		order: 1,
 		name: "Research Existing Components",
-		description: "Search for similar components that might already fulfill this need",
+		description:
+			"Search for similar components that might already fulfill this need",
 		question:
 			"Search for similar components. Have you checked if a component like this already exists?",
 		guidance:
@@ -158,7 +157,8 @@ export const COMPONENT_STEPS: StepDefinition[] = [
 		id: "library_research",
 		order: 2,
 		name: "Library Research",
-		description: "Research third-party libraries that could provide this functionality",
+		description:
+			"Research third-party libraries that could provide this functionality",
 		question:
 			"Research third-party libraries that could provide this functionality. What external solutions exist?",
 		guidance:
@@ -185,9 +185,7 @@ export const COMPONENT_STEPS: StepDefinition[] = [
 			"Query all constitutions and identify relevant articles (especially architecture, quality, and design principles). Reference specific article IDs (e.g., con-001-architecture/art-001 for library-first principle). Explain how this component aligns with or differs from these principles.",
 		next_step: "duplicate_prevention",
 		tool_hints: {
-			query_examples: [
-				"query({ types: ['constitution'], mode: 'full' })",
-			],
+			query_examples: ["query({ types: ['constitution'], mode: 'full' })"],
 		},
 	},
 	{
@@ -206,8 +204,7 @@ export const COMPONENT_STEPS: StepDefinition[] = [
 		order: 5,
 		name: "Analyze Requirements",
 		description: "Review which requirements this component satisfies",
-		question:
-			"Which requirements does this component satisfy and how?",
+		question: "Which requirements does this component satisfy and how?",
 		guidance:
 			"Use the query tool to find and review relevant requirements. List the requirement IDs and explain how this component addresses them. Describe the connection between requirements and this component's purpose.",
 		next_step: "define_boundaries",
@@ -234,8 +231,7 @@ export const COMPONENT_STEPS: StepDefinition[] = [
 		order: 7,
 		name: "Define Responsibilities",
 		description: "List what the component does and doesn't do",
-		question:
-			"What specific capabilities does this component provide?",
+		question: "What specific capabilities does this component provide?",
 		guidance:
 			"List the specific responsibilities or capabilities this component handles. For each capability, be clear about whether it's handled directly or delegated.",
 		next_step: "define_interfaces",
@@ -245,8 +241,7 @@ export const COMPONENT_STEPS: StepDefinition[] = [
 		order: 8,
 		name: "Define Interfaces",
 		description: "Specify inputs, outputs, and contracts",
-		question:
-			"What are this component's inputs, outputs, and contracts?",
+		question: "What are this component's inputs, outputs, and contracts?",
 		guidance:
 			"Describe the component's interface: What inputs does it accept? What outputs does it produce? What APIs or contracts does it expose? Include data formats and protocols.",
 		next_step: "map_dependencies",
@@ -256,8 +251,7 @@ export const COMPONENT_STEPS: StepDefinition[] = [
 		order: 9,
 		name: "Map Dependencies",
 		description: "Identify internal and external dependencies",
-		question:
-			"What does this component depend on?",
+		question: "What does this component depend on?",
 		guidance:
 			"List both internal dependencies (other components in your system) and external dependencies (third-party libraries with versions). If none, provide empty arrays: depends_on: [], external_dependencies: [].",
 		next_step: "define_ownership",
@@ -267,8 +261,7 @@ export const COMPONENT_STEPS: StepDefinition[] = [
 		order: 10,
 		name: "Define Ownership",
 		description: "Specify state management and data ownership",
-		question:
-			"What data and state does this component own versus borrow?",
+		question: "What data and state does this component own versus borrow?",
 		guidance:
 			"Define data ownership clearly: What data does this component create and manage? What state is it responsible for? What data does it access from other components?",
 		next_step: "identify_patterns",
@@ -278,8 +271,7 @@ export const COMPONENT_STEPS: StepDefinition[] = [
 		order: 11,
 		name: "Identify Patterns",
 		description: "List architectural patterns used",
-		question:
-			"What architectural patterns does this component use?",
+		question: "What architectural patterns does this component use?",
 		guidance:
 			"List the architectural patterns employed (e.g., Repository, Service, Factory, Observer, Singleton, Strategy). Explain why each pattern was chosen.",
 		next_step: "quality_attributes",
@@ -289,8 +281,7 @@ export const COMPONENT_STEPS: StepDefinition[] = [
 		order: 12,
 		name: "Define Quality Attributes",
 		description: "Specify performance, security, and testability requirements",
-		question:
-			"What are the quality requirements for this component?",
+		question: "What are the quality requirements for this component?",
 		guidance:
 			"Define quality attributes: Performance targets (response time, throughput), security requirements, testability needs, scalability goals, reliability expectations.",
 		next_step: "trace_requirements",
@@ -300,8 +291,7 @@ export const COMPONENT_STEPS: StepDefinition[] = [
 		order: 13,
 		name: "Trace to Requirements",
 		description: "Create traceability matrix",
-		question:
-			"How do the capabilities trace back to requirements?",
+		question: "How do the capabilities trace back to requirements?",
 		guidance:
 			"Create a traceability map linking each capability to the requirement(s) it satisfies. Ensure complete coverage - every capability should trace to at least one requirement.",
 		next_step: "validate_refine",
@@ -369,9 +359,7 @@ export const PLAN_STEPS: StepDefinition[] = [
 			"Query all constitutions and verify your implementation approach aligns with project standards (testing requirements, architecture principles, quality standards, security guidelines). Reference specific article IDs.",
 		next_step: "similar_plans_review",
 		tool_hints: {
-			query_examples: [
-				"query({ types: ['constitution'], mode: 'full' })",
-			],
+			query_examples: ["query({ types: ['constitution'], mode: 'full' })"],
 		},
 	},
 	{
@@ -407,8 +395,7 @@ export const PLAN_STEPS: StepDefinition[] = [
 		order: 6,
 		name: "Identify Phases",
 		description: "Break work into major phases",
-		question:
-			"What are the major phases of work for this plan?",
+		question: "What are the major phases of work for this plan?",
 		guidance:
 			"Break the plan into 2-5 major phases (e.g., Setup, Core Implementation, Testing, Documentation). Describe what each phase accomplishes.",
 		next_step: "analyze_dependencies",
@@ -418,8 +405,7 @@ export const PLAN_STEPS: StepDefinition[] = [
 		order: 7,
 		name: "Analyze Dependencies",
 		description: "Create dependency graph and ordering",
-		question:
-			"What dependencies exist for this plan?",
+		question: "What dependencies exist for this plan?",
 		guidance:
 			"List what other plans must complete before this one starts. If there are no dependencies, provide an empty array []. Also consider task dependencies within this plan - which tasks must happen before others?",
 		next_step: "break_down_tasks",
@@ -429,8 +415,7 @@ export const PLAN_STEPS: StepDefinition[] = [
 		order: 8,
 		name: "Break Down Tasks",
 		description: "Create actionable tasks (0.5-3 days each)",
-		question:
-			"What specific tasks need to be completed with effort estimates?",
+		question: "What specific tasks need to be completed with effort estimates?",
 		guidance:
 			"Break down the work into specific, actionable tasks. Each task should be: 0.5-3 days of effort, independently testable, and clearly described. Provide task IDs, descriptions, and estimated_days (be realistic and add a 20% buffer for unknowns).",
 		next_step: "define_acceptance",
@@ -440,8 +425,7 @@ export const PLAN_STEPS: StepDefinition[] = [
 		order: 9,
 		name: "Define Acceptance Criteria",
 		description: "Add acceptance criteria for the plan",
-		question:
-			"How will you know when this plan is complete?",
+		question: "How will you know when this plan is complete?",
 		guidance:
 			"Define clear acceptance criteria for the overall plan. What conditions must be met to consider this plan done? Be specific and measurable.",
 		next_step: "identify_milestones",
@@ -451,8 +435,7 @@ export const PLAN_STEPS: StepDefinition[] = [
 		order: 10,
 		name: "Identify Milestones",
 		description: "Define major checkpoints",
-		question:
-			"What are the major milestones for this plan?",
+		question: "What are the major milestones for this plan?",
 		guidance:
 			"Identify 2-4 major milestones - deliverable checkpoints where stakeholders can review progress. Each milestone should represent a meaningful accomplishment.",
 		next_step: "plan_testing",
@@ -462,8 +445,7 @@ export const PLAN_STEPS: StepDefinition[] = [
 		order: 11,
 		name: "Plan Testing Strategy",
 		description: "Define how work will be tested",
-		question:
-			"How will you test the work in this plan?",
+		question: "How will you test the work in this plan?",
 		guidance:
 			"Define your testing strategy: unit tests, integration tests, E2E tests. Specify coverage goals (aim for 90%+) and testing approach for each type.",
 		next_step: "plan_risks",
@@ -484,8 +466,7 @@ export const PLAN_STEPS: StepDefinition[] = [
 		order: 13,
 		name: "Create Timeline",
 		description: "Build schedule and critical path",
-		question:
-			"What's the timeline for this plan?",
+		question: "What's the timeline for this plan?",
 		guidance:
 			"Create a timeline: when will each phase complete? What's the critical path (longest sequence of dependent tasks)? What's the target completion date?",
 		next_step: "trace_specs",
@@ -495,8 +476,7 @@ export const PLAN_STEPS: StepDefinition[] = [
 		order: 14,
 		name: "Trace to Specs",
 		description: "Link to requirements and components",
-		question:
-			"How do the tasks trace to requirements and components?",
+		question: "How do the tasks trace to requirements and components?",
 		guidance:
 			"Link each task to requirement IDs and component IDs. Ensure full traceability - every task should support at least one requirement or component.",
 		next_step: "validate_refine",
@@ -529,9 +509,7 @@ export const CONSTITUTION_STEPS: StepDefinition[] = [
 			"Use the query tool to list all existing constitutions and carefully review their articles. This prevents creating conflicting or duplicate principles. Document what you find.",
 		next_step: "best_practices_research",
 		tool_hints: {
-			query_examples: [
-				"query({ types: ['constitution'], mode: 'full' })",
-			],
+			query_examples: ["query({ types: ['constitution'], mode: 'full' })"],
 		},
 	},
 	{
@@ -567,8 +545,7 @@ export const CONSTITUTION_STEPS: StepDefinition[] = [
 		order: 4,
 		name: "Basic Information",
 		description: "Provide basic constitution information",
-		question:
-			"What is this constitution about and what will it govern?",
+		question: "What is this constitution about and what will it govern?",
 		guidance:
 			"Provide a name and description for this constitution. Explain what principles it will establish and what aspects of development it will govern. Ensure this fills a unique gap not covered by existing constitutions.",
 		next_step: "articles",
@@ -578,8 +555,7 @@ export const CONSTITUTION_STEPS: StepDefinition[] = [
 		order: 5,
 		name: "Define Articles",
 		description: "Create the core principles/articles",
-		question:
-			"What are the core principles or articles of this constitution?",
+		question: "What are the core principles or articles of this constitution?",
 		guidance:
 			"Define the articles (core principles) that make up this constitution. For each article, include: title, the principle itself, rationale explaining why it exists, optional examples demonstrating it, optional exceptions where it doesn't apply, and status (needs-review, active, or archived).",
 		next_step: "conflict_check",
@@ -656,8 +632,7 @@ export const DECISION_STEPS: StepDefinition[] = [
 		order: 3,
 		name: "Basic Information",
 		description: "Provide basic decision information",
-		question:
-			"What is this decision about?",
+		question: "What is this decision about?",
 		guidance:
 			"Provide a name and brief description summarizing what this decision addresses. Keep it concise but informative.",
 		next_step: "decision_statement",
@@ -667,8 +642,7 @@ export const DECISION_STEPS: StepDefinition[] = [
 		order: 4,
 		name: "Decision Statement",
 		description: "State what was decided",
-		question:
-			"What exactly was decided?",
+		question: "What exactly was decided?",
 		guidance:
 			"State clearly and concisely what was decided. This should be 20-500 characters - specific enough to be actionable but concise enough to be memorable.",
 		next_step: "context",
@@ -678,8 +652,7 @@ export const DECISION_STEPS: StepDefinition[] = [
 		order: 5,
 		name: "Context",
 		description: "Explain the situation that prompted this decision",
-		question:
-			"What situation or problem led to this decision?",
+		question: "What situation or problem led to this decision?",
 		guidance:
 			"Describe the context that prompted this decision. Explain the problem, opportunity, or situation that needed to be addressed (20-1000 characters).",
 		next_step: "alternatives_and_consequences",
@@ -699,7 +672,8 @@ export const DECISION_STEPS: StepDefinition[] = [
 		id: "relationships",
 		order: 7,
 		name: "Relationships",
-		description: "Link to affected entities and informing constitution articles",
+		description:
+			"Link to affected entities and informing constitution articles",
 		question:
 			"What does this decision impact and which constitution articles informed it? (Constitution references are required)",
 		guidance:

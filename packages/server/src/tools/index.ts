@@ -1,8 +1,8 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { SpecOperations } from "@spec-mcp/core";
 import type { ServerConfig } from "../config/index.js";
-import { registerFinalizeDraftTool } from "./finalize-draft.js";
 import { registerDeleteSpecTool } from "./delete-spec.js";
+import { registerFinalizeDraftTool } from "./finalize-draft.js";
 import { registerQueryTool } from "./query.js";
 import { registerStartDraftTool } from "./start-draft.js";
 import { registerUpdateDraftTool } from "./update-draft.js";

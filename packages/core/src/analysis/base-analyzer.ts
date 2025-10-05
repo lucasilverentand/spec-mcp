@@ -1,8 +1,8 @@
 import { SpecsManager } from "@spec-mcp/data";
 import { AnalysisError, ErrorFactory } from "../shared/errors/index.js";
 import type { IAnalyzer } from "../shared/types/analyzer.js";
-import { toDataConfig } from "../shared/types/config.js";
 import type { SpecConfig } from "../shared/types/config.js";
+import { toDataConfig } from "../shared/types/config.js";
 import type { AnalysisResult } from "../shared/types/results.js";
 
 export abstract class BaseAnalyzer<TResult = unknown>

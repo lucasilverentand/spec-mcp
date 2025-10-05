@@ -6,6 +6,14 @@
 
 export { DraftManager } from "./draft-manager.js";
 export {
+	type FinalizationResult,
+	finalizeDraft,
+	formatSchemaFieldsForLLM,
+	generateSchemaInstructions,
+	getFinalizationPrompt,
+	type SchemaInstructions,
+} from "./schema-finalizer.js";
+export {
 	COMPONENT_STEPS,
 	CONSTITUTION_STEPS,
 	DECISION_STEPS,
@@ -14,17 +22,9 @@ export {
 	REQUIREMENT_STEPS,
 } from "./step-definitions.js";
 export { StepValidator } from "./step-validator.js";
-export {
-	finalizeDraft,
-	generateSchemaInstructions,
-	getFinalizationPrompt,
-	formatSchemaFieldsForLLM,
-	type FinalizationResult,
-	type SchemaInstructions,
-} from "./schema-finalizer.js";
 export type {
+	CreationFlowValidationResult,
 	Draft,
 	StepDefinition,
 	StepResponse,
-	CreationFlowValidationResult,
 } from "./types.js";

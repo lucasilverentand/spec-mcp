@@ -1,9 +1,12 @@
 import type { AnyEntity } from "@spec-mcp/data";
 import { SpecsManager } from "@spec-mcp/data";
-import { toDataConfig } from "../shared/types/config.js";
 import type { SpecConfig } from "../shared/types/config.js";
+import { toDataConfig } from "../shared/types/config.js";
 import type { ValidationResult } from "../shared/types/results.js";
-import type { IValidationEngine, IValidator } from "../shared/types/validator.js";
+import type {
+	IValidationEngine,
+	IValidator,
+} from "../shared/types/validator.js";
 
 export class ValidationEngine implements IValidationEngine {
 	private manager: SpecsManager;
@@ -60,9 +63,10 @@ export class ValidationEngine implements IValidationEngine {
 				...(errors.length > 0 && { error: errors.join(", ") }),
 			};
 		} catch (error) {
-			const errorMsg = error instanceof Error
-				? error.message
-				: "Entity validation failed with unknown error";
+			const errorMsg =
+				error instanceof Error
+					? error.message
+					: "Entity validation failed with unknown error";
 			return {
 				success: false,
 				valid: false,
@@ -100,9 +104,10 @@ export class ValidationEngine implements IValidationEngine {
 				...(allErrors.length > 0 && { error: allErrors.join(", ") }),
 			};
 		} catch (error) {
-			const errorMsg = error instanceof Error
-				? error.message
-				: "Failed to validate all entities";
+			const errorMsg =
+				error instanceof Error
+					? error.message
+					: "Failed to validate all entities";
 			return {
 				success: false,
 				valid: false,
@@ -121,9 +126,8 @@ export class ValidationEngine implements IValidationEngine {
 				timestamp: this.addTimestamp(),
 			};
 		} catch (error) {
-			const errorMsg = error instanceof Error
-				? error.message
-				: "Reference validation failed";
+			const errorMsg =
+				error instanceof Error ? error.message : "Reference validation failed";
 			return {
 				success: false,
 				valid: false,
@@ -251,9 +255,10 @@ export class ValidationEngine implements IValidationEngine {
 				...(errors.length > 0 && { error: errors.join(", ") }),
 			};
 		} catch (error) {
-			const errorMsg = error instanceof Error
-				? error.message
-				: "Business rule validation failed";
+			const errorMsg =
+				error instanceof Error
+					? error.message
+					: "Business rule validation failed";
 			return {
 				success: false,
 				valid: false,
@@ -295,7 +300,8 @@ export class ValidationEngine implements IValidationEngine {
 				...(allErrors.length > 0 && { error: allErrors.join(", ") }),
 			};
 		} catch (error) {
-			const errorMsg = error instanceof Error ? error.message : "Full validation failed";
+			const errorMsg =
+				error instanceof Error ? error.message : "Full validation failed";
 			return {
 				success: false,
 				valid: false,

@@ -8,12 +8,7 @@ export const TaskIdSchema = z
 	})
 	.nonempty();
 
-export const TaskPrioritySchema = z.enum([
-	"critical",
-	"high",
-	"medium",
-	"low",
-]);
+export const TaskPrioritySchema = z.enum(["critical", "high", "medium", "low"]);
 
 export const FileActionSchema = z.enum(["create", "modify", "delete"]);
 

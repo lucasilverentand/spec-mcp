@@ -48,7 +48,10 @@ export class StepValidator {
 			if (Array.isArray(value)) {
 				return true;
 			}
-			if (typeof value === "object" && Object.keys(value as object).length === 0) {
+			if (
+				typeof value === "object" &&
+				Object.keys(value as object).length === 0
+			) {
 				return false;
 			}
 			return true;
@@ -68,13 +71,25 @@ export class StepValidator {
 
 		// Perform step-specific validation
 		if (specType === "requirement") {
-			this.validateRequirementStep(stepId, data, issues, suggestions, strengths);
+			this.validateRequirementStep(
+				stepId,
+				data,
+				issues,
+				suggestions,
+				strengths,
+			);
 		} else if (specType === "component") {
 			this.validateComponentStep(stepId, data, issues, suggestions, strengths);
 		} else if (specType === "plan") {
 			this.validatePlanStep(stepId, data, issues, suggestions, strengths);
 		} else if (specType === "constitution") {
-			this.validateConstitutionStep(stepId, data, issues, suggestions, strengths);
+			this.validateConstitutionStep(
+				stepId,
+				data,
+				issues,
+				suggestions,
+				strengths,
+			);
 		} else if (specType === "decision") {
 			this.validateDecisionStep(stepId, data, issues, suggestions, strengths);
 		}
@@ -97,7 +112,12 @@ export class StepValidator {
 	): void {
 		switch (stepId) {
 			case "research_similar_requirements":
-				this.validateResearchSimilarRequirements(data, issues, suggestions, strengths);
+				this.validateResearchSimilarRequirements(
+					data,
+					issues,
+					suggestions,
+					strengths,
+				);
 				break;
 			case "constitution_review":
 				this.validateConstitutionReview(data, issues, suggestions, strengths);
@@ -106,7 +126,12 @@ export class StepValidator {
 				this.validateTechnologyResearch(data, suggestions, strengths);
 				break;
 			case "problem_identification":
-				this.validateProblemIdentification(data, issues, suggestions, strengths);
+				this.validateProblemIdentification(
+					data,
+					issues,
+					suggestions,
+					strengths,
+				);
 				break;
 			case "avoid_implementation":
 				this.validateAvoidImplementation(data, issues, suggestions, strengths);
@@ -154,7 +179,9 @@ export class StepValidator {
 			description.toLowerCase().includes("so that");
 
 		if (!hasRationale) {
-			issues.push("Description lacks rationale (should include 'because', 'needed', or 'so that')");
+			issues.push(
+				"Description lacks rationale (should include 'because', 'needed', or 'so that')",
+			);
 			suggestions.push("Explain WHY this requirement is needed");
 		}
 
@@ -176,10 +203,22 @@ export class StepValidator {
 		}
 
 		const implementationTerms = [
-			"postgres", "mysql", "mongodb", "redis", "database",
-			"react", "vue", "angular", "svelte",
-			"button", "dropdown", "modal", "dialog",
-			"express", "fastapi", "django",
+			"postgres",
+			"mysql",
+			"mongodb",
+			"redis",
+			"database",
+			"react",
+			"vue",
+			"angular",
+			"svelte",
+			"button",
+			"dropdown",
+			"modal",
+			"dialog",
+			"express",
+			"fastapi",
+			"django",
 		];
 
 		const lowerDesc = description.toLowerCase();
@@ -217,7 +256,17 @@ export class StepValidator {
 		}
 
 		// Check if criteria are measurable
-		const measurableKeywords = ["completes", "within", "under", "at least", "maximum", "minimum", "less than", "more than", "equals"];
+		const measurableKeywords = [
+			"completes",
+			"within",
+			"under",
+			"at least",
+			"maximum",
+			"minimum",
+			"less than",
+			"more than",
+			"equals",
+		];
 		const measurableCriteria = criteria.filter((c) => {
 			// Handle both string criteria and object criteria with description
 			let text = "";
@@ -249,11 +298,23 @@ export class StepValidator {
 		const description = data.description as string | undefined;
 		const criteria = data.criteria as unknown[] | undefined;
 
-		const vagueTerms = ["fast", "quick", "slow", "easy", "simple", "good", "bad", "nice", "better"];
+		const vagueTerms = [
+			"fast",
+			"quick",
+			"slow",
+			"easy",
+			"simple",
+			"good",
+			"bad",
+			"nice",
+			"better",
+		];
 
 		const allText = [
 			description || "",
-			...(Array.isArray(criteria) ? criteria.filter((c): c is string => typeof c === "string") : []),
+			...(Array.isArray(criteria)
+				? criteria.filter((c): c is string => typeof c === "string")
+				: []),
 		].join(" ");
 
 		const lowerText = allText.toLowerCase();
@@ -262,8 +323,12 @@ export class StepValidator {
 		);
 
 		if (foundVagueTerms.length > 0) {
-			issues.push(`Description contains vague terms: ${foundVagueTerms.join(", ")}`);
-			suggestions.push("Replace vague terms with specific, measurable language");
+			issues.push(
+				`Description contains vague terms: ${foundVagueTerms.join(", ")}`,
+			);
+			suggestions.push(
+				"Replace vague terms with specific, measurable language",
+			);
 		} else {
 			strengths.push("Specific, quantifiable language used");
 		}
@@ -338,7 +403,9 @@ export class StepValidator {
 		} else {
 			const slugRegex = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 			if (!slugRegex.test(slug)) {
-				issues.push("Slug must be lowercase with hyphens, no special characters");
+				issues.push(
+					"Slug must be lowercase with hyphens, no special characters",
+				);
 				suggestions.push("Example: user-authentication or api-gateway");
 			}
 		}
@@ -351,8 +418,13 @@ export class StepValidator {
 			issues.push("description is required");
 		}
 
-		if (priority && !["critical", "required", "ideal", "optional"].includes(priority)) {
-			issues.push("priority must be one of: critical, required, ideal, optional");
+		if (
+			priority &&
+			!["critical", "required", "ideal", "optional"].includes(priority)
+		) {
+			issues.push(
+				"priority must be one of: critical, required, ideal, optional",
+			);
 		}
 
 		// Validate criteria structure
@@ -366,10 +438,14 @@ export class StepValidator {
 				} else {
 					const crit = criterion as Record<string, unknown>;
 					if (!crit.id || typeof crit.id !== "string") {
-						issues.push(`Criterion at index ${index} missing 'id' field (should be crit-001, crit-002, etc.)`);
+						issues.push(
+							`Criterion at index ${index} missing 'id' field (should be crit-001, crit-002, etc.)`,
+						);
 					}
 					if (!crit.description || typeof crit.description !== "string") {
-						issues.push(`Criterion at index ${index} missing 'description' field`);
+						issues.push(
+							`Criterion at index ${index} missing 'description' field`,
+						);
 					}
 				}
 			});
@@ -387,20 +463,30 @@ export class StepValidator {
 		strengths: string[],
 	): void {
 		const research = data.research_findings as string | undefined;
-		const similarRequirements = data.similar_requirements as unknown[] | undefined;
+		const similarRequirements = data.similar_requirements as
+			| unknown[]
+			| undefined;
 
 		if (!research && !similarRequirements) {
 			issues.push("Research findings are required");
-			suggestions.push("Use query tool to search for similar requirements and document your findings");
+			suggestions.push(
+				"Use query tool to search for similar requirements and document your findings",
+			);
 			return;
 		}
 
-		if (research && research.includes("query")) {
+		if (research?.includes("query")) {
 			strengths.push("Research conducted using query tool");
 		}
 
-		if (similarRequirements && Array.isArray(similarRequirements) && similarRequirements.length > 0) {
-			strengths.push(`Found ${similarRequirements.length} similar requirement(s) for comparison`);
+		if (
+			similarRequirements &&
+			Array.isArray(similarRequirements) &&
+			similarRequirements.length > 0
+		) {
+			strengths.push(
+				`Found ${similarRequirements.length} similar requirement(s) for comparison`,
+			);
 		}
 	}
 
@@ -410,19 +496,26 @@ export class StepValidator {
 		suggestions: string[],
 		strengths: string[],
 	): void {
-		const constitutionArticles = data.constitution_articles as string | string[] | undefined;
+		const constitutionArticles = data.constitution_articles as
+			| string
+			| string[]
+			| undefined;
 		const noConstitutions = data.no_constitutions as boolean | undefined;
 
 		if (constitutionArticles === undefined && !noConstitutions) {
 			issues.push("Constitution review is required");
-			suggestions.push("Query constitutions and reference relevant article IDs with empty array [] if none exist");
+			suggestions.push(
+				"Query constitutions and reference relevant article IDs with empty array [] if none exist",
+			);
 			return;
 		}
 
 		if (noConstitutions) {
 			strengths.push("Confirmed no constitutions exist");
 		} else if (constitutionArticles !== undefined) {
-			const articles = Array.isArray(constitutionArticles) ? constitutionArticles : [constitutionArticles];
+			const articles = Array.isArray(constitutionArticles)
+				? constitutionArticles
+				: [constitutionArticles];
 
 			// Empty array is valid (no constitutions exist)
 			if (articles.length === 0) {
@@ -430,10 +523,14 @@ export class StepValidator {
 				return;
 			}
 
-			const validArticleIds = articles.filter(a => typeof a === "string" && a.match(/con-\d{3}-.+\/art-\d{3}/));
+			const validArticleIds = articles.filter(
+				(a) => typeof a === "string" && a.match(/con-\d{3}-.+\/art-\d{3}/),
+			);
 
 			if (validArticleIds.length > 0) {
-				strengths.push(`Referenced ${validArticleIds.length} constitution article(s)`);
+				strengths.push(
+					`Referenced ${validArticleIds.length} constitution article(s)`,
+				);
 			} else if (validArticleIds.length === 0 && articles.length > 0) {
 				issues.push("Invalid article ID format");
 				suggestions.push("Use format: con-001-slug/art-001");
@@ -450,14 +547,19 @@ export class StepValidator {
 		const notApplicable = data.not_applicable as boolean | undefined;
 
 		if (!research && !notApplicable) {
-			suggestions.push("For technical requirements, use context7 to research available libraries");
+			suggestions.push(
+				"For technical requirements, use context7 to research available libraries",
+			);
 			return;
 		}
 
 		if (notApplicable) {
 			strengths.push("Confirmed technology research not applicable");
 		} else if (research) {
-			if (research.includes("context7") || research.includes("resolve-library-id")) {
+			if (
+				research.includes("context7") ||
+				research.includes("resolve-library-id")
+			) {
 				strengths.push("Researched using context7 for library documentation");
 			}
 			if (research.includes("WebFetch")) {
@@ -475,7 +577,9 @@ export class StepValidator {
 		const research = data.component_research as string | undefined;
 		if (!research) {
 			issues.push("Component research is required");
-			suggestions.push("Use query to search for similar components across all types");
+			suggestions.push(
+				"Use query to search for similar components across all types",
+			);
 			return;
 		}
 
@@ -493,11 +597,16 @@ export class StepValidator {
 		const research = data.library_research as string | undefined;
 		if (!research) {
 			issues.push("Library research is required");
-			suggestions.push("Use context7 to research third-party libraries before building custom");
+			suggestions.push(
+				"Use context7 to research third-party libraries before building custom",
+			);
 			return;
 		}
 
-		if (research.includes("context7") || research.includes("resolve-library-id")) {
+		if (
+			research.includes("context7") ||
+			research.includes("resolve-library-id")
+		) {
 			strengths.push("Researched third-party libraries using context7");
 		}
 	}
@@ -508,16 +617,23 @@ export class StepValidator {
 		suggestions: string[],
 		strengths: string[],
 	): void {
-		const articles = data.constitution_articles as string | string[] | undefined;
+		const articles = data.constitution_articles as
+			| string
+			| string[]
+			| undefined;
 		if (!articles) {
 			issues.push("Constitution alignment check is required");
-			suggestions.push("Query constitutions and identify relevant architectural principles");
+			suggestions.push(
+				"Query constitutions and identify relevant architectural principles",
+			);
 			return;
 		}
 
 		const articleList = Array.isArray(articles) ? articles : [articles];
 		if (articleList.length > 0) {
-			strengths.push(`Aligned with ${articleList.length} constitution article(s)`);
+			strengths.push(
+				`Aligned with ${articleList.length} constitution article(s)`,
+			);
 		}
 	}
 
@@ -530,7 +646,9 @@ export class StepValidator {
 		const justification = data.justification as string | undefined;
 		if (!justification) {
 			issues.push("Justification for new component is required");
-			suggestions.push("Explain why existing components or libraries cannot be used");
+			suggestions.push(
+				"Explain why existing components or libraries cannot be used",
+			);
 			return;
 		}
 
@@ -548,7 +666,12 @@ export class StepValidator {
 	): void {
 		switch (stepId) {
 			case "research_existing_components":
-				this.validateResearchExistingComponents(data, issues, suggestions, strengths);
+				this.validateResearchExistingComponents(
+					data,
+					issues,
+					suggestions,
+					strengths,
+				);
 				break;
 
 			case "library_research":
@@ -556,7 +679,12 @@ export class StepValidator {
 				break;
 
 			case "constitution_alignment":
-				this.validateComponentConstitutionAlignment(data, issues, suggestions, strengths);
+				this.validateComponentConstitutionAlignment(
+					data,
+					issues,
+					suggestions,
+					strengths,
+				);
 				break;
 
 			case "duplicate_prevention":
@@ -564,7 +692,11 @@ export class StepValidator {
 				break;
 
 			case "analyze_requirements":
-				if (data.description && typeof data.description === "string" && data.description.length > 20) {
+				if (
+					data.description &&
+					typeof data.description === "string" &&
+					data.description.length > 20
+				) {
 					strengths.push("Clear requirement traceability established");
 				}
 				break;
@@ -581,41 +713,60 @@ export class StepValidator {
 				}
 				break;
 
-			case "define_responsibilities":
+			case "define_responsibilities": {
 				const capabilities = data.capabilities as unknown[] | undefined;
-				if (capabilities && Array.isArray(capabilities) && capabilities.length > 0) {
+				if (
+					capabilities &&
+					Array.isArray(capabilities) &&
+					capabilities.length > 0
+				) {
 					strengths.push(`${capabilities.length} capabilities clearly defined`);
 				} else {
-					issues.push("Capabilities array is required and must have at least one capability");
+					issues.push(
+						"Capabilities array is required and must have at least one capability",
+					);
 					suggestions.push("List the main capabilities of this component");
 				}
 				break;
+			}
 
-			case "map_dependencies":
+			case "map_dependencies": {
 				const dependsOn = data.depends_on as unknown[] | undefined;
-				const externalDeps = data.external_dependencies as unknown[] | undefined;
+				const externalDeps = data.external_dependencies as
+					| unknown[]
+					| undefined;
 
 				// Accept undefined as "not provided yet" and empty arrays as "no dependencies"
 				if (dependsOn !== undefined || externalDeps !== undefined) {
 					const internalCount = Array.isArray(dependsOn) ? dependsOn.length : 0;
-					const externalCount = Array.isArray(externalDeps) ? externalDeps.length : 0;
+					const externalCount = Array.isArray(externalDeps)
+						? externalDeps.length
+						: 0;
 
 					if (internalCount === 0 && externalCount === 0) {
 						strengths.push("No dependencies - self-contained component");
 					} else {
-						strengths.push(`Dependencies mapped: ${internalCount} internal, ${externalCount} external`);
+						strengths.push(
+							`Dependencies mapped: ${internalCount} internal, ${externalCount} external`,
+						);
 					}
 				}
 				break;
+			}
 
-			case "quality_attributes":
+			case "quality_attributes": {
 				const constraints = data.constraints as unknown[] | undefined;
-				if (constraints && Array.isArray(constraints) && constraints.length > 0) {
+				if (
+					constraints &&
+					Array.isArray(constraints) &&
+					constraints.length > 0
+				) {
 					strengths.push(`${constraints.length} quality attributes defined`);
 				}
 				break;
+			}
 
-			case "validate_refine":
+			case "validate_refine": {
 				const type = data.type as string | undefined;
 				if (type) {
 					const validTypes = ["app", "service", "library"];
@@ -627,6 +778,7 @@ export class StepValidator {
 					}
 				}
 				break;
+			}
 		}
 	}
 
@@ -648,7 +800,7 @@ export class StepValidator {
 				}
 				break;
 
-			case "review_context":
+			case "review_context": {
 				const criteriaId = data.criteria_id as string | undefined;
 				if (criteriaId && typeof criteriaId === "string") {
 					const criteriaIdRegex = /^req-\d{3}-.+\/crit-\d{3}$/;
@@ -660,16 +812,20 @@ export class StepValidator {
 					}
 				}
 				break;
+			}
 
-			case "break_down_tasks":
+			case "break_down_tasks": {
 				const tasks = data.tasks as unknown[] | undefined;
 				if (tasks && Array.isArray(tasks) && tasks.length > 0) {
 					// Check if tasks have estimated_days
-					const tasksWithEstimates = tasks.filter((t: unknown) =>
-						typeof t === "object" && t !== null && "estimated_days" in t
+					const tasksWithEstimates = tasks.filter(
+						(t: unknown) =>
+							typeof t === "object" && t !== null && "estimated_days" in t,
 					);
 					if (tasksWithEstimates.length === tasks.length) {
-						strengths.push(`${tasks.length} tasks defined with effort estimates`);
+						strengths.push(
+							`${tasks.length} tasks defined with effort estimates`,
+						);
 					} else {
 						strengths.push(`${tasks.length} tasks defined`);
 						if (tasksWithEstimates.length === 0) {
@@ -679,9 +835,12 @@ export class StepValidator {
 					}
 				} else {
 					issues.push("Tasks array is required");
-					suggestions.push("Break down the work into specific tasks with estimates");
+					suggestions.push(
+						"Break down the work into specific tasks with estimates",
+					);
 				}
 				break;
+			}
 
 			case "validate_refine":
 				strengths.push("Plan ready for finalization");
@@ -707,23 +866,31 @@ export class StepValidator {
 				}
 				break;
 
-			case "basic_info":
+			case "basic_info": {
 				const description = data.description as string | undefined;
 				if (description && description.length < 20) {
 					issues.push("Description should be at least 20 characters");
-					suggestions.push("Provide a detailed description of the constitution's purpose");
+					suggestions.push(
+						"Provide a detailed description of the constitution's purpose",
+					);
 				}
 				break;
+			}
 
-			case "articles":
+			case "articles": {
 				const articles = data.articles as unknown[] | undefined;
 				if (articles && Array.isArray(articles) && articles.length > 0) {
-					strengths.push(`${articles.length} principle(s) defined with rationale`);
+					strengths.push(
+						`${articles.length} principle(s) defined with rationale`,
+					);
 				} else {
-					issues.push("Articles/principles array is required and must have at least one article");
+					issues.push(
+						"Articles/principles array is required and must have at least one article",
+					);
 					suggestions.push("Define the guiding principles");
 				}
 				break;
+			}
 
 			case "finalize":
 				strengths.push("Constitution ready for creation");
@@ -747,7 +914,7 @@ export class StepValidator {
 				}
 				break;
 
-			case "decision_statement":
+			case "decision_statement": {
 				const decision = data.decision as string | undefined;
 				if (decision && typeof decision === "string") {
 					if (decision.length < 20) {
@@ -761,6 +928,7 @@ export class StepValidator {
 					}
 				}
 				break;
+			}
 
 			case "context":
 				strengths.push("Context provided");
@@ -770,32 +938,51 @@ export class StepValidator {
 				strengths.push("Alternatives and consequences documented");
 				break;
 
-			case "relationships":
-				const affectsComponents = (data.affects_components as unknown[] | undefined) || [];
-				const affectsRequirements = (data.affects_requirements as unknown[] | undefined) || [];
-				const affectsPlans = (data.affects_plans as unknown[] | undefined) || [];
-				const informedByArticles = (data.informed_by_articles as unknown[] | undefined) || [];
-				const noConstitutionsExist = data.no_constitutions_exist as boolean | undefined;
+			case "relationships": {
+				const affectsComponents =
+					(data.affects_components as unknown[] | undefined) || [];
+				const affectsRequirements =
+					(data.affects_requirements as unknown[] | undefined) || [];
+				const affectsPlans =
+					(data.affects_plans as unknown[] | undefined) || [];
+				const informedByArticles =
+					(data.informed_by_articles as unknown[] | undefined) || [];
+				const noConstitutionsExist = data.no_constitutions_exist as
+					| boolean
+					| undefined;
 
 				const totalImpact =
 					(Array.isArray(affectsComponents) ? affectsComponents.length : 0) +
-					(Array.isArray(affectsRequirements) ? affectsRequirements.length : 0) +
+					(Array.isArray(affectsRequirements)
+						? affectsRequirements.length
+						: 0) +
 					(Array.isArray(affectsPlans) ? affectsPlans.length : 0);
 
 				// Constitution articles are now REQUIRED (or explicit statement that none exist)
 				if (!informedByArticles && !noConstitutionsExist) {
-					issues.push("Constitution article references are required for all decisions");
-					suggestions.push("Query constitutions and reference relevant articles, or state 'no constitutions exist'");
+					issues.push(
+						"Constitution article references are required for all decisions",
+					);
+					suggestions.push(
+						"Query constitutions and reference relevant articles, or state 'no constitutions exist'",
+					);
 				} else if (noConstitutionsExist) {
 					strengths.push("Confirmed no constitutions exist to reference");
-				} else if (informedByArticles && Array.isArray(informedByArticles) && informedByArticles.length > 0) {
-					strengths.push(`Aligned with ${informedByArticles.length} guiding principle(s)`);
+				} else if (
+					informedByArticles &&
+					Array.isArray(informedByArticles) &&
+					informedByArticles.length > 0
+				) {
+					strengths.push(
+						`Aligned with ${informedByArticles.length} guiding principle(s)`,
+					);
 				}
 
 				if (totalImpact > 0) {
 					strengths.push(`Impact documented across ${totalImpact} entities`);
 				}
 				break;
+			}
 		}
 	}
 }

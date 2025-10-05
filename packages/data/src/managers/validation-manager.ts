@@ -259,9 +259,15 @@ export class ValidationManager {
 			description: entity.description,
 			created_at: entity.created_at,
 			updated_at: entity.updated_at,
-			...(entityRecord.locked !== undefined ? { locked: entityRecord.locked } : {}),
-			...(entityRecord.locked_at !== undefined ? { locked_at: entityRecord.locked_at } : {}),
-			...(entityRecord.locked_by !== undefined ? { locked_by: entityRecord.locked_by } : {}),
+			...(entityRecord.locked !== undefined
+				? { locked: entityRecord.locked }
+				: {}),
+			...(entityRecord.locked_at !== undefined
+				? { locked_at: entityRecord.locked_at }
+				: {}),
+			...(entityRecord.locked_by !== undefined
+				? { locked_by: entityRecord.locked_by }
+				: {}),
 		};
 
 		// Add entity-specific fields based on type

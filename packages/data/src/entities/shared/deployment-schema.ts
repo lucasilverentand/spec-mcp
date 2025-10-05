@@ -7,11 +7,7 @@ export const DeploymentSchema = z.object({
 		.describe(
 			"Deployment platform (e.g., 'AWS ECS', 'Vercel', 'Kubernetes', 'npm')",
 		),
-	url: z
-		.string()
-		.min(1)
-		.optional()
-		.describe("Production URL or endpoint"),
+	url: z.string().min(1).optional().describe("Production URL or endpoint"),
 	build_command: z
 		.string()
 		.min(1)

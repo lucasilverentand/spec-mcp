@@ -49,7 +49,9 @@ export const BaseSchema = z.object({
 	locked: z
 		.boolean()
 		.optional()
-		.describe("Whether the entity is locked from updates (except progress booleans). Defaults to false if not specified."),
+		.describe(
+			"Whether the entity is locked from updates (except progress booleans). Defaults to false if not specified.",
+		),
 	locked_at: z
 		.string()
 		.datetime()

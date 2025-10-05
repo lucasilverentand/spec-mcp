@@ -2,8 +2,8 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { SpecOperations } from "@spec-mcp/core";
 import { z } from "zod";
 import type { ServerConfig } from "../config/index.js";
-import { wrapToolHandler } from "../utils/tool-wrapper.js";
 import { getCreationFlowHelper } from "../utils/creation-flow-helper.js";
+import { wrapToolHandler } from "../utils/tool-wrapper.js";
 
 const SpecTypeSchema = z.enum([
 	"requirement",
@@ -40,44 +40,54 @@ export function registerStartDraftTool(
 				type: SpecTypeSchema.describe(
 					"Type of specification to create: requirement, component, plan, constitution, or decision",
 				),
-				name: z.string().optional().describe("Optional name for the specification"),
-				slug: z.string().optional().describe("Optional slug (URL-friendly identifier) for the specification"),
+				name: z
+					.string()
+					.optional()
+					.describe("Optional name for the specification"),
+				slug: z
+					.string()
+					.optional()
+					.describe(
+						"Optional slug (URL-friendly identifier) for the specification",
+					),
 			},
 		},
-		wrapToolHandler(
-			"start_draft",
-			async ({ type, name, slug }) => {
-				// Get shared helper instance with resolved specs path
-				const helper = getCreationFlowHelper(config.specsPath);
+		wrapToolHandler("start_draft", async ({ type, name, slug }) => {
+			// Get shared helper instance with resolved specs path
+			const helper = getCreationFlowHelper(config.specsPath);
 
-				// Start creation flow session
-				const response = await helper.start(
-					type as "requirement" | "component" | "plan" | "constitution" | "decision",
-					slug,
-					name,
-				);
+			// Start creation flow session
+			const response = await helper.start(
+				type as
+					| "requirement"
+					| "component"
+					| "plan"
+					| "constitution"
+					| "decision",
+				slug,
+				name,
+			);
 
-				return {
-					content: [
-						{
-							type: "text",
-							text: JSON.stringify(
-								{
-									draft_id: response.draft_id,
-									step: response.step,
-									total_steps: response.total_steps,
-									current_step_name: response.current_step_name,
-									question: response.question,
-									guidance: response.guidance,
-									progress_summary: response.progress_summary,
-								},
-								null,
-								2,
-							),
-						},
-					],
-				};
-			},
-		),
+			return {
+				content: [
+					{
+						type: "text",
+						text: JSON.stringify(
+							{
+								draft_id: response.draft_id,
+								step: response.step,
+								total_steps: response.total_steps,
+								current_step_name: response.current_step_name,
+								question: response.question,
+								guidance: response.guidance,
+								progress_summary: response.progress_summary,
+							},
+							null,
+							2,
+						),
+					},
+				],
+			};
+		}),
 	);
 }

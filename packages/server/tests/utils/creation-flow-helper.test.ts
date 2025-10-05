@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { CreationFlowHelper } from "../../src/utils/creation-flow-helper.js";
 import * as fs from "node:fs/promises";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { CreationFlowHelper } from "../../src/utils/creation-flow-helper.js";
 
 describe("CreationFlowHelper", () => {
 	let helper: CreationFlowHelper;
@@ -103,9 +103,7 @@ describe("CreationFlowHelper", () => {
 			if (!("error" in stepResponse)) {
 				expect(stepResponse.step).toBe(2);
 				expect(stepResponse.validation?.passed).toBe(true);
-				expect(stepResponse.current_step_name).toBe(
-					"Constitution Review",
-				);
+				expect(stepResponse.current_step_name).toBe("Constitution Review");
 			}
 		});
 
@@ -159,9 +157,9 @@ describe("CreationFlowHelper", () => {
 			expect("error" in step1Response).toBe(false);
 			if (!("error" in step1Response)) {
 				expect(step1Response.field_hints).toBeDefined();
-				expect(Object.keys(step1Response.field_hints || {}).length).toBeGreaterThan(
-					0,
-				);
+				expect(
+					Object.keys(step1Response.field_hints || {}).length,
+				).toBeGreaterThan(0);
 			}
 		});
 
@@ -338,8 +336,8 @@ describe("CreationFlowHelper", () => {
 				"review_and_refine",
 			];
 
-			for (const stepId of steps) {
-				const startResponse = await helper.start("requirement");
+			for (const _stepId of steps) {
+				const _startResponse = await helper.start("requirement");
 				// Navigate to the specific step by providing valid data
 				// This is indirect testing - we verify guidance exists in step response
 			}
@@ -464,7 +462,8 @@ describe("CreationFlowHelper", () => {
 				criteria: [
 					{
 						id: "crit-001",
-						description: "Login accepts email (max 254 chars) and password (8-128 chars)",
+						description:
+							"Login accepts email (max 254 chars) and password (8-128 chars)",
 						status: "active",
 					},
 					{
@@ -580,7 +579,8 @@ describe("CreationFlowHelper", () => {
 
 			// First step expects description field
 			const stepResponse = await helper.step(draft_id, {
-				description: "Users need a plan to implement feature X because it solves a critical problem",
+				description:
+					"Users need a plan to implement feature X because it solves a critical problem",
 			});
 
 			expect("error" in stepResponse).toBe(false);

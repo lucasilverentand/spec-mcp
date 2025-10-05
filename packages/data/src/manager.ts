@@ -232,10 +232,7 @@ export class SpecsManager {
 	// === DECISION CRUD OPERATIONS ===
 
 	async createDecision(
-		data: Omit<
-			import("./entities/decisions/decision.js").Decision,
-			"number"
-		>,
+		data: Omit<import("./entities/decisions/decision.js").Decision, "number">,
 	) {
 		return this.entityManager.createDecision(data);
 	}
@@ -248,9 +245,7 @@ export class SpecsManager {
 
 	async updateDecision(
 		id: string,
-		data: Partial<
-			import("./entities/decisions/decision.js").Decision
-		>,
+		data: Partial<import("./entities/decisions/decision.js").Decision>,
 	) {
 		// Validate ID format
 		DecisionIdSchema.parse(id);

@@ -32,7 +32,8 @@ export const GUIDE_RESOURCES = [
 	{
 		uri: "spec-mcp://guide/best-practices",
 		name: "Best Practices",
-		description: "Patterns, anti-patterns, and tips for spec-driven development",
+		description:
+			"Patterns, anti-patterns, and tips for spec-driven development",
 		mimeType: "text/markdown",
 		filePath: "best-practices.md",
 	},
@@ -61,4 +62,3 @@ export async function loadGuideContent(filePath: string): Promise<string> {
 		);
 	}
 }
-

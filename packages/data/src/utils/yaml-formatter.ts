@@ -29,6 +29,9 @@ export function formatYaml(data: unknown): string {
 /**
  * Parse YAML string to data
  */
-export function parseYaml<T = unknown>(yamlString: string, options?: ParseOptions): T {
+export function parseYaml<T = unknown>(
+	yamlString: string,
+	options?: ParseOptions,
+): T {
 	return yamlParse(yamlString, options) as T;
 }

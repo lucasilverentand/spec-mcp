@@ -186,7 +186,6 @@ describe("SchemaValidator", () => {
 			expect(result.errors).toHaveLength(0);
 		});
 
-
 		it("should reject entity with unknown type", () => {
 			const entity = {
 				type: "unknown",
@@ -284,7 +283,7 @@ describe("SchemaValidator", () => {
 						{
 							id: "crit-001",
 							description: "Test criteria",
-						status: "active",
+							status: "active",
 						},
 					],
 					created_at: new Date().toISOString(),
@@ -301,7 +300,7 @@ describe("SchemaValidator", () => {
 						{
 							id: "crit-001",
 							description: "Test criteria",
-						status: "active",
+							status: "active",
 						},
 					],
 					created_at: new Date().toISOString(),
@@ -327,7 +326,7 @@ describe("SchemaValidator", () => {
 						{
 							id: "crit-001",
 							description: "Test criteria",
-						status: "active",
+							status: "active",
 						},
 					],
 					created_at: new Date().toISOString(),
@@ -344,7 +343,7 @@ describe("SchemaValidator", () => {
 						{
 							id: "crit-001",
 							description: "Test criteria",
-						status: "active",
+							status: "active",
 						},
 					],
 					created_at: new Date().toISOString(),
@@ -387,7 +386,7 @@ describe("SchemaValidator", () => {
 						{
 							id: "crit-001",
 							description: "Test criteria",
-						status: "active",
+							status: "active",
 						},
 					],
 					created_at: new Date().toISOString(),
@@ -478,7 +477,6 @@ describe("SchemaValidator", () => {
 			const schema = SchemaValidator.getSchemaForType("library");
 			expect(schema).toBeDefined();
 		});
-
 
 		it("should throw error for unknown type", () => {
 			expect(() => SchemaValidator.getSchemaForType("unknown")).toThrow(
@@ -673,7 +671,7 @@ describe("SchemaValidator", () => {
 			};
 
 			const result = SchemaValidator.validateEntityStructure(entity);
-		expect(result.valid).toBe(true);
+			expect(result.valid).toBe(true);
 		});
 
 		it("should handle string type check", () => {
@@ -711,7 +709,7 @@ describe("SchemaValidator", () => {
 			const result = SchemaValidator.validateEntity(requirement);
 			// Schemas use .strict() so extra fields are rejected
 			expect(result.valid).toBe(false);
-			expect(result.errors.some(e => e.includes("extraField"))).toBe(true);
+			expect(result.errors.some((e) => e.includes("extraField"))).toBe(true);
 		});
 
 		it("should handle deeply nested validation errors", () => {

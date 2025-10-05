@@ -2,9 +2,9 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { SpecOperations } from "@spec-mcp/core";
 import { z } from "zod";
 import type { ServerConfig } from "../config/index.js";
+import { getCreationFlowHelper } from "../utils/creation-flow-helper.js";
 import { formatDeleteResult } from "../utils/result-formatter.js";
 import { wrapToolHandler } from "../utils/tool-wrapper.js";
-import { getCreationFlowHelper } from "../utils/creation-flow-helper.js";
 
 /**
  * Detect entity type from ID
@@ -43,36 +43,95 @@ export function registerDeleteSpecTool(
 					),
 			},
 		},
-		wrapToolHandler(
-			"delete_spec",
-			async ({ id }) => {
-				// Create helper with resolved specs path
-				const helper = getCreationFlowHelper(config.specsPath);
+		wrapToolHandler("delete_spec", async ({ id }) => {
+			// Create helper with resolved specs path
+			const helper = getCreationFlowHelper(config.specsPath);
 
-				// Try to delete as draft first
-				const draft = helper.getDraft(id);
-				if (draft) {
-					const deleted = await helper.deleteDraft(id);
-					if (deleted) {
-						return {
-							content: [
+			// Try to delete as draft first
+			const draft = helper.getDraft(id);
+			if (draft) {
+				const deleted = await helper.deleteDraft(id);
+				if (deleted) {
+					return {
+						content: [
+							{
+								type: "text",
+								text: JSON.stringify(
+									{
+										success: true,
+										message: `Draft deleted successfully`,
+										draft_id: id,
+										spec_type: draft.type,
+									},
+									null,
+									2,
+								),
+							},
+						],
+					};
+				}
+
+				return {
+					content: [
+						{
+							type: "text",
+							text: JSON.stringify(
 								{
-									type: "text",
-									text: JSON.stringify(
-										{
-											success: true,
-											message: `Draft deleted successfully`,
-											draft_id: id,
-											spec_type: draft.type,
-										},
-										null,
-										2,
-									),
+									success: false,
+									error: `Failed to delete draft: ${id}`,
 								},
-							],
-						};
-					}
+								null,
+								2,
+							),
+						},
+					],
+					isError: true,
+				};
+			}
 
+			// Handle finalized spec deletion
+			const entityType = detectEntityType(id);
+			if (!entityType) {
+				return {
+					content: [
+						{
+							type: "text",
+							text: JSON.stringify(
+								{
+									success: false,
+									error: `Invalid ID format or entity not found: ${id}`,
+								},
+								null,
+								2,
+							),
+						},
+					],
+					isError: true,
+				};
+			}
+
+			switch (entityType) {
+				case "requirement": {
+					const result = await operations.deleteRequirement(id);
+					return formatDeleteResult(result, "requirement", id);
+				}
+
+				case "plan": {
+					const result = await operations.deletePlan(id);
+					return formatDeleteResult(result, "plan", id);
+				}
+
+				case "component": {
+					const result = await operations.deleteComponent(id);
+					return formatDeleteResult(result, "component", id);
+				}
+
+				case "constitution": {
+					const result = await operations.deleteConstitution(id);
+					return formatDeleteResult(result, "constitution", id);
+				}
+
+				default:
 					return {
 						content: [
 							{
@@ -80,7 +139,7 @@ export function registerDeleteSpecTool(
 								text: JSON.stringify(
 									{
 										success: false,
-										error: `Failed to delete draft: ${id}`,
+										error: `Unsupported entity type: ${entityType}`,
 									},
 									null,
 									2,
@@ -89,69 +148,7 @@ export function registerDeleteSpecTool(
 						],
 						isError: true,
 					};
-				}
-
-				// Handle finalized spec deletion
-				const entityType = detectEntityType(id);
-				if (!entityType) {
-					return {
-						content: [
-							{
-								type: "text",
-								text: JSON.stringify(
-									{
-										success: false,
-										error: `Invalid ID format or entity not found: ${id}`,
-									},
-									null,
-									2,
-								),
-							},
-						],
-						isError: true,
-					};
-				}
-
-				switch (entityType) {
-					case "requirement": {
-						const result = await operations.deleteRequirement(id);
-						return formatDeleteResult(result, "requirement", id);
-					}
-
-					case "plan": {
-						const result = await operations.deletePlan(id);
-						return formatDeleteResult(result, "plan", id);
-					}
-
-					case "component": {
-						const result = await operations.deleteComponent(id);
-						return formatDeleteResult(result, "component", id);
-					}
-
-					case "constitution": {
-						const result = await operations.deleteConstitution(id);
-						return formatDeleteResult(result, "constitution", id);
-					}
-
-					default:
-						return {
-							content: [
-								{
-									type: "text",
-									text: JSON.stringify(
-										{
-											success: false,
-											error: `Unsupported entity type: ${entityType}`,
-										},
-										null,
-										2,
-									),
-								},
-							],
-							isError: true,
-						};
-				}
-			},
-		),
+			}
+		}),
 	);
 }

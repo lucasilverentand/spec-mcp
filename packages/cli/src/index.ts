@@ -146,12 +146,12 @@ program
 				const hasErrors = validation.errors.length > 0;
 				const hasWarnings = validation.warnings.length > 0;
 
-				let icon = colors.green + "✓" + colors.reset;
+				let icon = `${colors.green}✓${colors.reset}`;
 				if (hasErrors) {
-					icon = colors.red + "✗" + colors.reset;
+					icon = `${colors.red}✗${colors.reset}`;
 					allValid = false;
 				} else if (hasWarnings) {
-					icon = colors.yellow + "!" + colors.reset;
+					icon = `${colors.yellow}!${colors.reset}`;
 				}
 
 				console.log(
@@ -187,7 +187,10 @@ program
 
 						const allMessages = [
 							...errors.map((e) => ({ type: "error" as const, message: e })),
-							...warnings.map((w) => ({ type: "warning" as const, message: w })),
+							...warnings.map((w) => ({
+								type: "warning" as const,
+								message: w,
+							})),
 						];
 
 						for (let j = 0; j < allMessages.length; j++) {
@@ -217,12 +220,12 @@ program
 				const hasErrors = validation.errors.length > 0;
 				const hasWarnings = validation.warnings.length > 0;
 
-				let icon = colors.green + "✓" + colors.reset;
+				let icon = `${colors.green}✓${colors.reset}`;
 				if (hasErrors) {
-					icon = colors.red + "✗" + colors.reset;
+					icon = `${colors.red}✗${colors.reset}`;
 					allValid = false;
 				} else if (hasWarnings) {
-					icon = colors.yellow + "!" + colors.reset;
+					icon = `${colors.yellow}!${colors.reset}`;
 				}
 
 				console.log(
@@ -258,7 +261,10 @@ program
 
 						const allMessages = [
 							...errors.map((e) => ({ type: "error" as const, message: e })),
-							...warnings.map((w) => ({ type: "warning" as const, message: w })),
+							...warnings.map((w) => ({
+								type: "warning" as const,
+								message: w,
+							})),
 						];
 
 						for (let j = 0; j < allMessages.length; j++) {
@@ -288,12 +294,12 @@ program
 				const hasErrors = validation.errors.length > 0;
 				const hasWarnings = validation.warnings.length > 0;
 
-				let icon = colors.green + "✓" + colors.reset;
+				let icon = `${colors.green}✓${colors.reset}`;
 				if (hasErrors) {
-					icon = colors.red + "✗" + colors.reset;
+					icon = `${colors.red}✗${colors.reset}`;
 					allValid = false;
 				} else if (hasWarnings) {
-					icon = colors.yellow + "!" + colors.reset;
+					icon = `${colors.yellow}!${colors.reset}`;
 				}
 
 				console.log(
@@ -329,7 +335,10 @@ program
 
 						const allMessages = [
 							...errors.map((e) => ({ type: "error" as const, message: e })),
-							...warnings.map((w) => ({ type: "warning" as const, message: w })),
+							...warnings.map((w) => ({
+								type: "warning" as const,
+								message: w,
+							})),
 						];
 
 						for (let j = 0; j < allMessages.length; j++) {

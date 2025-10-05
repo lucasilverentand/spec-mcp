@@ -146,10 +146,10 @@ describe("SpecsManager", () => {
 					name: "Test",
 					criteria: [
 						{
-						id: "crit-001",
-						description: "Test criteria",
-						status: "active" as const,
-					},
+							id: "crit-001",
+							description: "Test criteria",
+							status: "active" as const,
+						},
 					],
 				}),
 			);
@@ -181,10 +181,10 @@ describe("SpecsManager", () => {
 					name: "Test",
 					criteria: [
 						{
-						id: "crit-001",
-						description: "Test criteria",
-						status: "active" as const,
-					},
+							id: "crit-001",
+							description: "Test criteria",
+							status: "active" as const,
+						},
 					],
 				}),
 			);
@@ -457,20 +457,20 @@ describe("SpecsManager", () => {
 					type: "requirement",
 					slug: "req1",
 					name: "Requirement 1",
-						description: "First requirement",
+					description: "First requirement",
 					criteria: [
 						{
-						id: "crit-001",
-						description: "Test criteria",
-						status: "active" as const,
-					},
+							id: "crit-001",
+							description: "Test criteria",
+							status: "active" as const,
+						},
 					],
 				},
 				{
 					type: "plan",
 					slug: "plan1",
 					name: "Plan 1",
-						description: "First plan",
+					description: "First plan",
 					acceptance_criteria: "Plan should work",
 				},
 				{
@@ -664,7 +664,7 @@ describe("SpecsManager", () => {
 		it("should handle update of non-existent requirement", async () => {
 			await expect(
 				manager.updateRequirement("req-999-non-existent", {
-						description: "Updated description",
+					description: "Updated description",
 				}),
 			).rejects.toThrow("Requirement with ID 'req-999-non-existent' not found");
 		});
@@ -672,7 +672,7 @@ describe("SpecsManager", () => {
 		it("should handle update of non-existent plan", async () => {
 			await expect(
 				manager.updatePlan("pln-999-non-existent", {
-						description: "Updated description",
+					description: "Updated description",
 				}),
 			).rejects.toThrow("Plan with ID 'pln-999-non-existent' not found");
 		});
@@ -680,7 +680,7 @@ describe("SpecsManager", () => {
 		it("should handle update of non-existent component", async () => {
 			await expect(
 				manager.updateComponent("app-999-non-existent", {
-						description: "Updated description",
+					description: "Updated description",
 				}),
 			).rejects.toThrow("Component with ID 'app-999-non-existent' not found");
 		});
@@ -714,13 +714,13 @@ describe("SpecsManager", () => {
 				manager.createRequirement({
 					slug: "test",
 					name: "Test",
-						description: "Test",
+					description: "Test",
 					criteria: [
 						{
-						id: "crit-001",
-						description: "Test criteria",
-						status: "active" as const,
-					},
+							id: "crit-001",
+							description: "Test criteria",
+							status: "active" as const,
+						},
 					],
 				}),
 			).rejects.toThrow(); // Will throw due to directory creation issue

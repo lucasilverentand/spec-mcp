@@ -150,7 +150,8 @@ describe("MCP E2E Tests", () => {
 				arguments: {
 					draft_id: draftId,
 					data: {
-						description: "System must complete E2E validation without implementation details",
+						description:
+							"System must complete E2E validation without implementation details",
 					},
 				},
 			});
@@ -341,41 +342,41 @@ describe("MCP E2E Tests", () => {
 			}
 		});
 
-// 		it("should sanitize input strings", async () => {
-// 			// Start draft
-// 			const startResult = await client.callTool({
-// 				name: "start_draft",
-// 				arguments: {
-// 					type: "requirement",
-// 					slug: "test-sanitize",
-// 				},
-// 			});
-// 
-// 			const startResponse = JSON.parse(startResult.content[0].text);
-// 			expect(startResponse.success).toBe(true);
-// 			const testDraftId = startResponse.data.draft_id;
-// 
-// 			// The first field for requirements is "description"
-// 			// Try to set description with null bytes
-// 			const descResult = await client.callTool({
-// 				name: "update_draft",
-// 				arguments: {
-// 					draft_id: testDraftId,
-// 					field: "description",
-// 					value: "Test\x00Sanitize\x01Description that is longer than fifty characters because we need to validate the creation flow works",
-// 				},
-// 			});
-// 
-// 			const descResponse = JSON.parse(descResult.content[0].text);
-// 			// Should succeed - sanitization happens before validation
-// 			expect(descResponse.success).toBe(true);
-// 
-// 			// Clean up
-// 			await client.callTool({
-// 				name: "delete_spec",
-// 				arguments: { id: testDraftId },
-// 			});
-// 		});
+		// 		it("should sanitize input strings", async () => {
+		// 			// Start draft
+		// 			const startResult = await client.callTool({
+		// 				name: "start_draft",
+		// 				arguments: {
+		// 					type: "requirement",
+		// 					slug: "test-sanitize",
+		// 				},
+		// 			});
+		//
+		// 			const startResponse = JSON.parse(startResult.content[0].text);
+		// 			expect(startResponse.success).toBe(true);
+		// 			const testDraftId = startResponse.data.draft_id;
+		//
+		// 			// The first field for requirements is "description"
+		// 			// Try to set description with null bytes
+		// 			const descResult = await client.callTool({
+		// 				name: "update_draft",
+		// 				arguments: {
+		// 					draft_id: testDraftId,
+		// 					field: "description",
+		// 					value: "Test\x00Sanitize\x01Description that is longer than fifty characters because we need to validate the creation flow works",
+		// 				},
+		// 			});
+		//
+		// 			const descResponse = JSON.parse(descResult.content[0].text);
+		// 			// Should succeed - sanitization happens before validation
+		// 			expect(descResponse.success).toBe(true);
+		//
+		// 			// Clean up
+		// 			await client.callTool({
+		// 				name: "delete_spec",
+		// 				arguments: { id: testDraftId },
+		// 			});
+		// 		});
 	});
 
 	describe("Error Handling", () => {

@@ -40,4 +40,7 @@ export interface IValidationEngine {
 }
 
 // Re-export types from config.ts to avoid duplication
-export type { ReferenceValidationOptions, WorkflowValidationOptions } from "./config.js";
+export type {
+	ReferenceValidationOptions,
+	WorkflowValidationOptions,
+} from "./config.js";

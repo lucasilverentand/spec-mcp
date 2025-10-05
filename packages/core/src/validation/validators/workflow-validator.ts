@@ -70,7 +70,13 @@ function validateFlowExecution(
 	if (!flow) {
 		const errorMsg = `Flow '${flowId}' not found in plan`;
 		errors.push(errorMsg);
-		return { success: false, valid: false, errors, error: errorMsg, ...(warnings.length > 0 && { warnings }) };
+		return {
+			success: false,
+			valid: false,
+			errors,
+			error: errorMsg,
+			...(warnings.length > 0 && { warnings }),
+		};
 	}
 
 	// Validate flow structure

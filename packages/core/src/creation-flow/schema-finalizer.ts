@@ -7,14 +7,14 @@
  */
 
 import {
-	RequirementStorageSchema,
-	PlanStorageSchema,
 	AppComponentStorageSchema,
-	ServiceComponentStorageSchema,
-	LibraryComponentStorageSchema,
+	type ComponentType,
 	ConstitutionStorageSchema,
 	DecisionStorageSchema,
-	type ComponentType,
+	LibraryComponentStorageSchema,
+	PlanStorageSchema,
+	RequirementStorageSchema,
+	ServiceComponentStorageSchema,
 } from "@spec-mcp/data";
 import { z } from "zod";
 
@@ -229,8 +229,13 @@ export function formatSchemaFieldsForLLM(
 
 	for (const [fieldName, field] of Object.entries(fields)) {
 		const requiredMark = field.required ? " (required)" : " (optional)";
-		const defaultMark = field.default !== undefined ? ` [default: ${JSON.stringify(field.default)}]` : "";
-		const enumMark = field.enum_values ? ` [options: ${field.enum_values.join(", ")}]` : "";
+		const defaultMark =
+			field.default !== undefined
+				? ` [default: ${JSON.stringify(field.default)}]`
+				: "";
+		const enumMark = field.enum_values
+			? ` [options: ${field.enum_values.join(", ")}]`
+			: "";
 
 		result += `${indentStr}${fieldName}: ${field.type}${requiredMark}${defaultMark}${enumMark}\n`;
 		result += `${indentStr}  → ${field.description}\n`;
@@ -264,7 +269,9 @@ export function finalizeDraft(
 
 		// Auto-convert criteria to proper format for requirements
 		if (type === "requirement" && draftData.criteria) {
-			const criteria = draftData.criteria as Array<string | { id?: string; description: string }>;
+			const criteria = draftData.criteria as Array<
+				string | { id?: string; description: string }
+			>;
 			draftData.criteria = criteria.map((item, index) => {
 				if (typeof item === "string") {
 					// String criteria -> convert to object with ID
@@ -317,7 +324,7 @@ export function finalizeDraft(
 
 		// Auto-fill deployment object for components if missing
 		// DeploymentSchema requires platform (min 1 char), others have defaults
-		if ((type === "component") && !draftData.deployment) {
+		if (type === "component" && !draftData.deployment) {
 			draftData.deployment = {
 				platform: (draftData.platform as string) || "unknown",
 				environment_vars: (draftData.environment_vars as string[]) || [],
@@ -327,7 +334,7 @@ export function finalizeDraft(
 
 		// Auto-fill scope object for components if missing
 		// Note: ComponentScopeSchema requires min(1) for both arrays, so only auto-fill if we have data
-		if ((type === "component") && !draftData.scope) {
+		if (type === "component" && !draftData.scope) {
 			const inScope = draftData.in_scope as unknown[] | undefined;
 			const outScope = draftData.out_of_scope as unknown[] | undefined;
 

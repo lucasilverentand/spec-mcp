@@ -1,5 +1,3 @@
-import type { SpecConfig } from "./config.js";
-import type { AnalysisResult } from "./results.js";
 import type {
 	CoverageAnalysisResult,
 	CoverageReport,
@@ -9,6 +7,8 @@ import type {
 	DepthAnalysis,
 	OrphanAnalysis,
 } from "./analysis.js";
+import type { SpecConfig } from "./config.js";
+import type { AnalysisResult } from "./results.js";
 
 // Re-export types from analysis.ts to avoid duplication
 export type {

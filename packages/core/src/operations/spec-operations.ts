@@ -18,8 +18,8 @@ import type {
 	DependencyAnalysisResult,
 	OrphanAnalysis,
 } from "../shared/types/analyzer.js";
-import { toDataConfig } from "../shared/types/config.js";
 import type { SpecConfig } from "../shared/types/config.js";
+import { toDataConfig } from "../shared/types/config.js";
 import type { OperationResult } from "../shared/types/results.js";
 import type { HealthScore } from "../shared/types/service.js";
 
@@ -433,9 +433,7 @@ export class SpecOperations {
 			return {
 				success: false,
 				error:
-					error instanceof Error
-						? error.message
-						: "Failed to create decision",
+					error instanceof Error ? error.message : "Failed to create decision",
 			};
 		}
 	}
@@ -476,9 +474,7 @@ export class SpecOperations {
 			return {
 				success: false,
 				error:
-					error instanceof Error
-						? error.message
-						: "Failed to update decision",
+					error instanceof Error ? error.message : "Failed to update decision",
 			};
 		}
 	}
@@ -494,9 +490,7 @@ export class SpecOperations {
 			return {
 				success: false,
 				error:
-					error instanceof Error
-						? error.message
-						: "Failed to delete decision",
+					error instanceof Error ? error.message : "Failed to delete decision",
 			};
 		}
 	}
@@ -514,9 +508,7 @@ export class SpecOperations {
 			return {
 				success: false,
 				error:
-					error instanceof Error
-						? error.message
-						: "Failed to list decisions",
+					error instanceof Error ? error.message : "Failed to list decisions",
 			};
 		}
 	}

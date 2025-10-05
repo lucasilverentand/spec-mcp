@@ -34,7 +34,9 @@ export const RequirementStorageSchema = BaseSchema.extend({
 		.array(AcceptanceCriteriaSchema)
 		.min(1)
 		.describe("List of acceptance criteria"),
-}).strict().describe("Schema for stored requirements");
+})
+	.strict()
+	.describe("Schema for stored requirements");
 
 // Schema for runtime requirements (with computed ID)
 export const RequirementSchema = RequirementStorageSchema.transform((data) => ({

@@ -142,7 +142,9 @@ export class EntityManager {
 							(criterion: Record<string, unknown>, index: number) => ({
 								...criterion,
 								// Use simple ID format: crit-XXX
-								id: criterion.id || `crit-${(index + 1).toString().padStart(3, "0")}`,
+								id:
+									criterion.id ||
+									`crit-${(index + 1).toString().padStart(3, "0")}`,
 							}),
 						),
 					} as AnyEntity;
@@ -376,9 +378,7 @@ export class EntityManager {
 						if (disallowedTaskFields.length > 0) {
 							return {
 								allowed: false,
-								disallowedFields: disallowedTaskFields.map(
-									(f) => `tasks.${f}`,
-								),
+								disallowedFields: disallowedTaskFields.map((f) => `tasks.${f}`),
 							};
 						}
 
@@ -447,7 +447,8 @@ export class EntityManager {
 			}
 
 			// Check if entity is locked
-			const isLocked = (existingEntity as Record<string, unknown>).locked === true;
+			const isLocked =
+				(existingEntity as Record<string, unknown>).locked === true;
 
 			// Special handling: Allow updates to lock/unlock the entity itself
 			const isLockingUpdate = "locked" in updates;
@@ -962,10 +963,7 @@ export class EntityManager {
 	// === DECISION CRUD OPERATIONS ===
 
 	async createDecision(
-		data: Omit<
-			import("../entities/decisions/decision.js").Decision,
-			"number"
-		>,
+		data: Omit<import("../entities/decisions/decision.js").Decision, "number">,
 	): Promise<import("../entities/decisions/decision.js").Decision> {
 		const result = await this.create("decision", {
 			...data,
@@ -1125,11 +1123,7 @@ export class EntityManager {
 				for (const depId of component.depends_on) {
 					const depExists = components.some((c) => {
 						const prefix =
-							c.type === "app"
-								? "app"
-								: c.type === "service"
-									? "svc"
-									: "lib";
+							c.type === "app" ? "app" : c.type === "service" ? "svc" : "lib";
 						const componentId = `${prefix}-${c.number.toString().padStart(3, "0")}-${c.slug}`;
 						return componentId === depId;
 					});
@@ -1146,7 +1140,9 @@ export class EntityManager {
 		for (const plan of plans) {
 			if (plan.criteria_id) {
 				// Parse criteria_id format: req-XXX-slug/crit-XXX
-				const match = plan.criteria_id.match(/^(req-\d{3}-[a-z0-9-]+)\/(crit-\d{3})$/);
+				const match = plan.criteria_id.match(
+					/^(req-\d{3}-[a-z0-9-]+)\/(crit-\d{3})$/,
+				);
 				if (!match) {
 					errors.push(
 						`Plan '${plan.slug}' has invalid criteria_id format: '${plan.criteria_id}'`,
@@ -1156,7 +1152,8 @@ export class EntityManager {
 
 				const [, reqId, critId] = match;
 				const criteriaExists = requirements.some(
-					(req) => req.id === reqId && req.criteria.some((crit) => crit.id === critId),
+					(req) =>
+						req.id === reqId && req.criteria.some((crit) => crit.id === critId),
 				);
 				if (!criteriaExists) {
 					errors.push(
@@ -1329,5 +1326,4 @@ export class EntityManager {
 		// Return with computed ID
 		return { success: true, data: { ...updatedEntity, id } };
 	}
-
 }

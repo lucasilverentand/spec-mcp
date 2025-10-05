@@ -1,14 +1,14 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
-import { EntityManager, type FileManager } from "@spec-mcp/data";
-import { SpecOperations } from "@spec-mcp/core";
-import { creationFlowHelper } from "../../src/utils/creation-flow-helper.js";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
+import { SpecOperations } from "@spec-mcp/core";
+import { EntityManager, type FileManager } from "@spec-mcp/data";
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { creationFlowHelper } from "../../src/utils/creation-flow-helper.js";
 
 describe("Creation Flow Integration Tests", () => {
-	let operations: SpecOperations;
+	let _operations: SpecOperations;
 	let entityManager: EntityManager;
-	let fileManager: FileManager;
+	let _fileManager: FileManager;
 	const testSpecsDir = ".test-specs-integration";
 
 	beforeAll(async () => {
@@ -20,8 +20,8 @@ describe("Creation Flow Integration Tests", () => {
 			schemaValidation: true,
 			referenceValidation: false,
 		});
-		fileManager = entityManager.fileManager;
-		operations = new SpecOperations(entityManager);
+		_fileManager = entityManager.fileManager;
+		_operations = new SpecOperations(entityManager);
 	});
 
 	afterAll(async () => {
@@ -42,7 +42,9 @@ describe("Creation Flow Integration Tests", () => {
 			const draft_id = startResponse.draft_id;
 
 			expect(startResponse.step).toBe(1);
-			expect(startResponse.current_step_name).toBe("Research Similar Requirements");
+			expect(startResponse.current_step_name).toBe(
+				"Research Similar Requirements",
+			);
 
 			// Step 1: Research Similar Requirements
 			await creationFlowHelper.step(draft_id, {
@@ -67,7 +69,8 @@ describe("Creation Flow Integration Tests", () => {
 
 			// Step 5: Avoid Implementation
 			await creationFlowHelper.step(draft_id, {
-				description: "System must verify user identity and maintain session state",
+				description:
+					"System must verify user identity and maintain session state",
 			});
 
 			// Step 6: Measurability
@@ -166,7 +169,8 @@ describe("Creation Flow Integration Tests", () => {
 
 			// Step 2: Library Research
 			await creationFlowHelper.step(draft_id, {
-				library_research: "Evaluated passport.js, will use bcrypt and jsonwebtoken",
+				library_research:
+					"Evaluated passport.js, will use bcrypt and jsonwebtoken",
 			});
 
 			// Step 3: Constitution Alignment
@@ -176,12 +180,14 @@ describe("Creation Flow Integration Tests", () => {
 
 			// Step 4: Duplicate Prevention
 			await creationFlowHelper.step(draft_id, {
-				justification: "Confirmed unique, no duplicate components. Existing libraries don't meet our requirements.",
+				justification:
+					"Confirmed unique, no duplicate components. Existing libraries don't meet our requirements.",
 			});
 
 			// Step 5: Analyze Requirements
 			await creationFlowHelper.step(draft_id, {
-				description: "Satisfies req-001-auth by providing credential validation",
+				description:
+					"Satisfies req-001-auth by providing credential validation",
 			});
 
 			// Step 6: Define Boundaries
@@ -397,7 +403,8 @@ describe("Creation Flow Integration Tests", () => {
 
 			// Step 2: Best Practices Research
 			await creationFlowHelper.step(draft_id, {
-				best_practices_notes: "Researched industry standards for engineering principles",
+				best_practices_notes:
+					"Researched industry standards for engineering principles",
 			});
 
 			// Step 3: Framework Review
@@ -458,7 +465,8 @@ describe("Creation Flow Integration Tests", () => {
 
 			// Step 2: Technology Options Research
 			await creationFlowHelper.step(draft_id, {
-				technology_research: "Researched PostgreSQL, MongoDB, MySQL, and SQLite",
+				technology_research:
+					"Researched PostgreSQL, MongoDB, MySQL, and SQLite",
 			});
 
 			// Step 3: Basic Information
@@ -568,16 +576,11 @@ describe("Creation Flow Integration Tests", () => {
 			const draft_id = startResponse.draft_id;
 
 			await creationFlowHelper.step(draft_id, {
-				description:
-					"Users need authentication because security is required",
+				description: "Users need authentication because security is required",
 			});
 
 			// CreationFlowHelper uses default .specs dir
-			const draftFile = path.join(
-				".specs",
-				".drafts",
-				`${draft_id}.draft.yml`,
-			);
+			const draftFile = path.join(".specs", ".drafts", `${draft_id}.draft.yml`);
 			const fileExists = await fs
 				.access(draftFile)
 				.then(() => true)
@@ -591,8 +594,7 @@ describe("Creation Flow Integration Tests", () => {
 			const draft_id = startResponse.draft_id;
 
 			await creationFlowHelper.step(draft_id, {
-				description:
-					"Users need authentication because security is critical",
+				description: "Users need authentication because security is critical",
 			});
 
 			// Destroy and recreate helper

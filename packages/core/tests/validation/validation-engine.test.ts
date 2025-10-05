@@ -1,8 +1,8 @@
 import type { AnyEntity } from "@spec-mcp/data";
-import { beforeEach, describe, expect, it, vi, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { IValidator } from "../../src/interfaces/validator.js";
 import { ValidationEngine } from "../../src/validation/validation-engine.js";
-import { createTestSpecsPath, cleanupTestSpecs } from "../test-helpers.js";
+import { cleanupTestSpecs, createTestSpecsPath } from "../test-helpers.js";
 
 describe("ValidationEngine", () => {
 	let engine: ValidationEngine;

@@ -3,24 +3,18 @@
 // Feature-based architecture for specification management
 // ============================================================================
 
-// ----------------------------------------------------------------------------
-// Shared Types & Utilities
-// ----------------------------------------------------------------------------
-export * from "./shared/index.js";
-
 // Re-export utilities from @spec-mcp/utils for convenience
 export {
-	IdGenerator,
-	generateSlug,
-	generateUniqueSlug,
-	validateSlug,
-	parseYaml,
-	stringifyYaml,
-	validateYamlSyntax,
 	convertJsonToYaml,
 	convertYamlToJson,
+	generateSlug,
+	generateUniqueSlug,
+	IdGenerator,
+	parseYaml,
+	stringifyYaml,
+	validateSlug,
+	validateYamlSyntax,
 } from "@spec-mcp/utils";
-
 // ----------------------------------------------------------------------------
 // Analysis Feature
 // ----------------------------------------------------------------------------
@@ -31,28 +25,16 @@ export {
 	DependencyResolver,
 	OrphanDetector,
 } from "./analysis/index.js";
-
-// ----------------------------------------------------------------------------
-// Validation Feature
-// ----------------------------------------------------------------------------
-export {
-	BusinessRulesValidator,
-	ReferenceValidator,
-	SchemaValidator,
-	ValidationEngine,
-	WorkflowValidator,
-} from "./validation/index.js";
-
 // ----------------------------------------------------------------------------
 // Creation Flow Feature
 // ----------------------------------------------------------------------------
 export type {
-	Draft,
-	StepDefinition,
-	StepResponse,
 	CreationFlowValidationResult,
+	Draft,
 	FinalizationResult,
 	SchemaInstructions,
+	StepDefinition,
+	StepResponse,
 } from "./creation-flow/index.js";
 export {
 	COMPONENT_STEPS,
@@ -68,26 +50,37 @@ export {
 	REQUIREMENT_STEPS,
 	StepValidator,
 } from "./creation-flow/index.js";
-
-// ----------------------------------------------------------------------------
-// Operations Feature
-// ----------------------------------------------------------------------------
-export { SpecOperations } from "./operations/index.js";
-
 // ----------------------------------------------------------------------------
 // Health & Reporting Feature
 // ----------------------------------------------------------------------------
 export { HealthService } from "./health/index.js";
-
 // ----------------------------------------------------------------------------
-// Main Service (orchestrates all features)
+// Operations Feature
 // ----------------------------------------------------------------------------
-export { SpecService } from "./services/index.js";
+export { SpecOperations } from "./operations/index.js";
 export {
 	defaultContainer,
 	SERVICE_TOKENS,
 	ServiceContainer,
 } from "./services/container.js";
+// ----------------------------------------------------------------------------
+// Main Service (orchestrates all features)
+// ----------------------------------------------------------------------------
+export { SpecService } from "./services/index.js";
+// ----------------------------------------------------------------------------
+// Shared Types & Utilities
+// ----------------------------------------------------------------------------
+export * from "./shared/index.js";
+// ----------------------------------------------------------------------------
+// Validation Feature
+// ----------------------------------------------------------------------------
+export {
+	BusinessRulesValidator,
+	ReferenceValidator,
+	SchemaValidator,
+	ValidationEngine,
+	WorkflowValidator,
+} from "./validation/index.js";
 
 // ----------------------------------------------------------------------------
 // Backward Compatibility - Legacy SpecCore class

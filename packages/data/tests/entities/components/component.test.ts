@@ -342,7 +342,6 @@ describe("LibraryComponentSchema", () => {
 	});
 });
 
-
 describe("Component Dependencies", () => {
 	it("should accept valid component dependencies", () => {
 		const component = {

@@ -61,10 +61,10 @@ export class CoverageAnalyzer
 			// Analyze plan coverage
 			const planCoverage = await this.analyzePlanCoverage(
 				requirements as Array<{
-				number: number;
-				slug: string;
-				criteria: Array<{ id: string }>;
-			}>,
+					number: number;
+					slug: string;
+					criteria: Array<{ id: string }>;
+				}>,
 				plans as Array<{
 					number: number;
 					slug: string;
@@ -164,7 +164,7 @@ export class CoverageAnalyzer
 		for (const requirement of requirements) {
 			const hasLinkedPlans = requirement.criteria.some((criteria) => {
 				const fullCriteriaId = `req-${requirement.number.toString().padStart(3, "0")}-${requirement.slug}/${criteria.id}`;
-			return plans.some((plan) => plan.criteria_id === fullCriteriaId);
+				return plans.some((plan) => plan.criteria_id === fullCriteriaId);
 			});
 
 			if (hasLinkedPlans) {

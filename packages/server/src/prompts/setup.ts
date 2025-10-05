@@ -26,14 +26,20 @@ export function generateSetupGuidance(): string {
 	sections.push("");
 	sections.push("2. **Do you already have code, or is this a new project?**");
 	sections.push("");
-	sections.push("3. **Are you working solo or with a team?** (If team, how many people?)");
+	sections.push(
+		"3. **Are you working solo or with a team?** (If team, how many people?)",
+	);
 	sections.push("");
 	sections.push(
 		"Once you share this information, I'll provide tailored setup instructions including:",
 	);
 	sections.push("- Directory structure for your specs");
-	sections.push("- Example project constitution with principles for your project type");
-	sections.push("- Claude Code agent configurations for planning and implementation");
+	sections.push(
+		"- Example project constitution with principles for your project type",
+	);
+	sections.push(
+		"- Claude Code agent configurations for planning and implementation",
+	);
 	sections.push("- Optional slash commands for quick workflows");
 	sections.push("");
 	sections.push("---");
@@ -49,7 +55,9 @@ export function generateSetupGuidance(): string {
 		"While you think about your answers, you can explore these guides:",
 	);
 	sections.push("- `spec-mcp://guide/getting-started` - Quick start overview");
-	sections.push("- `spec-mcp://guide/planning-workflow` - Feature planning process");
+	sections.push(
+		"- `spec-mcp://guide/planning-workflow` - Feature planning process",
+	);
 	sections.push(
 		"- `spec-mcp://guide/implementation-workflow` - Development workflow",
 	);
@@ -57,7 +65,6 @@ export function generateSetupGuidance(): string {
 
 	return sections.join("\n");
 }
-
 
 /**
  * Prompt arguments schema (empty - interview style)

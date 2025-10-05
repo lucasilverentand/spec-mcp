@@ -1,8 +1,8 @@
 import { existsSync } from "node:fs";
 import { access, mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
-import { z } from "zod";
 import { FileManager } from "@spec-mcp/data";
+import { z } from "zod";
 import { ErrorCode, McpError } from "../utils/error-codes.js";
 import { logger } from "../utils/logger.js";
 
@@ -63,7 +63,7 @@ export async function loadConfig(): Promise<ServerConfig> {
 	// Use FileManager to resolve the full path - single source of truth
 	const fileManager = new FileManager({
 		path: specsFolderName,
-		autoDetect: true
+		autoDetect: true,
 	});
 	const specsPath = await fileManager.getSpecsPath();
 

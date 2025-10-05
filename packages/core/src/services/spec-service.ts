@@ -1,6 +1,5 @@
 import type { AnyEntity } from "@spec-mcp/data";
 import { SpecsManager } from "@spec-mcp/data";
-import { toDataConfig } from "../shared/types/config.js";
 import { CoverageAnalyzer } from "../analysis/coverage-analyzer.js";
 import { CycleDetector } from "../analysis/cycle-detector.js";
 import { DependencyAnalyzer } from "../analysis/dependency-analyzer.js";
@@ -13,6 +12,7 @@ import type {
 	OrphanAnalysis,
 } from "../shared/types/analyzer.js";
 import type { ServiceConfig } from "../shared/types/config.js";
+import { toDataConfig } from "../shared/types/config.js";
 import type {
 	OperationResult,
 	ValidationResult,

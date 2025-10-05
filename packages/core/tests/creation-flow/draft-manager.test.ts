@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { DraftManager } from "../../src/creation-flow/draft-manager.js";
 
 describe("DraftManager", () => {
@@ -84,13 +84,21 @@ describe("DraftManager", () => {
 		});
 
 		it("should create draft with name in data when provided", async () => {
-			const draft = await draftManager.create("requirement", undefined, "User Auth");
+			const draft = await draftManager.create(
+				"requirement",
+				undefined,
+				"User Auth",
+			);
 
 			expect(draft.data).toEqual({ name: "User Auth" });
 		});
 
 		it("should create draft with both slug and name when provided", async () => {
-			const draft = await draftManager.create("requirement", "user-auth", "User Auth");
+			const draft = await draftManager.create(
+				"requirement",
+				"user-auth",
+				"User Auth",
+			);
 
 			expect(draft.id).toMatch(/^req-user-auth-\d+$/);
 			expect(draft.data).toEqual({ slug: "user-auth", name: "User Auth" });

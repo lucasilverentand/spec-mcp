@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { ServiceConfig } from "../../src/interfaces/config.js";
 import {
 	defaultContainer,
@@ -7,7 +7,7 @@ import {
 	ServiceContainer,
 	type ServiceFactory,
 } from "../../src/services/container.js";
-import { createTestSpecsPath, cleanupTestSpecs } from "../test-helpers.js";
+import { cleanupTestSpecs, createTestSpecsPath } from "../test-helpers.js";
 
 describe("ServiceContainer", () => {
 	let container: ServiceContainer;

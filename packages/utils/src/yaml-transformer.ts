@@ -1,11 +1,10 @@
-import type { ParseOptions, ToStringOptions } from "yaml";
-import { parse as yamlParse } from "yaml";
 import {
 	formatYaml as dataFormatYaml,
 	parseYaml as dataParseYaml,
 } from "@spec-mcp/data";
-import type { OperationResult } from "./types.js";
-import type { IYamlTransformer } from "./types.js";
+import type { ParseOptions, ToStringOptions } from "yaml";
+import { parse as yamlParse } from "yaml";
+import type { IYamlTransformer, OperationResult } from "./types.js";
 
 export interface YamlTransformOptions {
 	parse?: ParseOptions;
@@ -28,13 +27,11 @@ export class YamlTransformer implements IYamlTransformer {
 			return {
 				success: true,
 				data,
-				
 			};
 		} catch (error) {
 			return {
 				success: false,
 				error: `YAML parsing failed: ${error instanceof Error ? error.message : "Unknown error"}`,
-				
 			};
 		}
 	}
@@ -46,13 +43,11 @@ export class YamlTransformer implements IYamlTransformer {
 			return {
 				success: true,
 				data: yamlString,
-				
 			};
 		} catch (error) {
 			return {
 				success: false,
 				error: `YAML stringification failed: ${error instanceof Error ? error.message : "Unknown error"}`,
-				
 			};
 		}
 	}
@@ -78,7 +73,6 @@ export class YamlTransformer implements IYamlTransformer {
 			return {
 				success: false,
 				error: `JSON to YAML conversion failed: ${error instanceof Error ? error.message : "Unknown error"}`,
-				
 			};
 		}
 	}
@@ -89,7 +83,6 @@ export class YamlTransformer implements IYamlTransformer {
 			return {
 				success: false,
 				error: `YAML to JSON conversion failed: ${parseResult.error}`,
-				
 			};
 		}
 
@@ -101,13 +94,11 @@ export class YamlTransformer implements IYamlTransformer {
 			return {
 				success: true,
 				data: jsonData,
-				
 			};
 		} catch (error) {
 			return {
 				success: false,
 				error: `YAML to JSON conversion failed: ${error instanceof Error ? error.message : "Unknown error"}`,
-				
 			};
 		}
 	}

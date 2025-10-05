@@ -79,7 +79,10 @@ export class FileManager {
 		if (this.config.path) {
 			const basePath = gitRoot || process.cwd();
 			const hintPath = join(basePath, this.config.path);
-			if ((await this.pathExists(hintPath)) && (await this.isDirectory(hintPath))) {
+			if (
+				(await this.pathExists(hintPath)) &&
+				(await this.isDirectory(hintPath))
+			) {
 				return hintPath;
 			}
 			// Path hint exists in config but directory not found - will create it later

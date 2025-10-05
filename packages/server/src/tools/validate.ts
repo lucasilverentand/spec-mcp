@@ -1,8 +1,12 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { ServerConfig } from "../config/index.js";
 import type { SpecOperations } from "@spec-mcp/core";
-import { computeEntityId, type EntityType, type AnyEntity } from "@spec-mcp/data";
+import {
+	type AnyEntity,
+	computeEntityId,
+	type EntityType,
+} from "@spec-mcp/data";
 import { z } from "zod";
+import type { ServerConfig } from "../config/index.js";
 import { wrapToolHandler } from "../utils/tool-wrapper.js";
 
 /**
@@ -20,7 +24,7 @@ function parseValidationErrors(errors: string[]): Map<string, string[]> {
 			for (const part of parts) {
 				// Extract field path and message
 				const match = part.match(/^(.+?):\s*(.+)$/);
-				if (match && match[1] && match[2]) {
+				if (match?.[1] && match[2]) {
 					const field = match[1];
 					const message = match[2];
 					if (!fieldErrors.has(field)) {
@@ -32,7 +36,7 @@ function parseValidationErrors(errors: string[]): Map<string, string[]> {
 		} else {
 			// Single error, try to extract field
 			const match = error.match(/^(.+?):\s*(.+)$/);
-			if (match && match[1] && match[2]) {
+			if (match?.[1] && match[2]) {
 				const field = match[1];
 				const message = match[2];
 				if (!fieldErrors.has(field)) {
@@ -55,16 +59,22 @@ function parseValidationErrors(errors: string[]): Map<string, string[]> {
 /**
  * Format validation results for LLM consumption
  */
-function formatValidationResults(validations: Array<{
-	entity: AnyEntity;
-	errors: string[];
-	warnings: string[];
-}>): string {
+function formatValidationResults(
+	validations: Array<{
+		entity: AnyEntity;
+		errors: string[];
+		warnings: string[];
+	}>,
+): string {
 	const output: string[] = [];
 
 	for (const validation of validations) {
 		const entity = validation.entity;
-		const entityId = computeEntityId(entity.type as EntityType, entity.number, entity.slug);
+		const entityId = computeEntityId(
+			entity.type as EntityType,
+			entity.number,
+			entity.slug,
+		);
 		const fileName = `${entity.slug}.yaml`;
 		const hasErrors = validation.errors.length > 0;
 		const hasWarnings = validation.warnings.length > 0;
@@ -79,10 +89,7 @@ function formatValidationResults(validations: Array<{
 
 		const errorFields = parseValidationErrors(validation.errors);
 		const warningFields = parseValidationErrors(validation.warnings);
-		const allFields = new Set([
-			...errorFields.keys(),
-			...warningFields.keys(),
-		]);
+		const allFields = new Set([...errorFields.keys(), ...warningFields.keys()]);
 
 		for (const field of allFields) {
 			const fieldName = field === "_general" ? "general" : field;
@@ -192,7 +199,7 @@ export function registerValidateTool(
 				const allEntities: AnyEntity[] = [
 					...(requirements as AnyEntity[]),
 					...(plans as AnyEntity[]),
-					...(components as AnyEntity[])
+					...(components as AnyEntity[]),
 				];
 				const entity = allEntities.find((e) => {
 					const id = computeEntityId(e.type as EntityType, e.number, e.slug);
@@ -259,20 +266,14 @@ export function registerValidateTool(
 
 			// Calculate summary statistics
 			const totalErrors =
-				requirementValidations.reduce(
-					(sum, v) => sum + v.errors.length,
-					0,
-				) +
+				requirementValidations.reduce((sum, v) => sum + v.errors.length, 0) +
 				planValidations.reduce((sum, v) => sum + v.errors.length, 0) +
 				componentValidations.reduce((sum, v) => sum + v.errors.length, 0) +
 				referenceErrors.length +
 				cycleErrors.length;
 
 			const totalWarnings =
-				requirementValidations.reduce(
-					(sum, v) => sum + v.warnings.length,
-					0,
-				) +
+				requirementValidations.reduce((sum, v) => sum + v.warnings.length, 0) +
 				planValidations.reduce((sum, v) => sum + v.warnings.length, 0) +
 				componentValidations.reduce((sum, v) => sum + v.warnings.length, 0);
 
@@ -324,9 +325,7 @@ export function registerValidateTool(
 			output.push(
 				`  Requirements: ${requirements.length} total, ${validRequirements} valid`,
 			);
-			output.push(
-				`  Plans: ${plans.length} total, ${validPlans} valid`,
-			);
+			output.push(`  Plans: ${plans.length} total, ${validPlans} valid`);
 			output.push(
 				`  Components: ${components.length} total, ${validComponents} valid`,
 			);
@@ -381,7 +380,9 @@ export function registerValidateTool(
 				output.push("HEALTH BREAKDOWN:");
 				output.push("-".repeat(60));
 				output.push(`  Coverage: ${healthScore.breakdown.coverage}/100`);
-				output.push(`  Dependencies: ${healthScore.breakdown.dependencies}/100`);
+				output.push(
+					`  Dependencies: ${healthScore.breakdown.dependencies}/100`,
+				);
 				output.push(`  Validation: ${healthScore.breakdown.validation}/100`);
 				output.push("");
 				if (healthScore.recommendations.length > 0) {
@@ -401,7 +402,6 @@ export function registerValidateTool(
 					},
 				],
 			};
-		},
-	),
-);
+		}),
+	);
 }

@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { SpecOperations } from "@spec-mcp/core";
-import { createTestSpecsPath, cleanupTestSpecs } from "../test-helpers.js";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { cleanupTestSpecs, createTestSpecsPath } from "../test-helpers.js";
 
 describe("Spec Locking Integration Tests", () => {
 	let operations: SpecOperations;

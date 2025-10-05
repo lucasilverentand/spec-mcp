@@ -58,7 +58,7 @@ function validateEntity(entity: AnyEntity): ValidationResult {
 			case "decision":
 				DecisionSchema.parse(entity);
 				break;
-			default:
+			default: {
 				// This should never happen due to AnyEntity typing
 				entityType satisfies never;
 				const errorMsg = `Unknown entity type: ${String(entityType)}`;
@@ -68,6 +68,7 @@ function validateEntity(entity: AnyEntity): ValidationResult {
 					errors: [errorMsg],
 					error: errorMsg,
 				};
+			}
 		}
 
 		return {
@@ -78,7 +79,9 @@ function validateEntity(entity: AnyEntity): ValidationResult {
 		};
 	} catch (error) {
 		if (error instanceof z.ZodError) {
-			const errors = error.errors.map((e) => `${e.path.join(".")}: ${e.message}`);
+			const errors = error.errors.map(
+				(e) => `${e.path.join(".")}: ${e.message}`,
+			);
 			return {
 				success: false,
 				valid: false,
@@ -87,7 +90,8 @@ function validateEntity(entity: AnyEntity): ValidationResult {
 			};
 		}
 
-		const errorMsg = error instanceof Error ? error.message : "Unknown validation error";
+		const errorMsg =
+			error instanceof Error ? error.message : "Unknown validation error";
 		return {
 			success: false,
 			valid: false,
@@ -139,7 +143,8 @@ function validatePartialEntity(
 
 		return validateEntity(mergedEntity);
 	} catch (error) {
-		const errorMsg = error instanceof Error ? error.message : "Unknown validation error";
+		const errorMsg =
+			error instanceof Error ? error.message : "Unknown validation error";
 		return {
 			success: false,
 			valid: false,
@@ -200,7 +205,8 @@ function validateFieldValue(
 			};
 		}
 
-		const errorMsg = error instanceof Error ? error.message : "Unknown validation error";
+		const errorMsg =
+			error instanceof Error ? error.message : "Unknown validation error";
 		return {
 			success: false,
 			valid: false,
