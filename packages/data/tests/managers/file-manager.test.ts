@@ -446,7 +446,11 @@ describe("FileManager", () => {
 
 			it("should throw error for corrupted JSON file", async () => {
 				await fileManager.ensureDirectoryStructure();
-				const filePath = join(tempDir, "requirements", "req-001-corrupted.json");
+				const filePath = join(
+					tempDir,
+					"requirements",
+					"req-001-corrupted.json",
+				);
 				await writeFile(filePath, "invalid: [unclosed array");
 
 				await expect(

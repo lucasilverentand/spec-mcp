@@ -37,15 +37,15 @@ export const TestingSetupSchema = z.object({
 		.array(z.string())
 		.min(1)
 		.describe("Testing frameworks used (e.g., Jest, Vitest, Pytest)"),
-	unit_tests: TestSuiteSchema.nullable().optional().describe(
-		"Unit test configuration and location",
-	),
-	integration_tests: TestSuiteSchema.nullable().optional().describe(
-		"Integration test configuration and location",
-	),
-	e2e_tests: TestSuiteSchema.nullable().optional().describe(
-		"End-to-end test configuration and location",
-	),
+	unit_tests: TestSuiteSchema.nullable()
+		.optional()
+		.describe("Unit test configuration and location"),
+	integration_tests: TestSuiteSchema.nullable()
+		.optional()
+		.describe("Integration test configuration and location"),
+	e2e_tests: TestSuiteSchema.nullable()
+		.optional()
+		.describe("End-to-end test configuration and location"),
 	coverage_target: z
 		.number()
 		.min(0)
@@ -85,9 +85,11 @@ const _BaseComponentStorageSchema = BaseSchema.extend({
 		.array(z.string())
 		.default([])
 		.describe("Technologies and frameworks used in this component"),
-	testing_setup: TestingSetupSchema.nullable().optional().describe(
-		"Testing configuration including frameworks, patterns, coverage targets, and test organization",
-	),
+	testing_setup: TestingSetupSchema.nullable()
+		.optional()
+		.describe(
+			"Testing configuration including frameworks, patterns, coverage targets, and test organization",
+		),
 	deployment: DeploymentSchema.describe(
 		"Deployment configuration including platform, URLs, commands, and environment variables",
 	),

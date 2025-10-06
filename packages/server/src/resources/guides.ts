@@ -716,7 +716,8 @@ Use flows to understand the complete picture before implementing tasks.
 	{
 		uri: "spec-mcp://guide/best-practices",
 		name: "Best Practices",
-		description: "Patterns, anti-patterns, and tips for spec-driven development",
+		description:
+			"Patterns, anti-patterns, and tips for spec-driven development",
 		mimeType: "text/markdown",
 		content: `# Best Practices
 
@@ -1922,5 +1923,5 @@ query({
 - Read [Implementation Workflow](spec-mcp://guide/implementation-workflow) for development
 - Read [Best Practices](spec-mcp://guide/best-practices) for patterns and tips
 `,
-	}
+	},
 ] as const;

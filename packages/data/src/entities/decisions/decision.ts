@@ -84,9 +84,9 @@ export const DecisionStorageSchema = BaseSchema.extend({
 		.describe(
 			"Constitution articles that informed this decision (format: con-XXX-slug/art-XXX)",
 		),
-	supersedes: DecisionIdSchema.nullable().optional().describe(
-		"Previous decision this replaces",
-	),
+	supersedes: DecisionIdSchema.nullable()
+		.optional()
+		.describe("Previous decision this replaces"),
 	references: z
 		.array(ReferenceSchema)
 		.default([])
