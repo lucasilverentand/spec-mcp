@@ -1,6 +1,4 @@
 import z from "zod";
-import { ComponentIdSchema } from "../components/component.js";
-import { FlowIdSchema } from "./flow-schema.js";
 
 export const TestCaseIdSchema = z
 	.string()

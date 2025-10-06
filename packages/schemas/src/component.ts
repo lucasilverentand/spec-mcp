@@ -1,7 +1,7 @@
 import z from "zod";
-import { BaseSchema, computeEntityId } from "../../core/base-entity.js";
-import { DeploymentSchema } from "../shared/deployment-schema.js";
-import { ComponentScopeSchema } from "../shared/scope-schema.js";
+import { BaseSchema } from "./base-entity";
+import { DeploymentSchema } from "./deployment";
+import { ComponentScopeSchema } from "./scope";
 
 export const ComponentIdSchema = z
 	.string()
@@ -141,34 +141,7 @@ export const LibraryComponentStorageSchema = _BaseComponentStorageSchema
 	})
 	.strict();
 
-// Runtime schemas (with computed ID)
-export const AppComponentSchema = AppComponentStorageSchema.transform(
-	(data) => ({
-		...data,
-		id: computeEntityId(data.type, data.number, data.slug),
-	}),
-);
-
-export const ServiceComponentSchema = ServiceComponentStorageSchema.transform(
-	(data) => ({
-		...data,
-		id: computeEntityId(data.type, data.number, data.slug),
-	}),
-);
-
-export const LibraryComponentSchema = LibraryComponentStorageSchema.transform(
-	(data) => ({
-		...data,
-		id: computeEntityId(data.type, data.number, data.slug),
-	}),
-);
-
 export type ComponentId = z.infer<typeof ComponentIdSchema>;
 export type ComponentType = z.infer<typeof ComponentTypeSchema>;
 export type TestSuite = z.infer<typeof TestSuiteSchema>;
 export type TestingSetup = z.infer<typeof TestingSetupSchema>;
-export type AppComponent = z.infer<typeof AppComponentSchema>;
-export type ServiceComponent = z.infer<typeof ServiceComponentSchema>;
-export type LibraryComponent = z.infer<typeof LibraryComponentSchema>;
-
-export type AnyComponent = AppComponent | ServiceComponent | LibraryComponent;

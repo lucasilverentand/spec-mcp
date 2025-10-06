@@ -1,6 +1,7 @@
 // Shared entity schemas
 
 export * from "./api-contract-schema.js";
+export * from "./base-entity.js";
 export * from "./data-model-schema.js";
 export * from "./deployment-schema.js";
 export * from "./flow-schema.js";

@@ -1,12 +1,12 @@
 import z from "zod";
-import { BaseSchema, computeEntityId } from "../../core/base-entity.js";
-import { ApiContractSchema } from "../shared/api-contract-schema.js";
-import { DataModelSchema } from "../shared/data-model-schema.js";
-import { FlowSchema } from "../shared/flow-schema.js";
-import { ReferenceSchema } from "../shared/reference-schema.js";
-import { ScopeSchema } from "../shared/scope-schema.js";
-import { TaskSchema } from "../shared/task-schema.js";
-import { TestCaseSchema } from "../shared/test-case-schema.js";
+import { ApiContractSchema } from "./shared/api-contract-schema.js";
+import { BaseSchema, computeEntityId } from "./shared/base-entity.js";
+import { DataModelSchema } from "./shared/data-model-schema.js";
+import { FlowSchema } from "./shared/flow-schema.js";
+import { ReferenceSchema } from "./shared/reference-schema.js";
+import { ScopeSchema } from "./shared/scope-schema.js";
+import { TaskSchema } from "./shared/task-schema.js";
+import { TestCaseSchema } from "./shared/test-case-schema.js";
 
 export const PlanIdSchema = z.string().regex(/^pln-\d{3}-[a-z0-9-]+$/, {
 	message: "Plan ID must follow format: pln-XXX-slug-here",

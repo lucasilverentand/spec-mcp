@@ -1,9 +1,4 @@
 import z from "zod";
-import { BaseSchema, computeEntityId } from "../../core/base-entity.js";
-import { ComponentIdSchema } from "../components/component.js";
-import { PlanIdSchema } from "../plans/plan.js";
-import { RequirementIdSchema } from "../requirements/requirement.js";
-import { ReferenceSchema } from "../shared/index.js";
 
 export const DecisionIdSchema = z.string().regex(/^dec-\d{3}-[a-z0-9-]+$/, {
 	message: "Decision ID must follow format: dec-XXX-slug-here",

@@ -1,5 +1,5 @@
 import z from "zod";
-import { ReferenceSchema } from "./reference-schema.js";
+import { ReferenceSchema } from "./reference.js";
 
 export const TaskIdSchema = z
 	.string()
