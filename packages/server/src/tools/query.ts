@@ -257,11 +257,12 @@ function highlightMatches(text: string, query: string): string {
  */
 function detectEntityType(
 	entityId: string,
-): "requirement" | "plan" | "component" | "constitution" | null {
+): "requirement" | "plan" | "component" | "constitution" | "decision" | null {
 	if (/^req-\d{3}-.+$/.test(entityId)) return "requirement";
 	if (/^pln-\d{3}-.+$/.test(entityId)) return "plan";
 	if (/^(app|svc|lib)-\d{3}-.+$/.test(entityId)) return "component";
 	if (/^con-\d{3}-.+$/.test(entityId)) return "constitution";
+	if (/^dec-\d{3}-.+$/.test(entityId)) return "decision";
 	return null;
 }
 
@@ -1049,6 +1050,12 @@ async function handleEntityIdLookup(
 			else return formatResult(result);
 			break;
 		}
+		case "decision": {
+			const result = await operations.getDecision(entityId);
+			if (result.success && result.data) entity = result.data;
+			else return formatResult(result);
+			break;
+		}
 	}
 
 	if (!entity) {
@@ -1334,13 +1341,14 @@ async function handleSearch(
 		return formatResult(entitiesResult);
 	}
 
-	const { requirements, plans, components, constitutions } =
+	const { requirements, plans, components, constitutions, decisions } =
 		entitiesResult.data;
 	let allEntities: AnyEntity[] = [
 		...requirements,
 		...plans,
 		...components,
 		...constitutions,
+		...decisions,
 	];
 
 	// Apply type filter
@@ -1447,13 +1455,14 @@ async function handleFilteredList(
 		return formatResult(entitiesResult);
 	}
 
-	const { requirements, plans, components, constitutions } =
+	const { requirements, plans, components, constitutions, decisions } =
 		entitiesResult.data;
 	let allEntities: AnyEntity[] = [
 		...requirements,
 		...plans,
 		...components,
 		...constitutions,
+		...decisions,
 	];
 
 	// Apply type filter
@@ -1759,6 +1768,7 @@ export function registerQueryTool(
 							"service",
 							"library",
 							"constitution",
+							"decision",
 						]),
 					)
 					.optional()
