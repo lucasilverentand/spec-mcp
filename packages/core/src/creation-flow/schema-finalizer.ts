@@ -265,7 +265,17 @@ export function finalizeDraft(
 ): FinalizationResult {
 	try {
 		const componentType = draftData.type as ComponentType | undefined;
-		const schema = getSchemaForType(type, componentType);
+		let schema = getSchemaForType(type, componentType);
+
+		// Make 'number' field optional for validation since it will be auto-generated
+		// by the entity manager if not provided
+		if (schema instanceof z.ZodObject) {
+			const shape = { ...schema.shape };
+			if (shape.number) {
+				shape.number = z.number().int().nonnegative().optional();
+			}
+			schema = z.object(shape);
+		}
 
 		// Auto-convert criteria to proper format for requirements
 		if (type === "requirement" && draftData.criteria) {
@@ -293,7 +303,8 @@ export function finalizeDraft(
 
 		// Auto-fill empty arrays only for fields that exist in the schema
 		// Get the schema shape to check which fields are actually in the schema
-		const schemaShape = schema instanceof z.ZodObject ? schema.shape : {};
+		const schemaShapeForArrays =
+			schema instanceof z.ZodObject ? schema.shape : {};
 		const fieldsWithEmptyArrayDefault = [
 			"depends_on",
 			"external_dependencies",
@@ -313,11 +324,11 @@ export function finalizeDraft(
 
 		for (const field of fieldsWithEmptyArrayDefault) {
 			// Only add the field if it exists in the schema AND isn't already in draftData
-			if (field in schemaShape && !(field in draftData)) {
+			if (field in schemaShapeForArrays && !(field in draftData)) {
 				draftData[field] = [];
 			}
 			// Remove the field if it exists in draftData but NOT in the schema
-			else if (!(field in schemaShape) && field in draftData) {
+			else if (!(field in schemaShapeForArrays) && field in draftData) {
 				delete draftData[field];
 			}
 		}
@@ -359,7 +370,10 @@ export function finalizeDraft(
 		}
 
 		// Remove flow-specific fields that aren't part of the entity schema
+		const schemaShapeForFlow =
+			schema instanceof z.ZodObject ? schema.shape : {};
 		const flowSpecificFields = [
+			"research",
 			"research_findings",
 			"search_performed",
 			"no_constitutions",
@@ -380,6 +394,16 @@ export function finalizeDraft(
 			"negative",
 			"risks",
 			"mitigation",
+			// Constitution-specific Q&A fields
+			"existing_constitutions",
+			"best_practices_notes",
+			"framework_notes",
+			"conflicts_checked",
+			"conflict_notes",
+			// Decision-specific Q&A fields
+			"related_decisions",
+			"technology_options_notes",
+			"alternatives_research",
 			// Loop-related temporary fields
 			"criteria_descriptions",
 			"articles_descriptions",
@@ -391,7 +415,7 @@ export function finalizeDraft(
 		];
 
 		for (const field of flowSpecificFields) {
-			if (!(field in schemaShape) && field in draftData) {
+			if (!(field in schemaShapeForFlow) && field in draftData) {
 				delete draftData[field];
 			}
 		}
@@ -403,8 +427,22 @@ export function finalizeDraft(
 			updated_at: draftData.updated_at || new Date().toISOString(),
 		};
 
-		// Validate against schema
-		const validated = schema.parse(dataWithTimestamps);
+		// Get schema shape to filter out unknown keys
+		const schemaShape = schema instanceof z.ZodObject ? schema.shape : {};
+		const knownKeys = Object.keys(schemaShape);
+
+		// Filter data to only include known schema keys + timestamps
+		const filteredData: Record<string, unknown> = {};
+		for (const key of knownKeys) {
+			if (key in dataWithTimestamps) {
+				filteredData[key] = (dataWithTimestamps as Record<string, unknown>)[
+					key
+				];
+			}
+		}
+
+		// Validate against schema with filtered data
+		const validated = schema.parse(filteredData);
 
 		return {
 			success: true,
