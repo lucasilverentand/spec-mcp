@@ -282,27 +282,27 @@ describe("FileManager", () => {
 		describe("getEntityPath", () => {
 			it("should generate path for requirement", () => {
 				const path = fileManager.getEntityPath("requirement", "req-001-test");
-				expect(path).toBe("requirements/req-001-test.yml");
+				expect(path).toBe("requirements/req-001-test.json");
 			});
 
 			it("should generate path for plan", () => {
 				const path = fileManager.getEntityPath("plan", "pln-001-test");
-				expect(path).toBe("plans/pln-001-test.yml");
+				expect(path).toBe("plans/pln-001-test.json");
 			});
 
 			it("should generate path for app component", () => {
 				const path = fileManager.getEntityPath("app", "app-001-test");
-				expect(path).toBe("components/app-001-test.yml");
+				expect(path).toBe("components/app-001-test.json");
 			});
 
 			it("should generate path for service component", () => {
 				const path = fileManager.getEntityPath("service", "svc-001-test");
-				expect(path).toBe("components/svc-001-test.yml");
+				expect(path).toBe("components/svc-001-test.json");
 			});
 
 			it("should generate path for library component", () => {
 				const path = fileManager.getEntityPath("library", "lib-001-test");
-				expect(path).toBe("components/lib-001-test.yml");
+				expect(path).toBe("components/lib-001-test.json");
 			});
 		});
 
@@ -312,7 +312,7 @@ describe("FileManager", () => {
 					"requirement",
 					"req-001-test",
 				);
-				expect(fullPath).toBe(join(tempDir, "requirements/req-001-test.yml"));
+				expect(fullPath).toBe(join(tempDir, "requirements/req-001-test.json"));
 			});
 
 			it("should return full absolute path for plan", async () => {
@@ -320,7 +320,7 @@ describe("FileManager", () => {
 					"plan",
 					"pln-001-test",
 				);
-				expect(fullPath).toBe(join(tempDir, "plans/pln-001-test.yml"));
+				expect(fullPath).toBe(join(tempDir, "plans/pln-001-test.json"));
 			});
 
 			it("should return full absolute path for component", async () => {
@@ -328,7 +328,7 @@ describe("FileManager", () => {
 					"app",
 					"app-001-test",
 				);
-				expect(fullPath).toBe(join(tempDir, "components/app-001-test.yml"));
+				expect(fullPath).toBe(join(tempDir, "components/app-001-test.json"));
 			});
 		});
 	});
@@ -444,9 +444,9 @@ describe("FileManager", () => {
 				expect(readEntity?.slug).toBe("test-component");
 			});
 
-			it("should throw error for corrupted YAML file", async () => {
+			it("should throw error for corrupted JSON file", async () => {
 				await fileManager.ensureDirectoryStructure();
-				const filePath = join(tempDir, "requirements", "req-001-corrupted.yml");
+				const filePath = join(tempDir, "requirements", "req-001-corrupted.json");
 				await writeFile(filePath, "invalid: [unclosed array");
 
 				await expect(
@@ -612,7 +612,7 @@ describe("FileManager", () => {
 				expect(ids).toEqual([]);
 			});
 
-			it("should filter out non-yaml files", async () => {
+			it("should filter out non-json files", async () => {
 				await fileManager.ensureDirectoryStructure();
 				await fileManager.writeEntity(
 					"requirement",
@@ -620,7 +620,7 @@ describe("FileManager", () => {
 					createValidRequirement(),
 				);
 				await writeFile(join(tempDir, "requirements", "readme.md"), "readme");
-				await writeFile(join(tempDir, "requirements", "config.json"), "{}");
+				await writeFile(join(tempDir, "requirements", "config.txt"), "{}");
 
 				const ids = await fileManager.listEntityIds("requirement");
 
@@ -628,14 +628,14 @@ describe("FileManager", () => {
 				expect(ids).toContain("req-001-test");
 			});
 
-			it("should handle both .yml and .yaml extensions", async () => {
+			it("should handle both .json and .json extensions", async () => {
 				await fileManager.ensureDirectoryStructure();
 				await writeFile(
-					join(tempDir, "requirements", "req-001-test.yml"),
+					join(tempDir, "requirements", "req-001-test.json"),
 					"type: requirement\nslug: test",
 				);
 				await writeFile(
-					join(tempDir, "requirements", "req-002-test.yaml"),
+					join(tempDir, "requirements", "req-002-test.json"),
 					"type: requirement\nslug: test2",
 				);
 
@@ -659,7 +659,7 @@ describe("FileManager", () => {
 				);
 
 				const exists = await fileManager.pathExists(
-					join(tempDir, "requirements", "req-001-test.yml"),
+					join(tempDir, "requirements", "req-001-test.json"),
 				);
 				expect(exists).toBe(true);
 			});
@@ -669,7 +669,7 @@ describe("FileManager", () => {
 				await fileManager.writeEntity("plan", "pln-001-test", plan);
 
 				const exists = await fileManager.pathExists(
-					join(tempDir, "plans", "pln-001-test.yml"),
+					join(tempDir, "plans", "pln-001-test.json"),
 				);
 				expect(exists).toBe(true);
 			});
@@ -679,7 +679,7 @@ describe("FileManager", () => {
 				await fileManager.writeEntity("app", "app-001-test", component);
 
 				const exists = await fileManager.pathExists(
-					join(tempDir, "components", "app-001-test.yml"),
+					join(tempDir, "components", "app-001-test.json"),
 				);
 				expect(exists).toBe(true);
 			});
@@ -720,7 +720,7 @@ describe("FileManager", () => {
 				expect(readEntity?.name).toBe("Updated Name");
 			});
 
-			it("should format YAML with proper indentation", async () => {
+			it("should format JSON with proper indentation", async () => {
 				const requirement = createValidRequirement();
 				await fileManager.writeEntity(
 					"requirement",
@@ -728,13 +728,13 @@ describe("FileManager", () => {
 					requirement,
 				);
 
-				const filePath = join(tempDir, "requirements", "req-001-test.yml");
+				const filePath = join(tempDir, "requirements", "req-001-test.json");
 				const content = await require("node:fs/promises").readFile(
 					filePath,
 					"utf8",
 				);
 
-				expect(content).toContain("type: requirement");
+				expect(content).toContain('"type": "requirement"');
 				expect(content).toContain("  "); // Check for indentation
 			});
 
@@ -791,7 +791,7 @@ describe("FileManager", () => {
 
 				expect(deleted).toBe(true);
 				const exists = await fileManager.pathExists(
-					join(tempDir, "requirements", "req-001-test.yml"),
+					join(tempDir, "requirements", "req-001-test.json"),
 				);
 				expect(exists).toBe(false);
 			});
@@ -814,7 +814,7 @@ describe("FileManager", () => {
 
 				expect(deleted).toBe(true);
 				const exists = await fileManager.pathExists(
-					join(tempDir, "plans", "pln-001-test.yml"),
+					join(tempDir, "plans", "pln-001-test.json"),
 				);
 				expect(exists).toBe(false);
 			});
@@ -831,7 +831,7 @@ describe("FileManager", () => {
 
 				expect(deleted).toBe(true);
 				const exists = await fileManager.pathExists(
-					join(tempDir, "components", "svc-001-test.yml"),
+					join(tempDir, "components", "svc-001-test.json"),
 				);
 				expect(exists).toBe(false);
 			});
@@ -1240,8 +1240,8 @@ describe("FileManager", () => {
 				);
 				// Create a file with invalid number format
 				await writeFile(
-					join(tempDir, "requirements", "req-abc-invalid.yml"),
-					"type: requirement\nslug: invalid",
+					join(tempDir, "requirements", "req-abc-invalid.json"),
+					JSON.stringify({ type: "requirement", slug: "invalid" }),
 				);
 
 				const nextNumber = await fileManager.getNextNumber("requirement");
@@ -1274,15 +1274,13 @@ describe("FileManager", () => {
 	describe("Error Handling and Edge Cases", () => {
 		it("should handle empty file content gracefully", async () => {
 			await fileManager.ensureDirectoryStructure();
-			const filePath = join(tempDir, "requirements", "req-001-empty.yml");
+			const filePath = join(tempDir, "requirements", "req-001-empty.json");
 			await writeFile(filePath, "");
 
-			// Empty YAML parses to null
-			const result = await fileManager.readEntity(
-				"requirement",
-				"req-001-empty",
-			);
-			expect(result).toBeNull();
+			// Empty JSON should throw an error
+			await expect(
+				fileManager.readEntity("requirement", "req-001-empty"),
+			).rejects.toThrow();
 		});
 
 		it("should handle very long entity IDs", async () => {
@@ -1298,7 +1296,7 @@ describe("FileManager", () => {
 			expect(readEntity).not.toBeNull();
 		});
 
-		it("should handle special YAML characters", async () => {
+		it("should handle special JSON characters", async () => {
 			await fileManager.ensureDirectoryStructure();
 			const requirement = createValidRequirement({
 				description: "Line 1\nLine 2\nLine 3",
@@ -1401,19 +1399,10 @@ describe("FileManager", () => {
 			const circularObj: Record<string, unknown> = { name: "test" };
 			circularObj.self = circularObj;
 
-			// YAML library handles circular references by creating aliases
-			// This should not throw
-			await fileManager.writeEntity(
-				"requirement",
-				"req-001-circular",
-				circularObj,
-			);
-
-			const read = await fileManager.readEntity(
-				"requirement",
-				"req-001-circular",
-			);
-			expect(read).toBeDefined();
+			// JSON.stringify throws an error for circular references
+			await expect(
+				fileManager.writeEntity("requirement", "req-001-circular", circularObj),
+			).rejects.toThrow();
 		});
 	});
 

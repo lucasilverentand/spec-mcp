@@ -19,9 +19,3 @@ export interface ISlugGenerator {
 	generateUniqueSlug(input: string, existingSlugs: string[]): string;
 	validateSlug(slug: string): boolean;
 }
-
-export interface IYamlTransformer {
-	parseYaml<T = unknown>(yaml: string): OperationResult<T>;
-	stringifyYaml(data: unknown): OperationResult<string>;
-	validateYamlSyntax(yaml: string): boolean;
-}

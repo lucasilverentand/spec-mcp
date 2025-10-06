@@ -21,8 +21,7 @@
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
-		"@spec-mcp/data": "workspace:*",
-		"yaml": "^2.4.5"
+		"@spec-mcp/data": "workspace:*"
 	},
 	"devDependencies": {
 		"@spec-mcp/tsconfig": "workspace:*",

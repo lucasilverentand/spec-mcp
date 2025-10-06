@@ -370,7 +370,6 @@ describe("ServiceContainer", () => {
 			expect(SERVICE_TOKENS.VALIDATION_ENGINE).toBe("ValidationEngine");
 			expect(SERVICE_TOKENS.ID_GENERATOR).toBe("IdGenerator");
 			expect(SERVICE_TOKENS.SLUG_GENERATOR).toBe("SlugGenerator");
-			expect(SERVICE_TOKENS.YAML_TRANSFORMER).toBe("YamlTransformer");
 		});
 
 		it("should use tokens for registration", () => {

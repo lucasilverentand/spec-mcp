@@ -1297,7 +1297,7 @@ describe("EntityManager", () => {
 			expect(result.success).toBe(false);
 		});
 
-		it("should handle corrupted YAML files", async () => {
+		it("should handle corrupted JSON files", async () => {
 			// Create a requirement first
 			const created = await manager.create(
 				"requirement",
@@ -1306,11 +1306,11 @@ describe("EntityManager", () => {
 			expect(created.success).toBe(true);
 
 			if (created.success) {
-				// Corrupt the YAML file
+				// Corrupt the JSON file
 				const filePath = join(
 					tempDir,
 					"requirements",
-					`${created.data.id}.yml`,
+					`${created.data.id}.json`,
 				);
 				await writeFile(filePath, "key: [unclosed array");
 

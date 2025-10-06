@@ -265,7 +265,7 @@ describe("ValidationManager", () => {
 			await mkdir(join(tempDir, "plans"), { recursive: true });
 			const planData = createValidPlanData({ slug: "test-plan" });
 			await writeFile(
-				join(tempDir, "plans", "pln-001-test-plan.yml"),
+				join(tempDir, "plans", "pln-001-test-plan.json"),
 				JSON.stringify(planData),
 			);
 
@@ -655,7 +655,7 @@ describe("ValidationManager", () => {
 				slug: "existing-plan",
 			});
 			await writeFile(
-				join(tempDir, "plans", "pln-001-existing-plan.yml"),
+				join(tempDir, "plans", "pln-001-existing-plan.json"),
 				JSON.stringify(planData),
 			);
 
@@ -684,7 +684,7 @@ describe("ValidationManager", () => {
 				slug: "existing-service",
 			});
 			await writeFile(
-				join(tempDir, "components", "svc-001-existing-service.yml"),
+				join(tempDir, "components", "svc-001-existing-service.json"),
 				JSON.stringify(componentData),
 			);
 
@@ -1002,7 +1002,7 @@ describe("ValidationManager", () => {
 			await mkdir(join(tempDir, "plans"), { recursive: true });
 			const planData = createValidPlanData({ slug: "test-plan" });
 			await writeFile(
-				join(tempDir, "plans", "pln-001-test-plan.yml"),
+				join(tempDir, "plans", "pln-001-test-plan.json"),
 				JSON.stringify(planData),
 			);
 
@@ -1024,7 +1024,7 @@ describe("ValidationManager", () => {
 			await mkdir(join(tempDir, "plans"), { recursive: true });
 			const planData = createValidPlanData({ slug: "test-plan" });
 			await writeFile(
-				join(tempDir, "plans", "pln-001-test-plan.yml"),
+				join(tempDir, "plans", "pln-001-test-plan.json"),
 				JSON.stringify(planData),
 			);
 
@@ -1082,7 +1082,7 @@ describe("ValidationManager", () => {
 			});
 
 			await writeFile(
-				join(tempDir, "plans", "pln-002-plan-b.yml"),
+				join(tempDir, "plans", "pln-002-plan-b.json"),
 				JSON.stringify(planB),
 			);
 
@@ -1205,7 +1205,7 @@ describe("ValidationManager", () => {
 			await mkdir(join(tempDir, "plans"), { recursive: true });
 			const planData = createValidPlanData({ slug: "test-plan" });
 			await writeFile(
-				join(tempDir, "plans", "pln-001-test-plan.yml"),
+				join(tempDir, "plans", "pln-001-test-plan.json"),
 				JSON.stringify(planData),
 			);
 

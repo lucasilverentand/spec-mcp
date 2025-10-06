@@ -12,7 +12,6 @@ import { basename, dirname, join, resolve } from "node:path";
 import { promisify } from "node:util";
 import z from "zod";
 import type { AnyEntity, EntityType } from "../entities/index.js";
-import { formatYaml, parseYaml } from "../utils/yaml-formatter.js";
 
 export const FileManagerConfigSchema = z.object({
 	path: z.string().optional().describe("Path to the specifications directory"),
@@ -29,7 +28,7 @@ export type FileManagerConfig = z.input<typeof FileManagerConfigSchema>;
  * FileManager handles all file I/O operations for spec entities
  * Responsibilities:
  * - Path resolution and management
- * - Reading/writing YAML files
+ * - Reading/writing JSON files
  * - Directory structure management
  * - File existence checks
  */
@@ -155,7 +154,7 @@ export class FileManager {
 					: entityType === "constitution"
 						? "constitutions"
 						: "components";
-		return `${folder}/${id}.yml`;
+		return `${folder}/${id}.json`;
 	}
 
 	async getFullEntityPath(entityType: EntityType, id: string): Promise<string> {
@@ -198,7 +197,7 @@ export class FileManager {
 		try {
 			const filePath = await this.getFullEntityPath(entityType, id);
 			const content = await readFile(filePath, "utf8");
-			return parseYaml<AnyEntity>(content);
+			return JSON.parse(content) as AnyEntity;
 		} catch (error) {
 			if ((error as NodeJS.ErrnoException).code === "ENOENT") {
 				return null;
@@ -232,10 +231,8 @@ export class FileManager {
 			const files = await readdir(folderPath);
 
 			return files
-				.filter((file) => file.endsWith(".yml") || file.endsWith(".yaml"))
-				.map((file) =>
-					basename(file, file.endsWith(".yml") ? ".yml" : ".yaml"),
-				);
+				.filter((file) => file.endsWith(".json"))
+				.map((file) => basename(file, ".json"));
 		} catch (error) {
 			if ((error as NodeJS.ErrnoException).code === "ENOENT") {
 				return [];
@@ -256,10 +253,10 @@ export class FileManager {
 		// Ensure directory exists
 		await this.ensureDirectory(dirname(filePath));
 
-		// Write YAML content with consistent formatting
-		const yamlContent = formatYaml(entity);
+		// Write JSON content with consistent formatting
+		const jsonContent = JSON.stringify(entity, null, 2);
 
-		await writeFile(filePath, yamlContent, "utf8");
+		await writeFile(filePath, jsonContent, "utf8");
 	}
 
 	async deleteEntity(entityType: EntityType, id: string): Promise<boolean> {

@@ -89,7 +89,6 @@ export const ServiceTokensSchema = z.object({
 	VALIDATION_ENGINE: z.literal("ValidationEngine"),
 	ID_GENERATOR: z.literal("IdGenerator"),
 	SLUG_GENERATOR: z.literal("SlugGenerator"),
-	YAML_TRANSFORMER: z.literal("YamlTransformer"),
 });
 
 export type ServiceToken = z.infer<typeof ServiceTokensSchema>[keyof z.infer<

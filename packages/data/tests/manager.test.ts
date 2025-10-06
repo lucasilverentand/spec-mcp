@@ -941,8 +941,8 @@ describe("SpecsManager", () => {
 		});
 	});
 
-	describe("YAML File Handling", () => {
-		it("should handle corrupted YAML files gracefully", async () => {
+	describe("JSON File Handling", () => {
+		it("should handle corrupted JSON files gracefully", async () => {
 			// Create a requirement first
 			await manager.createRequirement({
 				slug: "test",
@@ -957,8 +957,8 @@ describe("SpecsManager", () => {
 				],
 			});
 
-			// Corrupt the YAML file with content that will cause a parse error
-			const filePath = join(tempDir, "requirements", "req-001-test.yml");
+			// Corrupt the JSON file with content that will cause a parse error
+			const filePath = join(tempDir, "requirements", "req-001-test.json");
 			await writeFile(filePath, "key: [unclosed array");
 
 			// Should throw an error when trying to read corrupted file
@@ -1006,15 +1006,15 @@ describe("SpecsManager", () => {
 			expect(plans).toHaveLength(1);
 			expect(components).toHaveLength(1);
 
-			// Test with files that aren't .yml files (should be skipped)
+			// Test with files that aren't .json files (should be skipped)
 			await writeFile(
-				join(tempDir, "requirements", "not-yml.txt"),
-				"not a yml file",
+				join(tempDir, "requirements", "not-json.txt"),
+				"not a json file",
 			);
 			await writeFile(join(tempDir, "plans", "readme.md"), "readme file");
-			await writeFile(join(tempDir, "components", "config.json"), "{}");
+			await writeFile(join(tempDir, "components", "config.txt"), "{}");
 
-			// Should still only return the yml files
+			// Should still only return the json files
 			const requirementsWithExtraFiles = await manager.listRequirements();
 			const plansWithExtraFiles = await manager.listPlans();
 			const componentsWithExtraFiles = await manager.listComponents();
@@ -1028,7 +1028,7 @@ describe("SpecsManager", () => {
 			// Create an invalid file that will cause parsing errors
 			await mkdir(join(tempDir, "requirements"), { recursive: true });
 			await writeFile(
-				join(tempDir, "requirements", "req-001-broken.yml"),
+				join(tempDir, "requirements", "req-001-broken.json"),
 				"key: [unclosed array",
 			);
 

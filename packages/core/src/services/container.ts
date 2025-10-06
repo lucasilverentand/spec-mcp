@@ -154,7 +154,6 @@ export const SERVICE_TOKENS = {
 	VALIDATION_ENGINE: "ValidationEngine",
 	ID_GENERATOR: "IdGenerator",
 	SLUG_GENERATOR: "SlugGenerator",
-	YAML_TRANSFORMER: "YamlTransformer",
 } as const;
 
 export type ServiceToken = (typeof SERVICE_TOKENS)[keyof typeof SERVICE_TOKENS];

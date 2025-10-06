@@ -5,15 +5,10 @@
 
 // Re-export utilities from @spec-mcp/utils for convenience
 export {
-	convertJsonToYaml,
-	convertYamlToJson,
 	generateSlug,
 	generateUniqueSlug,
 	IdGenerator,
-	parseYaml,
-	stringifyYaml,
 	validateSlug,
-	validateYamlSyntax,
 } from "@spec-mcp/utils";
 // ----------------------------------------------------------------------------
 // Analysis Feature

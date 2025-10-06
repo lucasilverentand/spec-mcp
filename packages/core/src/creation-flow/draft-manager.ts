@@ -1,6 +1,5 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import { formatYaml, parseYaml } from "@spec-mcp/data";
 import { getStepDefinitions } from "./step-definitions.js";
 import type { Draft } from "./types.js";
 
@@ -48,10 +47,10 @@ export class DraftManager {
 		try {
 			const files = await fs.readdir(this.draftsDir);
 			for (const file of files) {
-				if (file.endsWith(".draft.yml")) {
+				if (file.endsWith(".draft.json")) {
 					const filePath = path.join(this.draftsDir, file);
 					const content = await fs.readFile(filePath, "utf-8");
-					const draft = parseYaml<Draft>(content);
+					const draft = JSON.parse(content) as Draft;
 					// Check if expired
 					if (new Date(draft.expires_at) >= new Date()) {
 						this.drafts.set(draft.id, draft);
@@ -71,9 +70,9 @@ export class DraftManager {
 	 */
 	private async saveDraft(draft: Draft): Promise<void> {
 		await this.ensureDraftsDir();
-		const fileName = `${draft.id}.draft.yml`;
+		const fileName = `${draft.id}.draft.json`;
 		const filePath = path.join(this.draftsDir, fileName);
-		const content = formatYaml(draft);
+		const content = JSON.stringify(draft, null, 2);
 		await fs.writeFile(filePath, content, "utf-8");
 	}
 
@@ -81,7 +80,7 @@ export class DraftManager {
 	 * Delete draft file from filesystem
 	 */
 	private async deleteDraftFile(id: string): Promise<void> {
-		const fileName = `${id}.draft.yml`;
+		const fileName = `${id}.draft.json`;
 		const filePath = path.join(this.draftsDir, fileName);
 		try {
 			await fs.unlink(filePath);

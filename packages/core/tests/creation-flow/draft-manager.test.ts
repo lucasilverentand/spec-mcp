@@ -119,7 +119,7 @@ describe("DraftManager", () => {
 
 		it("should persist draft to filesystem", async () => {
 			const draft = await draftManager.create("requirement");
-			const draftFile = path.join(testDraftsDir, `${draft.id}.draft.yml`);
+			const draftFile = path.join(testDraftsDir, `${draft.id}.draft.json`);
 
 			const fileExists = await fs
 				.access(draftFile)
@@ -242,7 +242,7 @@ describe("DraftManager", () => {
 				data: { description: "Updated description" },
 			});
 
-			const draftFile = path.join(testDraftsDir, `${draft.id}.draft.yml`);
+			const draftFile = path.join(testDraftsDir, `${draft.id}.draft.json`);
 			const fileContent = await fs.readFile(draftFile, "utf-8");
 
 			expect(fileContent).toContain("Updated description");
@@ -260,7 +260,7 @@ describe("DraftManager", () => {
 
 		it("should delete draft file from filesystem", async () => {
 			const draft = await draftManager.create("requirement");
-			const draftFile = path.join(testDraftsDir, `${draft.id}.draft.yml`);
+			const draftFile = path.join(testDraftsDir, `${draft.id}.draft.json`);
 
 			await draftManager.delete(draft.id);
 
@@ -350,7 +350,7 @@ describe("DraftManager", () => {
 
 		it("should delete expired draft files when loading", async () => {
 			const draft = await draftManager.create("requirement");
-			const draftFile = path.join(testDraftsDir, `${draft.id}.draft.yml`);
+			const draftFile = path.join(testDraftsDir, `${draft.id}.draft.json`);
 
 			await draftManager.update(draft.id, {
 				expires_at: new Date(Date.now() - 1000).toISOString(),

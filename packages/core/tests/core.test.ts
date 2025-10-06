@@ -1,24 +1,19 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import {
 	CoverageAnalyzer,
-	convertJsonToYaml,
-	convertYamlToJson,
 	createContainer,
 	createSpecService,
 	DependencyAnalyzer,
 	generateSlug,
 	generateUniqueSlug,
 	IdGenerator,
-	parseYaml,
 	SchemaValidator,
 	SERVICE_TOKENS,
 	ServiceContainer,
 	SpecCore,
 	SpecService,
-	stringifyYaml,
 	ValidationEngine,
 	validateSlug,
-	validateYamlSyntax,
 } from "../src/index.js";
 
 describe("Simplified Core API", () => {
@@ -34,8 +29,8 @@ describe("Simplified Core API", () => {
 	it("should export schemas and types", () => {
 		// Test that schemas are available
 		expect(typeof generateSlug).toBe("function");
-		expect(typeof parseYaml).toBe("function");
 		expect(typeof validateSlug).toBe("function");
+		expect(typeof generateUniqueSlug).toBe("function");
 	});
 
 	it("should provide factory functions", () => {
@@ -128,44 +123,6 @@ describe("Utility Functions", () => {
 		it("should validate IDs", () => {
 			expect(generator.validateId("valid-id")).toBe(true);
 			expect(generator.validateId("")).toBe(false);
-		});
-	});
-
-	describe("YAML Functions", () => {
-		const testObject = {
-			type: "requirement",
-			name: "Test Requirement",
-			number: 1,
-			slug: "test-requirement",
-		};
-
-		it("should stringify objects to YAML", () => {
-			const yaml = stringifyYaml(testObject);
-			expect(yaml).toContain("type: requirement");
-			expect(yaml).toContain("name: Test Requirement");
-		});
-
-		it("should parse YAML to objects", () => {
-			const yaml = "type: requirement\nname: Test Requirement\nnumber: 1";
-			const parsed = parseYaml(yaml);
-			expect(parsed.type).toBe("requirement");
-			expect(parsed.name).toBe("Test Requirement");
-			expect(parsed.number).toBe(1);
-		});
-
-		it("should validate YAML syntax", () => {
-			const validYaml = "type: requirement\nname: Test";
-			const invalidYaml = "type: requirement\n  invalid: [unclosed";
-
-			expect(validateYamlSyntax(validYaml)).toBe(true);
-			expect(validateYamlSyntax(invalidYaml)).toBe(false);
-		});
-
-		it("should convert between JSON and YAML", () => {
-			const yaml = convertJsonToYaml(testObject);
-			const backToObject = convertYamlToJson(yaml);
-
-			expect(backToObject).toEqual(testObject);
 		});
 	});
 });

@@ -553,7 +553,7 @@ describe("Creation Flow Integration Tests", () => {
 			});
 
 			// CreationFlowHelper uses default .specs dir
-			const draftFile = path.join(".specs", ".drafts", `${draft_id}.draft.yml`);
+			const draftFile = path.join(".specs", ".drafts", `${draft_id}.draft.json`);
 			const fileExists = await fs
 				.access(draftFile)
 				.then(() => true)

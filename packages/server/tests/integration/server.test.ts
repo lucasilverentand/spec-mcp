@@ -121,7 +121,7 @@ describe("Server Configuration", () => {
 //
 // 	describe("Path validation", () => {
 // 		it("should validate safe paths", async () => {
-// 			const result = await validator.validatePath("requirements/req-001.yaml");
+// 			const result = await validator.validatePath("requirements/req-001.json");
 // 			expect(result).toBeTruthy();
 // 		});
 //
@@ -133,7 +133,7 @@ describe("Server Configuration", () => {
 //
 // 		it("should sanitize and validate null bytes in paths", async () => {
 // 			// Null bytes are sanitized but empty path after sanitization should fail
-// 			const path = "file\x00.yaml";
+// 			const path = "file\x00.json";
 // 			const result = await validator.validatePath(path);
 // 			// Should sanitize null bytes
 // 			expect(result).not.toContain("\x00");
@@ -225,7 +225,7 @@ describe("Server Configuration", () => {
 //
 // 	it("should serialize McpError to JSON", () => {
 // 		const error = new McpError(ErrorCode.FILE_NOT_FOUND, "File not found", {
-// 			path: "/test.yaml",
+// 			path: "/test.json",
 // 		});
 //
 // 		const json = error.toJSON();
@@ -233,6 +233,6 @@ describe("Server Configuration", () => {
 // 		expect(json.name).toBe("McpError");
 // 		expect(json.code).toBe(ErrorCode.FILE_NOT_FOUND);
 // 		expect(json.message).toBe("File not found");
-// 		expect(json.context).toEqual({ path: "/test.yaml" });
+// 		expect(json.context).toEqual({ path: "/test.json" });
 // 	});
 // });

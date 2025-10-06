@@ -57,11 +57,11 @@ packages/*/.specs/
 # Draft files and test-generated specs (runtime/temporary data)
 .specs/.drafts/
 specs/.drafts/
-specs/requirements/*-test*.yml
-specs/components/*-test*.yml
-specs/plans/*-test*.yml
-**/*-test*.yml
-**/*-test-*.yml
+specs/requirements/*-test*.json
+specs/components/*-test*.json
+specs/plans/*-test*.json
+**/*-test*.json
+**/*-test-*.json
 
 # Prevent absolute path artifacts (Users folder bug)
 Users/

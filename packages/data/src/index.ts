@@ -127,9 +127,3 @@ export {
 } from "./utils/slug-generator.js";
 // Export string utilities
 export { extractWords, isStopWord, STOP_WORDS } from "./utils/string-utils.js";
-// Export YAML formatting utilities
-export {
-	formatYaml,
-	parseYaml,
-	YAML_FORMAT_OPTIONS,
-} from "./utils/yaml-formatter.js";
