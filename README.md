@@ -431,6 +431,18 @@ MIT License - see [LICENSE](./LICENSE) for details
 
 https://github.com/lucasilverentand/spec-mcp
 
+## Release Process
+
+This repository uses automated semantic versioning and releases. Every push to `main` triggers an automated workflow that creates versioned GitHub releases based on conventional commit messages.
+
+See [Release Process Documentation](./docs/RELEASE_PROCESS.md) for details on:
+- Conventional commit format
+- How version numbers are determined
+- Automated release workflow
+- Best practices
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit issues and pull requests.
+
+When contributing, please follow the [Conventional Commits](https://www.conventionalcommits.org/) specification for commit messages to ensure proper automated versioning.
