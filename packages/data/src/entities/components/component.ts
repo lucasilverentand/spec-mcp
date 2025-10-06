@@ -20,12 +20,14 @@ export const TestSuiteSchema = z.object({
 	pattern: z
 		.string()
 		.min(1)
+		.nullable()
 		.optional()
 		.describe("Test file pattern (e.g., '*.test.ts', '*.spec.js')"),
 	coverage_target: z
 		.number()
 		.min(0)
 		.max(100)
+		.nullable()
 		.optional()
 		.describe("Target coverage percentage for this test suite"),
 });
@@ -35,13 +37,13 @@ export const TestingSetupSchema = z.object({
 		.array(z.string())
 		.min(1)
 		.describe("Testing frameworks used (e.g., Jest, Vitest, Pytest)"),
-	unit_tests: TestSuiteSchema.optional().describe(
+	unit_tests: TestSuiteSchema.nullable().optional().describe(
 		"Unit test configuration and location",
 	),
-	integration_tests: TestSuiteSchema.optional().describe(
+	integration_tests: TestSuiteSchema.nullable().optional().describe(
 		"Integration test configuration and location",
 	),
-	e2e_tests: TestSuiteSchema.optional().describe(
+	e2e_tests: TestSuiteSchema.nullable().optional().describe(
 		"End-to-end test configuration and location",
 	),
 	coverage_target: z
@@ -59,6 +61,7 @@ export const TestingSetupSchema = z.object({
 	mocking_strategy: z
 		.string()
 		.min(1)
+		.nullable()
 		.optional()
 		.describe(
 			"Approach to mocking external dependencies (e.g., 'jest.mock() for all external deps', 'test containers for databases')",
@@ -82,7 +85,7 @@ const _BaseComponentStorageSchema = BaseSchema.extend({
 		.array(z.string())
 		.default([])
 		.describe("Technologies and frameworks used in this component"),
-	testing_setup: TestingSetupSchema.optional().describe(
+	testing_setup: TestingSetupSchema.nullable().optional().describe(
 		"Testing configuration including frameworks, patterns, coverage targets, and test organization",
 	),
 	deployment: DeploymentSchema.describe(
@@ -123,6 +126,7 @@ export const ServiceComponentStorageSchema = _BaseComponentStorageSchema
 			.number()
 			.min(1)
 			.max(65535)
+			.nullable()
 			.optional()
 			.describe("Local development port"),
 	})
@@ -131,7 +135,7 @@ export const ServiceComponentStorageSchema = _BaseComponentStorageSchema
 export const LibraryComponentStorageSchema = _BaseComponentStorageSchema
 	.extend({
 		type: z.literal("library"),
-		package_name: z.string().min(1).optional(),
+		package_name: z.string().min(1).nullable().optional(),
 	})
 	.strict();
 

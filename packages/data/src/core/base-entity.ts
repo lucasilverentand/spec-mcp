@@ -48,6 +48,7 @@ export const BaseSchema = z.object({
 		.describe("Timestamp when entity was last updated"),
 	locked: z
 		.boolean()
+		.nullable()
 		.optional()
 		.describe(
 			"Whether the entity is locked from updates (except progress booleans). Defaults to false if not specified.",
@@ -55,11 +56,13 @@ export const BaseSchema = z.object({
 	locked_at: z
 		.string()
 		.datetime()
+		.nullable()
 		.optional()
 		.describe("Timestamp when entity was locked"),
 	locked_by: z
 		.string()
 		.min(1)
+		.nullable()
 		.optional()
 		.describe("User or system that locked the entity"),
 });

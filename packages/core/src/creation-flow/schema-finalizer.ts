@@ -259,11 +259,34 @@ export function formatSchemaFieldsForLLM(
 /**
  * Validate and finalize draft data
  */
+/**
+ * Recursively convert null values to undefined for lenient validation
+ */
+function sanitizeNulls(data: unknown): unknown {
+	if (data === null) {
+		return undefined;
+	}
+	if (Array.isArray(data)) {
+		return data.map(sanitizeNulls);
+	}
+	if (typeof data === "object" && data !== null) {
+		const result: Record<string, unknown> = {};
+		for (const [key, value] of Object.entries(data)) {
+			result[key] = sanitizeNulls(value);
+		}
+		return result;
+	}
+	return data;
+}
+
 export function finalizeDraft(
 	type: SpecType,
 	draftData: Record<string, unknown>,
 ): FinalizationResult {
 	try {
+		// Sanitize nulls to undefined for lenient validation
+		draftData = sanitizeNulls(draftData) as Record<string, unknown>;
+
 		const componentType = draftData.type as ComponentType | undefined;
 		let schema = getSchemaForType(type, componentType);
 

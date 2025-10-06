@@ -28,7 +28,7 @@ export const CriteriaReferenceSchema = z
 // Schema for stored plans (no ID field)
 export const PlanStorageSchema = BaseSchema.extend({
 	type: z.literal("plan").describe("Entity type is always 'plan'"),
-	criteria_id: CriteriaReferenceSchema.optional().describe(
+	criteria_id: CriteriaReferenceSchema.nullable().optional().describe(
 		"The acceptance criteria ID this plan fulfills (format: req-XXX-slug/crit-XXX). Optional for orchestration/milestone plans.",
 	),
 	priority: PlanPrioritySchema.default("medium").describe(
@@ -40,7 +40,7 @@ export const PlanStorageSchema = BaseSchema.extend({
 		.describe(
 			"Conditions that must be met for the plan to be considered complete",
 		),
-	scope: ScopeSchema.optional().describe(
+	scope: ScopeSchema.nullable().optional().describe(
 		"Defines what is included and excluded from this plan's scope",
 	),
 	depends_on: z
@@ -82,6 +82,7 @@ export const PlanStorageSchema = BaseSchema.extend({
 	completed_at: z
 		.string()
 		.datetime()
+		.nullable()
 		.optional()
 		.describe("Timestamp when the plan was completed"),
 	approved: z
