@@ -617,7 +617,9 @@ describe("Creation Flow Integration Tests", () => {
 			const draft = creationFlowHelper.getDraft(draft_id);
 			expect(draft?.validation_results.length).toBe(1);
 			expect(draft?.validation_results[0]?.passed).toBe(true);
-			expect(draft?.validation_results[0]?.suggestions.length).toBeGreaterThan(0);
+			expect(draft?.validation_results[0]?.suggestions.length).toBeGreaterThan(
+				0,
+			);
 		});
 	});
 });

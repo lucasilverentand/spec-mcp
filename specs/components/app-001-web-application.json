@@ -1,0 +1,58 @@
+{
+	"type": "app",
+	"number": 1,
+	"slug": "web-application",
+	"name": "Web Application",
+	"description": "Primary user-facing web application providing UI for authentication and user interactions.",
+	"created_at": "2025-10-06T01:32:09.780Z",
+	"updated_at": "2025-10-06T01:32:09.780Z",
+	"folder": ".",
+	"tech_stack": [],
+	"deployment": {
+		"platform": "unknown",
+		"environment_vars": [],
+		"secrets": []
+	},
+	"scope": {
+		"in_scope": [
+			{
+				"item": "User interface rendering",
+				"reasoning": "Core responsibility as the frontend application"
+			},
+			{
+				"item": "Client-side routing and navigation",
+				"reasoning": "Essential for SPA functionality"
+			},
+			{
+				"item": "Form handling and validation",
+				"reasoning": "Improves UX with immediate feedback"
+			},
+			{
+				"item": "API communication",
+				"reasoning": "Connects UI to backend services"
+			}
+		],
+		"out_of_scope": [
+			{
+				"item": "Authentication logic",
+				"reasoning": "Handled by svc-001-authentication-service"
+			},
+			{
+				"item": "Data persistence",
+				"reasoning": "Backend responsibility via lib-001-database-utils"
+			},
+			{
+				"item": "Business rules enforcement",
+				"reasoning": "Server-side validation in backend services"
+			}
+		]
+	},
+	"depends_on": ["svc-001-authentication-service"],
+	"external_dependencies": [
+		"next@^14.0.0",
+		"react@^18.2.0",
+		"react-dom@^18.2.0"
+	],
+	"deployment_targets": [],
+	"environments": ["development", "staging", "production"]
+}

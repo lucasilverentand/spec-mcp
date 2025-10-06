@@ -300,7 +300,7 @@ export const COMPONENT_STEPS: StepDefinition[] = [
 ];
 
 /**
- * Step definitions for Plans (16 steps)
+ * Step definitions for Plans (15 steps)
  */
 export const PLAN_STEPS: StepDefinition[] = [
 	{
@@ -311,7 +311,7 @@ export const PLAN_STEPS: StepDefinition[] = [
 		question:
 			"Search and review the requirements and components this plan will implement. What's the full context?",
 		guidance:
-			"Use the query tool to find and review: (1) The specific requirement(s) this plan addresses, (2) Related components that will be affected or used. Understanding the full context is critical for proper planning.\n\n**How to provide your answer:**\n```javascript\nupdate_draft({\n  draft_id: '<your-draft-id>',\n  data: {\n    research_findings: 'Found req-001-enterprise-sso with 3 acceptance criteria for OAuth2 authentication. Found existing components: svc-001-user-auth (basic auth only), lib-001-session-store (session management), svc-004-config-service (configuration).',\n    requirements_found: ['req-001-enterprise-sso', 'req-002-token-management'],\n    components_found: ['svc-001-user-auth', 'lib-001-session-store', 'svc-004-config-service']\n  }\n})\n```",
+			"Use the query tool to find and review: (1) The specific requirement(s) this plan addresses, (2) Related components that will be affected or used. Understanding the full context is critical for proper planning.",
 		next_step: "technology_stack_research",
 		tool_hints: {
 			query_examples: [
@@ -329,7 +329,7 @@ export const PLAN_STEPS: StepDefinition[] = [
 		question:
 			"Research the libraries, frameworks, and tools needed for implementation. What technologies will you use?",
 		guidance:
-			"For each major technology, research to inform your approach. Use context7 for up-to-date library docs (resolve-library-id then get-library-docs preferred) or describe from knowledge. Document all findings.\n\n**How to provide your answer:**\n```javascript\nupdate_draft({\n  draft_id: '<your-draft-id>',\n  data: {\n    technology_research: 'Researched OAuth2 libraries using context7. Passport.js (v0.6.0) provides OAuth2 strategies with SAML support. JsonWebToken (v9.0.0) for JWT token generation. Express (v4.18.0) for REST API framework. Jest (v29.0.0) for testing with 90%+ coverage target.',\n    libraries_found: [\n      { name: 'passport', version: '^0.6.0', purpose: 'OAuth2 authentication strategies' },\n      { name: 'jsonwebtoken', version: '^9.0.0', purpose: 'JWT token generation and validation' },\n      { name: 'jest', version: '^29.0.0', purpose: 'Testing framework' }\n    ]\n  }\n})\n```",
+			"For each major technology, research to inform your approach. Use context7 for up-to-date library docs (resolve-library-id then get-library-docs preferred) or describe from knowledge. Document all findings.",
 		next_step: "constitution_compliance",
 		tool_hints: {
 			context7_examples: [
@@ -346,7 +346,7 @@ export const PLAN_STEPS: StepDefinition[] = [
 		question:
 			"Which constitution articles apply to this implementation? How does your approach comply with project standards?",
 		guidance:
-			"Query all constitutions and verify your implementation approach aligns with project standards (testing requirements, architecture principles, quality standards, security guidelines). Reference specific article IDs.\n\n**How to provide your answer:**\n```javascript\nupdate_draft({\n  draft_id: '<your-draft-id>',\n  data: {\n    constitution_articles: ['con-001-architecture/art-001', 'con-002-security/art-003', 'con-003-testing/art-001'],\n    compliance_notes: 'Aligns with library-first principle (art-001) by using Passport.js. Follows security-by-default (art-003) with token encryption and HTTPS-only. Meets 90% test coverage requirement (art-001) with comprehensive unit and integration tests.'\n    // OR if no constitutions exist:\n    // no_constitutions: true\n  }\n})\n```",
+			"Query all constitutions and verify your implementation approach aligns with project standards (testing requirements, architecture principles, quality standards, security guidelines). Reference specific article IDs.",
 		next_step: "similar_plans_review",
 		tool_hints: {
 			query_examples: ["query({ types: ['constitution'], mode: 'full' })"],
@@ -360,7 +360,7 @@ export const PLAN_STEPS: StepDefinition[] = [
 		question:
 			"Search for similar or related plans. What can you learn from existing plans to avoid duplication and improve estimates?",
 		guidance:
-			"Use query to find similar plans and review them for: (1) Task breakdown patterns, (2) Estimation accuracy (compare estimates vs actual), (3) Common risks encountered, (4) Successful approaches. Reference helpful plan IDs.\n\n**How to provide your answer:**\n```javascript\nupdate_draft({\n  draft_id: '<your-draft-id>',\n  data: {\n    similar_plans: ['pln-001-basic-auth', 'pln-003-api-gateway'],\n    learnings: 'pln-001-basic-auth completed in 2 weeks with 8 tasks. Common risks: OAuth provider configuration complexity, token refresh timing issues. Successful approach: separate infrastructure setup phase, comprehensive integration tests before production deployment.'\n    // OR if no similar plans exist:\n    // no_similar_plans: true\n  }\n})\n```",
+			"Use query to find similar plans and review them for: (1) Task breakdown patterns, (2) Estimation accuracy (compare estimates vs actual), (3) Common risks encountered, (4) Successful approaches. Reference helpful plan IDs.",
 		next_step: "review_context",
 		tool_hints: {
 			query_examples: [
@@ -377,7 +377,7 @@ export const PLAN_STEPS: StepDefinition[] = [
 		question:
 			"What acceptance criteria are you fulfilling and what's the context summary?",
 		guidance:
-			"Based on your research (step 1), summarize: the acceptance criteria this plan addresses, relevant requirements and components, and the overall implementation context.\n\n**How to provide your answer:**\n```javascript\nupdate_draft({\n  draft_id: '<your-draft-id>',\n  data: {\n    context_summary: 'Implementing OAuth2 authentication with enterprise SSO support to address req-001-enterprise-sso. Will integrate with existing svc-001-user-auth, lib-001-session-store, and svc-004-config-service. Supports SAML 2.0, handles token lifecycle, and maintains secure sessions.',\n    criteria_id: 'req-001-enterprise-sso/crit-001'  // Primary criterion being addressed\n  }\n})\n```",
+			"Based on your research (step 1), summarize: the acceptance criteria this plan addresses, relevant requirements and components, and the overall implementation context.",
 		next_step: "identify_phases",
 	},
 	{
@@ -387,7 +387,7 @@ export const PLAN_STEPS: StepDefinition[] = [
 		description: "Break work into major phases",
 		question: "What are the major phases of work for this plan?",
 		guidance:
-			"Break the plan into 2-5 major phases (e.g., Setup, Core Implementation, Testing, Documentation). Describe what each phase accomplishes.\n\n**How to provide your answer:**\n```javascript\nupdate_draft({\n  draft_id: '<your-draft-id>',\n  data: {\n    phases: [\n      'Phase 1: Infrastructure Setup - Set up OAuth2 service infrastructure, configure dependencies, establish development environment',\n      'Phase 2: Core OAuth2 Flow - Implement authorization code flow, token generation, provider integration',\n      'Phase 3: Token Lifecycle Management - Add token refresh, validation, encryption, and secure storage',\n      'Phase 4: Integration & Testing - Integration tests, end-to-end testing, security testing',\n      'Phase 5: Documentation & Deployment - API documentation, deployment configuration, monitoring setup'\n    ]\n  }\n})\n```",
+			"Break the plan into 2-5 major phases (e.g., Setup, Core Implementation, Testing, Documentation). Describe what each phase accomplishes.",
 		next_step: "analyze_dependencies",
 	},
 	{
@@ -397,7 +397,7 @@ export const PLAN_STEPS: StepDefinition[] = [
 		description: "Create dependency graph and ordering",
 		question: "What dependencies exist for this plan?",
 		guidance:
-			"List what other plans must complete before this one starts. If there are no dependencies, provide an empty array []. Also consider task dependencies within this plan - which tasks must happen before others?\n\n**How to provide your answer:**\n```javascript\nupdate_draft({\n  draft_id: '<your-draft-id>',\n  data: {\n    depends_on: ['pln-002-session-store-upgrade', 'pln-005-config-service-deploy'],\n    dependency_notes: 'Requires pln-002 session store upgrade for distributed token storage. Requires pln-005 config service deployment for OAuth provider configuration management.'\n    // OR if no dependencies:\n    // depends_on: [],\n    // dependency_notes: 'No plan dependencies. All task dependencies are internal.'\n  }\n})\n```",
+			"List what other plans must complete before this one starts. If there are no dependencies, provide an empty array []. Also consider task dependencies within this plan - which tasks must happen before others?",
 		next_step: "tasks_list",
 	},
 	{
@@ -408,7 +408,7 @@ export const PLAN_STEPS: StepDefinition[] = [
 		question:
 			"List all tasks that need to be completed for this plan (one description per task)",
 		guidance:
-			"Provide a list of task descriptions. Each task should be: 0.5-3 days of effort, independently testable, and clearly described. You can provide them as an array of strings or one per line. Examples: ['Set up authentication service infrastructure', 'Implement JWT token generation', 'Create user login endpoint', 'Write integration tests for auth flow']\n\n**How to provide your answer:**\n```javascript\nupdate_draft({\n  draft_id: '<your-draft-id>',\n  data: {\n    task_descriptions: [\n      'Set up OAuth2 authentication service infrastructure',\n      'Configure Passport.js with OAuth2 strategy',\n      'Implement authorization code flow endpoints',\n      'Create JWT token generation service',\n      'Implement token refresh mechanism',\n      'Add token validation middleware',\n      'Integrate with enterprise identity providers (SAML)',\n      'Set up secure token storage with encryption',\n      'Write unit tests for OAuth2 flow components',\n      'Create integration tests for full auth flow',\n      'Add API documentation and deployment config'\n    ]\n  }\n})\n```",
+			"Provide a list of task descriptions. Each task should be: 0.5-3 days of effort, independently testable, and clearly described. You can provide them as an array of strings or one per line. Examples: ['Set up authentication service infrastructure', 'Implement JWT token generation', 'Create user login endpoint', 'Write integration tests for auth flow']",
 		next_step: "tasks_item",
 	},
 	{
@@ -418,7 +418,7 @@ export const PLAN_STEPS: StepDefinition[] = [
 		description: "Provide additional details for each task",
 		question: "Expand the details for this task",
 		guidance:
-			"For the task shown above, provide additional details:\n- priority: 'critical', 'high', 'medium' (default), or 'low'\n- depends_on: Array of task IDs this depends on (e.g., ['task-001', 'task-002']) or empty array []\n- considerations: Array of things to consider (optional, can be empty array [])\n- references: Array of external references (optional, can be empty array [])\n- files: Array of files to create/modify (optional, can be empty array [])\n\nThe description has already been provided but you can refine it.\n\n**How to provide your answer:**\n```javascript\nupdate_draft({\n  draft_id: '<your-draft-id>',\n  data: {\n    description: 'Set up OAuth2 authentication service infrastructure',  // Can refine this\n    priority: 'critical',  // Options: 'critical', 'high', 'medium', 'low'\n    depends_on: ['task-001'],  // Task IDs this depends on, or [] for no dependencies\n    considerations: [\n      'Ensure Docker configuration supports required Node.js version',\n      'Configure environment variables for OAuth provider credentials',\n      'Set up separate development and production environments'\n    ],\n    references: [\n      'https://www.passportjs.org/docs/',\n      'OAuth 2.0 RFC 6749'\n    ],\n    files: [\n      'services/auth/Dockerfile',\n      'services/auth/package.json',\n      'services/auth/src/config/oauth.config.ts'\n    ]\n  }\n})\n```",
+			"For the task shown above, provide additional details:\n- priority: 'critical', 'high', 'medium' (default), or 'low'\n- depends_on: Array of task IDs this depends on (e.g., ['task-001', 'task-002']) or empty array []\n- considerations: Array of things to consider (optional, can be empty array [])\n- references: Array of external references (optional, can be empty array [])\n- files: Array of files to create/modify (optional, can be empty array [])\n\nThe description has already been provided but you can refine it.",
 		next_step: "define_acceptance",
 	},
 	{
@@ -428,7 +428,7 @@ export const PLAN_STEPS: StepDefinition[] = [
 		description: "Add acceptance criteria for the plan",
 		question: "How will you know when this plan is complete?",
 		guidance:
-			"Define clear acceptance criteria for the overall plan. What conditions must be met to consider this plan done? Be specific and measurable.\n\n**How to provide your answer:**\n```javascript\nupdate_draft({\n  draft_id: '<your-draft-id>',\n  data: {\n    acceptance_criteria: [\n      'Users can authenticate via SAML 2.0 enterprise identity provider',\n      'OAuth2 authorization code flow completes successfully with token generation',\n      'Token refresh mechanism works automatically before expiration',\n      'All unit tests pass with 90%+ code coverage',\n      'Integration tests validate full authentication flow end-to-end',\n      'API documentation is complete and deployment configuration is ready',\n      'Security review confirms token encryption and HTTPS enforcement'\n    ]\n  }\n})\n```",
+			"Define clear acceptance criteria for the overall plan. What conditions must be met to consider this plan done? Be specific and measurable.",
 		next_step: "identify_milestones",
 	},
 	{
@@ -438,7 +438,7 @@ export const PLAN_STEPS: StepDefinition[] = [
 		description: "Define major checkpoints",
 		question: "What are the major milestones for this plan?",
 		guidance:
-			"Identify 2-4 major milestones - deliverable checkpoints where stakeholders can review progress. Each milestone should represent a meaningful accomplishment.\n\n**How to provide your answer:**\n```javascript\nupdate_draft({\n  draft_id: '<your-draft-id>',\n  data: {\n    milestones: [\n      'M1: Infrastructure Ready - Service infrastructure set up, dependencies configured, development environment operational (Day 3)',\n      'M2: OAuth2 Flow Complete - Authorization code flow implemented, tokens generated, basic authentication working (Day 7)',\n      'M3: Token Lifecycle Implemented - Token refresh, validation, and encryption complete with secure storage (Day 10)',\n      'M4: Testing & Documentation Complete - All tests passing with 90%+ coverage, documentation complete, ready for deployment (Day 14)'\n    ]\n  }\n})\n```",
+			"Identify 2-4 major milestones - deliverable checkpoints where stakeholders can review progress. Each milestone should represent a meaningful accomplishment.",
 		next_step: "plan_testing",
 	},
 	{
@@ -448,7 +448,7 @@ export const PLAN_STEPS: StepDefinition[] = [
 		description: "Define how work will be tested",
 		question: "How will you test the work in this plan?",
 		guidance:
-			"Define your testing strategy: unit tests, integration tests, E2E tests. Specify coverage goals (aim for 90%+) and testing approach for each type.\n\n**How to provide your answer:**\n```javascript\nupdate_draft({\n  draft_id: '<your-draft-id>',\n  data: {\n    testing_strategy: {\n      unit_tests: 'Jest for all OAuth2 components, token generation, validation. Mock external providers. Target: 90%+ coverage.',\n      integration_tests: 'Test full OAuth2 flow with mock identity provider. Verify token lifecycle, refresh, storage integration. Target: All critical paths covered.',\n      e2e_tests: 'End-to-end authentication flow with real SAML provider in staging. Verify browser redirects, token exchange, session management.',\n      security_tests: 'Verify token encryption at rest, HTTPS enforcement, PKCE implementation, secure session handling.',\n      performance_tests: 'Load test with 1000 concurrent authentication requests. Verify <3s OAuth2 flow completion for 95th percentile.'\n    }\n  }\n})\n```",
+			"Define your testing strategy: unit tests, integration tests, E2E tests. Specify coverage goals (aim for 90%+) and testing approach for each type.",
 		next_step: "plan_risks",
 	},
 	{
@@ -459,7 +459,7 @@ export const PLAN_STEPS: StepDefinition[] = [
 		question:
 			"What risks could impact this plan and how will you mitigate them?",
 		guidance:
-			"Identify 2-5 key risks: technical challenges, dependencies, resource constraints, etc. For each risk, describe mitigation strategies.\n\n**How to provide your answer:**\n```javascript\nupdate_draft({\n  draft_id: '<your-draft-id>',\n  data: {\n    risks: [\n      {\n        risk: 'OAuth provider configuration complexity may cause integration delays',\n        probability: 'medium',\n        impact: 'high',\n        mitigation: 'Start provider integration early in Phase 2. Set up mock provider for testing. Allocate 2 days buffer for configuration issues.'\n      },\n      {\n        risk: 'Token refresh timing issues could cause user session interruptions',\n        probability: 'low',\n        impact: 'high',\n        mitigation: 'Implement token refresh 5 minutes before expiration. Add comprehensive integration tests for refresh flow. Monitor refresh success rates in production.'\n      },\n      {\n        risk: 'Dependency on session store upgrade (pln-002) may delay start',\n        probability: 'medium',\n        impact: 'medium',\n        mitigation: 'Coordinate timeline with pln-002. Implement temporary in-memory storage for development. Have fallback plan for basic session management.'\n      },\n      {\n        risk: 'Security vulnerabilities in token handling',\n        probability: 'low',\n        impact: 'critical',\n        mitigation: 'Follow OWASP guidelines. Use established libraries (jsonwebtoken). Conduct security review before deployment. Implement token encryption at rest.'\n      }\n    ]\n  }\n})\n```",
+			"Identify 2-5 key risks: technical challenges, dependencies, resource constraints, etc. For each risk, describe mitigation strategies.",
 		next_step: "create_timeline",
 	},
 	{
@@ -469,7 +469,7 @@ export const PLAN_STEPS: StepDefinition[] = [
 		description: "Build schedule and critical path",
 		question: "What's the timeline for this plan?",
 		guidance:
-			"Create a timeline: when will each phase complete? What's the critical path (longest sequence of dependent tasks)? What's the target completion date?\n\n**How to provide your answer:**\n```javascript\nupdate_draft({\n  draft_id: '<your-draft-id>',\n  data: {\n    timeline: {\n      start_date: '2025-10-15',\n      target_completion: '2025-10-28',\n      total_duration: '14 days',\n      phase_schedule: [\n        'Phase 1 (Infrastructure): Days 1-3',\n        'Phase 2 (OAuth2 Flow): Days 4-7',\n        'Phase 3 (Token Lifecycle): Days 8-10',\n        'Phase 4 (Integration & Testing): Days 11-13',\n        'Phase 5 (Documentation & Deployment): Day 14'\n      ],\n      critical_path: 'Infrastructure Setup -> OAuth2 Flow Implementation -> Token Lifecycle -> Integration Testing. Total: 13 days with 1 day buffer.'\n    }\n  }\n})\n```",
+			"Create a timeline: when will each phase complete? What's the critical path (longest sequence of dependent tasks)? What's the target completion date?",
 		next_step: "trace_specs",
 	},
 	{
@@ -479,7 +479,7 @@ export const PLAN_STEPS: StepDefinition[] = [
 		description: "Link to requirements and components",
 		question: "How do the tasks trace to requirements and components?",
 		guidance:
-			"Link each task to requirement IDs and component IDs. Ensure full traceability - every task should support at least one requirement or component.\n\n**How to provide your answer:**\n```javascript\nupdate_draft({\n  draft_id: '<your-draft-id>',\n  data: {\n    task_traceability: {\n      'task-001': {\n        requirements: ['req-001-enterprise-sso'],\n        components: ['svc-002-oauth-service']\n      },\n      'task-002': {\n        requirements: ['req-001-enterprise-sso/crit-001'],\n        components: ['svc-002-oauth-service']\n      },\n      'task-003': {\n        requirements: ['req-001-enterprise-sso/crit-001', 'req-001-enterprise-sso/crit-002'],\n        components: ['svc-002-oauth-service']\n      },\n      'task-004': {\n        requirements: ['req-002-token-management/crit-001'],\n        components: ['svc-002-oauth-service', 'lib-001-session-store']\n      }\n      // ... continue for all tasks\n    }\n  }\n})\n```",
+			"Link each task to requirement IDs and component IDs. Ensure full traceability - every task should support at least one requirement or component.",
 		next_step: "validate_refine",
 	},
 	{
@@ -490,11 +490,14 @@ export const PLAN_STEPS: StepDefinition[] = [
 		question:
 			"Create the complete plan specification using all information from previous steps.",
 		guidance:
-			"Final step: Create a complete plan object with ALL fields properly structured. Use the schema provided in the finalization instructions. Ensure type is 'plan', number is set, tasks have IDs and structure, and all data from previous steps is included. The system will validate this against the schema.\n\n**How to provide your answer:**\n```javascript\nupdate_draft({\n  draft_id: '<your-draft-id>',\n  data: {\n    type: 'plan',\n    slug: 'oauth2-enterprise-sso',\n    name: 'OAuth2 Enterprise SSO Implementation',\n    number: '001',\n    description: 'Implement OAuth2 authentication with enterprise SSO support using SAML 2.0, including token lifecycle management and secure session handling.',\n    priority: 'critical',\n    depends_on: ['pln-002-session-store-upgrade'],\n    criteria_id: 'req-001-enterprise-sso/crit-001',\n    tasks: [\n      {\n        id: 'task-001',\n        description: 'Set up OAuth2 authentication service infrastructure',\n        priority: 'critical',\n        depends_on: [],\n        completed: false,\n        considerations: [\n          'Ensure Docker configuration supports required Node.js version',\n          'Configure environment variables for OAuth provider credentials'\n        ],\n        files: ['services/auth/Dockerfile', 'services/auth/package.json']\n      },\n      {\n        id: 'task-002',\n        description: 'Configure Passport.js with OAuth2 strategy',\n        priority: 'critical',\n        depends_on: ['task-001'],\n        completed: false,\n        considerations: ['Support multiple OAuth2 providers via configuration'],\n        references: ['https://www.passportjs.org/docs/'],\n        files: ['services/auth/src/strategies/oauth2.strategy.ts']\n      }\n      // ... include all tasks with full details\n    ],\n    acceptance_criteria: [\n      'Users can authenticate via SAML 2.0 enterprise identity provider',\n      'OAuth2 authorization code flow completes successfully',\n      'All tests pass with 90%+ coverage'\n    ],\n    testing_strategy: {\n      unit_tests: 'Jest for all OAuth2 components. Target: 90%+ coverage.',\n      integration_tests: 'Full OAuth2 flow with mock provider.',\n      security_tests: 'Verify token encryption, HTTPS enforcement, PKCE.'\n    },\n    risks: [\n      {\n        risk: 'OAuth provider configuration complexity',\n        probability: 'medium',\n        impact: 'high',\n        mitigation: 'Start integration early, use mock provider for testing'\n      }\n    ],\n    milestones: [\n      'M1: Infrastructure Ready (Day 3)',\n      'M2: OAuth2 Flow Complete (Day 7)',\n      'M3: Token Lifecycle Implemented (Day 10)',\n      'M4: Testing Complete (Day 14)'\n    ],\n    timeline: {\n      start_date: '2025-10-15',\n      target_completion: '2025-10-28',\n      total_duration: '14 days'\n    }\n  }\n})\n```",
+			"Final step: Create a complete plan object with ALL fields properly structured. Use the schema provided in the finalization instructions. Ensure type is 'plan', number is set, tasks have IDs and structure, and all data from previous steps is included. The system will validate this against the schema.",
 		next_step: null,
 	},
 ];
 
+/**
+ * Step definitions for Constitutions (7 steps)
+ */
 export const CONSTITUTION_STEPS: StepDefinition[] = [
 	{
 		id: "research_existing_constitutions",
