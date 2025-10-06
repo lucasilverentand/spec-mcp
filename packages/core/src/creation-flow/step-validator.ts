@@ -570,16 +570,12 @@ export class StepValidator {
 
 	private validateResearchExistingComponents(
 		data: Record<string, unknown>,
-		issues: string[],
-		suggestions: string[],
+		_issues: string[],
+		_suggestions: string[],
 		strengths: string[],
 	): void {
 		const research = data.component_research as string | undefined;
 		if (!research) {
-			issues.push("Component research is required");
-			suggestions.push(
-				"Use query to search for similar components across all types",
-			);
 			return;
 		}
 
