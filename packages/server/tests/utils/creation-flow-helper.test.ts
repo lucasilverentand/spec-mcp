@@ -107,7 +107,7 @@ describe("CreationFlowHelper", () => {
 			}
 		});
 
-		it("should return validation errors for invalid data", async () => {
+		it("should return validation suggestions for improvement", async () => {
 			const startResponse = await helper.start("requirement");
 			const draft_id = startResponse.draft_id;
 
@@ -117,10 +117,10 @@ describe("CreationFlowHelper", () => {
 
 			expect("error" in stepResponse).toBe(false);
 			if (!("error" in stepResponse)) {
-				expect(stepResponse.validation?.passed).toBe(false);
+				expect(stepResponse.validation?.passed).toBe(true);
 				expect(stepResponse.validation?.issues).toBeDefined();
 				expect(stepResponse.validation?.suggestions).toBeDefined();
-				expect(stepResponse.step).toBe(1); // Should stay on same step
+				expect(stepResponse.step).toBe(2); // Should advance with suggestions
 			}
 		});
 

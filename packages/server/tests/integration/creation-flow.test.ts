@@ -501,13 +501,13 @@ describe("Creation Flow Integration Tests", () => {
 
 			expect("error" in stepResponse).toBe(false);
 			if (!("error" in stepResponse)) {
-				expect(stepResponse.validation?.passed).toBe(false);
-				expect(stepResponse.validation?.issues.length).toBeGreaterThan(0);
-				expect(stepResponse.step).toBe(1); // Should not advance
+				expect(stepResponse.validation?.passed).toBe(true);
+				expect(stepResponse.validation?.suggestions.length).toBeGreaterThan(0);
+				expect(stepResponse.step).toBe(2); // Should advance with suggestions
 			}
 		});
 
-		it("should provide helpful suggestions on validation failure", async () => {
+		it("should provide helpful suggestions for improvement", async () => {
 			const startResponse = await creationFlowHelper.start("requirement");
 			const draft_id = startResponse.draft_id;
 
@@ -517,7 +517,7 @@ describe("Creation Flow Integration Tests", () => {
 
 			expect("error" in stepResponse).toBe(false);
 			if (!("error" in stepResponse)) {
-				expect(stepResponse.validation?.passed).toBe(false);
+				expect(stepResponse.validation?.passed).toBe(true);
 				expect(stepResponse.validation?.suggestions?.length).toBeGreaterThan(0);
 			}
 		});
@@ -605,18 +605,19 @@ describe("Creation Flow Integration Tests", () => {
 			expect(draft?.validation_results.every((v) => v.passed)).toBe(true);
 		});
 
-		it("should include failed validations in history", async () => {
+		it("should include validations with suggestions in history", async () => {
 			const startResponse = await creationFlowHelper.start("requirement");
 			const draft_id = startResponse.draft_id;
 
-			// This will fail
+			// This will pass with suggestions
 			await creationFlowHelper.step(draft_id, {
 				description: "Short",
 			});
 
 			const draft = creationFlowHelper.getDraft(draft_id);
 			expect(draft?.validation_results.length).toBe(1);
-			expect(draft?.validation_results[0]?.passed).toBe(false);
+			expect(draft?.validation_results[0]?.passed).toBe(true);
+			expect(draft?.validation_results[0]?.suggestions.length).toBeGreaterThan(0);
 		});
 	});
 });

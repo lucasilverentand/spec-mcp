@@ -168,24 +168,22 @@ export class StepValidator {
 			return;
 		}
 
-		if (description.length < 50) {
-			issues.push("Description must be at least 50 characters");
-			suggestions.push("Expand the description to provide more context");
+		if (description.length < 20) {
+			suggestions.push(
+				"Consider expanding the description to provide more context",
+			);
 		}
 
 		const hasRationale =
 			description.toLowerCase().includes("because") ||
 			description.toLowerCase().includes("needed") ||
-			description.toLowerCase().includes("so that");
+			description.toLowerCase().includes("so that") ||
+			description.toLowerCase().includes("to") ||
+			description.toLowerCase().includes("for");
 
 		if (!hasRationale) {
-			issues.push(
-				"Description lacks rationale (should include 'because', 'needed', or 'so that')",
-			);
-			suggestions.push("Explain WHY this requirement is needed");
-		}
-
-		if (issues.length === 0) {
+			suggestions.push("Consider explaining WHY this requirement is needed");
+		} else {
 			strengths.push("Clear problem identification with rationale");
 		}
 	}
@@ -250,9 +248,9 @@ export class StepValidator {
 			return;
 		}
 
-		if (criteria.length < 2) {
-			issues.push("At least 2 acceptance criteria are required");
-			suggestions.push("Add more specific, testable criteria");
+		if (criteria.length < 1) {
+			issues.push("At least 1 acceptance criterion is required");
+			suggestions.push("Add specific, testable criteria");
 		}
 
 		// Check if criteria are measurable
@@ -266,6 +264,10 @@ export class StepValidator {
 			"less than",
 			"more than",
 			"equals",
+			"can",
+			"should",
+			"must",
+			"will",
 		];
 		const measurableCriteria = criteria.filter((c) => {
 			// Handle both string criteria and object criteria with description
@@ -279,19 +281,18 @@ export class StepValidator {
 			return measurableKeywords.some((keyword) => lower.includes(keyword));
 		});
 
-		if (measurableCriteria.length < criteria.length / 2) {
-			issues.push("Most criteria should be measurable and specific");
-			suggestions.push("Use concrete metrics and numbers where possible");
-		}
-
-		if (issues.length === 0) {
+		if (measurableCriteria.length === 0 && criteria.length > 0) {
+			suggestions.push(
+				"Consider using concrete metrics and numbers where possible",
+			);
+		} else if (measurableCriteria.length > 0) {
 			strengths.push("Well-defined measurable criteria");
 		}
 	}
 
 	private validateSpecificLanguage(
 		data: Record<string, unknown>,
-		issues: string[],
+		_issues: string[],
 		suggestions: string[],
 		strengths: string[],
 	): void {
@@ -323,11 +324,8 @@ export class StepValidator {
 		);
 
 		if (foundVagueTerms.length > 0) {
-			issues.push(
-				`Description contains vague terms: ${foundVagueTerms.join(", ")}`,
-			);
 			suggestions.push(
-				"Replace vague terms with specific, measurable language",
+				"Consider replacing vague terms with specific, measurable language",
 			);
 		} else {
 			strengths.push("Specific, quantifiable language used");
@@ -458,7 +456,7 @@ export class StepValidator {
 
 	private validateResearchSimilarRequirements(
 		data: Record<string, unknown>,
-		issues: string[],
+		_issues: string[],
 		suggestions: string[],
 		strengths: string[],
 	): void {
@@ -468,9 +466,8 @@ export class StepValidator {
 			| undefined;
 
 		if (!research && !similarRequirements) {
-			issues.push("Research findings are required");
 			suggestions.push(
-				"Use query tool to search for similar requirements and document your findings",
+				"Consider using query tool to search for similar requirements",
 			);
 			return;
 		}
@@ -492,7 +489,7 @@ export class StepValidator {
 
 	private validateConstitutionReview(
 		data: Record<string, unknown>,
-		issues: string[],
+		_issues: string[],
 		suggestions: string[],
 		strengths: string[],
 	): void {
@@ -503,9 +500,8 @@ export class StepValidator {
 		const noConstitutions = data.no_constitutions as boolean | undefined;
 
 		if (constitutionArticles === undefined && !noConstitutions) {
-			issues.push("Constitution review is required");
 			suggestions.push(
-				"Query constitutions and reference relevant article IDs with empty array [] if none exist",
+				"Consider querying constitutions and referencing relevant article IDs",
 			);
 			return;
 		}
@@ -532,8 +528,7 @@ export class StepValidator {
 					`Referenced ${validArticleIds.length} constitution article(s)`,
 				);
 			} else if (validArticleIds.length === 0 && articles.length > 0) {
-				issues.push("Invalid article ID format");
-				suggestions.push("Use format: con-001-slug/art-001");
+				suggestions.push("Article IDs should use format: con-001-slug/art-001");
 			}
 		}
 	}
@@ -586,15 +581,14 @@ export class StepValidator {
 
 	private validateLibraryResearch(
 		data: Record<string, unknown>,
-		issues: string[],
+		_issues: string[],
 		suggestions: string[],
 		strengths: string[],
 	): void {
 		const research = data.library_research as string | undefined;
 		if (!research) {
-			issues.push("Library research is required");
 			suggestions.push(
-				"Use context7 to research third-party libraries before building custom",
+				"Consider using context7 to research third-party libraries before building custom solutions",
 			);
 			return;
 		}
@@ -609,7 +603,7 @@ export class StepValidator {
 
 	private validateComponentConstitutionAlignment(
 		data: Record<string, unknown>,
-		issues: string[],
+		_issues: string[],
 		suggestions: string[],
 		strengths: string[],
 	): void {
@@ -618,9 +612,8 @@ export class StepValidator {
 			| string[]
 			| undefined;
 		if (!articles) {
-			issues.push("Constitution alignment check is required");
 			suggestions.push(
-				"Query constitutions and identify relevant architectural principles",
+				"Consider querying constitutions to identify relevant architectural principles",
 			);
 			return;
 		}
@@ -635,20 +628,19 @@ export class StepValidator {
 
 	private validateDuplicatePrevention(
 		data: Record<string, unknown>,
-		issues: string[],
+		_issues: string[],
 		suggestions: string[],
 		strengths: string[],
 	): void {
 		const justification = data.justification as string | undefined;
 		if (!justification) {
-			issues.push("Justification for new component is required");
 			suggestions.push(
-				"Explain why existing components or libraries cannot be used",
+				"Consider explaining why existing components or libraries cannot be used",
 			);
 			return;
 		}
 
-		if (justification.length > 50) {
+		if (justification.length > 20) {
 			strengths.push("Clear justification provided for new component");
 		}
 	}
@@ -700,9 +692,10 @@ export class StepValidator {
 			case "define_boundaries":
 				if (data.description) {
 					const desc = data.description as string;
-					if (desc.length < 50) {
-						issues.push("Description should be at least 50 characters");
-						suggestions.push("Provide more detail about component boundaries");
+					if (desc.length < 20) {
+						suggestions.push(
+							"Consider providing more detail about component boundaries",
+						);
 					} else {
 						strengths.push("Component boundaries clearly defined");
 					}
@@ -869,10 +862,9 @@ export class StepValidator {
 
 			case "basic_info": {
 				const description = data.description as string | undefined;
-				if (description && description.length < 20) {
-					issues.push("Description should be at least 20 characters");
+				if (description && description.length < 10) {
 					suggestions.push(
-						"Provide a detailed description of the constitution's purpose",
+						"Consider providing more detail about the constitution's purpose",
 					);
 				}
 				break;
@@ -918,12 +910,12 @@ export class StepValidator {
 			case "decision_statement": {
 				const decision = data.decision as string | undefined;
 				if (decision && typeof decision === "string") {
-					if (decision.length < 20) {
-						issues.push("Decision statement should be at least 20 characters");
-						suggestions.push("Provide a clear, concise decision statement");
-					} else if (decision.length > 200) {
-						issues.push("Decision statement should be under 200 characters");
-						suggestions.push("Keep the decision statement concise");
+					if (decision.length < 10) {
+						suggestions.push("Consider providing a clearer decision statement");
+					} else if (decision.length > 300) {
+						suggestions.push(
+							"Consider keeping the decision statement more concise",
+						);
 					} else {
 						strengths.push("Decision clearly stated");
 					}

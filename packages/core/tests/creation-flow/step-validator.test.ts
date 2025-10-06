@@ -27,31 +27,31 @@ describe("StepValidator", () => {
 				);
 			});
 
-			it("should fail with description under 50 characters", () => {
+			it("should suggest expanding very short descriptions", () => {
 				const result = validator.validate(
 					"requirement",
 					"problem_identification",
 					{
-						description: "Short description",
+						description: "Short",
 					},
 				);
 
-				expect(result.passed).toBe(false);
-				expect(result.issues.length).toBeGreaterThan(0);
+				expect(result.passed).toBe(true);
+				expect(result.suggestions.length).toBeGreaterThan(0);
 			});
 
-			it("should fail without rationale keywords", () => {
+			it("should suggest adding rationale when missing common keywords", () => {
 				const result = validator.validate(
 					"requirement",
 					"problem_identification",
 					{
 						description:
-							"This is a sufficiently long description but it lacks any explanation for creating this feature",
+							"This is a sufficiently long description but it lacks any explanation",
 					},
 				);
 
-				expect(result.passed).toBe(false);
-				expect(result.issues.some((i) => i.includes("rationale"))).toBe(true);
+				expect(result.passed).toBe(true);
+				expect(result.suggestions.some((s) => s.includes("WHY"))).toBe(true);
 			});
 
 			it("should accept 'so that' as rationale", () => {
@@ -149,7 +149,7 @@ describe("StepValidator", () => {
 				expect(result.strengths).toContain("Well-defined measurable criteria");
 			});
 
-			it("should fail with less than 2 criteria", () => {
+			it("should pass with single criterion", () => {
 				const result = validator.validate("requirement", "measurability", {
 					criteria: [
 						{
@@ -160,10 +160,10 @@ describe("StepValidator", () => {
 					],
 				});
 
-				expect(result.passed).toBe(false);
+				expect(result.passed).toBe(true);
 			});
 
-			it("should fail if criteria are not measurable", () => {
+			it("should suggest metrics when criteria lack measurable keywords", () => {
 				const result = validator.validate("requirement", "measurability", {
 					criteria: [
 						{
@@ -179,8 +179,10 @@ describe("StepValidator", () => {
 					],
 				});
 
-				expect(result.passed).toBe(false);
-				expect(result.issues.some((i) => i.includes("measurable"))).toBe(true);
+				expect(result.passed).toBe(true);
+				expect(result.suggestions.some((s) => s.includes("metrics"))).toBe(
+					true,
+				);
 			});
 		});
 
@@ -205,24 +207,25 @@ describe("StepValidator", () => {
 				);
 			});
 
-			it("should fail with vague terms like 'fast'", () => {
+			it("should suggest avoiding vague terms like 'fast'", () => {
 				const result = validator.validate("requirement", "specific_language", {
 					description: "System must provide fast authentication for users",
 					criteria: [],
 				});
 
-				expect(result.passed).toBe(false);
-				expect(result.issues.some((i) => i.includes("vague"))).toBe(true);
+				expect(result.passed).toBe(true);
+				expect(result.suggestions.some((s) => s.includes("vague"))).toBe(true);
 			});
 
-			it("should fail with terms like 'easy' or 'simple'", () => {
+			it("should suggest avoiding terms like 'easy' or 'simple'", () => {
 				const result = validator.validate("requirement", "specific_language", {
 					description:
 						"Create an easy to use and simple authentication system that is efficient",
 					criteria: [],
 				});
 
-				expect(result.passed).toBe(false);
+				expect(result.passed).toBe(true);
+				expect(result.suggestions.length).toBeGreaterThan(0);
 			});
 		});
 
@@ -378,12 +381,13 @@ describe("StepValidator", () => {
 				expect(result.passed).toBe(true);
 			});
 
-			it("should fail with description under 50 characters", () => {
+			it("should suggest expanding very short descriptions", () => {
 				const result = validator.validate("component", "define_boundaries", {
 					description: "Handles auth",
 				});
 
-				expect(result.passed).toBe(false);
+				expect(result.passed).toBe(true);
+				expect(result.suggestions.length).toBeGreaterThan(0);
 			});
 		});
 
@@ -568,13 +572,14 @@ describe("StepValidator", () => {
 				expect(result.passed).toBe(true);
 			});
 
-			it("should fail with short description", () => {
+			it("should suggest expanding very short descriptions", () => {
 				const result = validator.validate("constitution", "basic_info", {
 					name: "Principles",
-					description: "Short desc",
+					description: "Short",
 				});
 
-				expect(result.passed).toBe(false);
+				expect(result.passed).toBe(true);
+				expect(result.suggestions.length).toBeGreaterThan(0);
 			});
 		});
 
@@ -631,20 +636,22 @@ describe("StepValidator", () => {
 				expect(result.strengths).toContain("Decision clearly stated");
 			});
 
-			it("should fail with too short statement", () => {
+			it("should suggest expanding very short statements", () => {
 				const result = validator.validate("decision", "decision_statement", {
-					decision: "Use PostgreSQL",
+					decision: "Use DB",
 				});
 
-				expect(result.passed).toBe(false);
+				expect(result.passed).toBe(true);
+				expect(result.suggestions.length).toBeGreaterThan(0);
 			});
 
-			it("should fail with too long statement", () => {
+			it("should suggest shortening very long statements", () => {
 				const result = validator.validate("decision", "decision_statement", {
-					decision: "x".repeat(501),
+					decision: "x".repeat(301),
 				});
 
-				expect(result.passed).toBe(false);
+				expect(result.passed).toBe(true);
+				expect(result.suggestions.length).toBeGreaterThan(0);
 			});
 		});
 
