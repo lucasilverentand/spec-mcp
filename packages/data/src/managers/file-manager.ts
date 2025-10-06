@@ -66,7 +66,7 @@ export class FileManager {
 		}
 
 		// Default fallback
-		this.resolvedPath = resolve("./specs");
+		this.resolvedPath = resolve("./.specs");
 		return this.resolvedPath;
 	}
 
@@ -77,7 +77,7 @@ export class FileManager {
 		// If a path hint is provided, check it first
 		if (this.config.path) {
 			const basePath = gitRoot || process.cwd();
-			const hintPath = join(basePath, this.config.path);
+			const hintPath = resolve(basePath, this.config.path);
 			if (
 				(await this.pathExists(hintPath)) &&
 				(await this.isDirectory(hintPath))
@@ -91,14 +91,14 @@ export class FileManager {
 
 		// No path hint - search for existing specs folders
 		if (gitRoot) {
-			// Prefer 'specs' over '.specs' for better visibility
-			searchPaths.push(join(gitRoot, "specs"));
-			searchPaths.push(join(gitRoot, ".specs"));
+			// Prefer '.specs' over 'specs' (hidden directory commonly used for drafts)
+			searchPaths.push(resolve(gitRoot, ".specs"));
+			searchPaths.push(resolve(gitRoot, "specs"));
 		}
 
-		// Add current working directory - prefer 'specs' over '.specs'
-		searchPaths.push(join(process.cwd(), "specs"));
-		searchPaths.push(join(process.cwd(), ".specs"));
+		// Add current working directory - prefer '.specs' over 'specs'
+		searchPaths.push(resolve(process.cwd(), ".specs"));
+		searchPaths.push(resolve(process.cwd(), "specs"));
 
 		// Look for existing specs folder in search paths
 		for (const path of searchPaths) {
@@ -107,10 +107,10 @@ export class FileManager {
 			}
 		}
 
-		// If no existing specs folder found, default to 'specs' in git root or cwd
+		// If no existing specs folder found, default to '.specs' in git root or cwd
 		const defaultPath = gitRoot
-			? join(gitRoot, "specs")
-			: join(process.cwd(), "specs");
+			? resolve(gitRoot, ".specs")
+			: resolve(process.cwd(), ".specs");
 
 		return defaultPath;
 	}
@@ -145,16 +145,25 @@ export class FileManager {
 		}
 	}
 
+	private getEntityFolder(entityType: EntityType): string {
+		const folderMap: Record<EntityType, string> = {
+			requirement: "requirements",
+			plan: "plans",
+			constitution: "constitutions",
+			decision: "decisions",
+			app: "components",
+			service: "components",
+			library: "components",
+		};
+		const folder = folderMap[entityType];
+		if (!folder) {
+			throw new Error(`Unknown entity type: ${entityType}`);
+		}
+		return folder;
+	}
+
 	getEntityPath(entityType: EntityType, id: string): string {
-		const folder =
-			entityType === "requirement"
-				? "requirements"
-				: entityType === "plan"
-					? "plans"
-					: entityType === "constitution"
-						? "constitutions"
-						: "components";
-		return `${folder}/${id}.json`;
+		return `${this.getEntityFolder(entityType)}/${id}.json`;
 	}
 
 	async getFullEntityPath(entityType: EntityType, id: string): Promise<string> {
@@ -171,6 +180,7 @@ export class FileManager {
 			join(specsPath, "plans"),
 			join(specsPath, "components"),
 			join(specsPath, "constitutions"),
+			join(specsPath, "decisions"),
 		];
 
 		for (const dir of directories) {
@@ -218,15 +228,7 @@ export class FileManager {
 	async listEntityIds(entityType: EntityType): Promise<string[]> {
 		try {
 			const specsPath = await this.getSpecsPath();
-			const folder =
-				entityType === "requirement"
-					? "requirements"
-					: entityType === "plan"
-						? "plans"
-						: entityType === "constitution"
-							? "constitutions"
-							: "components";
-
+			const folder = this.getEntityFolder(entityType);
 			const folderPath = join(specsPath, folder);
 			const files = await readdir(folderPath);
 
