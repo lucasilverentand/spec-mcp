@@ -21,16 +21,22 @@
 		"build": "tsc",
 		"dev": "tsc --watch",
 		"clean": "rm -rf dist",
-		"typecheck": "tsc --noEmit"
+		"typecheck": "tsc --noEmit",
+		"test": "vitest run",
+		"test:watch": "vitest watch",
+		"test:coverage": "vitest run --coverage"
 	},
 	"dependencies": {
 		"@spec-mcp/core": "workspace:*",
+		"@spec-mcp/schemas": "workspace:*",
 		"commander": "^12.1.0"
 	},
 	"devDependencies": {
 		"@spec-mcp/tsconfig": "workspace:*",
 		"@types/node": "^24.5.2",
-		"typescript": "^5.9.2"
+		"@vitest/coverage-v8": "^3.2.4",
+		"typescript": "^5.9.2",
+		"vitest": "^3.2.4"
 	},
 	"engines": {
 		"node": ">=18.0.0"
