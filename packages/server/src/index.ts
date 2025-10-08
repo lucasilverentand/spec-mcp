@@ -2,14 +2,19 @@
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { SpecOperations } from "@spec-mcp/core";
-import { loadConfig } from "./config/index.js";
-import { registerPrompts } from "./prompts/index.js";
-import { registerResources } from "./resources/index.js";
-import { registerAllTools } from "./tools/index.js";
+import { z } from "zod";
 import { ErrorCode, McpError } from "./utils/error-codes.js";
 import { logger } from "./utils/logger.js";
 import { VERSION } from "./utils/version.js";
+import {
+	createDraftTool,
+	submitDraftAnswerTool,
+	createRequirementTool,
+	createComponentTool,
+	createPlanTool,
+	createConstitutionTool,
+	createDecisionTool,
+} from "./tools/index.js";
 
 /**
  * Graceful shutdown handler
@@ -143,6 +148,236 @@ class ConnectionManager {
 }
 
 /**
+ * Register MCP tools
+ */
+function registerTools(server: McpServer) {
+	// Draft creation workflow tools
+	server.tool(
+		"create_draft",
+		"Start a new draft creation flow for a specification entity",
+		{
+			type: z
+				.enum(["requirement", "component", "plan", "constitution", "decision"])
+				.describe(
+					"Type of entity to create (requirement, component, plan, constitution, decision)",
+				),
+			name: z.string().min(1).describe("Name of the entity being created"),
+		},
+		async ({ type, name }) => {
+			const result = await createDraftTool(type, name);
+			return {
+				content: [
+					{
+						type: "text" as const,
+						text: result.success
+							? `${result.guidance}\n\n**First Question:**\n${result.first_question}`
+							: (result.error || "Unknown error"),
+					},
+				],
+				isError: !result.success,
+			};
+		},
+	);
+
+	server.tool(
+		"submit_draft_answer",
+		"Submit an answer to the current question in a draft",
+		{
+			draft_id: z
+				.string()
+				.regex(/^draft-\d{3}$/)
+				.describe("The draft ID (format: draft-XXX)"),
+			answer: z.string().min(1).describe("Your answer to the current question"),
+		},
+		async ({ draft_id, answer }) => {
+			const result = await submitDraftAnswerTool(draft_id, answer);
+			if (!result.success) {
+				return {
+					content: [{ type: "text" as const, text: result.error || "Unknown error" }],
+					isError: true,
+				};
+			}
+
+			let text = result.guidance || "";
+			if (!result.completed && result.next_question) {
+				text += `\n\n**Next Question:**\n${result.next_question}`;
+			}
+
+			return {
+				content: [{ type: "text" as const, text }],
+			};
+		},
+	);
+
+	server.tool(
+		"create_requirement",
+		"Create a requirement from a completed draft. The draft_id serves as proof that all questions were answered through the Q&A flow.",
+		{
+			draft_id: z
+				.string()
+				.regex(/^draft-\d{3}$/)
+				.describe(
+					"The draft ID (must be a completed requirement draft, format: draft-XXX). This proves all questions were answered.",
+				),
+			data: z
+				.record(z.unknown())
+				.optional()
+				.describe(
+					"Optional: Full requirement specification data. If provided, will be validated and merged with draft data.",
+				),
+		},
+		async ({ draft_id, data }) => {
+			const result = await createRequirementTool(draft_id, data);
+			return {
+				content: [
+					{
+						type: "text" as const,
+						text: result.success
+							? `${result.message}\n\nEntity ID: ${result.entity_id}`
+							: (result.error || "Unknown error"),
+					},
+				],
+				isError: !result.success,
+			};
+		},
+	);
+
+	server.tool(
+		"create_component",
+		"Create a component from a completed draft. The draft_id serves as proof that all questions were answered through the Q&A flow.",
+		{
+			draft_id: z
+				.string()
+				.regex(/^draft-\d{3}$/)
+				.describe(
+					"The draft ID (must be a completed component draft, format: draft-XXX). This proves all questions were answered.",
+				),
+			data: z
+				.record(z.unknown())
+				.optional()
+				.describe(
+					"Optional: Full component specification data. If provided, will be validated and merged with draft data.",
+				),
+		},
+		async ({ draft_id, data }) => {
+			const result = await createComponentTool(draft_id, data);
+			return {
+				content: [
+					{
+						type: "text" as const,
+						text: result.success
+							? `${result.message}\n\nEntity ID: ${result.entity_id}`
+							: (result.error || "Unknown error"),
+					},
+				],
+				isError: !result.success,
+			};
+		},
+	);
+
+	server.tool(
+		"create_plan",
+		"Create a plan from a completed draft. The draft_id serves as proof that all questions were answered through the Q&A flow.",
+		{
+			draft_id: z
+				.string()
+				.regex(/^draft-\d{3}$/)
+				.describe(
+					"The draft ID (must be a completed plan draft, format: draft-XXX). This proves all questions were answered.",
+				),
+			data: z
+				.record(z.unknown())
+				.optional()
+				.describe(
+					"Optional: Full plan specification data. If provided, will be validated and merged with draft data.",
+				),
+		},
+		async ({ draft_id, data }) => {
+			const result = await createPlanTool(draft_id, data);
+			return {
+				content: [
+					{
+						type: "text" as const,
+						text: result.success
+							? `${result.message}\n\nEntity ID: ${result.entity_id}`
+							: (result.error || "Unknown error"),
+					},
+				],
+				isError: !result.success,
+			};
+		},
+	);
+
+	server.tool(
+		"create_constitution",
+		"Create a constitution from a completed draft. The draft_id serves as proof that all questions were answered through the Q&A flow.",
+		{
+			draft_id: z
+				.string()
+				.regex(/^draft-\d{3}$/)
+				.describe(
+					"The draft ID (must be a completed constitution draft, format: draft-XXX). This proves all questions were answered.",
+				),
+			data: z
+				.record(z.unknown())
+				.optional()
+				.describe(
+					"Optional: Full constitution specification data. If provided, will be validated and merged with draft data.",
+				),
+		},
+		async ({ draft_id, data }) => {
+			const result = await createConstitutionTool(draft_id, data);
+			return {
+				content: [
+					{
+						type: "text" as const,
+						text: result.success
+							? `${result.message}\n\nEntity ID: ${result.entity_id}`
+							: (result.error || "Unknown error"),
+					},
+				],
+				isError: !result.success,
+			};
+		},
+	);
+
+	server.tool(
+		"create_decision",
+		"Create a decision from a completed draft. The draft_id serves as proof that all questions were answered through the Q&A flow.",
+		{
+			draft_id: z
+				.string()
+				.regex(/^draft-\d{3}$/)
+				.describe(
+					"The draft ID (must be a completed decision draft, format: draft-XXX). This proves all questions were answered.",
+				),
+			data: z
+				.record(z.unknown())
+				.optional()
+				.describe(
+					"Optional: Full decision specification data. If provided, will be validated and merged with draft data.",
+				),
+		},
+		async ({ draft_id, data }) => {
+			const result = await createDecisionTool(draft_id, data);
+			return {
+				content: [
+					{
+						type: "text" as const,
+						text: result.success
+							? `${result.message}\n\nEntity ID: ${result.entity_id}`
+							: (result.error || "Unknown error"),
+					},
+				],
+				isError: !result.success,
+			};
+		},
+	);
+
+	logger.info("Tools registered successfully");
+}
+
+/**
  * Main entry point for the Spec MCP Server
  */
 async function main() {
@@ -150,28 +385,14 @@ async function main() {
 	const shutdownHandler = new ShutdownHandler();
 
 	try {
-		// Load and validate configuration
-		const config = await loadConfig();
-
 		// Initialize the MCP server
 		const server = new McpServer({
 			name: "spec-mcp",
 			version: VERSION,
-			capabilities: {
-				resources: {},
-				prompts: {},
-			},
 		});
 
-		// Initialize spec operations
-		const operations = new SpecOperations({
-			specsPath: config.specsPath,
-		});
-
-		// Register all tools, resources, and prompts
-		registerAllTools(server, operations, config);
-		registerResources(server, config);
-		registerPrompts(server, config);
+		// Register tools
+		registerTools(server);
 
 		// Set up connection with retry logic
 		const transport = new StdioServerTransport();
@@ -187,7 +408,6 @@ async function main() {
 
 		logger.info(
 			{
-				specsPath: config.specsPath,
 				version: VERSION,
 			},
 			"Spec MCP Server running",
