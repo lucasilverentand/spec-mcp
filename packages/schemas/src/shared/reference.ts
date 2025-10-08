@@ -27,7 +27,7 @@ const _ReferenceBaseSchema = z.object({
 export const ReferenceSchema = z.discriminatedUnion("type", [
 	_ReferenceBaseSchema.extend({
 		type: z.literal("url"),
-		url: z.url(),
+		url: z.string().url(),
 		mime_type: z.string().optional(),
 	}),
 	_ReferenceBaseSchema.extend({

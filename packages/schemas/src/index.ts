@@ -11,8 +11,9 @@ export * from "./shared/task";
 export * from "./shared/test-case";
 
 // Spec schemas
+export * from "./specs/business-requirement";
+export * from "./specs/technical-requirement";
 export * from "./specs/component";
 export * from "./specs/constitution";
 export * from "./specs/decision";
 export * from "./specs/plan";
-export * from "./specs/requirement";

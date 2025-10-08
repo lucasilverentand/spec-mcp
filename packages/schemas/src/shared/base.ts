@@ -1,7 +1,8 @@
 import z from "zod";
 
 export const EntityTypeSchema = z.enum([
-	"requirement",
+	"business-requirement",
+	"technical-requirement",
 	"plan",
 	"app",
 	"component",
@@ -38,52 +39,23 @@ export const ItemPrioritySchema = z.enum([
 	"nice-to-have",
 ]);
 
-export const BaseSchema = z.object({
-	type: EntityTypeSchema.describe("Type of the entity"),
-	number: z.number().int().nonnegative().describe("Unique sequential number"),
-	slug: EntitySlugSchema.describe("URL-friendly identifier"),
-	name: z.string().min(1).describe("Display name of the entity"),
-	description: z.string().min(1).describe("Detailed description of the entity"),
-	created_at: z.iso.datetime().describe("Timestamp when entity was created"),
-	updated_at: z.iso
-		.datetime()
-		.describe("Timestamp when entity was last updated"),
-	priority: ItemPrioritySchema.default("medium").describe(
-		"Priority level of the plan. 'critical' plans must be completed before 'high', 'high' before 'medium', and 'medium' before 'low'.",
-	),
-});
-
-export type EntityType = z.infer<typeof EntityTypeSchema>;
-export type EntitySlug = z.infer<typeof EntitySlugSchema>;
-export type Base = z.infer<typeof BaseSchema>;
-
-export const EntityTypeShortMap: Record<EntityType, string> = {
-	requirement: "req",
-	plan: "pln",
-	app: "app",
-	component: "cmp",
-	constitution: "con",
-	decision: "dec",
-};
-
-export const CompletionStatusSchema = z.object({
+export const ItemStatusSchema = z.object({
 	completed: z
 		.boolean()
 		.default(false)
 		.describe("Whether the item has been completed"),
-	completed_at: z.iso
+	completed_at: z
+		.string()
 		.datetime()
 		.nullable()
 		.default(null)
 		.describe("Timestamp when the item was completed"),
-});
-
-export const ItemStatusSchema = z.object({
 	verified: z
 		.boolean()
 		.default(false)
 		.describe("Whether the item's completion has been verified by a reviewer"),
-	verified_at: z.iso
+	verified_at: z
+		.string()
 		.datetime()
 		.nullable()
 		.default(null)
@@ -93,3 +65,37 @@ export const ItemStatusSchema = z.object({
 		.default([])
 		.describe("Log of notes taken during item execution"),
 });
+
+export const BaseSchema = z.object({
+	type: EntityTypeSchema.describe("Type of the entity"),
+	number: z.number().int().nonnegative().describe("Unique sequential number"),
+	slug: EntitySlugSchema.describe("URL-friendly identifier"),
+	name: z.string().min(1).describe("Display name of the entity"),
+	description: z.string().min(1).describe("Detailed description of the entity"),
+	priority: ItemPrioritySchema.default("medium").describe(
+		"Priority level of the plan. 'critical' plans must be completed before 'high', 'high' before 'medium', and 'medium' before 'low'.",
+	),
+	created_at: z
+		.string()
+		.datetime()
+		.describe("Timestamp when entity was created"),
+	updated_at: z
+		.string()
+		.datetime()
+		.describe("Timestamp when entity was last updated"),
+	status: ItemStatusSchema.describe("Current status of the entity"),
+});
+
+export type EntityType = z.infer<typeof EntityTypeSchema>;
+export type EntitySlug = z.infer<typeof EntitySlugSchema>;
+export type Base = z.infer<typeof BaseSchema>;
+
+export const EntityTypeShortMap: Record<EntityType, string> = {
+	"business-requirement": "breq",
+	"technical-requirement": "treq",
+	plan: "pln",
+	app: "app",
+	component: "cmp",
+	constitution: "con",
+	decision: "dec",
+};

@@ -1,20 +1,23 @@
 import z from "zod";
 import { ApiContractsSchema } from "../shared/api-contract.js";
 import { BaseSchema } from "../shared/base.js";
+import { CriteriaIdSchema } from "../shared/criteria.js";
 import { DataModelsSchema } from "../shared/data-model.js";
 import { FlowsSchema } from "../shared/flow.js";
 import { ReferencesSchema } from "../shared/reference.js";
 import { ScopeSchema } from "../shared/scope.js";
 import { TasksSchema } from "../shared/task.js";
 import { TestCasesSchema } from "../shared/test-case.js";
-import {
-	AcceptanceCriteriaIdSchema,
-	RequirementIdSchema,
-} from "./requirement.js";
 
 export const PlanIdSchema = z.string().regex(/^pln-\d{3}-[a-z0-9-]+$/, {
 	message: "Plan ID must follow format: pln-XXX-slug-here",
 });
+
+export const RequirementIdSchema = z
+	.string()
+	.regex(/^(brd|prd)-\d{3}-[a-z0-9-]+$/, {
+		message: "Requirement ID must follow format: req-XXX-slug-here",
+	});
 
 // Schema for stored plans (no ID field)
 export const PlanSchema = BaseSchema.extend({
@@ -22,9 +25,7 @@ export const PlanSchema = BaseSchema.extend({
 	criteria: z
 		.object({
 			requirement: RequirementIdSchema.describe("ID of the requirement"),
-			criteria: AcceptanceCriteriaIdSchema.describe(
-				"ID of the acceptance criteria",
-			),
+			criteria: CriteriaIdSchema.describe("ID of the acceptance criteria"),
 		})
 		.describe(
 			"The acceptance criteria ID this plan fulfills (format: req-XXX-slug/crit-XXX). Optional for orchestration/milestone plans.",
@@ -49,5 +50,6 @@ export const PlanSchema = BaseSchema.extend({
 	references: ReferencesSchema.describe("References that inform this plan"),
 }).strict();
 
-export type Plan = z.infer<typeof PlanSchema>;
 export type PlanId = z.infer<typeof PlanIdSchema>;
+export type RequirementId = z.infer<typeof RequirementIdSchema>;
+export type Plan = z.infer<typeof PlanSchema>;

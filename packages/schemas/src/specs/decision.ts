@@ -30,7 +30,6 @@ export const ConsequenceSchema = z.object({
 		.describe("Mitigation strategy for negative consequences or risks"),
 });
 
-// Schema for stored decisions (no ID field)
 export const DecisionSchema = BaseSchema.extend({
 	type: z.literal("decision"),
 	decision: z
@@ -43,7 +42,7 @@ export const DecisionSchema = BaseSchema.extend({
 		.min(20)
 		.max(1000)
 		.describe("Situation or problem that prompted this decision"),
-	status: DecisionStatusSchema.default("proposed").describe(
+	decision_status: DecisionStatusSchema.default("proposed").describe(
 		"Current status of this decision",
 	),
 	alternatives: z
