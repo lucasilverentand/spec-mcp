@@ -1,12 +1,11 @@
-import type { Draft, DraftQuestion, EntityType } from "@spec-mcp/schemas";
+import type { Draft, EntityType } from "@spec-mcp/schemas";
 import { DraftSchema } from "@spec-mcp/schemas";
-import { generateSlug } from "@spec-mcp/utils";
 import type { FileManager } from "../storage/file-manager";
 import type { CreateDraftResult, SubmitAnswerResult } from "./types";
 
 /**
- * Abstract base class for draft managers with embedded workflow logic
- * Provides common draft operations while allowing subclasses to define entity-specific logic
+ * Abstract base class for draft managers
+ * Provides common draft file operations while allowing subclasses to define entity-specific workflows
  */
 export abstract class BaseDraftManager<T> {
 	protected fileManager: FileManager;
@@ -53,73 +52,11 @@ export abstract class BaseDraftManager<T> {
 	}
 
 	/**
-	 * Get questions to ask during draft creation
-	 * Must be implemented by subclasses to provide entity-specific questions
+	 * Save a draft to file
 	 */
-	protected abstract getQuestions(
-		name: string,
-		description?: string,
-	): string[];
-
-	/**
-	 * Create an entity from a completed draft
-	 * Must be implemented by subclasses to handle entity-specific creation logic
-	 */
-	abstract createFromDraft(draftId: string): Promise<T>;
-
-	/**
-	 * Create a new draft
-	 */
-	async createDraft(
-		name: string,
-		description?: string,
-	): Promise<CreateDraftResult> {
-		const questions = this.getQuestions(name, description);
-
-		if (questions.length === 0) {
-			throw new Error("At least one question is required");
-		}
-
-		const draftId = await this.getNextDraftId();
-		const slug = generateSlug(name);
-		const now = new Date().toISOString();
-
-		const draftQuestions: DraftQuestion[] = questions.map((question, idx) => {
-			// Pre-fill first question with description if provided
-			if (idx === 0 && description) {
-				return { question, answer: description };
-			}
-			return { question, answer: null };
-		});
-
-		const draft: Draft = {
-			id: draftId,
-			type: this.entityType,
-			name,
-			slug,
-			questions: draftQuestions,
-			currentQuestionIndex: description ? 1 : 0, // Skip first if pre-filled
-			created_at: now,
-		};
-
-		// Validate with schema
+	protected async saveDraft(draft: Draft): Promise<void> {
 		const validated = DraftSchema.parse(draft);
-
-		// Save to file
-		await this.fileManager.writeYaml(this.getDraftFilePath(draftId), validated);
-
-		// Return the first unanswered question
-		const firstUnansweredIdx = description ? 1 : 0;
-		const firstQuestion = questions[firstUnansweredIdx];
-		if (!firstQuestion) {
-			throw new Error("No questions provided");
-		}
-
-		return {
-			draftId,
-			firstQuestion,
-			totalQuestions: questions.length,
-		};
+		await this.fileManager.writeYaml(this.getDraftFilePath(draft.id), validated);
 	}
 
 	/**
@@ -139,78 +76,6 @@ export abstract class BaseDraftManager<T> {
 		} catch {
 			return null;
 		}
-	}
-
-	/**
-	 * Submit an answer to the current question
-	 */
-	async submitAnswer(
-		draftId: string,
-		answer: string,
-	): Promise<SubmitAnswerResult> {
-		const draft = await this.getDraft(draftId);
-
-		if (!draft) {
-			throw new Error(`Draft not found: ${draftId}`);
-		}
-
-		const currentIndex = draft.currentQuestionIndex;
-
-		if (currentIndex >= draft.questions.length) {
-			throw new Error("All questions have already been answered");
-		}
-
-		// Update the current question's answer
-		const currentQuestion = draft.questions[currentIndex];
-		if (!currentQuestion) {
-			throw new Error("Current question not found");
-		}
-		currentQuestion.answer = answer;
-
-		// Move to next question
-		const nextIndex = currentIndex + 1;
-		draft.currentQuestionIndex = nextIndex;
-
-		// Validate and save
-		const validated = DraftSchema.parse(draft);
-		await this.fileManager.writeYaml(this.getDraftFilePath(draftId), validated);
-
-		// Check if all questions are answered
-		const completed = nextIndex >= draft.questions.length;
-
-		if (completed) {
-			return {
-				draftId,
-				completed: true,
-				totalQuestions: draft.questions.length,
-			};
-		}
-
-		const nextQuestion = draft.questions[nextIndex]?.question;
-		if (!nextQuestion) {
-			throw new Error("Next question not found");
-		}
-
-		return {
-			draftId,
-			completed: false,
-			nextQuestion,
-			currentQuestionIndex: nextIndex,
-			totalQuestions: draft.questions.length,
-		};
-	}
-
-	/**
-	 * Check if all questions in a draft have been answered
-	 */
-	async isComplete(draftId: string): Promise<boolean> {
-		const draft = await this.getDraft(draftId);
-
-		if (!draft) {
-			return false;
-		}
-
-		return draft.currentQuestionIndex >= draft.questions.length;
 	}
 
 	/**
@@ -242,4 +107,19 @@ export abstract class BaseDraftManager<T> {
 
 		return typedDrafts;
 	}
+
+	// Abstract methods - each entity type implements its own workflow
+	abstract createDraft(
+		name: string,
+		description?: string,
+	): Promise<CreateDraftResult>;
+
+	abstract submitAnswer(
+		draftId: string,
+		answer: string,
+	): Promise<SubmitAnswerResult>;
+
+	abstract isComplete(draftId: string): Promise<boolean>;
+
+	abstract createFromDraft(draftId: string): Promise<T>;
 }

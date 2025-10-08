@@ -1,5 +1,5 @@
 import type { EntityType } from "@spec-mcp/schemas";
-import type { ZodSchema } from "zod";
+import type { ZodType, ZodTypeDef } from "zod";
 import { BaseFileManager } from "../storage/base-file-manager";
 
 /**
@@ -12,14 +12,14 @@ export abstract class EntityManager<
 	T extends { slug: string; number: number },
 > extends BaseFileManager {
 	protected entityType: EntityType;
-	protected schema: ZodSchema<T>;
+	protected schema: ZodType<T, ZodTypeDef, unknown>;
 	protected subFolder: string;
 
 	constructor(
 		folderPath: string,
 		subFolder: string,
 		entityType: EntityType,
-		schema: ZodSchema<T>,
+		schema: ZodType<T, ZodTypeDef, unknown>,
 	) {
 		super(folderPath);
 		this.subFolder = subFolder;
