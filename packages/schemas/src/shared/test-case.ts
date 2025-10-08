@@ -29,12 +29,13 @@ export const TestCaseSchema = z.object({
 		.boolean()
 		.default(false)
 		.describe("Whether the test case is currently passing"),
-	components: z
-		.array(ComponentIdSchema)
-		.default([])
-		.describe("Components involved in this test case"),
-	related_flows: z
-		.array(FlowIdSchema)
-		.default([])
-		.describe("Flows linked to this test case"),
 });
+
+export const TestCasesSchema = z
+	.array(TestCaseSchema)
+	.default([])
+	.describe("Array of test cases");
+
+export type TestCaseId = z.infer<typeof TestCaseIdSchema>;
+export type TestCase = z.infer<typeof TestCaseSchema>;
+export type TestCases = z.infer<typeof TestCasesSchema>;

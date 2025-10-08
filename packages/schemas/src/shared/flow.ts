@@ -10,7 +10,7 @@ export const FlowStepSchema = z.object({
 	description: z
 		.string()
 		.optional()
-		.describe("High-level description of the step's purpose"),
+		.describe("High-level description of the step"),
 	next_steps: z
 		.array(FlowStepIdSchema)
 		.default([])
@@ -38,7 +38,13 @@ export const FlowSchema = z.object({
 		.describe("Ordered list of steps in the flow"),
 });
 
+export const FlowsSchema = z
+	.array(FlowSchema)
+	.default([])
+	.describe("Array of flows");
+
 export type FlowStepId = z.infer<typeof FlowStepIdSchema>;
 export type FlowStep = z.infer<typeof FlowStepSchema>;
 export type FlowId = z.infer<typeof FlowIdSchema>;
 export type Flow = z.infer<typeof FlowSchema>;
+export type Flows = z.infer<typeof FlowsSchema>;

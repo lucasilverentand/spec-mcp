@@ -4,8 +4,7 @@ export const EntityTypeSchema = z.enum([
 	"requirement",
 	"plan",
 	"app",
-	"service",
-	"library",
+	"component",
 	"constitution",
 	"decision",
 ]);
@@ -31,45 +30,27 @@ export const EntitySlugSchema = z
 			}),
 	);
 
-// Base schema for stored entities (on disk) - no ID field as it's derived
+export const ItemPrioritySchema = z.enum([
+	"critical",
+	"high",
+	"medium",
+	"low",
+	"nice-to-have",
+]);
+
 export const BaseSchema = z.object({
 	type: EntityTypeSchema.describe("Type of the entity"),
 	number: z.number().int().nonnegative().describe("Unique sequential number"),
 	slug: EntitySlugSchema.describe("URL-friendly identifier"),
 	name: z.string().min(1).describe("Display name of the entity"),
 	description: z.string().min(1).describe("Detailed description of the entity"),
-	created_at: z
-		.string()
-		.datetime()
-		.describe("Timestamp when entity was created"),
-	updated_at: z
-		.string()
+	created_at: z.iso.datetime().describe("Timestamp when entity was created"),
+	updated_at: z.iso
 		.datetime()
 		.describe("Timestamp when entity was last updated"),
-	locked: z
-		.boolean()
-		.nullable()
-		.optional()
-		.describe(
-			"Whether the entity is locked from updates (except progress booleans). Defaults to false if not specified.",
-		),
-	locked_at: z
-		.string()
-		.datetime()
-		.nullable()
-		.optional()
-		.describe("Timestamp when entity was locked"),
-	locked_by: z
-		.string()
-		.min(1)
-		.nullable()
-		.optional()
-		.describe("User or system that locked the entity"),
-});
-
-// Base schema with computed ID field (for runtime use)
-export const BaseWithIdSchema = BaseSchema.extend({
-	id: z.string().min(1).describe("Computed unique identifier for the entity"),
+	priority: ItemPrioritySchema.default("medium").describe(
+		"Priority level of the plan. 'critical' plans must be completed before 'high', 'high' before 'medium', and 'medium' before 'low'.",
+	),
 });
 
 export type EntityType = z.infer<typeof EntityTypeSchema>;
@@ -80,23 +61,35 @@ export const EntityTypeShortMap: Record<EntityType, string> = {
 	requirement: "req",
 	plan: "pln",
 	app: "app",
-	service: "svc",
-	library: "lib",
+	component: "cmp",
 	constitution: "con",
 	decision: "dec",
 };
 
-export function shortenEntityType(type: EntityType): string {
-	return EntityTypeShortMap[type] ?? type.slice(0, 3);
-}
+export const CompletionStatusSchema = z.object({
+	completed: z
+		.boolean()
+		.default(false)
+		.describe("Whether the item has been completed"),
+	completed_at: z.iso
+		.datetime()
+		.nullable()
+		.default(null)
+		.describe("Timestamp when the item was completed"),
+});
 
-// Helper function to compute entity ID from type, number, and slug
-export const computeEntityId = (
-	type: EntityType,
-	number: number,
-	slug: string,
-): string => {
-	const prefix = shortenEntityType(type);
-	const paddedNumber = number.toString().padStart(3, "0");
-	return `${prefix}-${paddedNumber}-${slug}`;
-};
+export const ItemStatusSchema = z.object({
+	verified: z
+		.boolean()
+		.default(false)
+		.describe("Whether the item's completion has been verified by a reviewer"),
+	verified_at: z.iso
+		.datetime()
+		.nullable()
+		.default(null)
+		.describe("Timestamp when the item was verified"),
+	notes: z
+		.array(z.string())
+		.default([])
+		.describe("Log of notes taken during item execution"),
+});

@@ -14,14 +14,12 @@ export const DataModelFieldSchema = z.object({
 		.string()
 		.min(1)
 		.describe("Description of what this field represents"),
-	required: z
-		.boolean()
-		.default(false)
-		.describe("Whether this field is required"),
 	constraints: z
 		.array(z.string().min(1))
 		.default([])
-		.describe("Validation constraints for this field"),
+		.describe(
+			"Validation constraints for this field, e.g., 'max length', 'pattern', required, optional",
+		),
 });
 
 export const DataModelRelationshipSchema = z.object({
@@ -46,21 +44,6 @@ export const DataModelExampleSchema = z.object({
 	format: z.string().optional().describe("Format of the example data"),
 });
 
-export const DataModelMigrationSchema = z.object({
-	version: z.string().min(1).describe("Version this migration applies to"),
-	description: z
-		.string()
-		.min(1)
-		.describe("Description of what this migration does"),
-	changes: z
-		.array(z.string().min(1))
-		.describe("List of changes made in this migration"),
-	breaking: z
-		.boolean()
-		.default(false)
-		.describe("Whether this migration introduces breaking changes"),
-});
-
 export const DataModelSchema = z.object({
 	id: DataModelIdSchema,
 	name: z.string().min(1).describe("Display name of the data model"),
@@ -68,12 +51,6 @@ export const DataModelSchema = z.object({
 		.string()
 		.min(1)
 		.describe("Detailed description of what this data model represents"),
-	model_type: z
-		.string()
-		.min(1)
-		.describe(
-			"Type of data model (e.g., 'database', 'api', 'domain', 'view', 'cache', 'message', 'event', etc.)",
-		),
 	format: z
 		.string()
 		.min(1)
@@ -81,7 +58,6 @@ export const DataModelSchema = z.object({
 			"Format/notation used (e.g., 'json-schema', 'sql', 'typescript', 'protobuf', 'avro', 'graphql', etc.)",
 		),
 	schema: z.string().min(1).describe("The actual model definition/schema"),
-	version: z.string().default("1.0.0").describe("Version of the data model"),
 	fields: z
 		.array(DataModelFieldSchema)
 		.default([])
@@ -98,27 +74,20 @@ export const DataModelSchema = z.object({
 		.array(z.string().min(1))
 		.default([])
 		.describe("Indexes for database models"),
-	validations: z
-		.array(z.string().min(1))
-		.default([])
-		.describe("Validation rules"),
 	examples: z
 		.array(DataModelExampleSchema)
 		.default([])
 		.describe("Example instances of the data model"),
-	migrations: z
-		.array(DataModelMigrationSchema)
-		.default([])
-		.describe("Schema change history"),
-	metadata: z
-		.record(z.string(), z.unknown())
-		.default({})
-		.describe("Additional metadata specific to the model type"),
 });
+
+export const DataModelsSchema = z
+	.array(DataModelSchema)
+	.default([])
+	.describe("Array of data models");
 
 export type DataModelId = z.infer<typeof DataModelIdSchema>;
 export type DataModelField = z.infer<typeof DataModelFieldSchema>;
 export type DataModelRelationship = z.infer<typeof DataModelRelationshipSchema>;
 export type DataModelExample = z.infer<typeof DataModelExampleSchema>;
-export type DataModelMigration = z.infer<typeof DataModelMigrationSchema>;
 export type DataModel = z.infer<typeof DataModelSchema>;
+export type DataModels = z.infer<typeof DataModelsSchema>;

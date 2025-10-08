@@ -13,21 +13,12 @@ export const ApiContractExampleSchema = z.object({
 		.describe("Programming language or format of the example"),
 });
 
-export const ApiContractDeprecationSchema = z.object({
-	deprecated_since: z
-		.string()
-		.min(1)
-		.describe("Version when this API was deprecated"),
-	removal_planned: z
-		.string()
-		.optional()
-		.describe("Version when this API will be removed"),
-	alternative: z
-		.string()
-		.optional()
-		.describe("Recommended alternative API to use"),
-	reason: z.string().min(1).describe("Reason for deprecation"),
-});
+export const ApiContractIdSchema = z
+	.string()
+	.regex(/^api-\d{3}$/, {
+		message: "API Contract ID must follow format: api-XXX",
+	})
+	.describe("Unique identifier for the API contract");
 
 export const ApiContractSchema = z.object({
 	id: ApiContractIdSchema,
@@ -47,23 +38,18 @@ export const ApiContractSchema = z.object({
 		.describe(
 			"Flexible specification object that can hold any API contract format (OpenAPI, GraphQL schema, TypeScript definitions, etc.)",
 		),
-	dependencies: z
-		.array(ApiContractIdSchema)
-		.default([])
-		.describe("Other API contracts this API depends on"),
-	deprecation: ApiContractDeprecationSchema.optional().describe(
-		"Deprecation information if the API is deprecated",
-	),
 	examples: z
 		.array(ApiContractExampleSchema)
 		.default([])
 		.describe("Usage examples for the API"),
 });
 
+export const ApiContractsSchema = z
+	.array(ApiContractSchema)
+	.default([])
+	.describe("Array of API contracts");
+
 export type ApiContractId = z.infer<typeof ApiContractIdSchema>;
-export type ApiContractStability = z.infer<typeof ApiContractStabilitySchema>;
 export type ApiContractExample = z.infer<typeof ApiContractExampleSchema>;
-export type ApiContractDeprecation = z.infer<
-	typeof ApiContractDeprecationSchema
->;
 export type ApiContract = z.infer<typeof ApiContractSchema>;
+export type ApiContracts = z.infer<typeof ApiContractsSchema>;

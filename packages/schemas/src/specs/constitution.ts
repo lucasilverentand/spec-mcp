@@ -1,9 +1,9 @@
 import z from "zod";
-import { BaseSchema, computeEntityId } from "../../core/base-entity.js";
+import { BaseSchema } from "../shared/base";
 
-export const ConstitutionIdSchema = z.string().regex(/^con-\d{3}-[a-z0-9-]+$/, {
-	message: "Constitution ID must follow format: con-XXX-slug-here",
-});
+export const ArticleStatusSchema = z
+	.enum(["needs-review", "active", "archived"])
+	.describe("Article status");
 
 export const ArticleIdSchema = z
 	.string()
@@ -11,10 +11,6 @@ export const ArticleIdSchema = z
 		message: "Article ID must follow format: art-XXX",
 	})
 	.describe("Unique identifier for an article");
-
-export const ArticleStatusSchema = z
-	.enum(["needs-review", "active", "archived"])
-	.describe("Article status");
 
 export const ArticleSchema = z.object({
 	id: ArticleIdSchema,
@@ -43,22 +39,17 @@ export const ArticleSchema = z.object({
 	),
 });
 
-// Schema for stored constitutions (no ID field)
-export const ConstitutionStorageSchema = BaseSchema.extend({
+export const ConstitutionIdSchema = z.string().regex(/^con-\d{3}-[a-z0-9-]+$/, {
+	message: "Constitution ID must follow format: con-XXX-slug-here",
+});
+
+export const ConstitutionSchema = BaseSchema.extend({
 	type: z.literal("constitution"),
 	articles: z
 		.array(ArticleSchema)
 		.min(1)
 		.describe("Core principles that govern all development decisions"),
 }).strict();
-
-// Schema for runtime constitutions (with computed ID)
-export const ConstitutionSchema = ConstitutionStorageSchema.transform(
-	(data) => ({
-		...data,
-		id: computeEntityId(data.type, data.number, data.slug),
-	}),
-).describe("Schema for runtime constitutions with computed ID");
 
 export type ConstitutionId = z.infer<typeof ConstitutionIdSchema>;
 export type ArticleId = z.infer<typeof ArticleIdSchema>;
