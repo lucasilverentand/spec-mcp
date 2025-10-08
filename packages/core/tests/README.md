@@ -1,56 +1,63 @@
-# Test Guidelines
+# Core Package Tests
 
-## Test Artifacts
+This directory contains the test suite for the `@spec-mcp/core` package.
 
-**IMPORTANT:** All tests must use temporary directories for file operations to prevent test artifacts from being committed to the repository.
+## Running Tests
 
-### Best Practices
+```bash
+# Run all tests
+pnpm test
 
-1. **Use OS temporary directories**: Always use `mkdtemp(join(tmpdir(), 'prefix-'))` for test directories
-2. **Clean up in afterEach**: Always remove temporary directories in `afterEach` hooks
-3. **Avoid hardcoded paths**: Never write to hardcoded paths like `./test-specs` or `./test-output`
-4. **Mock file operations**: When testing services that use file paths in config, either:
-   - Use temporary directories
-   - Mock the file system operations
-   - Use in-memory implementations
+# Run tests in watch mode
+pnpm test:watch
 
-### Example
-
-```typescript
-import { mkdtemp, rm } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { afterEach, beforeEach, describe, it } from "vitest";
-
-describe("MyAnalyzer", () => {
-  let tempDir: string;
-  let analyzer: MyAnalyzer;
-
-  beforeEach(async () => {
-    // Create unique temp directory
-    tempDir = await mkdtemp(join(tmpdir(), "analyzer-test-"));
-    analyzer = new MyAnalyzer({ specsPath: tempDir });
-  });
-
-  afterEach(async () => {
-    // Clean up temp directory
-    await rm(tempDir, { recursive: true, force: true });
-  });
-
-  it("should analyze specs", async () => {
-    // Use tempDir for all file operations
-  });
-});
+# Run tests with coverage
+pnpm test:coverage
 ```
 
-### Gitignore Protection
+## Test Structure
 
-The following patterns are gitignored to catch any accidental test artifacts:
+- **helpers.ts** - Test utilities and helpers
+  - `useTempDir()` - Creates temporary test directories with automatic cleanup
 
-- `test-specs/`
-- `test-output/`
-- `*.tmp`
-- `tmp/`
-- `temp/`
+- **file-manager.test.ts** - Tests for low-level file I/O operations
+  - YAML reading/writing
+  - File existence checks
+  - Directory operations
 
-If you need to add test fixtures that SHOULD be committed, place them in a `fixtures/` directory within the test directory.
+- **entity-manager.test.ts** - Tests for entity management
+  - CRUD operations
+  - Auto-incrementing numbers
+  - Schema validation
+
+- **spec-manager.test.ts** - Tests for the main SpecManager
+  - Integration tests
+  - Multi-entity operations
+
+- **draft-manager.test.ts** - Tests for draft creation
+  - Question generation
+  - Draft entity creation
+  - Slug generation
+
+## Test Cleanup
+
+All tests use the `useTempDir()` helper which:
+- Creates isolated temporary directories for each test
+- Automatically cleans up after each test completes
+- Prevents test pollution and side effects
+
+The temporary folder `.tmp/` is gitignored and cleaned up automatically.
+
+## Coverage
+
+The test suite provides good coverage of core functionality:
+- File operations: ~98%
+- Entity management: ~98%
+- Spec management: 100%
+
+To view detailed coverage reports, run:
+```bash
+pnpm test:coverage
+```
+
+Coverage reports are generated in the `coverage/` directory.
