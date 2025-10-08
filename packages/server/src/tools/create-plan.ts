@@ -1,4 +1,5 @@
 import type { Plan } from "@spec-mcp/schemas";
+import { PlanSchema } from "@spec-mcp/schemas";
 import { FileManager, PlanDraftManager, SpecManager } from "@spec-mcp/core";
 import { logger } from "../utils/logger.js";
 
@@ -7,7 +8,7 @@ import { logger } from "../utils/logger.js";
  */
 export async function createPlanTool(
 	draft_id: string,
-	additionalData?: Record<string, unknown>,
+	additionalData?: Partial<Plan>,
 	specsPath = "./specs",
 ): Promise<{
 	success: boolean;
@@ -52,6 +53,17 @@ export async function createPlanTool(
 				success: false,
 				error: `Draft is not complete. ${remaining} questions remaining.`,
 			};
+		}
+
+		// Validate additional data if provided
+		if (additionalData) {
+			const validationResult = PlanSchema.partial().safeParse(additionalData);
+			if (!validationResult.success) {
+				return {
+					success: false,
+					error: `Invalid additional data: ${validationResult.error.message}`,
+				};
+			}
 		}
 
 		const planData = await draftManager.createFromDraft(draft_id);

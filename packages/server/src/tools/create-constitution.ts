@@ -1,4 +1,5 @@
 import type { Constitution } from "@spec-mcp/schemas";
+import { ConstitutionSchema } from "@spec-mcp/schemas";
 import {
 	ConstitutionDraftManager,
 	FileManager,
@@ -11,7 +12,7 @@ import { logger } from "../utils/logger.js";
  */
 export async function createConstitutionTool(
 	draft_id: string,
-	additionalData?: Record<string, unknown>,
+	additionalData?: Partial<Constitution>,
 	specsPath = "./specs",
 ): Promise<{
 	success: boolean;
@@ -56,6 +57,18 @@ export async function createConstitutionTool(
 				success: false,
 				error: `Draft is not complete. ${remaining} questions remaining.`,
 			};
+		}
+
+		// Validate additional data if provided
+		if (additionalData) {
+			const validationResult =
+				ConstitutionSchema.partial().safeParse(additionalData);
+			if (!validationResult.success) {
+				return {
+					success: false,
+					error: `Invalid additional data: ${validationResult.error.message}`,
+				};
+			}
 		}
 
 		const constitutionData = await draftManager.createFromDraft(draft_id);

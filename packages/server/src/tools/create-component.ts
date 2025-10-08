@@ -4,6 +4,7 @@ import {
 	SpecManager,
 } from "@spec-mcp/core";
 import type { Component } from "@spec-mcp/schemas";
+import { ComponentSchema } from "@spec-mcp/schemas";
 import { logger } from "../utils/logger.js";
 
 /**
@@ -11,7 +12,7 @@ import { logger } from "../utils/logger.js";
  */
 export async function createComponentTool(
 	draft_id: string,
-	additionalData?: Record<string, unknown>,
+	additionalData?: Partial<Component>,
 	specsPath = "./specs",
 ): Promise<{
 	success: boolean;
@@ -56,6 +57,18 @@ export async function createComponentTool(
 				success: false,
 				error: `Draft is not complete. ${remaining} questions remaining.`,
 			};
+		}
+
+		// Validate additional data if provided
+		if (additionalData) {
+			const validationResult =
+				ComponentSchema.partial().safeParse(additionalData);
+			if (!validationResult.success) {
+				return {
+					success: false,
+					error: `Invalid additional data: ${validationResult.error.message}`,
+				};
+			}
 		}
 
 		const componentData = await draftManager.createFromDraft(draft_id);

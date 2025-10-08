@@ -3,6 +3,13 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
+import {
+	RequirementSchema,
+	ComponentSchema,
+	PlanSchema,
+	ConstitutionSchema,
+	DecisionSchema,
+} from "@spec-mcp/schemas";
 import { ErrorCode, McpError } from "./utils/error-codes.js";
 import { logger } from "./utils/logger.js";
 import { VERSION } from "./utils/version.js";
@@ -219,15 +226,14 @@ function registerTools(server: McpServer) {
 				.describe(
 					"The draft ID (must be a completed requirement draft, format: draft-XXX). This proves all questions were answered.",
 				),
-			data: z
-				.record(z.unknown())
+			data: RequirementSchema.partial()
 				.optional()
 				.describe(
 					"Optional: Full requirement specification data. If provided, will be validated and merged with draft data.",
 				),
 		},
 		async ({ draft_id, data }) => {
-			const result = await createRequirementTool(draft_id, data);
+			const result = await createRequirementTool(draft_id, data as any);
 			return {
 				content: [
 					{
@@ -252,15 +258,14 @@ function registerTools(server: McpServer) {
 				.describe(
 					"The draft ID (must be a completed component draft, format: draft-XXX). This proves all questions were answered.",
 				),
-			data: z
-				.record(z.unknown())
+			data: ComponentSchema.partial()
 				.optional()
 				.describe(
 					"Optional: Full component specification data. If provided, will be validated and merged with draft data.",
 				),
 		},
 		async ({ draft_id, data }) => {
-			const result = await createComponentTool(draft_id, data);
+			const result = await createComponentTool(draft_id, data as any);
 			return {
 				content: [
 					{
@@ -285,15 +290,14 @@ function registerTools(server: McpServer) {
 				.describe(
 					"The draft ID (must be a completed plan draft, format: draft-XXX). This proves all questions were answered.",
 				),
-			data: z
-				.record(z.unknown())
+			data: PlanSchema.partial()
 				.optional()
 				.describe(
 					"Optional: Full plan specification data. If provided, will be validated and merged with draft data.",
 				),
 		},
 		async ({ draft_id, data }) => {
-			const result = await createPlanTool(draft_id, data);
+			const result = await createPlanTool(draft_id, data as any);
 			return {
 				content: [
 					{
@@ -318,15 +322,14 @@ function registerTools(server: McpServer) {
 				.describe(
 					"The draft ID (must be a completed constitution draft, format: draft-XXX). This proves all questions were answered.",
 				),
-			data: z
-				.record(z.unknown())
+			data: ConstitutionSchema.partial()
 				.optional()
 				.describe(
 					"Optional: Full constitution specification data. If provided, will be validated and merged with draft data.",
 				),
 		},
 		async ({ draft_id, data }) => {
-			const result = await createConstitutionTool(draft_id, data);
+			const result = await createConstitutionTool(draft_id, data as any);
 			return {
 				content: [
 					{
@@ -351,15 +354,14 @@ function registerTools(server: McpServer) {
 				.describe(
 					"The draft ID (must be a completed decision draft, format: draft-XXX). This proves all questions were answered.",
 				),
-			data: z
-				.record(z.unknown())
+			data: DecisionSchema.partial()
 				.optional()
 				.describe(
 					"Optional: Full decision specification data. If provided, will be validated and merged with draft data.",
 				),
 		},
 		async ({ draft_id, data }) => {
-			const result = await createDecisionTool(draft_id, data);
+			const result = await createDecisionTool(draft_id, data as any);
 			return {
 				content: [
 					{

@@ -1,4 +1,5 @@
 import type { Requirement } from "@spec-mcp/schemas";
+import { RequirementSchema } from "@spec-mcp/schemas";
 import {
 	FileManager,
 	RequirementDraftManager,
@@ -11,7 +12,7 @@ import { logger } from "../utils/logger.js";
  */
 export async function createRequirementTool(
 	draft_id: string,
-	additionalData?: Record<string, unknown>,
+	additionalData?: Partial<Requirement>,
 	specsPath = "./specs",
 ): Promise<{
 	success: boolean;
@@ -61,6 +62,18 @@ export async function createRequirementTool(
 				success: false,
 				error: `Draft is not complete. ${remaining} questions remaining. Please finish answering all questions first.`,
 			};
+		}
+
+		// Validate additional data if provided
+		if (additionalData) {
+			const validationResult =
+				RequirementSchema.partial().safeParse(additionalData);
+			if (!validationResult.success) {
+				return {
+					success: false,
+					error: `Invalid additional data: ${validationResult.error.message}`,
+				};
+			}
 		}
 
 		// Create requirement from the completed draft

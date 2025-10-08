@@ -1,4 +1,5 @@
 import type { Decision } from "@spec-mcp/schemas";
+import { DecisionSchema } from "@spec-mcp/schemas";
 import { DecisionDraftManager, FileManager, SpecManager } from "@spec-mcp/core";
 import { logger } from "../utils/logger.js";
 
@@ -7,7 +8,7 @@ import { logger } from "../utils/logger.js";
  */
 export async function createDecisionTool(
 	draft_id: string,
-	additionalData?: Record<string, unknown>,
+	additionalData?: Partial<Decision>,
 	specsPath = "./specs",
 ): Promise<{
 	success: boolean;
@@ -52,6 +53,18 @@ export async function createDecisionTool(
 				success: false,
 				error: `Draft is not complete. ${remaining} questions remaining.`,
 			};
+		}
+
+		// Validate additional data if provided
+		if (additionalData) {
+			const validationResult =
+				DecisionSchema.partial().safeParse(additionalData);
+			if (!validationResult.success) {
+				return {
+					success: false,
+					error: `Invalid additional data: ${validationResult.error.message}`,
+				};
+			}
 		}
 
 		const decisionData = await draftManager.createFromDraft(draft_id);
