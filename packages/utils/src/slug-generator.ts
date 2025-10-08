@@ -1,47 +1,12 @@
-import {
-	generateSlug as dataGenerateSlug,
-	generateUniqueSlug as dataGenerateUniqueSlug,
-	validateSlug as dataValidateSlug,
-} from "@spec-mcp/data";
-import type { ISlugGenerator, OperationResult } from "./types.js";
-
-// Re-export from data package for backward compatibility
-export {
-	generateSlug,
-	generateSlugFromTitle,
-	generateUniqueSlug,
-	sanitizeSlug,
-	validateSlug,
-} from "@spec-mcp/data";
-
-export class SlugGenerator implements ISlugGenerator {
-	readonly name = "SlugGenerator";
-	readonly version = "2.0.0";
-
-	async transform(input: string): Promise<OperationResult<string>> {
-		return {
-			success: true,
-			data: this.generateSlug(input),
-		};
-	}
-
-	canTransform(input: unknown): input is string {
-		return typeof input === "string";
-	}
-
-	supports(inputType: string, outputType: string): boolean {
-		return inputType === "string" && outputType === "string";
-	}
-
-	generateSlug(input: string): string {
-		return dataGenerateSlug(input);
-	}
-
-	generateUniqueSlug(input: string, existingSlugs: string[]): string {
-		return dataGenerateUniqueSlug(input, existingSlugs);
-	}
-
-	validateSlug(slug: string): boolean {
-		return dataValidateSlug(slug);
-	}
+/**
+ * Generate a URL-friendly slug from a string
+ * @param input - The string to convert to a slug
+ * @returns A lowercase, hyphenated slug with no special characters
+ */
+export function generateSlug(input: string): string {
+	return input
+		.toLowerCase()
+		.trim()
+		.replace(/[^a-z0-9]+/g, "-") // Replace non-alphanumeric chars with hyphens
+		.replace(/^-+|-+$/g, ""); // Remove leading/trailing hyphens
 }
