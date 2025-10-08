@@ -1,11 +1,18 @@
-import type { EntityType, Requirement } from "@spec-mcp/schemas";
+import type {
+	Draft,
+	DraftQuestion,
+	EntityType,
+	Requirement,
+} from "@spec-mcp/schemas";
 import { RequirementSchema } from "@spec-mcp/schemas";
+import { generateSlug } from "@spec-mcp/utils";
 import { EntityManager } from "../core/entity-manager";
-import { FileManager } from "../storage/file-manager";
 import { BaseDraftManager } from "../drafts";
+import type { CreateDraftResult, SubmitAnswerResult } from "../drafts/types";
+import { FileManager } from "../storage/file-manager";
 
 /**
- * Draft manager for Requirements with embedded workflow logic
+ * Draft manager for Requirements with simple Q&A workflow
  */
 export class RequirementDraftManager extends BaseDraftManager<
 	Omit<Requirement, "number">
@@ -13,26 +20,137 @@ export class RequirementDraftManager extends BaseDraftManager<
 	protected entityType: EntityType = "requirement";
 
 	/**
-	 * Get questions to ask during draft creation
+	 * Create draft with questions
 	 */
-	protected getQuestions(_name: string, _description?: string): string[] {
-		return [
-			"What is the main purpose of this requirement?",
-			"What are the acceptance criteria?",
-			"What is the priority level?",
+	async createDraft(
+		name: string,
+		description?: string,
+	): Promise<CreateDraftResult> {
+		const draftId = await this.getNextDraftId();
+		const slug = generateSlug(name);
+		const now = new Date().toISOString();
+
+		const questions: DraftQuestion[] = [
+			{
+				id: "purpose",
+				question: "What is the main purpose of this requirement?",
+				answer: description || null,
+			},
+			{
+				id: "criteria",
+				question: "What are the acceptance criteria?",
+				answer: null,
+			},
+			{
+				id: "priority",
+				question: "What is the priority level?",
+				answer: null,
+			},
 		];
+
+		const draft = {
+			id: draftId,
+			type: "requirement" as const,
+			name,
+			slug,
+			questions,
+			currentQuestionIndex: description ? 1 : 0,
+			created_at: now,
+		};
+
+		await this.saveDraft(draft as Draft);
+
+		const firstUnansweredIdx = description ? 1 : 0;
+		const firstQuestion = questions[firstUnansweredIdx];
+		if (!firstQuestion) {
+			throw new Error("No questions provided");
+		}
+
+		return {
+			draftId,
+			firstQuestion: firstQuestion.question,
+			totalQuestions: questions.length,
+		};
+	}
+
+	/**
+	 * Submit an answer to the current question
+	 */
+	async submitAnswer(
+		draftId: string,
+		answer: string,
+	): Promise<SubmitAnswerResult> {
+		const draft = await this.getDraft(draftId);
+
+		if (!draft || draft.type !== "requirement") {
+			throw new Error(`Requirement draft not found: ${draftId}`);
+		}
+
+		const currentIndex = draft.currentQuestionIndex;
+
+		if (currentIndex >= draft.questions.length) {
+			throw new Error("All questions have already been answered");
+		}
+
+		// Update the current question's answer
+		const currentQuestion = draft.questions[currentIndex];
+		if (!currentQuestion) {
+			throw new Error("Current question not found");
+		}
+		currentQuestion.answer = answer;
+
+		// Move to next question
+		const nextIndex = currentIndex + 1;
+		draft.currentQuestionIndex = nextIndex;
+
+		await this.saveDraft(draft);
+
+		// Check if all questions are answered
+		const completed = nextIndex >= draft.questions.length;
+
+		if (completed) {
+			return {
+				draftId,
+				completed: true,
+				totalQuestions: draft.questions.length,
+			};
+		}
+
+		const nextQuestion = draft.questions[nextIndex]?.question;
+		if (!nextQuestion) {
+			throw new Error("Next question not found");
+		}
+
+		return {
+			draftId,
+			completed: false,
+			nextQuestion,
+			currentQuestionIndex: nextIndex,
+			totalQuestions: draft.questions.length,
+		};
+	}
+
+	/**
+	 * Check if all questions in a draft have been answered
+	 */
+	async isComplete(draftId: string): Promise<boolean> {
+		const draft = await this.getDraft(draftId);
+
+		if (!draft || draft.type !== "requirement") {
+			return false;
+		}
+
+		return draft.currentQuestionIndex >= draft.questions.length;
 	}
 
 	/**
 	 * Create a requirement entity from a completed draft
 	 */
-	async createFromDraft(
-		draftId: string,
-	): Promise<Omit<Requirement, "number">> {
+	async createFromDraft(draftId: string): Promise<Omit<Requirement, "number">> {
 		const draft = await this.getDraft(draftId);
 
-		if (!draft) {
-			throw new Error(`Draft not found: ${draftId}`);
+		if (!draft || draft.type !== "requirement") {
+			throw new Error(`Requirement draft not found: ${draftId}`);
 		}
 
 		if (!(await this.isComplete(draftId))) {
