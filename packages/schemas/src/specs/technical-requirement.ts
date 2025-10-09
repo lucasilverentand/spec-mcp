@@ -1,5 +1,5 @@
 import z from "zod";
-import { BaseSchema, ItemStatusSchema } from "../shared/base.js";
+import { BaseSchema } from "../shared/base.js";
 import { CriteriaSchema } from "../shared/criteria.js";
 import { ReferenceSchema } from "../shared/reference.js";
 
