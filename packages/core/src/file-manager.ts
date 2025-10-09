@@ -8,7 +8,7 @@ import YAML from "yaml";
  * Provides low-level file I/O operations for YAML files.
  * Can be extended by managers that need to manage files in a specific directory.
  */
-export abstract class BaseFileManager {
+export class FileManager {
 	protected folderPath: string;
 
 	constructor(folderPath: string) {
@@ -67,26 +67,6 @@ export abstract class BaseFileManager {
 		// Ensure directory exists
 		await fs.mkdir(path.dirname(fullPath), { recursive: true });
 		const content = YAML.stringify(data);
-		await fs.writeFile(fullPath, content, "utf-8");
-	}
-
-	/**
-	 * Read a JSON file from the folder
-	 */
-	protected async readJson<T>(relativePath: string): Promise<T> {
-		const fullPath = path.join(this.folderPath, relativePath);
-		const content = await fs.readFile(fullPath, "utf-8");
-		return JSON.parse(content) as T;
-	}
-
-	/**
-	 * Write a JSON file to the folder
-	 */
-	protected async writeJson<T>(relativePath: string, data: T): Promise<void> {
-		const fullPath = path.join(this.folderPath, relativePath);
-		// Ensure directory exists
-		await fs.mkdir(path.dirname(fullPath), { recursive: true });
-		const content = JSON.stringify(data, null, 2);
 		await fs.writeFile(fullPath, content, "utf-8");
 	}
 
