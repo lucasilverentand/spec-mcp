@@ -40,6 +40,14 @@ export const ItemPrioritySchema = z.enum([
 ]);
 
 export const ItemStatusSchema = z.object({
+	created_at: z
+		.string()
+		.datetime()
+		.describe("Timestamp when entity was created"),
+	updated_at: z
+		.string()
+		.datetime()
+		.describe("Timestamp when entity was last updated"),
 	completed: z
 		.boolean()
 		.default(false)
@@ -72,17 +80,13 @@ export const BaseSchema = z.object({
 	slug: EntitySlugSchema.describe("URL-friendly identifier"),
 	name: z.string().min(1).describe("Display name of the entity"),
 	description: z.string().min(1).describe("Detailed description of the entity"),
+	draft: z
+		.boolean()
+		.default(false)
+		.describe("Whether this is a draft version of the entity"),
 	priority: ItemPrioritySchema.default("medium").describe(
 		"Priority level of the plan. 'critical' plans must be completed before 'high', 'high' before 'medium', and 'medium' before 'low'.",
 	),
-	created_at: z
-		.string()
-		.datetime()
-		.describe("Timestamp when entity was created"),
-	updated_at: z
-		.string()
-		.datetime()
-		.describe("Timestamp when entity was last updated"),
 	status: ItemStatusSchema.describe("Current status of the entity"),
 });
 

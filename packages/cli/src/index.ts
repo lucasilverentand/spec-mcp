@@ -3,9 +3,10 @@
 import { resolve } from "node:path";
 import { SpecManager } from "@spec-mcp/core";
 import type {
+	BusinessRequirement,
 	Component,
 	Plan,
-	Requirement,
+	TechnicalRequirement,
 } from "@spec-mcp/schemas";
 import { Command } from "commander";
 import {
@@ -24,7 +25,7 @@ program
 	.description("CLI tool for validating spec-mcp specifications")
 	.version("0.1.0");
 
-type AnyEntity = Requirement | Plan | Component;
+type AnyEntity = BusinessRequirement | TechnicalRequirement | Plan | Component;
 
 interface EntityValidation {
 	entity: AnyEntity;
@@ -51,11 +52,15 @@ program
 			await manager.ensureFolders();
 
 			// Load all entities and validate them
-			const [requirements, plans, components] = await Promise.all([
-				manager.requirements.list(),
-				manager.plans.list(),
-				manager.components.list(),
-			]);
+			const [businessRequirements, techRequirements, plans, components] =
+				await Promise.all([
+					manager.business_requirements.list(),
+					manager.tech_requirements.list(),
+					manager.plans.list(),
+					manager.components.list(),
+				]);
+
+			const requirements = [...businessRequirements, ...techRequirements];
 
 			// Validate each entity individually by attempting to parse them again
 			const requirementValidations: EntityValidation[] = [];

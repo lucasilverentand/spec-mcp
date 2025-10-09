@@ -66,8 +66,62 @@ export class FileManager {
 		const fullPath = path.join(this.folderPath, relativePath);
 		// Ensure directory exists
 		await fs.mkdir(path.dirname(fullPath), { recursive: true });
-		const content = YAML.stringify(data);
-		await fs.writeFile(fullPath, content, "utf-8");
+		const content = YAML.stringify(data, {
+			lineWidth: 0, // Disable line wrapping
+			blockQuote: "literal", // Use literal style for multiline strings
+		});
+
+		// Add blank lines before object array items (- key:) and after them
+		// Step 1: Add blank line before each object array item
+		let formattedContent = content.replace(/^(\s*)-\s+(\w+:)/gm, '\n$1- $2');
+
+		// Step 2: Add blank line after object array items
+		const lines = formattedContent.split('\n');
+		const result: string[] = [];
+
+		for (let i = 0; i < lines.length; i++) {
+			const currentLine = lines[i];
+			result.push(currentLine);
+
+			// Only process if there's a next line
+			if (i + 1 < lines.length) {
+				const nextLine = lines[i + 1];
+				const currentMatch = currentLine.match(/^(\s*)-\s+\w+:/);
+
+				// If current line starts an object array item, track its indent and find where it ends
+				if (currentMatch) {
+					const arrayItemIndent = currentMatch[1].length;
+
+					// Find the last line of this object (where next line is at same or less indent)
+					for (let j = i + 1; j < lines.length; j++) {
+						const checkLine = lines[j];
+						const checkIndent = checkLine.match(/^(\s*)/)?.[1].length || 0;
+
+						// Check if this is the boundary (next array item or end of array)
+						const isNextArrayItem = /^\s*-\s+\w+:/.test(checkLine) && checkIndent === arrayItemIndent;
+						const isEndOfArray = /^\s*\w+:/.test(checkLine) && checkIndent <= arrayItemIndent && !/^\s*-/.test(checkLine);
+						const isEOF = j === lines.length - 1;
+
+						if (isNextArrayItem || isEndOfArray || isEOF) {
+							// j-1 is the last line of current object, add result up to there
+							for (let k = i + 1; k < j; k++) {
+								result.push(lines[k]);
+							}
+							// Add blank line after the object
+							result.push('');
+							// Skip ahead
+							i = j - 1;
+							break;
+						}
+					}
+				}
+			}
+		}
+
+		// Remove any leading blank line
+		const finalContent = result.join('\n').replace(/^\n+/, '');
+
+		await fs.writeFile(fullPath, finalContent, "utf-8");
 	}
 
 	/**

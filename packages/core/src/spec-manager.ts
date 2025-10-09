@@ -1,4 +1,6 @@
 import {
+	type BusinessRequirement,
+	BusinessRequirementSchema,
 	type Component,
 	ComponentSchema,
 	type Constitution,
@@ -16,7 +18,7 @@ import { EntityManager } from "./entity-manager";
 export class SpecManager {
 	private specsPath: string;
 
-	public readonly business_requirements: EntityManager<TechnicalRequirement>;
+	public readonly business_requirements: EntityManager<BusinessRequirement>;
 	public readonly tech_requirements: EntityManager<TechnicalRequirement>;
 	public readonly plans: EntityManager<Plan>;
 	public readonly components: EntityManager<Component>;
@@ -30,12 +32,12 @@ export class SpecManager {
 	constructor(specsPath: string = "./specs") {
 		this.specsPath = specsPath;
 
-		this.business_requirements = new EntityManager<TechnicalRequirement>({
+		this.business_requirements = new EntityManager<BusinessRequirement>({
 			folderPath: this.specsPath,
 			subFolder: "requirements/business",
 			idPrefix: "brq",
 			entityType: "technical-requirement",
-			schema: TechnicalRequirementSchema,
+			schema: BusinessRequirementSchema,
 		});
 
 		this.tech_requirements = new EntityManager<TechnicalRequirement>({
