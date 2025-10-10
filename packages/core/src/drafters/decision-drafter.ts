@@ -11,25 +11,25 @@ export function createDecisionDrafterConfig(): EntityDrafterConfig<Decision> {
 		questions: [
 			{
 				id: "q-001",
-				question: `What problem exists and what was decided?
+				question: `Problem and decision?
 
 CONTEXT: Situation, constraints, forces. What makes this necessary NOW?
 DECISION: Clear, specific, actionable. Include timeline/scope.
 
-Good: "Context: Monolith causing 6hr deployments, blocking 3 teams. 3 incidents from coupling. Decision: Split into 5 services (Auth, Orders, Inventory, Payments, Notifications). Each owns DB, REST+events. Start Auth by Q2."
-Good: "Context: 4 date libs bloat bundle 200kb, cause bugs, confuse team. Decision: Standardize on date-fns. Remove Moment/Luxon by Q3. ESLint rule blocks new imports. Migrate high-traffic pages first."
+Good: "Context: Monolith causing 6hr deployments, blocking 3 teams. 3 incidents from coupling. Decision: Split into 5 services (Auth, Orders, Inventory, Payments, Notifications). Each owns data, uses REST+events. Start Auth by Q2."
+Good: "Context: 4 date libraries bloat bundle 200kb, cause bugs, confuse team. Decision: Standardize on one library. Remove others by Q3. Linting rule blocks new imports. Migrate high-traffic pages first."
 Bad: "Context: Architecture problems. Decision: Use microservices" (vague, not actionable)`,
 				answer: null,
 			},
 			{
 				id: "q-002",
-				question: `Why this decision over alternatives?
+				question: `Rationale and alternatives considered?
 
 RATIONALE: Concrete outcomes (performance, velocity, cost, risk)
 ALTERNATIVES: Options considered and why rejected
 
-Good: "Rationale: Enables 6 teams independent deploy (vs blocking). Reduces risk (Auth can't break Orders). Aligns with SOA strategy. 3mo migration justified by scaling. Alternatives: Modular monolith (doesn't solve coupling); Serverless (lacks expertise, high risk); Do nothing (velocity down 20%/qtr)."
-Good: "Rationale: date-fns tree-shakeable (saves 180kb), maintained, TypeScript. Team 8/10. Migration 2wks vs 6mo confusion. Alternatives: Moment (deprecated, 67kb); Native Date (poor API, timezone bugs); Luxon (less popular)."
+Good: "Rationale: Enables 6 teams independent deploy (vs blocking). Reduces risk (one service can't break others). Aligns with architecture strategy. 3mo migration justified by scaling. Alternatives: Modular monolith (doesn't solve coupling); Serverless (lacks expertise, high risk); Do nothing (velocity down 20%/qtr)."
+Good: "Rationale: Chosen library is tree-shakeable (saves 180kb), maintained, typed. Team knows it well. Migration 2wks vs 6mo confusion. Alternatives: Library A (deprecated, 67kb); Native approach (poor API, bugs); Library B (less popular)."
 Bad: "Rationale: Modern. Alternatives: Other options" (not concrete)`,
 				answer: null,
 			},
@@ -46,7 +46,7 @@ Good: "Modifies dec-034 (adds microservices to SOA)"`,
 			},
 			{
 				id: "q-004",
-				question: `Which components are affected? (CMP IDs comma-separated, 'all', or 'none')
+				question: `Components affected? (CMP IDs comma-separated, 'all', or 'none')
 
 Good: "cmp-001-checkout-app, cmp-002-payment-service, cmp-003-api-gateway"
 Good: "all - organization-wide decision"
@@ -57,7 +57,7 @@ Bad: "some apps" (not specific IDs)`,
 			},
 			{
 				id: "q-005",
-				question: `Related requirements that drove this? (BRD/PRD IDs comma-separated, or 'none')
+				question: `Requirements that drove this? (BRD/PRD IDs comma-separated, or 'none')
 
 Good: "brd-042-checkout-optimization, prd-023-api-security"
 Good: "none - proactive architectural decision"
@@ -67,19 +67,19 @@ Bad: "business needs" (not specific IDs)`,
 			},
 			{
 				id: "q-006",
-				question: `Research and record findings supporting this decision.
+				question: `Research supporting this decision and record findings.
 
-GOAL: Validate decision with objective data, find evidence for claimed benefits/trade-offs, and compare alternatives using benchmarks or case studies to ensure decision is well-informed.
+GOAL: Validate decision with objective data, find evidence for claimed benefits/trade-offs, compare alternatives using benchmarks or case studies.
 
-Perform research and document what you learned:
+Document what you learned:
 
-Good: "Researched React vs Vue benchmarks (js-framework-benchmark 2024). Findings: React 18 with Suspense: 1.2x slower than Vue 3. Bundle: React 42kb, Vue 34kb. However React has 10x more libraries, better TypeScript, larger talent pool. Performance diff negligible at our scale. Decision validated by ecosystem advantage."
-Good: "Researched microservices case studies (Uber, Netflix blogs). Findings: Netflix gained independent deployment but ops team grew 3x. Uber reduced deployment from 45min to 8min but debugging harder. Monitoring costs +40%. Trade-offs match our estimates. Proceed with caution on ops investment."
-Good: "Researched date library sizes (bundlephobia). Findings: Moment 67kb (deprecated), Luxon 72kb, date-fns 12kb tree-shakable (imports only what's used). Our app uses 8 functions = ~2kb. Savings validated at 65-70kb not 180kb. Adjust ROI claim."
+Good: "Researched framework benchmarks. Findings: Framework A: 1.2x slower than B. Bundle: A 42kb, B 34kb. However A has 10x more libraries, better typing, larger talent pool. Performance diff negligible at our scale. Decision validated by ecosystem advantage."
+Good: "Researched microservices case studies (major tech companies). Findings: Company A gained independent deployment but ops team grew 3x. Company B reduced deployment from 45min to 8min but debugging harder. Monitoring costs +40%. Trade-offs match our estimates. Proceed with caution on ops investment."
+Good: "Researched library sizes. Findings: Library A 67kb (deprecated), B 72kb, C 12kb tree-shakable (imports only what's used). Our app uses 8 functions = ~2kb. Savings validated at 65-70kb not 180kb. Adjust ROI claim."
 Good: "none - decision based on internal constraints and team expertise, no comparable external data"
 
 Tool guidance:
-- Use web search for: benchmarks, case studies, technology comparisons, engineering blogs
+- Use web search for benchmarks, case studies, technology comparisons, engineering blogs
 - Record concrete data: numbers, metrics, real-world outcomes, trade-off validation
 - Note if findings contradict claims and adjust decision accordingly`,
 				answer: null,

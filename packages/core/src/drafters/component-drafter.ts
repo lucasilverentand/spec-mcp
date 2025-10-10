@@ -11,16 +11,16 @@ export function createComponentDrafterConfig(): EntityDrafterConfig<Component> {
 		questions: [
 			{
 				id: "q-001",
-				question: `Describe this component: type, purpose, location, and configuration.
+				question: `Describe component: type, purpose, location, configuration.
 
 TYPE: app (user-facing) | service (backend API) | library (shared code)
 PURPOSE: What it does, why it exists
 PATH: Relative folder from repo root (default: .)
 DEV: Dev server port if applicable
 
-Good: "Type: app. Purpose: Customer-facing checkout SPA built with React. Handles cart, payment, order confirmation. Path: apps/checkout. Dev: 3000"
-Good: "Type: service. Purpose: Rate limiting API service. Protects backend from abuse. Path: services/rate-limiter. Dev: 8080"
-Good: "Type: library. Purpose: Shared UI components for all apps. Path: packages/ui. Dev: 6006 (Storybook)"
+Good: "Type: app. Purpose: Customer-facing checkout SPA. Handles cart, payment, order flow. Path: apps/checkout. Dev: 3000"
+Good: "Type: service. Purpose: Rate limiting service. Protects backend from abuse. Path: services/rate-limiter. Dev: 8080"
+Good: "Type: library. Purpose: Shared UI components for all apps. Path: packages/ui. Dev: 6006"
 Bad: "Type: app. A web app. Path: ." (what does it do?)`,
 				answer: null,
 			},
@@ -36,7 +36,7 @@ Bad: "we decided to use React" (not specific IDs)`,
 			},
 			{
 				id: "q-003",
-				question: `Which requirements does this fulfill? (BRD/PRD IDs comma-separated, or 'none')
+				question: `Requirements fulfilled? (BRD/PRD IDs comma-separated, or 'none')
 
 Good: "brd-042-checkout-optimization, prd-023-api-security"
 Good: "none - infrastructure component"
@@ -46,19 +46,19 @@ Bad: "payment stuff" (not specific IDs)`,
 			},
 			{
 				id: "q-004",
-				question: `Research documentation for key technologies and record findings.
+				question: `Research key technologies documentation and record findings.
 
-GOAL: Understand framework capabilities, deployment platform features, and library best practices to ensure component is built according to recommended patterns and utilizes platform features effectively.
+GOAL: Understand framework capabilities, deployment platform features, library best practices to ensure recommended patterns and effective platform utilization.
 
-Perform research and document what you learned:
+Document what you learned:
 
-Good: "Researched Next.js 14 App Router. Findings: Server Components are default, fetch in parallel. Use generateStaticParams for SSG. Incremental Static Regeneration via revalidate option. Route handlers replace API routes. Recommend: Server Components for product display, Client for cart interactions, ISR with 60s revalidate for checkout."
-Good: "Researched Vercel deployment. Findings: Edge Functions run in 30+ regions, <50ms cold start. Supports streaming. 1MB size limit. Edge config for feature flags (<512KB). Recommend: Edge for rate limiting, Serverless for checkout. Use edge config for A/B tests."
-Good: "Researched Express.js middleware best practices. Findings: Helmet for security headers, morgan for logging, express-validator for input validation. Error handler must have 4 params. Use async error wrapper or express-async-errors. Recommend: helmet + compression + rate-limit stack, centralized error handler."
+Good: "Researched framework rendering patterns. Findings: Server components fetch data directly, client handles interactivity. Static generation via config. Incremental regeneration via cache options. Recommend: Server for display, client for forms, incremental refresh with 60s cache."
+Good: "Researched edge platform deployment. Findings: Edge functions run globally, <50ms cold start. Supports streaming. Size limits apply. Edge config for flags. Recommend: Edge for rate limiting, traditional for complex logic."
+Good: "Researched server middleware patterns. Findings: Security headers middleware, logging middleware, validation middleware. Error handlers need specific signature. Use async wrappers. Recommend: security + compression + rate-limit stack, centralized errors."
 Good: "none - simple component using well-known stack, no special configuration"
 
 Tool guidance:
-- Use doc lookup tools for: Next.js, React, Express, Vercel, AWS, deployment platforms
+- Use doc lookup tools for official framework/platform documentation
 - Fallback to web search if doc tools unavailable
 - Record actionable findings: patterns to use, config recommendations, limits, best practices`,
 				answer: null,
@@ -80,15 +80,15 @@ Good: 'prod-us-east', 'prod-eu-west', 'staging'`,
 				itemQuestions: [
 					{
 						id: "dp-q-001",
-						question: `Platform, URL, and commands.
+						question: `Platform, URL, build and deploy commands.
 
-PLATFORM: Where deployed (AWS ECS, Vercel, Railway, GCP Cloud Run, etc.)
+PLATFORM: Where deployed (cloud platform, container service, etc.)
 URL: Production endpoint if applicable
-BUILD: Build command (npm run build, docker build, etc.)
+BUILD: Build command
 DEPLOY: Deploy command or CI/CD trigger
 
-Good: "Platform: Vercel. URL: https://checkout.acme.com. Build: npm run build. Deploy: Automatic on main branch push."
-Good: "Platform: AWS ECS. URL: https://api.acme.com/rate-limiter. Build: docker build -t rate-limiter. Deploy: aws ecs update-service via GitHub Actions."
+Good: "Platform: Edge hosting platform. URL: https://checkout.example.com. Build: npm run build. Deploy: Automatic on main branch push."
+Good: "Platform: Container service. URL: https://api.example.com/rate-limiter. Build: docker build -t rate-limiter. Deploy: Container update via CI/CD."
 Bad: "Platform: Cloud. Build: npm. Deploy: Auto." (too vague)`,
 						answer: null,
 					},
