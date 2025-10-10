@@ -7,34 +7,17 @@ import { z } from "zod";
  */
 export const StartDraftArgsSchema = z.object({
 	type: EntityTypeSchema.describe("Type of spec to create"),
-	slug: z
-		.string()
-		.min(1)
-		.regex(/^[a-z0-9]+(-[a-z0-9]+)*$/)
-		.describe(
-			"URL-friendly identifier for this spec (e.g., 'user-authentication', 'payment-processing'). Must start and end with alphanumeric characters, no consecutive dashes.",
-		),
 });
 
 export type StartDraftArgs = z.infer<typeof StartDraftArgsSchema>;
 
 /**
- * Sanitize a slug to ensure no leading/trailing dashes and no consecutive dashes
+ * Generate a unique draft ID
  */
-function sanitizeSlug(slug: string): string {
-	return slug
-		.trim()
-		.toLowerCase()
-		.replace(/^-+|-+$/g, "") // Remove leading/trailing dashes
-		.replace(/-+/g, "-"); // Replace consecutive dashes with single dash
-}
-
-/**
- * Generate a draft ID from type and slug
- */
-function generateDraftId(type: string, slug: string): string {
-	const sanitized = sanitizeSlug(slug);
-	return `${type}-${sanitized}`;
+function generateDraftId(): string {
+	const timestamp = Date.now();
+	const random = Math.random().toString(36).substring(2, 9);
+	return `draft-${timestamp}-${random}`;
 }
 
 /**
@@ -44,20 +27,20 @@ export async function startDraft(
 	args: StartDraftArgs,
 	draftStore: DraftStore,
 ): Promise<string> {
-	const { type, slug } = args;
+	const { type } = args;
 
-	// Generate draft ID from type and slug
-	const draftId = generateDraftId(type, slug);
+	// Generate unique draft ID
+	const draftId = generateDraftId();
 
-	// Check if a draft already exists for this ID
+	// Check if a draft already exists for this ID (should be extremely rare)
 	if (draftStore.has(draftId)) {
 		throw new Error(
-			`Draft '${draftId}' already exists. Use continue_draft to resume or list_drafts to see all drafts.`,
+			`Draft '${draftId}' already exists. This should not happen. Please try again.`,
 		);
 	}
 
-	// Create new draft manager (pass slug)
-	const manager = draftStore.create(draftId, type, slug);
+	// Create new draft manager (no slug needed yet)
+	const manager = draftStore.create(draftId, type);
 
 	// Auto-save initial draft state
 	try {

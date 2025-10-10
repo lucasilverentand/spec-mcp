@@ -20,18 +20,20 @@ import type { SpecManager } from "./spec-manager";
 export class DraftManager<T extends Base = Base> {
 	private drafter: EntityDrafter<T>;
 	private entityType: EntityType;
-	private slug: string;
+	private slug?: string;
 	private number?: number;
 
 	constructor(
 		drafter: EntityDrafter<T>,
 		entityType: EntityType,
-		slug: string,
+		slug?: string,
 		number?: number,
 	) {
 		this.drafter = drafter;
 		this.entityType = entityType;
-		this.slug = slug;
+		if (slug !== undefined) {
+			this.slug = slug;
+		}
 		if (number !== undefined) {
 			this.number = number;
 		}
@@ -166,10 +168,17 @@ export class DraftManager<T extends Base = Base> {
 	}
 
 	/**
-	 * Get slug
+	 * Get slug (may be undefined if not yet finalized)
 	 */
-	getSlug(): string {
+	getSlug(): string | undefined {
 		return this.slug;
+	}
+
+	/**
+	 * Set slug (assigned during finalization)
+	 */
+	setSlug(slug: string): void {
+		this.slug = slug;
 	}
 
 	/**
@@ -201,7 +210,7 @@ export class DraftStore {
 	/**
 	 * Create a new draft session
 	 */
-	create(sessionId: string, type: EntityType, slug: string): DraftManager {
+	create(sessionId: string, type: EntityType, slug?: string): DraftManager {
 		if (this.drafts.has(sessionId)) {
 			throw new Error(`Draft already exists for session: ${sessionId}`);
 		}
@@ -356,6 +365,7 @@ export class DraftStore {
 
 	/**
 	 * Save a draft to disk using EntityManager's saveDraft method.
+	 * No slug is needed - slug is determined at finalization.
 	 * Assigns a number on first save if not already assigned.
 	 */
 	async save(sessionId: string): Promise<void> {
@@ -365,7 +375,6 @@ export class DraftStore {
 		}
 
 		const type = manager.getType();
-		const slug = manager.getSlug();
 		const drafter = manager.getDrafter();
 		const entityManager = this.getEntityManager(type);
 
@@ -376,10 +385,10 @@ export class DraftStore {
 			manager.setNumber(number);
 		}
 
-		// Save using EntityManager
+		// Save using EntityManager (no slug needed for drafts)
 		// @ts-expect-error - TypeScript cannot verify the drafter type matches entityManager's specific type,
 		// but we know it's correct because both come from the same entity type switch case
-		await entityManager.saveDraft(drafter, slug, number);
+		await entityManager.saveDraft(drafter, number);
 	}
 
 	/**
@@ -422,7 +431,7 @@ export class DraftStore {
 				const entityManager = this.getEntityManager(type);
 				const draftInfos = await entityManager.listDraftsWithMetadata();
 
-				for (const { number, slug } of draftInfos) {
+				for (const { number } of draftInfos) {
 					try {
 						// Load the draft state instead of the drafter directly
 						const drafterState = await entityManager.loadDraftState(number);
@@ -435,14 +444,14 @@ export class DraftStore {
 							// but we know they're correct because config and drafterState come from the same entity type
 							const drafter = restoreEntityDrafter(config, drafterState);
 
-							// Create session ID
-							const sessionId = `${type}-${slug}`;
+							// Create session ID using type and number (no slug yet)
+							const sessionId = `${type}-draft-${number}`;
 
-							// Create manager (cast drafter to Base type)
+							// Create manager without slug (cast drafter to Base type)
 							const manager = new DraftManager(
 								drafter as EntityDrafter<Base>,
 								type,
-								slug,
+								undefined, // no slug yet
 								number,
 							);
 							this.drafts.set(sessionId, manager);

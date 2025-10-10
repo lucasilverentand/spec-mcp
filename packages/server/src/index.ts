@@ -171,13 +171,6 @@ function registerTools(
 					"constitution",
 				])
 				.describe("Type of spec to create"),
-			slug: z
-				.string()
-				.min(1)
-				.regex(/^[a-z0-9]+(-[a-z0-9]+)*$/)
-				.describe(
-					"URL-friendly identifier for this spec (e.g., 'user-authentication', 'payment-processing'). Must start and end with alphanumeric characters, no consecutive dashes.",
-				),
 		},
 		async (args) => {
 			try {

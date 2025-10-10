@@ -46,18 +46,32 @@ export class EntityManager<T extends Base> extends FileManager {
 
 	private getFilePath(entity: {
 		number: number;
-		slug: string;
+		slug?: string;
 		draft?: boolean;
 	}): string {
 		const isDraft = entity.draft ?? false;
-		return `${this.subFolder}/${this.idPrefix}-${entity.number}-${entity.slug}${isDraft ? ".draft" : ""}.yml`;
+		// For drafts, use simple number-based naming; for finalized entities, use full naming
+		if (isDraft) {
+			return `${this.subFolder}/${this.idPrefix}-${entity.number}.draft.yml`;
+		}
+		if (!entity.slug) {
+			throw new Error("Slug is required for finalized entities");
+		}
+		return `${this.subFolder}/${this.idPrefix}-${entity.number}-${entity.slug}.yml`;
 	}
 
 	private getFilePattern(): RegExp {
-		// Match: {idPrefix}-{number}-{slug} or {idPrefix}-{number}-{slug}.draft
+		// Match: {idPrefix}-{number}-{slug} for finalized entities
 		// Note: extension is already stripped by listFiles()
-		// Group 1: number, Group 2: slug (without .draft suffix)
-		return new RegExp(`^${this.idPrefix}-(\\d+)-([a-z0-9-]+?)(?:\\.draft)?$`);
+		// Group 1: number, Group 2: slug
+		return new RegExp(`^${this.idPrefix}-(\\d+)-([a-z0-9-]+)$`);
+	}
+
+	private getDraftFilePattern(): RegExp {
+		// Match: {idPrefix}-{number}.draft for draft files
+		// Note: extension is already stripped by listFiles()
+		// Group 1: number
+		return new RegExp(`^${this.idPrefix}-(\\d+)\\.draft$`);
 	}
 
 	override async ensureFolder(): Promise<void> {
@@ -246,11 +260,10 @@ export class EntityManager<T extends Base> extends FileManager {
 	}
 
 	/**
-	 * Save a draft to disk
+	 * Save a draft to disk (without slug - slug is determined at finalization)
 	 */
 	async saveDraft(
 		drafter: EntityDrafter<T>,
-		slug: string,
 		number?: number,
 	): Promise<number> {
 		await this.ensureFolder();
@@ -277,7 +290,6 @@ export class EntityManager<T extends Base> extends FileManager {
 
 		const filePath = this.getFilePath({
 			number: draftNumber,
-			slug,
 			draft: true,
 		});
 
@@ -314,14 +326,13 @@ export class EntityManager<T extends Base> extends FileManager {
 	private async loadDraftFile(number: number): Promise<DraftFile<T> | null> {
 		try {
 			const fileNames = await this.listFiles(this.subFolder, ".yml");
-			const pattern = this.getFilePattern();
+			const pattern = this.getDraftFilePattern();
 
 			for (const fileName of fileNames) {
 				const match = fileName.match(pattern);
 				if (match?.[1]) {
 					const fileNumber = Number.parseInt(match[1], 10);
-					// Check if this is a draft file (ends with .draft before .yml)
-					if (fileNumber === number && fileName.endsWith(".draft")) {
+					if (fileNumber === number) {
 						const data = await this.readYaml<DraftFile<T>>(
 							`${this.subFolder}/${fileName}.yml`,
 						);
@@ -340,13 +351,13 @@ export class EntityManager<T extends Base> extends FileManager {
 	 */
 	async deleteDraft(number: number): Promise<void> {
 		const fileNames = await this.listFiles(this.subFolder, ".yml");
-		const pattern = this.getFilePattern();
+		const pattern = this.getDraftFilePattern();
 
 		for (const fileName of fileNames) {
 			const match = fileName.match(pattern);
 			if (match?.[1]) {
 				const fileNumber = Number.parseInt(match[1], 10);
-				if (fileNumber === number && fileName.endsWith(".draft")) {
+				if (fileNumber === number) {
 					await super.delete(`${this.subFolder}/${fileName}.yml`);
 					return;
 				}
@@ -361,13 +372,13 @@ export class EntityManager<T extends Base> extends FileManager {
 	 */
 	async draftExists(number: number): Promise<boolean> {
 		const fileNames = await this.listFiles(this.subFolder, ".yml");
-		const pattern = this.getFilePattern();
+		const pattern = this.getDraftFilePattern();
 
 		for (const fileName of fileNames) {
 			const match = fileName.match(pattern);
 			if (match?.[1]) {
 				const fileNumber = Number.parseInt(match[1], 10);
-				if (fileNumber === number && fileName.endsWith(".draft")) {
+				if (fileNumber === number) {
 					return true;
 				}
 			}
@@ -415,12 +426,12 @@ export class EntityManager<T extends Base> extends FileManager {
 	 */
 	async listDrafts(): Promise<number[]> {
 		const fileNames = await this.listFiles(this.subFolder, ".yml");
-		const pattern = this.getFilePattern();
+		const pattern = this.getDraftFilePattern();
 		const draftNumbers: number[] = [];
 
 		for (const fileName of fileNames) {
 			const match = fileName.match(pattern);
-			if (match?.[1] && fileName.endsWith(".draft")) {
+			if (match?.[1]) {
 				const number = Number.parseInt(match[1], 10);
 				draftNumbers.push(number);
 			}
@@ -430,21 +441,18 @@ export class EntityManager<T extends Base> extends FileManager {
 	}
 
 	/**
-	 * List all drafts with their number and slug metadata
+	 * List all drafts with their number (no slug since drafts don't have slugs)
 	 */
-	async listDraftsWithMetadata(): Promise<
-		Array<{ number: number; slug: string }>
-	> {
+	async listDraftsWithMetadata(): Promise<Array<{ number: number }>> {
 		const fileNames = await this.listFiles(this.subFolder, ".yml");
-		const pattern = this.getFilePattern();
-		const drafts: Array<{ number: number; slug: string }> = [];
+		const pattern = this.getDraftFilePattern();
+		const drafts: Array<{ number: number }> = [];
 
 		for (const fileName of fileNames) {
 			const match = fileName.match(pattern);
-			if (match?.[1] && match[2] && fileName.endsWith(".draft")) {
+			if (match?.[1]) {
 				const number = Number.parseInt(match[1], 10);
-				const slug = match[2];
-				drafts.push({ number, slug });
+				drafts.push({ number });
 			}
 		}
 

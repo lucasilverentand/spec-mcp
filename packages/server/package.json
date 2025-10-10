@@ -39,6 +39,7 @@
 		"@spec-mcp/core": "workspace:*",
 		"@spec-mcp/schemas": "workspace:*",
 		"@spec-mcp/tsconfig": "workspace:*",
+		"@spec-mcp/utils": "workspace:*",
 		"@types/node": "^24.5.2",
 		"pino-pretty": "^13.1.1",
 		"tsup": "^8.5.0",

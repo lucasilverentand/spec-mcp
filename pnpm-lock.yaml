@@ -148,6 +148,9 @@ importers:
       '@spec-mcp/tsconfig':
         specifier: workspace:*
         version: link:../tsconfig
+      '@spec-mcp/utils':
+        specifier: workspace:*
+        version: link:../utils
       '@types/node':
         specifier: ^24.5.2
         version: 24.5.2
@@ -1502,7 +1505,7 @@ packages:
       std-env: 3.9.0
       test-exclude: 7.0.1
       tinyrainbow: 2.0.0
-      vitest: 3.2.4(@types/node@24.7.0)
+      vitest: 3.2.4(@types/node@24.5.2)
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -1539,7 +1542,7 @@ packages:
       '@vitest/spy': 3.2.4
       estree-walker: 3.0.3
       magic-string: 0.30.19
-      vite: 7.1.9(@types/node@24.7.0)
+      vite: 7.1.9(@types/node@24.5.2)
     dev: true
 
   /@vitest/pretty-format@3.2.4:

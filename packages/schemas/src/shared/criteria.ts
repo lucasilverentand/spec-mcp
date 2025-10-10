@@ -18,6 +18,10 @@ export const CriteriaSchema = z.object({
 		.string()
 		.min(1)
 		.describe("Description of the acceptance criterion"),
+	rationale: z
+		.string()
+		.min(1)
+		.describe("Rationale explaining why this criterion is important"),
 	status: CriteriaStatusSchema.default("needs-review").describe(
 		"Current status of the criterion",
 	),

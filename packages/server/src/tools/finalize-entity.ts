@@ -7,6 +7,7 @@ import type {
 	Plan,
 	TechnicalRequirement,
 } from "@spec-mcp/schemas";
+import { generateSlug } from "@spec-mcp/utils";
 import { z } from "zod";
 
 /**
@@ -49,6 +50,11 @@ export async function finalizeEntity(
 	}
 
 	const isMainEntity = !entityId || entityId === "main";
+
+	// For main entity, generate slug from name if not provided
+	if (isMainEntity && data.name && !data.slug) {
+		data.slug = generateSlug(data.name as string);
+	}
 
 	// Finalize the entity
 	try {
