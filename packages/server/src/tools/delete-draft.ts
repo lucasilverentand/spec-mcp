@@ -26,8 +26,8 @@ export async function deleteDraft(
 		);
 	}
 
-	// Delete the draft
-	const deleted = draftStore.delete(draftId);
+	// Delete the draft from memory and disk
+	const deleted = await draftStore.deleteWithFile(draftId);
 
 	if (!deleted) {
 		throw new Error(`Failed to delete draft '${draftId}'.`);

@@ -22,7 +22,9 @@ export const FinalizeEntityArgsSchema = z.object({
 		),
 	data: z
 		.record(z.any())
-		.describe("Complete JSON object for the entity/item, matching the schema"),
+		.describe(
+			"JSON object for the entity/item. For main entity: provide ONLY non-array fields (array fields auto-merged from finalized items). For array items: provide complete item data.",
+		),
 });
 
 export type FinalizeEntityArgs = z.infer<typeof FinalizeEntityArgsSchema>;
@@ -55,6 +57,17 @@ export async function finalizeEntity(
 		throw new Error(
 			`Failed to finalize entity: ${error instanceof Error ? error.message : String(error)}`,
 		);
+	}
+
+	// Auto-save the draft state to disk (for array items)
+	// For main entity, we'll save as spec and clean up
+	if (!isMainEntity) {
+		try {
+			await draftStore.save(draftId);
+		} catch (error) {
+			// Log but don't fail - saving is best-effort
+			console.error(`Warning: Failed to save draft ${draftId}:`, error);
+		}
 	}
 
 	// Format response
@@ -121,8 +134,8 @@ export async function finalizeEntity(
 			);
 		}
 
-		// Clean up draft
-		draftStore.delete(draftId);
+		// Clean up draft from memory and disk
+		await draftStore.deleteWithFile(draftId);
 
 		// Format spec ID
 		const idPrefix = getIdPrefix(type);
@@ -140,18 +153,67 @@ export async function finalizeEntity(
 		// Array item finalized, check what's next
 		const continueCtx = manager.getContinueInstructions();
 
-		if (continueCtx.stage === "finalization") {
+		if (continueCtx.stage === "questions") {
+			// More questions to answer
+			const nextAction = continueCtx.nextAction as {
+				questionId: string;
+				question: string;
+				context?: string;
+			};
+			response += "Next Question:\n";
+			response += `${"-".repeat(70)}\n`;
+			response += `ID: ${nextAction.questionId}\n`;
+			response += `Question: ${nextAction.question}\n`;
+			if (nextAction.context) {
+				response += `Context: ${nextAction.context}\n`;
+			}
+			response += `\nNext Action:\n`;
+			response += `${"-".repeat(70)}\n`;
+			response += `Use answer_question with:\n`;
+			response += `  draftId: "${draftId}"\n`;
+			response += `  questionId: "${nextAction.questionId}"\n`;
+			response += `  answer: <your_answer>\n`;
+		} else if (continueCtx.stage === "finalization") {
 			const nextAction = continueCtx.nextAction as {
 				entityId: string;
+				context: {
+					description: string;
+					questionsAndAnswers: Array<{ question: string; answer: string }>;
+					schema: unknown;
+				};
 			};
-			response += "Next: Finalize more entities\n";
+			response += "✓ All questions answered for this entity!\n\n";
+			response += "Next: Finalization Required\n";
+			response += `${"=".repeat(70)}\n`;
+			response += `Entity ID: ${nextAction.entityId}\n\n`;
+			response += `Description: ${nextAction.context.description}\n\n`;
+			response += "Questions & Answers Summary:\n";
 			response += `${"-".repeat(70)}\n`;
-			response += `Entity ID: ${nextAction.entityId}\n`;
-			response += `Use continue_draft to get finalization instructions.\n`;
+			// Handle both array and non-array questionsAndAnswers
+			const questionsAndAnswers = nextAction.context.questionsAndAnswers || [];
+			questionsAndAnswers.forEach((qa, index) => {
+				response += `${index + 1}. ${qa.question}\n`;
+				response += `   Answer: ${qa.answer}\n\n`;
+			});
+			response +=
+				"⚠️  IMPORTANT: You must finalize this entity before proceeding.\n\n";
+			response += "JSON Schema:\n";
+			response += `${"-".repeat(70)}\n`;
+			response += `${JSON.stringify(nextAction.context.schema, null, 2)}\n\n`;
+			response += "Next Action:\n";
+			response += `${"-".repeat(70)}\n`;
+			response += `Use finalize_entity with:\n`;
+			response += `  draftId: "${draftId}"\n`;
+			response += `  entityId: "${nextAction.entityId}"\n`;
+			response += `  data: <generated_json_object>\n\n`;
+			response +=
+				"Generate the JSON object using the Q&A summary above and the JSON Schema provided.\n";
 		} else if (continueCtx.stage === "complete") {
-			response += "✓ All entities finalized!\n\n";
-			response += "The draft is ready to be finalized as the main spec.\n";
-			response += "Use continue_draft to get final instructions.\n";
+			// This should not happen - complete stage means fully done, not needing finalization
+			// But we'll handle it gracefully
+			response += "✓ Draft Complete!\n\n";
+			response +=
+				"This draft is fully finalized and ready to be saved as a spec.\n";
 		}
 	}
 

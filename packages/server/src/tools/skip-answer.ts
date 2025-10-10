@@ -2,28 +2,23 @@ import type { DraftStore } from "@spec-mcp/core";
 import { z } from "zod";
 
 /**
- * Schema for answer_question tool arguments
+ * Schema for skip_answer tool arguments
  */
-export const AnswerQuestionArgsSchema = z.object({
+export const SkipAnswerArgsSchema = z.object({
 	draftId: z.string().describe("The draft session ID"),
-	questionId: z.string().describe("The unique question ID to answer"),
-	answer: z
-		.union([z.string(), z.number(), z.boolean(), z.array(z.string())])
-		.describe(
-			"Answer to the question. Can be string, number, boolean, or array of strings.",
-		),
+	questionId: z.string().describe("The unique question ID to skip"),
 });
 
-export type AnswerQuestionArgs = z.infer<typeof AnswerQuestionArgsSchema>;
+export type SkipAnswerArgs = z.infer<typeof SkipAnswerArgsSchema>;
 
 /**
- * Answer a question in the draft workflow (unified for all question types)
+ * Skip an optional question in the draft workflow
  */
-export async function answerQuestion(
-	args: AnswerQuestionArgs,
+export async function skipAnswer(
+	args: SkipAnswerArgs,
 	draftStore: DraftStore,
 ): Promise<string> {
-	const { draftId, questionId, answer } = args;
+	const { draftId, questionId } = args;
 
 	// Get the draft
 	const manager = draftStore.get(draftId);
@@ -40,25 +35,38 @@ export async function answerQuestion(
 			entityId: string;
 		};
 		throw new Error(
-			`Cannot answer questions: An entity needs to be finalized first.\n\n` +
+			`Cannot skip questions: An entity needs to be finalized first.\n\n` +
 				`Entity ID: ${nextAction.entityId}\n` +
 				`Please use finalize_entity with entityId="${nextAction.entityId}" first, or use continue_draft to get finalization instructions.`,
 		);
 	}
 
-	// Answer the question
-	try {
-		manager.answerQuestionById(questionId, answer);
+	// Find the question
+	const drafter = manager.getDrafter();
+	const questionResult = drafter.findQuestionById(questionId);
+	if (!questionResult) {
+		throw new Error(
+			`Question with ID '${questionId}' not found in draft '${draftId}'`,
+		);
+	}
 
-		// Clear skipped flag if it was previously skipped
-		const drafter = manager.getDrafter();
-		const questionResult = drafter.findQuestionById(questionId);
-		if (questionResult?.question.skipped) {
-			questionResult.question.skipped = false;
-		}
+	const { question } = questionResult;
+
+	// Check if the question is optional
+	if (question.optional !== true) {
+		throw new Error(
+			`Cannot skip question '${questionId}': This question is required and must be answered.\n\n` +
+				`Question: ${question.question}\n\n` +
+				`Use answer_question to provide an answer.`,
+		);
+	}
+
+	// Skip the question by setting skipped flag
+	try {
+		question.skipped = true;
 	} catch (error) {
 		throw new Error(
-			`Failed to answer question: ${error instanceof Error ? error.message : String(error)}`,
+			`Failed to skip question: ${error instanceof Error ? error.message : String(error)}`,
 		);
 	}
 
@@ -74,24 +82,21 @@ export async function answerQuestion(
 	const continueCtx = manager.getContinueInstructions();
 
 	// Format response
-	let response = "✓ Answer recorded\n";
+	let response = "✓ Question skipped\n";
 	response += `${"=".repeat(70)}\n\n`;
 	response += `Draft ID: ${draftId}\n`;
 	response += `Question ID: ${questionId}\n`;
-	response += `Answer: ${Array.isArray(answer) ? answer.join(", ") : String(answer)}\n\n`;
+	response += `Question: ${question.question}\n`;
+	response += `Status: Skipped (optional)\n\n`;
 
 	// Show what's next
 	if (continueCtx.stage === "questions") {
 		const nextAction = continueCtx.nextAction as {
 			questionId: string;
 			question: string;
-			context?: {
-				type: string;
-			};
 		};
 
-		// Check if the question is optional
-		const drafter = manager.getDrafter();
+		// Check if the next question is optional
 		const questionResult = drafter.findQuestionById(nextAction.questionId);
 		const isOptional = questionResult?.question.optional === true;
 
@@ -143,7 +148,7 @@ export async function answerQuestion(
 				const item = qa[i];
 				if (item) {
 					response += `${i + 1}. ${item.question}\n`;
-					response += `   Answer: ${item.answer}\n\n`;
+					response += `   Answer: ${item.answer || "[Skipped - Optional]"}\n\n`;
 				}
 			}
 		}

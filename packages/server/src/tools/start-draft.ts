@@ -56,8 +56,16 @@ export async function startDraft(
 		);
 	}
 
-	// Create new draft manager
-	const manager = draftStore.create(draftId, type);
+	// Create new draft manager (pass slug)
+	const manager = draftStore.create(draftId, type, slug);
+
+	// Auto-save initial draft state
+	try {
+		await draftStore.save(draftId);
+	} catch (error) {
+		// Log but don't fail - saving is best-effort
+		console.error(`Warning: Failed to save new draft ${draftId}:`, error);
+	}
 
 	// Get continuation context for the first question
 	const continueCtx = manager.getContinueInstructions();
@@ -72,6 +80,11 @@ export async function startDraft(
 	};
 	const { questionId, question } = nextAction;
 
+	// Check if the first question is optional
+	const drafter = manager.getDrafter();
+	const questionResult = drafter.findQuestionById(questionId);
+	const isOptional = questionResult?.question.optional === true;
+
 	// Format response
 	let response = "✓ Draft Created\n";
 	response += `${"=".repeat(70)}\n\n`;
@@ -82,7 +95,11 @@ export async function startDraft(
 	response += "First Question:\n";
 	response += `${"-".repeat(70)}\n`;
 	response += `ID: ${questionId}\n`;
-	response += `Question: ${question}\n\n`;
+	response += `Question: ${question}\n`;
+	if (isOptional) {
+		response += `Type: Optional\n`;
+	}
+	response += "\n";
 
 	response += "Next Action:\n";
 	response += `${"-".repeat(70)}\n`;
@@ -90,6 +107,14 @@ export async function startDraft(
 	response += `  draftId: "${draftId}"\n`;
 	response += `  questionId: "${questionId}"\n`;
 	response += `  answer: <your_answer>\n`;
+
+	if (isOptional) {
+		response +=
+			"\n⚠️  OPTIONAL QUESTION: This question can be skipped using skip_answer.\n";
+		response +=
+			"However, ONLY skip if you are absolutely certain the information is not needed.\n";
+		response += "When in doubt, ask the user for input rather than skipping.\n";
+	}
 
 	return response;
 }

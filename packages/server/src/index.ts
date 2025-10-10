@@ -10,6 +10,7 @@ import {
 	deleteDraft,
 	finalizeEntity,
 	listDrafts,
+	skipAnswer,
 	startDraft,
 } from "./tools/index.js";
 import { ErrorCode, McpError } from "./utils/error-codes.js";
@@ -148,7 +149,7 @@ class ConnectionManager {
 }
 
 /**
- * Register MCP tools for draft workflow (New unified API - 6 tools)
+ * Register MCP tools for draft workflow (New unified API - 7 tools)
  */
 function registerTools(
 	server: McpServer,
@@ -223,7 +224,7 @@ function registerTools(
 	// 3. finalize_entity - Finalize any entity (main or array item)
 	server.tool(
 		"finalize_entity",
-		"Finalize an entity with LLM-generated data. Use entityId 'main' or omit for main entity, 'fieldName[index]' for array items. Auto-saves when finalizing main entity.",
+		"Finalize an entity with LLM-generated data. For main entity: provide only non-array fields (arrays auto-merged). For array items: provide complete item data. Auto-saves when finalizing main entity.",
 		{
 			draftId: z.string().describe("The draft session ID"),
 			entityId: z
@@ -235,7 +236,7 @@ function registerTools(
 			data: z
 				.record(z.any())
 				.describe(
-					"Complete JSON object for the entity/item, matching the schema",
+					"JSON object for entity/item. Main entity: ONLY non-array fields (arrays auto-merged from finalized items). Array items: complete item data.",
 				),
 		},
 		async (args) => {
@@ -291,7 +292,28 @@ function registerTools(
 		},
 	);
 
-	// 6. continue_draft - Get intelligent next-step instructions
+	// 6. skip_answer - Skip an optional question
+	server.tool(
+		"skip_answer",
+		"Skip an optional question in the draft. Only works for questions marked as optional.",
+		{
+			draftId: z.string().describe("The draft session ID"),
+			questionId: z.string().describe("The unique question ID to skip"),
+		},
+		async (args) => {
+			try {
+				const result = await skipAnswer(args, draftStore);
+				return {
+					content: [{ type: "text", text: result }],
+				};
+			} catch (error) {
+				logger.error({ error, tool: "skip_answer" }, "Tool execution failed");
+				throw error;
+			}
+		},
+	);
+
+	// 7. continue_draft - Get intelligent next-step instructions
 	server.tool(
 		"continue_draft",
 		"Get continuation instructions for a draft. Intelligently shows next question or finalization context.",
@@ -314,7 +336,7 @@ function registerTools(
 		},
 	);
 
-	logger.info("Registered 6 draft workflow tools (unified API)");
+	logger.info("Registered 7 draft workflow tools (unified API)");
 }
 
 /**
@@ -332,11 +354,14 @@ async function main() {
 		});
 
 		// Initialize core managers
-		const draftStore = new DraftStore();
 		const specManager = new SpecManager("./specs");
+		const draftStore = new DraftStore(specManager);
 
 		// Ensure spec folders exist
 		await specManager.ensureFolders();
+
+		// Load existing drafts from disk
+		await draftStore.loadAll();
 
 		// Register tools
 		registerTools(server, draftStore, specManager);

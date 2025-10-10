@@ -88,6 +88,11 @@ export async function continueDraft(
 		};
 		const { questionId, question, context } = nextAction;
 
+		// Check if the question is optional
+		const drafter = manager.getDrafter();
+		const questionResult = drafter.findQuestionById(questionId);
+		const isOptional = questionResult?.question.optional === true;
+
 		response += "Continue Draft - Question Phase\n";
 		response += `${"=".repeat(70)}\n\n`;
 		response += `Draft ID: ${draftId}\n`;
@@ -109,6 +114,10 @@ export async function continueDraft(
 			response += `Context: Item question for field '${context.fieldName}', item #${context.itemIndex}\n`;
 		}
 
+		if (isOptional) {
+			response += `Type: Optional\n`;
+		}
+
 		response += `\n`;
 		response += "Next Action:\n";
 		response += `${"-".repeat(70)}\n`;
@@ -116,6 +125,15 @@ export async function continueDraft(
 		response += `  draftId: "${draftId}"\n`;
 		response += `  questionId: "${questionId}"\n`;
 		response += `  answer: <your_answer>\n`;
+
+		if (isOptional) {
+			response +=
+				"\n⚠️  OPTIONAL QUESTION: This question can be skipped using skip_answer.\n";
+			response +=
+				"However, ONLY skip if you are absolutely certain the information is not needed.\n";
+			response +=
+				"When in doubt, ask the user for input rather than skipping.\n";
+		}
 	} else if (continueCtx.stage === "finalization") {
 		// Finalization stage - show context for next entity
 		const nextAction = continueCtx.nextAction as {
