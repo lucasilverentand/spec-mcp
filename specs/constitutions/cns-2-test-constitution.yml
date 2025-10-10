@@ -1,0 +1,38 @@
+type: constitution
+number: 2
+slug: test-constitution
+name: Engineering Excellence Constitution
+description: This constitution defines the core engineering principles and practices for building high-quality, maintainable software. It establishes guidelines for code quality, testing standards, collaboration practices, and architectural decision-making to ensure consistency across all engineering teams.
+draft: false
+priority: high
+status:
+  created_at: 2025-10-10T00:00:00Z
+  updated_at: 2025-10-10T00:00:00Z
+  completed: false
+  completed_at: null
+  verified: false
+  verified_at: null
+  notes: []
+articles:
+
+  - id: art-001
+    title: Code Quality Standards
+    principle: All code must follow the established style guide and pass linting checks before merging. Code should be self-documenting with clear variable names and necessary comments for complex logic.
+    rationale: Consistent code quality reduces technical debt, makes code easier to maintain and review, and ensures that any team member can understand and work with any part of the codebase efficiently.
+    examples:
+      - Using ESLint with Prettier for JavaScript projects
+      - Implementing pre-commit hooks to enforce linting
+    exceptions:
+      - Prototype code for proof-of-concept explorations
+    status: active
+
+
+  - id: art-002
+    title: Testing Requirements
+    principle: All new features must include unit tests with minimum 80% code coverage. Critical paths and business logic require integration tests.
+    rationale: Comprehensive testing prevents regressions, increases confidence in deployments, serves as living documentation, and enables safe refactoring of the codebase.
+    examples:
+      - Jest tests for React components
+    exceptions: []
+    status: active
+

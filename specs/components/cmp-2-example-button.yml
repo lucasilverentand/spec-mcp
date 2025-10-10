@@ -1,0 +1,29 @@
+type: component
+number: 2
+slug: example-button
+name: Button
+description: A reusable button component with multiple variants and sizes
+draft: false
+priority: medium
+status:
+  created_at: 2025-10-10T00:00:00Z
+  updated_at: 2025-10-10T00:00:00Z
+  completed: false
+  completed_at: null
+  verified: false
+  verified_at: null
+  notes: []
+component_type: library
+folder: src/components
+tech_stack: []
+deployments:
+
+  - platform: npm registry
+    environment_vars:
+      - NODE_ENV
+    secrets:
+      - NPM_TOKEN
+
+scope: []
+depends_on: []
+external_dependencies: []
