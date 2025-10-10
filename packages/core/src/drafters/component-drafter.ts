@@ -34,11 +34,13 @@ export function createComponentDrafterConfig(): EntityDrafterConfig<Component> {
 				id: "q-005",
 				question: "What is the dev server port? (optional)",
 				answer: null,
+				optional: true,
 			},
 			{
 				id: "q-006",
 				question: "Any additional notes about this component? (optional)",
 				answer: null,
+				optional: true,
 			},
 		],
 		arrayFields: [
@@ -62,32 +64,38 @@ export function createComponentDrafterConfig(): EntityDrafterConfig<Component> {
 						id: "dp-q-002",
 						question: "What is the production URL or endpoint? (optional)",
 						answer: null,
+						optional: true,
 					},
 					{
 						id: "dp-q-003",
 						question: "What is the build command? (optional)",
 						answer: null,
+						optional: true,
 					},
 					{
 						id: "dp-q-004",
 						question: "What is the deploy command? (optional)",
 						answer: null,
+						optional: true,
 					},
 					{
 						id: "dp-q-005",
 						question:
 							"List required environment variables (comma-separated, optional)",
 						answer: null,
+						optional: true,
 					},
 					{
 						id: "dp-q-006",
 						question: "List required secrets (comma-separated, optional)",
 						answer: null,
+						optional: true,
 					},
 					{
 						id: "dp-q-007",
 						question: "Any additional deployment notes? (optional)",
 						answer: null,
+						optional: true,
 					},
 				],
 			},

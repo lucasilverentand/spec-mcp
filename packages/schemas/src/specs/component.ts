@@ -28,13 +28,11 @@ export const DeploymentSchema = z.object({
 		.describe("Command to deploy the component"),
 	environment_vars: z
 		.array(z.string())
-		.min(1)
 		.optional()
 		.default([])
 		.describe("Required environment variables"),
 	secrets: z
 		.array(z.string())
-		.min(1)
 		.optional()
 		.default([])
 		.describe("Required secrets (e.g., API keys, passwords)"),

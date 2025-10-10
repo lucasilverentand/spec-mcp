@@ -51,12 +51,14 @@ export function createConstitutionDrafterConfig(): EntityDrafterConfig<Constitut
 						question:
 							"Provide concrete examples demonstrating this principle (comma-separated, optional)",
 						answer: null,
+						optional: true,
 					},
 					{
 						id: "ar-q-005",
 						question:
 							"Are there exceptions where this principle doesn't apply? (comma-separated, optional)",
 						answer: null,
+						optional: true,
 					},
 					{
 						id: "ar-q-006",

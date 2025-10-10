@@ -10,6 +10,14 @@ export const DraftQuestionSchema = z.object({
 		.nullable()
 		.default(null)
 		.describe("The answer provided for the question"),
+	optional: z
+		.boolean()
+		.optional()
+		.describe("Whether this question is optional and can be skipped"),
+	skipped: z
+		.boolean()
+		.optional()
+		.describe("Whether this optional question was explicitly skipped"),
 });
 
 export const DraftSchema = z.object({

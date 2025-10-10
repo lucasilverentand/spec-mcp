@@ -40,6 +40,7 @@ export function createDecisionDrafterConfig(): EntityDrafterConfig<Decision> {
 				question:
 					"Does this supersede a previous decision? (provide decision ID or leave blank)",
 				answer: null,
+				optional: true,
 			},
 		],
 		arrayFields: [
@@ -69,6 +70,7 @@ export function createDecisionDrafterConfig(): EntityDrafterConfig<Decision> {
 						question:
 							"What is the mitigation strategy? (optional, for negative/risk)",
 						answer: null,
+						optional: true,
 					},
 				],
 			},

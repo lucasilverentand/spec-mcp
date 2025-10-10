@@ -76,6 +76,7 @@ export function createBusinessRequirementDrafterConfig(): EntityDrafterConfig<Bu
 						id: "sh-q-004",
 						question: "What is the stakeholder's email? (optional)",
 						answer: null,
+						optional: true,
 					},
 				],
 			},

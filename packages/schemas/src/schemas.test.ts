@@ -15,7 +15,6 @@ describe("Base Schemas", () => {
 				"business-requirement",
 				"technical-requirement",
 				"plan",
-				"app",
 				"component",
 				"constitution",
 				"decision",

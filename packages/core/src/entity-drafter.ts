@@ -17,6 +17,7 @@ export interface EntityArrayDrafterState<T> {
 		data: Partial<T>;
 		finalized: boolean;
 	}>;
+	minLength?: number;
 }
 
 export class EntityDrafter<T extends Base> {
@@ -39,8 +40,10 @@ export class EntityDrafter<T extends Base> {
 	}
 
 	currentQuestion(): DraftQuestion | null {
-		// First check if there's an unanswered question in the main questions
-		const mainQuestion = this.questions.find((q) => q.answer === null);
+		// First check if there's an unanswered and unskipped question in the main questions
+		const mainQuestion = this.questions.find(
+			(q) => q.answer === null && q.skipped !== true,
+		);
 		if (mainQuestion) {
 			return mainQuestion;
 		}
@@ -81,12 +84,62 @@ export class EntityDrafter<T extends Base> {
 
 	get questionsComplete(): boolean {
 		const mainQuestionsComplete = this.questions.every(
-			(q) => q.answer !== null,
+			(q) => q.answer !== null || q.skipped === true,
 		);
 		const arrayDraftersComplete = Array.from(this.arrayDrafters.values()).every(
 			(drafter) => drafter.isComplete,
 		);
 		return mainQuestionsComplete && arrayDraftersComplete;
+	}
+
+	/**
+	 * Remove array fields from JSON schema to optimize token usage.
+	 * When arrays are already finalized, we don't need to include their schemas.
+	 * @param jsonSchema The full JSON schema object
+	 * @param fieldsToRemove Array of field names to remove from the schema
+	 * @returns A new schema object without the specified fields
+	 */
+	private removeArrayFieldsFromSchema(
+		jsonSchema: unknown,
+		fieldsToRemove: string[],
+	): unknown {
+		if (
+			typeof jsonSchema !== "object" ||
+			jsonSchema === null ||
+			fieldsToRemove.length === 0
+		) {
+			return jsonSchema;
+		}
+
+		// Clone the schema to avoid mutation
+		const clonedSchema = JSON.parse(JSON.stringify(jsonSchema)) as {
+			$ref?: string;
+			definitions?: Record<
+				string,
+				{
+					properties?: Record<string, unknown>;
+					required?: string[];
+				}
+			>;
+			properties?: Record<string, unknown>;
+			required?: string[];
+		};
+
+		// Handle both direct schema and $ref-based schema
+		// zodToJsonSchema typically creates: { $ref: "#/definitions/EntitySchema", definitions: {...} }
+		const targetSchema = clonedSchema.definitions?.EntitySchema || clonedSchema;
+
+		// Remove fields from properties
+		if (targetSchema.properties) {
+			for (const field of fieldsToRemove) {
+				delete targetSchema.properties[field];
+			}
+		}
+
+		// Note: We intentionally keep the fields in the 'required' array
+		// This ensures the LLM knows these fields are required and will merge them from prefilledData
+
+		return clonedSchema;
 	}
 
 	/**
@@ -145,26 +198,33 @@ export class EntityDrafter<T extends Base> {
 		// Build example showing which fields to generate vs use prefilled
 		const prefilledFields = Object.keys(prefilledData);
 
+		// Remove prefilled array fields from the schema
+		// This optimizes token usage by not sending array schemas that are already finalized
+		const optimizedSchema = this.removeArrayFieldsFromSchema(
+			jsonSchema,
+			prefilledFields,
+		);
+
 		return {
 			mainQuestions,
 			arrayFieldsStatus,
 			prefilledData,
-			schema: jsonSchema,
+			schema: optimizedSchema,
 			nextStep: {
 				action: "finalize_entity",
 				method: "finalize",
 				parameters: {
-					data: "Generate complete JSON object by merging Q&A data with prefilled arrays",
+					data: "Generate JSON object from Q&A (non-array fields only). System auto-merges array fields.",
 				},
 				instruction: `
 ═══════════════════════════════════════════════════════════════
                    FINAL ENTITY GENERATION
 ═══════════════════════════════════════════════════════════════
 
-TASK: Generate complete entity by merging Q&A with prefilled arrays
+TASK: Generate JSON object from Q&A data. DO NOT include array fields.
 
-ENTITY SCHEMA (JSON Schema format):
-${JSON.stringify(jsonSchema, null, 2)}
+ENTITY SCHEMA (array fields omitted, generate only these fields):
+${JSON.stringify(optimizedSchema, null, 2)}
 
 MAIN QUESTIONS & ANSWERS:
 ${mainQuestions
@@ -174,40 +234,42 @@ ${mainQuestions
 	)
 	.join("\n\n")}
 
-ARRAY FIELDS STATUS:
+${
+	prefilledFields.length > 0
+		? `
+ARRAY FIELDS (DO NOT INCLUDE THESE - auto-merged by system):
 ${Object.entries(arrayFieldsStatus)
 	.map(
 		([field, status]) =>
-			`  • ${field}: ${status.finalized ? "✓" : "✗"} (${status.itemCount} items finalized)`,
+			`  • ${field}: ${status.itemCount} item${status.itemCount === 1 ? "" : "s"} already finalized`,
 	)
 	.join("\n")}
 
-PREFILLED ARRAY DATA (already finalized):
-${JSON.stringify(prefilledData, null, 2)}
-
-FIELDS ALREADY PREFILLED:
-${prefilledFields.map((f) => `  • ${f} (use prefilled data)`).join("\n")}
-
+⚠️  IMPORTANT: Array fields (${prefilledFields.join(", ")}) will be automatically
+    merged by the system. DO NOT include them in your response.
+`
+		: ""
+}
 REQUIREMENTS:
-✓ Generate fields from mainQuestions Q&A
-✓ Use prefilledData for array fields (DO NOT regenerate)
-✓ Add computed fields: type, number, slug, status, timestamps
-✓ Must conform to the Entity Schema above
-✓ Include ALL required fields
+✓ Generate ONLY non-array fields from Q&A (see schema above)
+✓ Include: type, number, slug, name, description, status, etc.
+✓ DO NOT include: ${prefilledFields.length > 0 ? prefilledFields.join(", ") : "array fields"}
+✓ Array fields are auto-merged - system will reject them if provided
+✓ Must conform to the Entity Schema shown above
 
 EXAMPLE STRUCTURE:
 {
   "type": "<entity-type>",
   "number": <next-number>,
-  "slug": "<generated-from-title>",
+  "slug": "<url-friendly-slug>",
   "name": "<from Q&A>",
   "description": "<from Q&A>",
-  ...
-  ${prefilledFields.map((f) => `"${f}": <use prefilledData.${f}>`).join(",\n  ")},
-  ...
+  ... (other non-array fields from schema)
   "status": {
-    "created_at": "<ISO timestamp>",
-    "updated_at": "<ISO timestamp>",
+    "created_at": "<ISO-8601-timestamp>",
+    "updated_at": "<ISO-8601-timestamp>",
+    "completed": false,
+    "completed_at": null,
     "verified": false,
     "verified_at": null,
     "notes": []
@@ -215,7 +277,8 @@ EXAMPLE STRUCTURE:
 }
 
 NEXT ACTION:
-Call: drafter.finalize(<your_generated_complete_object>)
+Call finalize_entity with draftId and your generated JSON (non-array fields only).
+The system will automatically merge array fields: ${prefilledFields.join(", ") || "none"}
 
 ═══════════════════════════════════════════════════════════════
 				`.trim(),
@@ -245,12 +308,30 @@ Call: drafter.finalize(<your_generated_complete_object>)
 			throw new Error("Cannot finalize: not all questions have been answered.");
 		}
 
-		const { data, error } = this.schema.safeParse(input);
-		if (error) {
-			throw new Error(`Invalid data: ${error.message}`);
+		// Get array field names to exclude from input
+		const arrayFieldNames = Array.from(this.arrayDrafters.keys());
+
+		// Strip array fields from input data - they should come from arrayDrafters only
+		const sanitizedInput: Record<string, unknown> = {};
+		for (const [key, value] of Object.entries(input)) {
+			if (!arrayFieldNames.includes(key)) {
+				sanitizedInput[key] = value;
+			}
 		}
 
-		this.data = data;
+		// Merge prefilled array data from finalized array drafters
+		const prefilledArrayData = this.getPrefilledArrayData();
+		const mergedData = { ...sanitizedInput, ...prefilledArrayData };
+
+		// Parse with Zod which will apply defaults for missing fields
+		const parseResult = this.schema.safeParse(mergedData);
+		if (!parseResult.success) {
+			throw new Error(
+				`Invalid data: ${JSON.stringify(parseResult.error.issues, null, 2)}`,
+			);
+		}
+
+		this.data = parseResult.data;
 		this.finalized = true;
 	}
 
@@ -389,7 +470,28 @@ Call: drafter.finalize(<your_generated_complete_object>)
 		stage: "questions" | "finalization" | "complete";
 		nextAction: unknown;
 	} {
-		// Stage 1: Questions need to be answered
+		// Stage 1: Check if any array items need finalization FIRST
+		// This prevents moving to the next item's questions when current item needs finalization
+		for (const [fieldName, arrayDrafter] of this.arrayDrafters.entries()) {
+			// Check if there's an item with all questions answered but not finalized
+			for (let i = 0; i < arrayDrafter.items.length; i++) {
+				const item = arrayDrafter.items[i];
+				if (item?.drafter.questionsComplete && !item.drafter.isComplete) {
+					// Found an item that needs finalization
+					const context = arrayDrafter.getItemContext(i);
+					return {
+						stage: "finalization",
+						nextAction: {
+							action: "finalize_entity",
+							entityId: `${fieldName}[${i}]`,
+							context: context,
+						},
+					};
+				}
+			}
+		}
+
+		// Stage 2: Questions need to be answered
 		const currentQ = this.currentQuestion();
 		if (currentQ) {
 			// Find the question context
@@ -405,28 +507,8 @@ Call: drafter.finalize(<your_generated_complete_object>)
 			};
 		}
 
-		// Stage 2: Questions complete, need finalization
+		// Stage 3: All questions answered and all array items finalized, finalize main entity
 		if (this.questionsComplete && !this.finalized) {
-			// Check if array items need finalization
-			for (const [fieldName, arrayDrafter] of this.arrayDrafters.entries()) {
-				const incompleteIndices = arrayDrafter.incompletItemIndices;
-				if (incompleteIndices.length > 0) {
-					const itemIndex = incompleteIndices[0];
-					if (itemIndex !== undefined) {
-						const context = arrayDrafter.getItemContext(itemIndex);
-						return {
-							stage: "finalization",
-							nextAction: {
-								action: "finalize_entity",
-								entityId: `${fieldName}[${itemIndex}]`,
-								context: context,
-							},
-						};
-					}
-				}
-			}
-
-			// All array items finalized, finalize main entity
 			const entityContext = this.getEntityContext();
 			return {
 				stage: "finalization",
@@ -438,7 +520,7 @@ Call: drafter.finalize(<your_generated_complete_object>)
 			};
 		}
 
-		// Stage 3: Complete
+		// Stage 4: Complete
 		return {
 			stage: "complete",
 			nextAction: {
@@ -509,13 +591,18 @@ class EntityDraftArrayItem<T> {
 			data: {},
 			finalized: false,
 			get questionsComplete() {
-				return this.questions.every((q) => q.answer !== null);
+				return this.questions.every(
+					(q) => q.answer !== null || q.skipped === true,
+				);
 			},
 			get isComplete() {
 				return this.finalized && this.schema.safeParse(this.data).success;
 			},
 			currentQuestion() {
-				return this.questions.find((q) => q.answer === null) || null;
+				return (
+					this.questions.find((q) => q.answer === null && q.skipped !== true) ||
+					null
+				);
 			},
 			submitAnswer(answer: string) {
 				const question = this.currentQuestion();
@@ -546,6 +633,7 @@ export class EntityArrayDrafter<T> {
 	protected question: DraftQuestion;
 	protected _items: EntityDraftArrayItem<T>[] = [];
 	protected item_questions_template: DraftQuestion[] = [];
+	protected minLength: number = 0;
 
 	constructor(
 		schema: ZodType<T, ZodTypeDef, unknown>,
@@ -555,6 +643,18 @@ export class EntityArrayDrafter<T> {
 		this.schema = schema;
 		this.question = question;
 		this.item_questions_template = item_questions;
+
+		// Extract minLength from schema to determine if array is optional
+		// Access Zod's internal structure safely
+		const schemaDef = (schema as { _def?: { minLength?: number } })._def;
+		if (schemaDef && typeof schemaDef.minLength === "number") {
+			this.minLength = schemaDef.minLength;
+		}
+
+		// Mark collection question as optional if array has minLength of 0
+		if (this.minLength === 0 && this.question.optional !== true) {
+			this.question.optional = true;
+		}
 	}
 
 	get items(): readonly EntityDraftArrayItem<T>[] {
@@ -563,11 +663,14 @@ export class EntityArrayDrafter<T> {
 
 	setDescriptions(descriptions: string[]) {
 		this._items = descriptions.map(
-			(desc) =>
+			(desc, index) =>
 				new EntityDraftArrayItem<T>(
 					this.schema,
-					// Create a deep copy of questions for each item
-					this.item_questions_template.map((q) => ({ ...q })),
+					// Create a deep copy of questions for each item with unique IDs
+					this.item_questions_template.map((q) => ({
+						...q,
+						id: `${q.id}-item-${index}`,
+					})),
 					desc,
 				),
 		);
@@ -591,17 +694,23 @@ export class EntityArrayDrafter<T> {
 			return { item: null, question: this.question };
 		}
 
-		// Otherwise, return questions from items (skip already finalized items)
+		// Find the first non-finalized item
 		for (const item of this.items) {
 			// Skip items that are already finalized - they're done!
 			if (item.drafter.isComplete) {
 				continue;
 			}
 
+			// Found a non-finalized item
 			const question = item.drafter.currentQuestion();
 			if (question) {
+				// This item still has unanswered questions
 				return { item, question };
 			}
+
+			// This item has all questions answered but isn't finalized
+			// STOP HERE - require finalization before moving to next item
+			return null;
 		}
 		return null;
 	}
@@ -760,7 +869,13 @@ Call: arrayDrafter.finalizeItemWithData(${itemIndex}, <your_generated_json_objec
 		if (this.question.answer === null) {
 			return false;
 		}
-		// All items must be complete
+
+		// If minLength is 0, empty array is allowed and complete
+		if (this.minLength === 0 && this._items.length === 0) {
+			return true;
+		}
+
+		// Otherwise, all items must be complete
 		return (
 			this._items.length > 0 &&
 			this._items.every((item) => item.drafter.isComplete)
@@ -783,6 +898,7 @@ Call: arrayDrafter.finalizeItemWithData(${itemIndex}, <your_generated_json_objec
 				data: item.drafter.data,
 				finalized: item.drafter.finalized,
 			})),
+			minLength: this.minLength,
 		};
 	}
 
@@ -793,10 +909,20 @@ Call: arrayDrafter.finalizeItemWithData(${itemIndex}, <your_generated_json_objec
 		// Extract template questions from first item if available
 		const firstItem = state.items[0];
 		const template = firstItem
-			? firstItem.questions.map((q) => ({ ...q, answer: null }))
+			? firstItem.questions.map((q) => ({
+					...q,
+					answer: null,
+					// Strip item index from ID to restore original template ID
+					id: q.id.replace(/-item-\d+$/, ""),
+				}))
 			: [];
 
 		const drafter = new EntityArrayDrafter<T>(schema, state.question, template);
+
+		// Restore minLength if saved
+		if (typeof state.minLength === "number") {
+			drafter.minLength = state.minLength;
+		}
 
 		// Reconstruct items
 		drafter._items = state.items.map((itemState) => {

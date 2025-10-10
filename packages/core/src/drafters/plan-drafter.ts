@@ -100,6 +100,7 @@ export function createPlanDrafterConfig(): EntityDrafterConfig<Plan> {
 						id: "fl-q-003",
 						question: "Describe the purpose of this flow (optional)",
 						answer: null,
+						optional: true,
 					},
 					// Note: steps would need their own nested drafter, but for now we'll keep it simple
 					{

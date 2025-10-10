@@ -31,12 +31,14 @@ export function createTechnicalRequirementDrafterConfig(): EntityDrafterConfig<T
 				id: "q-004",
 				question: "Describe the high-level implementation approach (optional).",
 				answer: null,
+				optional: true,
 			},
 			{
 				id: "q-005",
 				question:
 					"Any additional implementation notes or considerations? (optional)",
 				answer: null,
+				optional: true,
 			},
 		],
 		arrayFields: [
