@@ -82,11 +82,20 @@ export class EntityManager<T extends Base> extends FileManager {
 		// Check if any file with this number exists
 		const fileNames = await this.listFiles(this.subFolder, ".yml");
 		const pattern = this.getFilePattern();
+		const draftPattern = this.getDraftFilePattern();
 
 		for (const fileName of fileNames) {
 			const match = fileName.match(pattern);
 			if (match?.[1]) {
 				const fileNumber = Number.parseInt(match[1], 10);
+				if (fileNumber === number) {
+					return true;
+				}
+			}
+
+			const draftMatch = fileName.match(draftPattern);
+			if (draftMatch?.[1]) {
+				const fileNumber = Number.parseInt(draftMatch[1], 10);
 				if (fileNumber === number) {
 					return true;
 				}
@@ -100,11 +109,25 @@ export class EntityManager<T extends Base> extends FileManager {
 			// Find the file with this number
 			const fileNames = await this.listFiles(this.subFolder, ".yml");
 			const pattern = this.getFilePattern();
+			const draftPattern = this.getDraftFilePattern();
 
 			for (const fileName of fileNames) {
+				// Check regular pattern first
 				const match = fileName.match(pattern);
 				if (match?.[1]) {
 					const fileNumber = Number.parseInt(match[1], 10);
+					if (fileNumber === number) {
+						const data = await this.readYaml<T>(
+							`${this.subFolder}/${fileName}.yml`,
+						);
+						return this.schema.parse(data);
+					}
+				}
+
+				// Also check draft pattern
+				const draftMatch = fileName.match(draftPattern);
+				if (draftMatch?.[1]) {
+					const fileNumber = Number.parseInt(draftMatch[1], 10);
 					if (fileNumber === number) {
 						const data = await this.readYaml<T>(
 							`${this.subFolder}/${fileName}.yml`,
@@ -200,12 +223,21 @@ export class EntityManager<T extends Base> extends FileManager {
 	async getMaxNumber(): Promise<number> {
 		const fileNames = await this.listFiles(this.subFolder, ".yml");
 		const pattern = this.getFilePattern();
+		const draftPattern = this.getDraftFilePattern();
 		let maxNumber = 0;
 
 		for (const fileName of fileNames) {
 			const match = fileName.match(pattern);
 			if (match?.[1]) {
 				const number = Number.parseInt(match[1], 10);
+				if (number > maxNumber) {
+					maxNumber = number;
+				}
+			}
+
+			const draftMatch = fileName.match(draftPattern);
+			if (draftMatch?.[1]) {
+				const number = Number.parseInt(draftMatch[1], 10);
 				if (number > maxNumber) {
 					maxNumber = number;
 				}
@@ -242,15 +274,32 @@ export class EntityManager<T extends Base> extends FileManager {
 	async list(): Promise<T[]> {
 		const fileNames = await this.listFiles(this.subFolder, ".yml");
 		const pattern = this.getFilePattern();
+		const draftPattern = this.getDraftFilePattern();
 		const entities: T[] = [];
+		const processedNumbers = new Set<number>();
 
 		for (const fileName of fileNames) {
 			const match = fileName.match(pattern);
 			if (match?.[1]) {
 				const number = Number.parseInt(match[1], 10);
-				const entity = await this.get(number);
-				if (entity) {
-					entities.push(entity);
+				if (!processedNumbers.has(number)) {
+					const entity = await this.get(number);
+					if (entity) {
+						entities.push(entity);
+						processedNumbers.add(number);
+					}
+				}
+			}
+
+			const draftMatch = fileName.match(draftPattern);
+			if (draftMatch?.[1]) {
+				const number = Number.parseInt(draftMatch[1], 10);
+				if (!processedNumbers.has(number)) {
+					const entity = await this.get(number);
+					if (entity) {
+						entities.push(entity);
+						processedNumbers.add(number);
+					}
 				}
 			}
 		}
@@ -262,10 +311,7 @@ export class EntityManager<T extends Base> extends FileManager {
 	/**
 	 * Save a draft to disk (without slug - slug is determined at finalization)
 	 */
-	async saveDraft(
-		drafter: EntityDrafter<T>,
-		number?: number,
-	): Promise<number> {
+	async saveDraft(drafter: EntityDrafter<T>, number?: number): Promise<number> {
 		await this.ensureFolder();
 
 		// Get or assign number

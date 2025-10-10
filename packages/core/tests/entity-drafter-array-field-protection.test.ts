@@ -10,29 +10,27 @@ describe("EntityDrafter - Array Field Protection", () => {
 		// Answer main questions
 		drafter.submitAnswer("Test Constitution");
 		drafter.submitAnswer("Test description");
+		drafter.submitAnswer("Security, Testing"); // q-003: key areas
 
 		// Answer collection question to create one article
-		drafter.submitAnswer("Test Article");
+		drafter.submitAnswer("Correct Article Title");
 
 		// Get the articles array drafter and set descriptions
 		const arrayDrafter = drafter.getArrayDrafter("articles");
 		expect(arrayDrafter).toBeDefined();
-		arrayDrafter!.setDescriptions(["Test Article"]);
+		arrayDrafter!.setDescriptions(["Correct Article Title"]);
 
 		// Answer questions for the article item
 		const item = arrayDrafter!.getItem(0);
 		expect(item).toBeDefined();
 
 		// Answer all item questions using submitAnswer on drafter
-		drafter.submitAnswer("Correct Article Title");
-		drafter.submitAnswer("Correct principle");
-		drafter.submitAnswer("Correct rationale");
-		// Skip optional questions - examples and exceptions
-		const examplesQ = drafter.findQuestionById("ar-q-004-item-0");
-		const exceptionsQ = drafter.findQuestionById("ar-q-005-item-0");
-		if (examplesQ) examplesQ.question.skipped = true;
-		if (exceptionsQ) exceptionsQ.question.skipped = true;
-		drafter.submitAnswer("active");
+		drafter.submitAnswer("Correct principle"); // ar-q-001: principle
+		drafter.submitAnswer("Correct rationale"); // ar-q-002: rationale
+		drafter.submitAnswer(""); // ar-q-003: examples (optional)
+		drafter.submitAnswer(""); // ar-q-004: exceptions (optional)
+		drafter.submitAnswer(""); // ar-q-005: decision IDs (optional)
+		drafter.submitAnswer(""); // ar-q-006: research (optional)
 
 		// Finalize the array item with correct data
 		arrayDrafter!.finalizeItemWithData(0, {
@@ -101,24 +99,22 @@ describe("EntityDrafter - Array Field Protection", () => {
 		// Answer main questions
 		drafter.submitAnswer("Test Constitution");
 		drafter.submitAnswer("Test description");
+		drafter.submitAnswer("Security, Testing"); // q-003: key areas
 
 		// Answer collection question to create one article
-		drafter.submitAnswer("Original Article");
+		drafter.submitAnswer("Original Title");
 
 		// Get the articles array drafter and set descriptions
 		const arrayDrafter = drafter.getArrayDrafter("articles");
-		arrayDrafter!.setDescriptions(["Original Article"]);
+		arrayDrafter!.setDescriptions(["Original Title"]);
 
 		// Answer all item questions
-		drafter.submitAnswer("Original Title");
-		drafter.submitAnswer("Original principle");
-		drafter.submitAnswer("Original rationale");
-		// Skip optional questions
-		const examplesQ = drafter.findQuestionById("ar-q-004-item-0");
-		const exceptionsQ = drafter.findQuestionById("ar-q-005-item-0");
-		if (examplesQ) examplesQ.question.skipped = true;
-		if (exceptionsQ) exceptionsQ.question.skipped = true;
-		drafter.submitAnswer("active");
+		drafter.submitAnswer("Original principle"); // ar-q-001: principle
+		drafter.submitAnswer("Original rationale"); // ar-q-002: rationale
+		drafter.submitAnswer(""); // ar-q-003: examples (optional)
+		drafter.submitAnswer(""); // ar-q-004: exceptions (optional)
+		drafter.submitAnswer(""); // ar-q-005: decision IDs (optional)
+		drafter.submitAnswer(""); // ar-q-006: research (optional)
 
 		// Finalize the array item
 		arrayDrafter!.finalizeItemWithData(0, {

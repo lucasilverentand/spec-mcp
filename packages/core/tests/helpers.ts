@@ -99,6 +99,7 @@ export function createTestBusinessRequirement(
 			{
 				id: "crit-001",
 				description: "Test criterion",
+				rationale: "This criterion is essential for validating the requirement",
 				status: "needs-review" as const,
 			},
 		],
@@ -122,6 +123,7 @@ export function createTestTechnicalRequirement(
 			{
 				id: "crit-001",
 				description: "Test criterion",
+				rationale: "This criterion is essential for validating the requirement",
 				status: "needs-review" as const,
 			},
 		],

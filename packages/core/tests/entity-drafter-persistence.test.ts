@@ -210,7 +210,7 @@ describe("EntityDrafter Persistence", () => {
 			drafter.submitAnswer("Test Name");
 
 			// Save draft
-			const draftNumber = await entityManager.saveDraft(drafter, "test-draft");
+			const draftNumber = await entityManager.saveDraft(drafter);
 
 			expect(draftNumber).toBe(1);
 
@@ -233,13 +233,13 @@ describe("EntityDrafter Persistence", () => {
 			drafter.submitAnswer("Answer 1");
 
 			// Save initial draft
-			const draftNumber = await entityManager.saveDraft(drafter, "test-draft");
+			const draftNumber = await entityManager.saveDraft(drafter);
 
 			// Answer second question
 			drafter.submitAnswer("Answer 2");
 
 			// Update draft (same number)
-			await entityManager.saveDraft(drafter, "test-draft", draftNumber);
+			await entityManager.saveDraft(drafter, draftNumber);
 
 			// Load draft
 			const loadedDrafter = await entityManager.loadDraft(draftNumber);
@@ -254,7 +254,7 @@ describe("EntityDrafter Persistence", () => {
 
 			const drafter = new EntityDrafter(BusinessRequirementSchema, questions);
 
-			const draftNumber = await entityManager.saveDraft(drafter, "test-draft");
+			const draftNumber = await entityManager.saveDraft(drafter);
 
 			const exists = await entityManager.draftExists(draftNumber);
 			expect(exists).toBe(true);
@@ -270,7 +270,7 @@ describe("EntityDrafter Persistence", () => {
 
 			const drafter = new EntityDrafter(BusinessRequirementSchema, questions);
 
-			const draftNumber = await entityManager.saveDraft(drafter, "test-draft");
+			const draftNumber = await entityManager.saveDraft(drafter);
 
 			await entityManager.deleteDraft(draftNumber);
 
@@ -286,8 +286,9 @@ describe("EntityDrafter Persistence", () => {
 			const drafter1 = new EntityDrafter(BusinessRequirementSchema, questions);
 			const drafter2 = new EntityDrafter(BusinessRequirementSchema, questions);
 
-			await entityManager.saveDraft(drafter1, "draft-1");
-			await entityManager.saveDraft(drafter2, "draft-2");
+			// Explicitly provide numbers to avoid collision
+			await entityManager.saveDraft(drafter1, 1);
+			await entityManager.saveDraft(drafter2, 2);
 
 			const drafts = await entityManager.listDrafts();
 
@@ -315,10 +316,7 @@ describe("EntityDrafter Persistence", () => {
 			drafter.finalize(testData);
 
 			// Save as draft first
-			const draftNumber = await entityManager.saveDraft(
-				drafter,
-				"promoted-entity",
-			);
+			const draftNumber = await entityManager.saveDraft(drafter);
 
 			// Promote to entity
 			const entity = await entityManager.promoteDraft(drafter);

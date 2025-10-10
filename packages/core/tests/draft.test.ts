@@ -63,7 +63,7 @@ describe("Draft Functionality", () => {
 		const files = await fs.readdir(filesDir);
 
 		expect(files).toHaveLength(1);
-		expect(files[0]).toBe(`breq-${created.number}-draft-requirement.draft.yml`);
+		expect(files[0]).toBe(`breq-${created.number}.draft.yml`);
 	});
 
 	it("should be able to retrieve draft entities", async () => {
@@ -78,7 +78,6 @@ describe("Draft Functionality", () => {
 
 		expect(retrieved).not.toBeNull();
 		expect(retrieved?.draft).toBe(true);
-		expect(retrieved?.slug).toBe("draft-req");
 	});
 
 	it("should list both draft and non-draft entities", async () => {
@@ -152,28 +151,7 @@ describe("Draft Functionality", () => {
 
 		files = await fs.readdir(filesDir);
 		expect(files).toHaveLength(1);
-		expect(files[0]).toBe(`breq-${created.number}-make-draft.draft.yml`);
-	});
-
-	it("should handle slug change with draft status", async () => {
-		const data = createTestBusinessRequirement({
-			slug: "original-draft",
-			name: "Original Draft",
-			draft: true,
-		});
-
-		const created = await entityManager.create(data);
-
-		// Change slug while keeping draft status
-		await entityManager.update(created.number, {
-			slug: "updated-draft",
-		});
-
-		const filesDir = path.join(tempDir, "requirements/business");
-		const files = await fs.readdir(filesDir);
-
-		expect(files).toHaveLength(1);
-		expect(files[0]).toBe(`breq-${created.number}-updated-draft.draft.yml`);
+		expect(files[0]).toBe(`breq-${created.number}.draft.yml`);
 	});
 
 	it("should delete draft files correctly", async () => {
@@ -193,21 +171,5 @@ describe("Draft Functionality", () => {
 
 		files = await fs.readdir(filesDir);
 		expect(files).toHaveLength(0);
-	});
-
-	it("should find draft entities by slug", async () => {
-		const data = createTestBusinessRequirement({
-			slug: "find-draft",
-			name: "Find Draft",
-			draft: true,
-		});
-
-		await entityManager.create(data);
-
-		const found = await entityManager.getBySlug("find-draft");
-
-		expect(found).not.toBeNull();
-		expect(found?.draft).toBe(true);
-		expect(found?.slug).toBe("find-draft");
 	});
 });

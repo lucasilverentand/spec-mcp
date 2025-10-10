@@ -10,6 +10,10 @@ describe("Schema Optimization", () => {
 		// Answer main questions
 		drafter.submitAnswer("Test Requirement");
 		drafter.submitAnswer("A detailed description");
+		drafter.submitAnswer(""); // q-003: constraints (optional)
+		drafter.submitAnswer(""); // q-004: technical requirements (optional)
+		drafter.submitAnswer(""); // q-005: components (optional)
+		drafter.submitAnswer(""); // q-006: research (optional)
 
 		// Answer business_value collection question
 		drafter.submitAnswer("Value 1, Value 2");
@@ -89,6 +93,10 @@ describe("Schema Optimization", () => {
 		// Answer main questions
 		drafter.submitAnswer("Test Requirement");
 		drafter.submitAnswer("A detailed description");
+		drafter.submitAnswer(""); // q-003: constraints (optional)
+		drafter.submitAnswer(""); // q-004: technical requirements (optional)
+		drafter.submitAnswer(""); // q-005: components (optional)
+		drafter.submitAnswer(""); // q-006: research (optional)
 
 		// Skip all array questions
 		for (let i = 0; i < 20; i++) {

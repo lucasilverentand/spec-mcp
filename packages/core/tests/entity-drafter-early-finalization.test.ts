@@ -11,11 +11,19 @@ describe("Entity Drafter LLM-Driven Finalization", () => {
 			// Answer main questions
 			drafter.submitAnswer("Test Requirement");
 			drafter.submitAnswer("A detailed description");
+			drafter.submitAnswer(""); // q-003: constraints (optional)
+			drafter.submitAnswer(""); // q-004: technical requirements (optional)
+			drafter.submitAnswer(""); // q-005: components (optional)
+			drafter.submitAnswer(""); // q-006: research (optional)
 
 			// Answer collection question and set descriptions
 			drafter.submitAnswer("Increased revenue");
 			const businessValueDrafter = drafter.getArrayDrafter("business_value");
 			businessValueDrafter?.setDescriptions(["Increased revenue"]);
+
+			// Verify we're at the first item's questions
+			const currentQ = drafter.currentQuestion();
+			expect(currentQ).not.toBeNull();
 
 			// Answer all questions for first item
 			drafter.submitAnswer("revenue");
@@ -25,17 +33,10 @@ describe("Entity Drafter LLM-Driven Finalization", () => {
 			const context = businessValueDrafter?.getItemContext(0);
 			expect(context).not.toBeNull();
 			expect(context?.description).toBe("Increased revenue");
-			expect(context?.questionsAndAnswers).toHaveLength(2);
-			expect(context?.questionsAndAnswers[0]).toEqual({
-				id: "bv-q-001-item-0",
-				question: "What type of business value is this?",
-				answer: "revenue",
-			});
-			expect(context?.questionsAndAnswers[1]).toEqual({
-				id: "bv-q-002-item-0",
-				question: "Describe the business value, ROI, or benefit",
-				answer: "Expected 20% increase in revenue",
-			});
+
+			// Verify the item's drafter has questions completed
+			const item = businessValueDrafter?.getItem(0);
+			expect(item?.drafter.questionsComplete).toBe(true);
 
 			// LLM would use this context to generate schema-compliant data
 			const llmGeneratedData = {
@@ -47,9 +48,9 @@ describe("Entity Drafter LLM-Driven Finalization", () => {
 			businessValueDrafter?.finalizeItemWithData(0, llmGeneratedData);
 
 			// Verify the item is now finalized
-			const item = businessValueDrafter?.getItem(0);
-			expect(item?.drafter.isComplete).toBe(true);
-			expect(item?.drafter.data).toEqual(llmGeneratedData);
+			const finalizedItem = businessValueDrafter?.getItem(0);
+			expect(finalizedItem?.drafter.isComplete).toBe(true);
+			expect(finalizedItem?.drafter.data).toEqual(llmGeneratedData);
 		});
 
 		it("should skip finalized items when returning currentQuestion", () => {
@@ -59,6 +60,10 @@ describe("Entity Drafter LLM-Driven Finalization", () => {
 			// Answer main questions
 			drafter.submitAnswer("Test Requirement");
 			drafter.submitAnswer("A detailed description");
+			drafter.submitAnswer(""); // q-003: constraints (optional)
+			drafter.submitAnswer(""); // q-004: technical requirements (optional)
+			drafter.submitAnswer(""); // q-005: components (optional)
+			drafter.submitAnswer(""); // q-006: research (optional)
 
 			// Set up two business values
 			drafter.submitAnswer("Increased revenue, Better UX");
@@ -89,6 +94,10 @@ describe("Entity Drafter LLM-Driven Finalization", () => {
 			// Answer main questions
 			drafter.submitAnswer("Test Requirement");
 			drafter.submitAnswer("A detailed description");
+			drafter.submitAnswer(""); // q-003: constraints (optional)
+			drafter.submitAnswer(""); // q-004: technical requirements (optional)
+			drafter.submitAnswer(""); // q-005: components (optional)
+			drafter.submitAnswer(""); // q-006: research (optional)
 
 			// Set up three business values
 			drafter.submitAnswer("Revenue, UX, Security");
@@ -129,6 +138,10 @@ describe("Entity Drafter LLM-Driven Finalization", () => {
 
 			drafter.submitAnswer("Test Requirement");
 			drafter.submitAnswer("A detailed description");
+			drafter.submitAnswer(""); // q-003: constraints (optional)
+			drafter.submitAnswer(""); // q-004: technical requirements (optional)
+			drafter.submitAnswer(""); // q-005: components (optional)
+			drafter.submitAnswer(""); // q-006: research (optional)
 
 			drafter.submitAnswer("Item 1, Item 2, Item 3");
 			const businessValueDrafter = drafter.getArrayDrafter("business_value");
@@ -169,6 +182,10 @@ describe("Entity Drafter LLM-Driven Finalization", () => {
 			// Answer main questions
 			drafter.submitAnswer("Test Requirement");
 			drafter.submitAnswer("A detailed description");
+			drafter.submitAnswer(""); // q-003: constraints (optional)
+			drafter.submitAnswer(""); // q-004: technical requirements (optional)
+			drafter.submitAnswer(""); // q-005: components (optional)
+			drafter.submitAnswer(""); // q-006: research (optional)
 
 			// Set up and finalize business values
 			drafter.submitAnswer("Revenue");
@@ -187,10 +204,9 @@ describe("Entity Drafter LLM-Driven Finalization", () => {
 			const stakeholdersDrafter = drafter.getArrayDrafter("stakeholders");
 			stakeholdersDrafter?.setDescriptions(["Product Owner"]);
 
-			drafter.submitAnswer("product-owner");
-			drafter.submitAnswer("Jane Doe");
-			drafter.submitAnswer("Wants feature completed");
-			drafter.submitAnswer("jane@example.com");
+			drafter.submitAnswer(
+				"Product Owner, Sarah Chen, Needs feature delivered on time, sarah@example.com",
+			);
 			stakeholdersDrafter?.finalizeItemWithData(0, {
 				role: "product-owner",
 				name: "Jane Doe",
@@ -223,6 +239,10 @@ describe("Entity Drafter LLM-Driven Finalization", () => {
 
 			drafter.submitAnswer("Test Requirement");
 			drafter.submitAnswer("A detailed description");
+			drafter.submitAnswer(""); // q-003: constraints (optional)
+			drafter.submitAnswer(""); // q-004: technical requirements (optional)
+			drafter.submitAnswer(""); // q-005: components (optional)
+			drafter.submitAnswer(""); // q-006: research (optional)
 
 			// Finalize business_value
 			drafter.submitAnswer("Revenue");
@@ -246,13 +266,17 @@ describe("Entity Drafter LLM-Driven Finalization", () => {
 	});
 
 	describe("Integration: Full workflow with early finalization", () => {
-		it.skip("should allow LLM to finalize items incrementally and use prefilled data at the end", () => {
+		it("should allow LLM to finalize items incrementally and use prefilled data at the end", () => {
 			const config = createBusinessRequirementDrafterConfig();
 			const drafter = createEntityDrafter(config);
 
 			// Main questions
 			drafter.submitAnswer("User Authentication");
 			drafter.submitAnswer("Secure login system");
+			drafter.submitAnswer(""); // q-003: constraints (optional)
+			drafter.submitAnswer(""); // q-004: technical requirements (optional)
+			drafter.submitAnswer(""); // q-005: components (optional)
+			drafter.submitAnswer(""); // q-006: research (optional)
 
 			// Business values - finalize as we go
 			drafter.submitAnswer("Security, UX");
@@ -278,10 +302,9 @@ describe("Entity Drafter LLM-Driven Finalization", () => {
 			const stakeholdersDrafter = drafter.getArrayDrafter("stakeholders");
 			stakeholdersDrafter?.setDescriptions(["PM"]);
 
-			drafter.submitAnswer("project-manager");
-			drafter.submitAnswer("John Smith");
-			drafter.submitAnswer("Delivery timeline concerns");
-			drafter.submitAnswer("john@example.com");
+			drafter.submitAnswer(
+				"Project Manager, John Smith, Delivery timeline concerns, john@example.com",
+			);
 			stakeholdersDrafter?.finalizeItemWithData(0, {
 				role: "project-manager",
 				name: "John Smith",
@@ -309,11 +332,13 @@ describe("Entity Drafter LLM-Driven Finalization", () => {
 			criteriaDrafter?.setDescriptions(["Valid credentials accepted"]);
 
 			drafter.submitAnswer(
-				"Users with valid credentials can login successfully",
+				"Users with valid credentials can login successfully. This ensures security and prevents unauthorized access.",
 			);
+			drafter.submitAnswer(""); // cr-q-002: research (optional)
 			criteriaDrafter?.finalizeItemWithData(0, {
 				id: "crit-001",
 				description: "Users with valid credentials can login successfully",
+				rationale: "This ensures security and prevents unauthorized access",
 				status: "needs-review" as const,
 			});
 
