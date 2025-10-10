@@ -69,36 +69,47 @@ export async function finalizeEntity(
 		const finalizedEntity = manager.build();
 		const type = manager.getType();
 
+		// Get next number from centralized counter
+		const nextNumber = await specManager.getNextNumber(type);
+
 		// Save to spec system
 		let created: { number: number; slug: string; name: string };
 		try {
 			switch (type) {
 				case "plan":
-					created = await specManager.plans.create(finalizedEntity as Plan);
+					created = await specManager.plans.create(
+						finalizedEntity as Plan,
+						nextNumber,
+					);
 					break;
 				case "component":
 					created = await specManager.components.create(
 						finalizedEntity as Component,
+						nextNumber,
 					);
 					break;
 				case "decision":
 					created = await specManager.decisions.create(
 						finalizedEntity as Decision,
+						nextNumber,
 					);
 					break;
 				case "business-requirement":
 					created = await specManager.business_requirements.create(
 						finalizedEntity as BusinessRequirement,
+						nextNumber,
 					);
 					break;
 				case "technical-requirement":
 					created = await specManager.tech_requirements.create(
 						finalizedEntity as TechnicalRequirement,
+						nextNumber,
 					);
 					break;
 				case "constitution":
 					created = await specManager.constitutions.create(
 						finalizedEntity as Constitution,
+						nextNumber,
 					);
 					break;
 				default:

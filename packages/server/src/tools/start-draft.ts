@@ -7,9 +7,35 @@ import { z } from "zod";
  */
 export const StartDraftArgsSchema = z.object({
 	type: EntityTypeSchema.describe("Type of spec to create"),
+	slug: z
+		.string()
+		.min(1)
+		.regex(/^[a-z0-9]+(-[a-z0-9]+)*$/)
+		.describe(
+			"URL-friendly identifier for this spec (e.g., 'user-authentication', 'payment-processing'). Must start and end with alphanumeric characters, no consecutive dashes.",
+		),
 });
 
 export type StartDraftArgs = z.infer<typeof StartDraftArgsSchema>;
+
+/**
+ * Sanitize a slug to ensure no leading/trailing dashes and no consecutive dashes
+ */
+function sanitizeSlug(slug: string): string {
+	return slug
+		.trim()
+		.toLowerCase()
+		.replace(/^-+|-+$/g, "") // Remove leading/trailing dashes
+		.replace(/-+/g, "-"); // Replace consecutive dashes with single dash
+}
+
+/**
+ * Generate a draft ID from type and slug
+ */
+function generateDraftId(type: string, slug: string): string {
+	const sanitized = sanitizeSlug(slug);
+	return `${type}-${sanitized}`;
+}
 
 /**
  * Start a new draft creation workflow
@@ -17,9 +43,11 @@ export type StartDraftArgs = z.infer<typeof StartDraftArgsSchema>;
 export async function startDraft(
 	args: StartDraftArgs,
 	draftStore: DraftStore,
-	draftId: string,
 ): Promise<string> {
-	const { type } = args;
+	const { type, slug } = args;
+
+	// Generate draft ID from type and slug
+	const draftId = generateDraftId(type, slug);
 
 	// Check if a draft already exists for this ID
 	if (draftStore.has(draftId)) {

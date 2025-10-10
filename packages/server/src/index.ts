@@ -7,6 +7,7 @@ import { z } from "zod";
 import {
 	answerQuestion,
 	continueDraft,
+	deleteDraft,
 	finalizeEntity,
 	listDrafts,
 	startDraft,
@@ -147,16 +148,13 @@ class ConnectionManager {
 }
 
 /**
- * Register MCP tools for draft workflow (New unified API - 5 tools)
+ * Register MCP tools for draft workflow (New unified API - 6 tools)
  */
 function registerTools(
 	server: McpServer,
 	draftStore: DraftStore,
 	specManager: SpecManager,
 ) {
-	// Use a simple draft ID (in a real implementation, this could be generated per request)
-	const draftId = "default";
-
 	// 1. start_draft - Create a new draft
 	server.tool(
 		"start_draft",
@@ -172,10 +170,17 @@ function registerTools(
 					"constitution",
 				])
 				.describe("Type of spec to create"),
+			slug: z
+				.string()
+				.min(1)
+				.regex(/^[a-z0-9]+(-[a-z0-9]+)*$/)
+				.describe(
+					"URL-friendly identifier for this spec (e.g., 'user-authentication', 'payment-processing'). Must start and end with alphanumeric characters, no consecutive dashes.",
+				),
 		},
 		async (args) => {
 			try {
-				const result = await startDraft(args, draftStore, draftId);
+				const result = await startDraft(args, draftStore);
 				return {
 					content: [{ type: "text", text: result }],
 				};
@@ -266,7 +271,27 @@ function registerTools(
 		},
 	);
 
-	// 5. continue_draft - Get intelligent next-step instructions
+	// 5. delete_draft - Delete a draft session
+	server.tool(
+		"delete_draft",
+		"Delete a draft session. This will permanently remove the draft from active sessions.",
+		{
+			draftId: z.string().describe("The draft ID to delete"),
+		},
+		async (args) => {
+			try {
+				const result = await deleteDraft(args, draftStore);
+				return {
+					content: [{ type: "text", text: result }],
+				};
+			} catch (error) {
+				logger.error({ error, tool: "delete_draft" }, "Tool execution failed");
+				throw error;
+			}
+		},
+	);
+
+	// 6. continue_draft - Get intelligent next-step instructions
 	server.tool(
 		"continue_draft",
 		"Get continuation instructions for a draft. Intelligently shows next question or finalization context.",
@@ -289,7 +314,7 @@ function registerTools(
 		},
 	);
 
-	logger.info("Registered 5 draft workflow tools (unified API)");
+	logger.info("Registered 6 draft workflow tools (unified API)");
 }
 
 /**

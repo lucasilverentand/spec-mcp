@@ -11,6 +11,51 @@ export const ContinueDraftArgsSchema = z.object({
 export type ContinueDraftArgs = z.infer<typeof ContinueDraftArgsSchema>;
 
 /**
+ * Type for array item finalization context
+ */
+interface ArrayItemContext {
+	description: string;
+	questionsAndAnswers: Array<{ question: string; answer: unknown }>;
+	schema: unknown;
+	nextStep: { instruction: string };
+}
+
+/**
+ * Type for main entity finalization context
+ */
+interface MainEntityContext {
+	mainQuestions: Array<{ question: string; answer: unknown }>;
+	arrayFieldsStatus: Record<string, { finalized: boolean; itemCount: number }>;
+	prefilledData: unknown;
+	schema: unknown;
+	nextStep: { instruction: string };
+}
+
+/**
+ * Type guard to check if context is ArrayItemContext
+ */
+function isArrayItemContext(context: unknown): context is ArrayItemContext {
+	return (
+		typeof context === "object" &&
+		context !== null &&
+		"description" in context &&
+		"questionsAndAnswers" in context
+	);
+}
+
+/**
+ * Type guard to check if context is MainEntityContext
+ */
+function isMainEntityContext(context: unknown): context is MainEntityContext {
+	return (
+		typeof context === "object" &&
+		context !== null &&
+		"mainQuestions" in context &&
+		"arrayFieldsStatus" in context
+	);
+}
+
+/**
  * Get continuation instructions for a draft.
  * Intelligently determines what to do next: answer questions or finalize entities.
  */
@@ -91,49 +136,49 @@ export async function continueDraft(
 		// Include the full context (Q&A, schema, instructions)
 		if (context) {
 			// For array items
-			if ((context as any).description) {
-				response += `Description: ${(context as any).description}\n\n`;
+			if (isArrayItemContext(context)) {
+				response += `Description: ${context.description}\n\n`;
 
 				response += "Questions & Answers:\n";
-				for (const qa of (context as any).questionsAndAnswers) {
+				for (const qa of context.questionsAndAnswers) {
 					response += `  Q: ${qa.question}\n`;
 					response += `  A: ${qa.answer}\n\n`;
 				}
 
 				response += "\nJSON Schema:\n";
 				response += `${"-".repeat(70)}\n`;
-				response += JSON.stringify((context as any).schema, null, 2);
+				response += JSON.stringify(context.schema, null, 2);
 				response += "\n\n";
 
-				response += (context as any).nextStep.instruction;
+				response += context.nextStep.instruction;
 			}
 			// For main entity
-			else if ((context as any).mainQuestions) {
+			else if (isMainEntityContext(context)) {
 				response += "Main Questions & Answers:\n";
-				for (const q of (context as any).mainQuestions) {
+				for (const q of context.mainQuestions) {
 					response += `  Q: ${q.question}\n`;
 					response += `  A: ${q.answer}\n\n`;
 				}
 
 				response += "\nArray Fields Status:\n";
 				for (const [field, status] of Object.entries(
-					(context as any).arrayFieldsStatus,
+					context.arrayFieldsStatus,
 				)) {
-					const icon = (status as any).finalized ? "✓" : "✗";
-					response += `  ${icon} ${field}: ${(status as any).itemCount} items finalized\n`;
+					const icon = status.finalized ? "✓" : "✗";
+					response += `  ${icon} ${field}: ${status.itemCount} items finalized\n`;
 				}
 
 				response += "\n\nPrefilled Array Data:\n";
 				response += `${"-".repeat(70)}\n`;
-				response += JSON.stringify((context as any).prefilledData, null, 2);
+				response += JSON.stringify(context.prefilledData, null, 2);
 				response += "\n\n";
 
 				response += "JSON Schema:\n";
 				response += `${"-".repeat(70)}\n`;
-				response += JSON.stringify((context as any).schema, null, 2);
+				response += JSON.stringify(context.schema, null, 2);
 				response += "\n\n";
 
-				response += (context as any).nextStep.instruction;
+				response += context.nextStep.instruction;
 			}
 		}
 

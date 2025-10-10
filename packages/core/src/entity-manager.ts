@@ -122,9 +122,9 @@ export class EntityManager<T extends Base> extends FileManager {
 		}
 	}
 
-	async create(data: Omit<T, "number">): Promise<T> {
+	async create(data: Omit<T, "number">, providedNumber?: number): Promise<T> {
 		await this.ensureFolder();
-		const number = await this.getNextNumber();
+		const number = providedNumber ?? (await this.getNextNumber());
 		const now = new Date().toISOString();
 
 		// Add timestamps to status if not present
@@ -177,9 +177,10 @@ export class EntityManager<T extends Base> extends FileManager {
 	}
 
 	/**
-	 * Get the next available number by scanning existing files
+	 * Get the maximum number from existing files
+	 * Used by SpecManager for counter initialization
 	 */
-	private async getNextNumber(): Promise<number> {
+	async getMaxNumber(): Promise<number> {
 		const fileNames = await this.listFiles(this.subFolder, ".yml");
 		const pattern = this.getFilePattern();
 		let maxNumber = 0;
@@ -194,6 +195,16 @@ export class EntityManager<T extends Base> extends FileManager {
 			}
 		}
 
+		return maxNumber;
+	}
+
+	/**
+	 * Get the next available number
+	 * NOTE: This should be called via SpecManager.getNextNumber() for proper centralized tracking
+	 * This method is kept for backward compatibility and falls back to file scanning
+	 */
+	private async getNextNumber(): Promise<number> {
+		const maxNumber = await this.getMaxNumber();
 		return maxNumber + 1;
 	}
 
