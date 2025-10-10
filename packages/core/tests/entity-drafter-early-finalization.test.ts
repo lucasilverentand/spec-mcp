@@ -27,12 +27,12 @@ describe("Entity Drafter LLM-Driven Finalization", () => {
 			expect(context?.description).toBe("Increased revenue");
 			expect(context?.questionsAndAnswers).toHaveLength(2);
 			expect(context?.questionsAndAnswers[0]).toEqual({
-				id: "bv-q-001",
+				id: "bv-q-001-item-0",
 				question: "What type of business value is this?",
 				answer: "revenue",
 			});
 			expect(context?.questionsAndAnswers[1]).toEqual({
-				id: "bv-q-002",
+				id: "bv-q-002-item-0",
 				question: "Describe the business value, ROI, or benefit",
 				answer: "Expected 20% increase in revenue",
 			});
@@ -148,19 +148,16 @@ describe("Entity Drafter LLM-Driven Finalization", () => {
 			// Now only items 1 and 2 are incomplete
 			expect(businessValueDrafter?.incompletItemIndices).toEqual([1, 2]);
 
-			// Finalize third item (skip second)
-			drafter.submitAnswer("security");
+			// Finalize second item
+			drafter.submitAnswer("cost-savings");
 			drafter.submitAnswer("Value 2");
-			// Skip to third item by answering its questions
-			drafter.submitAnswer("customer-satisfaction");
-			drafter.submitAnswer("Value 3");
-			businessValueDrafter?.finalizeItemWithData(2, {
-				type: "customer-satisfaction",
-				value: "Value 3",
+			businessValueDrafter?.finalizeItemWithData(1, {
+				type: "cost-savings",
+				value: "Value 2",
 			});
 
-			// Now only item 1 is incomplete
-			expect(businessValueDrafter?.incompletItemIndices).toEqual([1]);
+			// Now only item 2 is incomplete
+			expect(businessValueDrafter?.incompletItemIndices).toEqual([2]);
 		});
 	});
 

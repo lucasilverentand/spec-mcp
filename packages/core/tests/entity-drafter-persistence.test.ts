@@ -147,7 +147,7 @@ describe("EntityDrafter Persistence", () => {
 			// Verify current question is the second question of first item
 			const currentQ = restored.currentQuestion();
 			expect(currentQ?.item?.description).toBe("Item 1");
-			expect(currentQ?.question.id).toBe("item_q2");
+			expect(currentQ?.question.id).toBe("item_q2-item-0");
 		});
 	});
 
