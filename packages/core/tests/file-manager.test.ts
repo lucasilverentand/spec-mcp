@@ -1,7 +1,7 @@
+import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { FileManager } from "../src/file-manager";
 import { cleanupTempDir, createTempDir, fileExists } from "./helpers";
-import path from "node:path";
 
 describe("FileManager", () => {
 	let tempDir: string;
@@ -82,7 +82,9 @@ describe("FileManager", () => {
 			const data = { test: true };
 			await fileManager.writeYaml("nested/dir/file.yaml", data);
 
-			const read = await fileManager.readYaml<typeof data>("nested/dir/file.yaml");
+			const read = await fileManager.readYaml<typeof data>(
+				"nested/dir/file.yaml",
+			);
 			expect(read).toEqual(data);
 		});
 

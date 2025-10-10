@@ -1,9 +1,9 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import {
-	EntityTypeSchema,
-	EntitySlugSchema,
-	ItemPrioritySchema,
 	BaseSchema,
+	EntitySlugSchema,
+	EntityTypeSchema,
+	ItemPrioritySchema,
 	ItemStatusSchema,
 } from "./shared/base";
 import { ReferenceSchema, ReferenceTypeSchema } from "./shared/reference";

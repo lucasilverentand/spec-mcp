@@ -1,8 +1,6 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { promises as fs } from "node:fs";
 import path from "node:path";
-import type { SpecManager } from "@spec-mcp/core";
 import type { Component, Plan, Requirement } from "@spec-mcp/schemas";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock SpecManager before importing the CLI
 vi.mock("@spec-mcp/core", () => {
@@ -82,10 +80,10 @@ describe("CLI - Command Structure", () => {
 });
 
 describe("CLI - validate command", () => {
-	let mockConsoleLog: ReturnType<typeof vi.spyOn>;
-	let mockConsoleError: ReturnType<typeof vi.spyOn>;
-	let mockProcessExit: ReturnType<typeof vi.spyOn>;
-	let mockProcessCwd: ReturnType<typeof vi.spyOn>;
+	let _mockConsoleLog: ReturnType<typeof vi.spyOn>;
+	let _mockConsoleError: ReturnType<typeof vi.spyOn>;
+	let _mockProcessExit: ReturnType<typeof vi.spyOn>;
+	let _mockProcessCwd: ReturnType<typeof vi.spyOn>;
 	let SpecManagerModule: typeof import("@spec-mcp/core");
 
 	beforeEach(async () => {
@@ -93,25 +91,23 @@ describe("CLI - validate command", () => {
 		vi.clearAllMocks();
 
 		// Mock console methods
-		mockConsoleLog = vi.spyOn(console, "log").mockImplementation(() => {});
-		mockConsoleError = vi
-			.spyOn(console, "error")
-			.mockImplementation(() => {});
+		_mockConsoleLog = vi.spyOn(console, "log").mockImplementation(() => {});
+		_mockConsoleError = vi.spyOn(console, "error").mockImplementation(() => {});
 
 		// Mock process.exit to prevent tests from actually exiting
-		mockProcessExit = vi
+		_mockProcessExit = vi
 			.spyOn(process, "exit")
 			.mockImplementation((() => {}) as never);
 
 		// Mock process.cwd to return a consistent path
-		mockProcessCwd = vi.spyOn(process, "cwd").mockReturnValue("/test/cwd");
+		_mockProcessCwd = vi.spyOn(process, "cwd").mockReturnValue("/test/cwd");
 
 		// Get the mocked SpecManager module
 		SpecManagerModule = await import("@spec-mcp/core");
 	});
 
 	it("should validate with default path option", async () => {
-		const mockManager = new SpecManagerModule.SpecManager();
+		const _mockManager = new SpecManagerModule.SpecManager();
 
 		// Simulate running the validate command with default options
 		const options = { path: "./specs" };
@@ -371,14 +367,12 @@ describe("CLI - validate command", () => {
 });
 
 describe("CLI - Error Handling", () => {
-	let mockConsoleError: ReturnType<typeof vi.spyOn>;
-	let mockProcessExit: ReturnType<typeof vi.spyOn>;
+	let _mockConsoleError: ReturnType<typeof vi.spyOn>;
+	let _mockProcessExit: ReturnType<typeof vi.spyOn>;
 
 	beforeEach(() => {
-		mockConsoleError = vi
-			.spyOn(console, "error")
-			.mockImplementation(() => {});
-		mockProcessExit = vi
+		_mockConsoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+		_mockProcessExit = vi
 			.spyOn(process, "exit")
 			.mockImplementation((() => {}) as never);
 	});
@@ -395,9 +389,7 @@ describe("CLI - Error Handling", () => {
 			new MockSpecManager("/invalid/path");
 		} catch (error) {
 			expect(error).toBeInstanceOf(Error);
-			expect((error as Error).message).toBe(
-				"Failed to initialize SpecManager",
-			);
+			expect((error as Error).message).toBe("Failed to initialize SpecManager");
 		}
 	});
 

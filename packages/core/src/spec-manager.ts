@@ -1,19 +1,21 @@
-import {
-	type BusinessRequirement,
-	BusinessRequirementSchema,
-	type Component,
-	ComponentSchema,
-	type Constitution,
-	ConstitutionSchema,
-	type Decision,
-	DecisionSchema,
-	type Plan,
-	PlanSchema,
-	type TechnicalRequirement,
-	TechnicalRequirementSchema,
+import { resolve } from "node:path";
+import type {
+	BusinessRequirement,
+	Component,
+	Constitution,
+	Decision,
+	Plan,
+	TechnicalRequirement,
 } from "@spec-mcp/schemas";
-import { resolve } from "path";
-import { EntityManager } from "./entity-manager";
+import {
+	createBusinessRequirementsManager,
+	createComponentsManager,
+	createConstitutionsManager,
+	createDecisionsManager,
+	createPlansManager,
+	createTechRequirementsManager,
+} from "./entities";
+import type { EntityManager } from "./entity-manager";
 
 export class SpecManager {
 	private specsPath: string;
@@ -32,53 +34,14 @@ export class SpecManager {
 	constructor(specsPath: string = "./specs") {
 		this.specsPath = specsPath;
 
-		this.business_requirements = new EntityManager<BusinessRequirement>({
-			folderPath: this.specsPath,
-			subFolder: "requirements/business",
-			idPrefix: "brq",
-			entityType: "technical-requirement",
-			schema: BusinessRequirementSchema,
-		});
-
-		this.tech_requirements = new EntityManager<TechnicalRequirement>({
-			folderPath: this.specsPath,
-			subFolder: "requirements/technical",
-			idPrefix: "trq",
-			entityType: "technical-requirement",
-			schema: TechnicalRequirementSchema,
-		});
-
-		this.plans = new EntityManager<Plan>({
-			folderPath: this.specsPath,
-			subFolder: "plans",
-			idPrefix: "pln",
-			entityType: "plan",
-			schema: PlanSchema,
-		});
-
-		this.components = new EntityManager<Component>({
-			folderPath: this.specsPath,
-			subFolder: "components",
-			idPrefix: "cmp",
-			entityType: "component",
-			schema: ComponentSchema,
-		});
-
-		this.constitutions = new EntityManager<Constitution>({
-			folderPath: this.specsPath,
-			subFolder: "constitutions",
-			idPrefix: "cns",
-			entityType: "constitution",
-			schema: ConstitutionSchema,
-		});
-
-		this.decisions = new EntityManager<Decision>({
-			folderPath: this.specsPath,
-			subFolder: "decisions",
-			idPrefix: "dcs",
-			entityType: "decision",
-			schema: DecisionSchema,
-		});
+		this.business_requirements = createBusinessRequirementsManager(
+			this.specsPath,
+		);
+		this.tech_requirements = createTechRequirementsManager(this.specsPath);
+		this.plans = createPlansManager(this.specsPath);
+		this.components = createComponentsManager(this.specsPath);
+		this.constitutions = createConstitutionsManager(this.specsPath);
+		this.decisions = createDecisionsManager(this.specsPath);
 	}
 
 	/**

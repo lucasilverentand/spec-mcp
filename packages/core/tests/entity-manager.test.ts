@@ -1,8 +1,8 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
-	BusinessRequirementSchema,
 	type BusinessRequirement,
+	BusinessRequirementSchema,
 } from "@spec-mcp/schemas";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { EntityManager } from "../src/entity-manager";
 import {
 	cleanupTempDir,
@@ -94,7 +94,7 @@ describe("EntityManager", () => {
 				slug: "test",
 				name: "", // Invalid: empty name
 				description: "Test",
-			} as any;
+			} as unknown as BusinessRequirement;
 
 			await expect(entityManager.create(invalidData)).rejects.toThrow();
 		});
@@ -122,7 +122,7 @@ describe("EntityManager", () => {
 
 		it("should return null for invalid entity data", async () => {
 			// Manually write invalid data
-			await entityManager["writeYaml"]("requirements/business/breq-1.yaml", {
+			await entityManager.writeYaml("requirements/business/breq-1.yaml", {
 				invalid: "data",
 			});
 
@@ -202,7 +202,7 @@ describe("EntityManager", () => {
 			const updated = await entityManager.update(created.number, {
 				name: "New Name",
 				number: 999, // Attempt to change number
-			} as any);
+			} as unknown as Partial<BusinessRequirement>);
 
 			expect(updated.number).toBe(originalNumber);
 		});
@@ -318,7 +318,7 @@ describe("EntityManager", () => {
 			await entityManager.create(data);
 
 			// Manually write invalid data
-			await entityManager["writeYaml"]("requirements/business/breq-99.yaml", {
+			await entityManager.writeYaml("requirements/business/breq-99.yaml", {
 				invalid: "data",
 			});
 

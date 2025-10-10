@@ -1,5 +1,5 @@
-import { SpecManager } from "./src/spec-manager";
 import path from "node:path";
+import { SpecManager } from "./src/spec-manager";
 
 async function createDraftExample() {
 	const testDir = path.join(process.cwd(), "test-output");

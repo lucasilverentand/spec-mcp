@@ -4,19 +4,12 @@ import {
 	cleanupTempDir,
 	createTempDir,
 	createTestBusinessRequirement,
-	createTestTechnicalRequirement,
-	createTestPlan,
 	createTestComponent,
 	createTestConstitution,
 	createTestDecision,
+	createTestPlan,
+	createTestTechnicalRequirement,
 } from "./helpers";
-import type {
-	Plan,
-	Component,
-	Constitution,
-	Decision,
-	TechnicalRequirement,
-} from "@spec-mcp/schemas";
 
 describe("All Entity Types - CRUD Operations", () => {
 	let tempDir: string;
@@ -77,8 +70,12 @@ describe("All Entity Types - CRUD Operations", () => {
 		});
 
 		it("should list plans", async () => {
-			await specManager.plans.create(createTestPlan({ slug: "plan-1", name: "Plan 1" }));
-			await specManager.plans.create(createTestPlan({ slug: "plan-2", name: "Plan 2" }));
+			await specManager.plans.create(
+				createTestPlan({ slug: "plan-1", name: "Plan 1" }),
+			);
+			await specManager.plans.create(
+				createTestPlan({ slug: "plan-2", name: "Plan 2" }),
+			);
 
 			const all = await specManager.plans.list();
 
@@ -113,7 +110,10 @@ describe("All Entity Types - CRUD Operations", () => {
 		});
 
 		it("should read a component", async () => {
-			const data = createTestComponent({ slug: "test-component", name: "Test" });
+			const data = createTestComponent({
+				slug: "test-component",
+				name: "Test",
+			});
 			const created = await specManager.components.create(data);
 
 			const retrieved = await specManager.components.get(created.number);
@@ -144,8 +144,12 @@ describe("All Entity Types - CRUD Operations", () => {
 		});
 
 		it("should list components", async () => {
-			await specManager.components.create(createTestComponent({ slug: "comp-1", name: "Comp 1" }));
-			await specManager.components.create(createTestComponent({ slug: "comp-2", name: "Comp 2" }));
+			await specManager.components.create(
+				createTestComponent({ slug: "comp-1", name: "Comp 1" }),
+			);
+			await specManager.components.create(
+				createTestComponent({ slug: "comp-2", name: "Comp 2" }),
+			);
 
 			const all = await specManager.components.list();
 
@@ -190,7 +194,10 @@ describe("All Entity Types - CRUD Operations", () => {
 		});
 
 		it("should update a constitution", async () => {
-			const data = createTestConstitution({ slug: "const-1", name: "Constitution 1" });
+			const data = createTestConstitution({
+				slug: "const-1",
+				name: "Constitution 1",
+			});
 			const created = await specManager.constitutions.create(data);
 
 			const updated = await specManager.constitutions.update(created.number, {
@@ -201,7 +208,10 @@ describe("All Entity Types - CRUD Operations", () => {
 		});
 
 		it("should delete a constitution", async () => {
-			const data = createTestConstitution({ slug: "delete-const", name: "Delete" });
+			const data = createTestConstitution({
+				slug: "delete-const",
+				name: "Delete",
+			});
 			const created = await specManager.constitutions.create(data);
 
 			await specManager.constitutions.deleteEntity(created.number);
@@ -211,8 +221,12 @@ describe("All Entity Types - CRUD Operations", () => {
 		});
 
 		it("should list constitutions", async () => {
-			await specManager.constitutions.create(createTestConstitution({ slug: "const-1", name: "Const 1" }));
-			await specManager.constitutions.create(createTestConstitution({ slug: "const-2", name: "Const 2" }));
+			await specManager.constitutions.create(
+				createTestConstitution({ slug: "const-1", name: "Const 1" }),
+			);
+			await specManager.constitutions.create(
+				createTestConstitution({ slug: "const-2", name: "Const 2" }),
+			);
 
 			const all = await specManager.constitutions.list();
 
@@ -278,8 +292,12 @@ describe("All Entity Types - CRUD Operations", () => {
 		});
 
 		it("should list decisions", async () => {
-			await specManager.decisions.create(createTestDecision({ slug: "dec-1", name: "Dec 1" }));
-			await specManager.decisions.create(createTestDecision({ slug: "dec-2", name: "Dec 2" }));
+			await specManager.decisions.create(
+				createTestDecision({ slug: "dec-1", name: "Dec 1" }),
+			);
+			await specManager.decisions.create(
+				createTestDecision({ slug: "dec-2", name: "Dec 2" }),
+			);
 
 			const all = await specManager.decisions.list();
 
@@ -303,22 +321,22 @@ describe("All Entity Types - CRUD Operations", () => {
 		it("should handle all entity types with independent numbering", async () => {
 			// Create one of each type
 			const br = await specManager.business_requirements.create(
-				createTestBusinessRequirement({ slug: "br-1", name: "BR 1" })
-		);
-		const tr = await specManager.tech_requirements.create(
-			createTestTechnicalRequirement({ slug: "tr-1", name: "TR 1" })
-		);
+				createTestBusinessRequirement({ slug: "br-1", name: "BR 1" }),
+			);
+			const tr = await specManager.tech_requirements.create(
+				createTestTechnicalRequirement({ slug: "tr-1", name: "TR 1" }),
+			);
 			const plan = await specManager.plans.create(
-				createTestPlan({ slug: "plan-1", name: "Plan 1" })
+				createTestPlan({ slug: "plan-1", name: "Plan 1" }),
 			);
 			const component = await specManager.components.create(
-				createTestComponent({ slug: "comp-1", name: "Comp 1" })
+				createTestComponent({ slug: "comp-1", name: "Comp 1" }),
 			);
 			const constitution = await specManager.constitutions.create(
-				createTestConstitution({ slug: "const-1", name: "Const 1" })
+				createTestConstitution({ slug: "const-1", name: "Const 1" }),
 			);
 			const decision = await specManager.decisions.create(
-				createTestDecision({ slug: "dec-1", name: "Dec 1" })
+				createTestDecision({ slug: "dec-1", name: "Dec 1" }),
 			);
 
 			// All should have number 1 (independent numbering)
@@ -341,13 +359,17 @@ describe("All Entity Types - CRUD Operations", () => {
 		it("should list each entity type separately", async () => {
 			// Create multiple of each type
 			await specManager.business_requirements.create(
-				createTestBusinessRequirement({ slug: "br-1", name: "BR 1" })
+				createTestBusinessRequirement({ slug: "br-1", name: "BR 1" }),
 			);
 			await specManager.business_requirements.create(
-				createTestBusinessRequirement({ slug: "br-2", name: "BR 2" })
+				createTestBusinessRequirement({ slug: "br-2", name: "BR 2" }),
 			);
-			await specManager.plans.create(createTestPlan({ slug: "plan-1", name: "Plan 1" }));
-			await specManager.components.create(createTestComponent({ slug: "comp-1", name: "Comp 1" }));
+			await specManager.plans.create(
+				createTestPlan({ slug: "plan-1", name: "Plan 1" }),
+			);
+			await specManager.components.create(
+				createTestComponent({ slug: "comp-1", name: "Comp 1" }),
+			);
 
 			const brList = await specManager.business_requirements.list();
 			const planList = await specManager.plans.list();

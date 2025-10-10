@@ -1,13 +1,9 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
-import {
-	ErrorCode,
-	McpError,
-	formatErrorResponse,
-} from "./error-codes.js";
-import { logger, createRequestLogger, logOperation } from "./logger.js";
-import { VERSION } from "./version.js";
-import { wrapToolHandler } from "./tool-wrapper.js";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { ErrorCode, formatErrorResponse, McpError } from "./error-codes.js";
+import { createRequestLogger, logger, logOperation } from "./logger.js";
+import { wrapToolHandler } from "./tool-wrapper.js";
+import { VERSION } from "./version.js";
 
 describe("error-codes", () => {
 	describe("ErrorCode enum", () => {
@@ -117,10 +113,7 @@ describe("error-codes", () => {
 		});
 
 		it("should serialize to JSON without context", () => {
-			const error = new McpError(
-				ErrorCode.INVALID_CONFIG,
-				"Invalid config",
-			);
+			const error = new McpError(ErrorCode.INVALID_CONFIG, "Invalid config");
 
 			const json = error.toJSON();
 
@@ -132,11 +125,9 @@ describe("error-codes", () => {
 		});
 
 		it("should serialize to JSON without cause", () => {
-			const error = new McpError(
-				ErrorCode.CONNECTION_LOST,
-				"Connection lost",
-				{ timestamp: Date.now() },
-			);
+			const error = new McpError(ErrorCode.CONNECTION_LOST, "Connection lost", {
+				timestamp: Date.now(),
+			});
 
 			const json = error.toJSON();
 
@@ -146,10 +137,7 @@ describe("error-codes", () => {
 		});
 
 		it("should have proper error stack trace", () => {
-			const error = new McpError(
-				ErrorCode.INTERNAL_ERROR,
-				"Test error",
-			);
+			const error = new McpError(ErrorCode.INTERNAL_ERROR, "Test error");
 
 			expect(error.stack).toBeDefined();
 			expect(error.stack).toContain("McpError");
@@ -174,11 +162,9 @@ describe("error-codes", () => {
 		});
 
 		it("should maintain error properties after serialization", () => {
-			const error = new McpError(
-				ErrorCode.INVALID_CONFIG,
-				"Config error",
-				{ key: "value" },
-			);
+			const error = new McpError(ErrorCode.INVALID_CONFIG, "Config error", {
+				key: "value",
+			});
 
 			const json = error.toJSON();
 			const jsonString = JSON.stringify(json);
@@ -209,10 +195,7 @@ describe("error-codes", () => {
 		});
 
 		it("should format McpError without context", () => {
-			const error = new McpError(
-				ErrorCode.CONNECTION_LOST,
-				"Connection lost",
-			);
+			const error = new McpError(ErrorCode.CONNECTION_LOST, "Connection lost");
 
 			const response = formatErrorResponse(error);
 
@@ -321,12 +304,16 @@ describe("logger", () => {
 
 		it("should include service name in bindings", () => {
 			// Access logger bindings (base properties)
-			const bindings = (logger as any).bindings();
+			const bindings = (
+				logger as unknown as { bindings: () => Record<string, unknown> }
+			).bindings();
 			expect(bindings.service).toBe("spec-mcp");
 		});
 
 		it("should include version in bindings", () => {
-			const bindings = (logger as any).bindings();
+			const bindings = (
+				logger as unknown as { bindings: () => Record<string, unknown> }
+			).bindings();
 			expect(bindings.version).toBe(VERSION);
 		});
 
@@ -417,9 +404,11 @@ describe("logger", () => {
 			await logOperation(operation, fn);
 
 			// Check that duration was logged
-			const errorCalls = (logger.info as any).mock.calls;
+			const errorCalls = (
+				logger.info as unknown as { mock: { calls: unknown[][] } }
+			).mock.calls;
 			const completionCall = errorCalls.find(
-				(call: any) => call[1] === "Operation completed",
+				(call: unknown[]) => call[1] === "Operation completed",
 			);
 			expect(completionCall).toBeDefined();
 			expect(completionCall[0].duration).toBeGreaterThanOrEqual(0);
@@ -469,10 +458,7 @@ describe("logger", () => {
 
 		it("should handle McpError correctly", async () => {
 			const operation = "mcp-error-operation";
-			const mcpError = new McpError(
-				ErrorCode.INVALID_CONFIG,
-				"Config error",
-			);
+			const mcpError = new McpError(ErrorCode.INVALID_CONFIG, "Config error");
 			const fn = vi.fn().mockRejectedValue(mcpError);
 
 			await expect(logOperation(operation, fn)).rejects.toThrow(mcpError);
@@ -548,18 +534,18 @@ describe("version", () => {
 		it("should have major version number", () => {
 			const parts = VERSION.split(".");
 			expect(parts.length).toBeGreaterThanOrEqual(3);
-			expect(Number.parseInt(parts[0])).toBeGreaterThanOrEqual(0);
+			expect(Number.parseInt(parts[0], 10)).toBeGreaterThanOrEqual(0);
 		});
 
 		it("should have minor version number", () => {
 			const parts = VERSION.split(".");
-			expect(Number.parseInt(parts[1])).toBeGreaterThanOrEqual(0);
+			expect(Number.parseInt(parts[1], 10)).toBeGreaterThanOrEqual(0);
 		});
 
 		it("should have patch version number", () => {
 			const parts = VERSION.split(".");
 			const patchPart = parts[2].split("-")[0]; // Handle pre-release versions
-			expect(Number.parseInt(patchPart)).toBeGreaterThanOrEqual(0);
+			expect(Number.parseInt(patchPart, 10)).toBeGreaterThanOrEqual(0);
 		});
 
 		it("should be consistent across multiple imports", () => {
@@ -590,14 +576,11 @@ describe("tool-wrapper", () => {
 	describe("wrapToolHandler", () => {
 		beforeEach(() => {
 			// Spy on logger methods
-			vi.spyOn(logger, "child").mockImplementation(
-				() =>
-					({
-						debug: vi.fn(),
-						error: vi.fn(),
-						info: vi.fn(),
-					}) as any,
-			);
+			vi.spyOn(logger, "child").mockImplementation(() => ({
+				debug: vi.fn(),
+				error: vi.fn(),
+				info: vi.fn(),
+			}));
 			vi.spyOn(logger, "info").mockImplementation(() => {});
 			vi.spyOn(logger, "error").mockImplementation(() => {});
 		});
@@ -655,11 +638,9 @@ describe("tool-wrapper", () => {
 
 		it("should handle McpError and format response", async () => {
 			const toolName = "mcp-error-tool";
-			const mcpError = new McpError(
-				ErrorCode.INVALID_CONFIG,
-				"Config error",
-				{ path: "/config" },
-			);
+			const mcpError = new McpError(ErrorCode.INVALID_CONFIG, "Config error", {
+				path: "/config",
+			});
 			const handler = vi.fn().mockRejectedValue(mcpError);
 
 			const wrapped = wrapToolHandler(toolName, handler);
@@ -692,7 +673,7 @@ describe("tool-wrapper", () => {
 			});
 
 			const wrapped = wrapToolHandler(toolName, handler);
-			await wrapped(undefined as any);
+			await wrapped(undefined);
 
 			expect(handler).toHaveBeenCalledWith(undefined);
 		});
@@ -744,14 +725,16 @@ describe("tool-wrapper", () => {
 		it("should handle multiple calls with different inputs", async () => {
 			const toolName = "multi-call-tool";
 			let callCount = 0;
-			const handler = vi.fn().mockImplementation(async (input: any) => {
-				callCount++;
-				return {
-					content: [
-						{ type: "text", text: `Call ${callCount}: ${input.value}` },
-					],
-				};
-			});
+			const handler = vi
+				.fn()
+				.mockImplementation(async (input: Record<string, unknown>) => {
+					callCount++;
+					return {
+						content: [
+							{ type: "text", text: `Call ${callCount}: ${input.value}` },
+						],
+					};
+				});
 
 			const wrapped = wrapToolHandler(toolName, handler);
 
@@ -790,31 +773,31 @@ describe("tool-wrapper", () => {
 
 			// Clear any previous calls
 			vi.clearAllMocks();
-			vi.spyOn(logger, "child").mockImplementation(
-				() =>
-					({
-						debug: vi.fn(),
-						error: vi.fn(),
-						info: vi.fn(),
-					}) as any,
-			);
+			vi.spyOn(logger, "child").mockImplementation(() => ({
+				debug: vi.fn(),
+				error: vi.fn(),
+				info: vi.fn(),
+			}));
 
 			await wrapped({ input: "1" });
-			const call1Count = (logger.child as any).mock.calls.length;
-			const call1 = (logger.child as any).mock.calls[0][0];
+			const call1Count = (
+				logger.child as unknown as { mock: { calls: unknown[][] } }
+			).mock.calls.length;
+			const call1 = (
+				logger.child as unknown as { mock: { calls: unknown[][] } }
+			).mock.calls[0][0];
 
 			vi.clearAllMocks();
-			vi.spyOn(logger, "child").mockImplementation(
-				() =>
-					({
-						debug: vi.fn(),
-						error: vi.fn(),
-						info: vi.fn(),
-					}) as any,
-			);
+			vi.spyOn(logger, "child").mockImplementation(() => ({
+				debug: vi.fn(),
+				error: vi.fn(),
+				info: vi.fn(),
+			}));
 
 			await wrapped({ input: "2" });
-			const call2 = (logger.child as any).mock.calls[0][0];
+			const call2 = (
+				logger.child as unknown as { mock: { calls: unknown[][] } }
+			).mock.calls[0][0];
 
 			// Each call should have created a child logger
 			expect(call1Count).toBeGreaterThan(0);

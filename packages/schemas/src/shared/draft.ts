@@ -3,10 +3,6 @@ import { EntityTypeSchema } from "./base";
 
 export const DraftQuestionSchema = z.object({
 	id: z.string().min(1).describe("Unique identifier for the question"),
-	title: z
-		.string()
-		.min(1)
-		.describe("Short title for the question when rendering summary"),
 	question: z.string().min(1).describe("The question being asked in the draft"),
 	answer: z
 		.string()

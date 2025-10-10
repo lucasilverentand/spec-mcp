@@ -75,5 +75,4 @@ export type BusinessValue = z.infer<typeof BusinessValueSchema>;
 export type StakeholderRole = z.infer<typeof StakeholderRoleSchema>;
 export type Stakeholder = z.infer<typeof StakeholderSchema>;
 export type UserStory = z.infer<typeof UserStorySchema>;
-export type Criteria = z.infer<typeof CriteriaSchema>;
 export type BusinessRequirement = z.infer<typeof BusinessRequirementSchema>;

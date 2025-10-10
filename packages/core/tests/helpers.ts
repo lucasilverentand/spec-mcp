@@ -1,6 +1,14 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
-import type { Base } from "@spec-mcp/schemas";
+import type {
+	Base,
+	BusinessRequirement,
+	Component,
+	Constitution,
+	Decision,
+	Plan,
+	TechnicalRequirement,
+} from "@spec-mcp/schemas";
 
 /**
  * Create a temporary directory for testing
@@ -67,15 +75,18 @@ export function createTestEntity<T extends Base>(
  * Create a minimal test business requirement
  */
 export function createTestBusinessRequirement(
-	overrides?: Partial<any>,
-): Omit<any, "number"> {
+	overrides?: Partial<BusinessRequirement>,
+): Omit<BusinessRequirement, "number"> {
 	return createTestEntity({
 		type: "business-requirement",
 		slug: "test-br",
 		name: "Test Business Requirement",
 		description: "A test business requirement",
 		business_value: [
-			{ type: "customer-satisfaction" as const, value: "Improves user experience" },
+			{
+				type: "customer-satisfaction" as const,
+				value: "Improves user experience",
+			},
 		],
 		user_stories: [
 			{
@@ -84,7 +95,13 @@ export function createTestBusinessRequirement(
 				benefit: "complete their task efficiently",
 			},
 		],
-		criteria: [{ id: "crit-001", description: "Test criterion", status: "needs-review" as const }],
+		criteria: [
+			{
+				id: "crit-001",
+				description: "Test criterion",
+				status: "needs-review" as const,
+			},
+		],
 		...overrides,
 	});
 }
@@ -93,15 +110,21 @@ export function createTestBusinessRequirement(
  * Create a minimal test technical requirement
  */
 export function createTestTechnicalRequirement(
-	overrides?: Partial<any>,
-): Omit<any, "number"> {
+	overrides?: Partial<TechnicalRequirement>,
+): Omit<TechnicalRequirement, "number"> {
 	return createTestEntity({
 		type: "technical-requirement",
 		slug: "test-tr",
 		name: "Test Technical Requirement",
 		description: "A test technical requirement",
 		technical_context: "Technical context for the requirement",
-		criteria: [{ id: "crit-001", description: "Test criterion", status: "needs-review" as const }],
+		criteria: [
+			{
+				id: "crit-001",
+				description: "Test criterion",
+				status: "needs-review" as const,
+			},
+		],
 		...overrides,
 	});
 }
@@ -109,7 +132,9 @@ export function createTestTechnicalRequirement(
 /**
  * Create a minimal test plan
  */
-export function createTestPlan(overrides?: Partial<any>): Omit<any, "number"> {
+export function createTestPlan(
+	overrides?: Partial<Plan>,
+): Omit<Plan, "number"> {
 	return createTestEntity({
 		type: "plan",
 		slug: "test-plan",
@@ -136,7 +161,9 @@ export function createTestPlan(overrides?: Partial<any>): Omit<any, "number"> {
 /**
  * Create a minimal test component
  */
-export function createTestComponent(overrides?: Partial<any>): Omit<any, "number"> {
+export function createTestComponent(
+	overrides?: Partial<Component>,
+): Omit<Component, "number"> {
 	return createTestEntity({
 		type: "component",
 		slug: "test-component",
@@ -154,7 +181,9 @@ export function createTestComponent(overrides?: Partial<any>): Omit<any, "number
 /**
  * Create a minimal test constitution
  */
-export function createTestConstitution(overrides?: Partial<any>): Omit<any, "number"> {
+export function createTestConstitution(
+	overrides?: Partial<Constitution>,
+): Omit<Constitution, "number"> {
 	return createTestEntity({
 		type: "constitution",
 		slug: "test-constitution",
@@ -178,14 +207,18 @@ export function createTestConstitution(overrides?: Partial<any>): Omit<any, "num
 /**
  * Create a minimal test decision
  */
-export function createTestDecision(overrides?: Partial<any>): Omit<any, "number"> {
+export function createTestDecision(
+	overrides?: Partial<Decision>,
+): Omit<Decision, "number"> {
 	return createTestEntity({
 		type: "decision",
 		slug: "test-decision",
 		name: "Test Decision",
 		description: "A test decision",
-		decision: "We decided to use TypeScript for type safety and better developer experience",
-		context: "The team needed better tooling and wanted to catch errors at compile time rather than runtime",
+		decision:
+			"We decided to use TypeScript for type safety and better developer experience",
+		context:
+			"The team needed better tooling and wanted to catch errors at compile time rather than runtime",
 		consequences: [
 			{
 				type: "positive",

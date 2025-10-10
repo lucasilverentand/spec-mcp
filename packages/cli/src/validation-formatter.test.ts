@@ -73,9 +73,7 @@ describe("parseValidationErrors", () => {
 	});
 
 	it("should handle errors with colons in the message", () => {
-		const errors = [
-			"name: Expected format: lowercase-with-dashes",
-		];
+		const errors = ["name: Expected format: lowercase-with-dashes"];
 		const result = parseValidationErrors(errors);
 
 		expect(result.size).toBe(1);
@@ -294,7 +292,9 @@ describe("Integration - Formatting workflow", () => {
 			const continuation = getTreeContinuation(isParentLast);
 			const msgPrefix = getTreePrefix(isLast);
 
-			output.push(`${continuation}${msgPrefix} ${colors.red}${msg}${colors.reset}`);
+			output.push(
+				`${continuation}${msgPrefix} ${colors.red}${msg}${colors.reset}`,
+			);
 		}
 
 		expect(output).toHaveLength(2);

@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { generateSlug } from "./slug-generator";
 
 describe("generateSlug", () => {
@@ -224,9 +224,15 @@ describe("generateSlug", () => {
 
 	describe("real-world examples", () => {
 		it("should handle typical requirement names", () => {
-			expect(generateSlug("User Authentication System")).toBe("user-authentication-system");
-			expect(generateSlug("API v2.0 Implementation")).toBe("api-v2-0-implementation");
-			expect(generateSlug("Payment Gateway Integration")).toBe("payment-gateway-integration");
+			expect(generateSlug("User Authentication System")).toBe(
+				"user-authentication-system",
+			);
+			expect(generateSlug("API v2.0 Implementation")).toBe(
+				"api-v2-0-implementation",
+			);
+			expect(generateSlug("Payment Gateway Integration")).toBe(
+				"payment-gateway-integration",
+			);
 		});
 
 		it("should handle typical file names", () => {
@@ -249,7 +255,9 @@ describe("generateSlug", () => {
 
 		it("should handle project names", () => {
 			expect(generateSlug("My Awesome Project!")).toBe("my-awesome-project");
-			expect(generateSlug("@company/package-name")).toBe("company-package-name");
+			expect(generateSlug("@company/package-name")).toBe(
+				"company-package-name",
+			);
 			expect(generateSlug("react-router-dom")).toBe("react-router-dom");
 		});
 	});
@@ -294,7 +302,9 @@ describe("generateSlug", () => {
 		});
 
 		it("should handle complex mixed patterns", () => {
-			expect(generateSlug("Hello!!! World??? Test...")).toBe("hello-world-test");
+			expect(generateSlug("Hello!!! World??? Test...")).toBe(
+				"hello-world-test",
+			);
 			expect(generateSlug("___test___slug___")).toBe("test-slug");
 			expect(generateSlug("***multiple***stars***")).toBe("multiple-stars");
 		});

@@ -1,6 +1,7 @@
 // Shared schemas
 export * from "./shared/api-contract";
 export * from "./shared/base";
+export * from "./shared/criteria";
 export * from "./shared/data-model";
 export * from "./shared/draft";
 export * from "./shared/flow";

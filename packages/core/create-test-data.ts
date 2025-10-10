@@ -1,5 +1,5 @@
-import { SpecManager } from "./src/spec-manager";
 import path from "node:path";
+import { SpecManager } from "./src/spec-manager";
 
 async function createTestData() {
 	const testDir = path.join(process.cwd(), "test-output");
@@ -52,7 +52,6 @@ async function createTestData() {
 				status: "needs-review",
 			},
 		],
-		draft: false,
 		draft: false,
 		priority: "critical",
 		created_at: new Date().toISOString(),
@@ -272,21 +271,11 @@ async function createTestData() {
 	console.log("");
 
 	console.log("Files created:");
-	console.log(
-		"  requirements/business/breq-1-user-authentication.yml",
-	);
-	console.log(
-		"  requirements/business/breq-2-payment-processing.yml",
-	);
-	console.log(
-		"  requirements/business/breq-3-user-profile-management.yml",
-	);
-	console.log(
-		"  requirements/technical/treq-1-api-response-time.yml",
-	);
-	console.log(
-		"  requirements/technical/treq-2-database-schema-design.yml",
-	);
+	console.log("  requirements/business/breq-1-user-authentication.yml");
+	console.log("  requirements/business/breq-2-payment-processing.yml");
+	console.log("  requirements/business/breq-3-user-profile-management.yml");
+	console.log("  requirements/technical/treq-1-api-response-time.yml");
+	console.log("  requirements/technical/treq-2-database-schema-design.yml");
 	console.log("");
 	console.log(`Test data created successfully in: ${testDir}`);
 }

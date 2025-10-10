@@ -2,6 +2,15 @@
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { DraftStore, SpecManager } from "@spec-mcp/core";
+import { z } from "zod";
+import {
+	answerQuestion,
+	continueDraft,
+	finalizeEntity,
+	listDrafts,
+	startDraft,
+} from "./tools/index.js";
 import { ErrorCode, McpError } from "./utils/error-codes.js";
 import { logger } from "./utils/logger.js";
 import { VERSION } from "./utils/version.js";
@@ -138,11 +147,149 @@ class ConnectionManager {
 }
 
 /**
- * Register MCP tools (currently empty)
+ * Register MCP tools for draft workflow (New unified API - 5 tools)
  */
-function registerTools(_server: McpServer) {
-	// No tools registered yet
-	logger.info("No tools registered");
+function registerTools(
+	server: McpServer,
+	draftStore: DraftStore,
+	specManager: SpecManager,
+) {
+	// Use a simple draft ID (in a real implementation, this could be generated per request)
+	const draftId = "default";
+
+	// 1. start_draft - Create a new draft
+	server.tool(
+		"start_draft",
+		"Start a new draft creation workflow. Returns draft ID and first question.",
+		{
+			type: z
+				.enum([
+					"plan",
+					"component",
+					"decision",
+					"business-requirement",
+					"technical-requirement",
+					"constitution",
+				])
+				.describe("Type of spec to create"),
+		},
+		async (args) => {
+			try {
+				const result = await startDraft(args, draftStore, draftId);
+				return {
+					content: [{ type: "text", text: result }],
+				};
+			} catch (error) {
+				logger.error({ error, tool: "start_draft" }, "Tool execution failed");
+				throw error;
+			}
+		},
+	);
+
+	// 2. answer_question - Answer any question by ID
+	server.tool(
+		"answer_question",
+		"Answer a question in the draft by question ID. Works for main, collection, and array item questions.",
+		{
+			draftId: z.string().describe("The draft session ID"),
+			questionId: z.string().describe("The unique question ID to answer"),
+			answer: z
+				.union([z.string(), z.number(), z.boolean(), z.array(z.string())])
+				.describe(
+					"Answer to the question. Can be string, number, boolean, or array of strings.",
+				),
+		},
+		async (args) => {
+			try {
+				const result = await answerQuestion(args, draftStore);
+				return {
+					content: [{ type: "text", text: result }],
+				};
+			} catch (error) {
+				logger.error(
+					{ error, tool: "answer_question" },
+					"Tool execution failed",
+				);
+				throw error;
+			}
+		},
+	);
+
+	// 3. finalize_entity - Finalize any entity (main or array item)
+	server.tool(
+		"finalize_entity",
+		"Finalize an entity with LLM-generated data. Use entityId 'main' or omit for main entity, 'fieldName[index]' for array items. Auto-saves when finalizing main entity.",
+		{
+			draftId: z.string().describe("The draft session ID"),
+			entityId: z
+				.string()
+				.optional()
+				.describe(
+					"Entity ID: omit/'main' for main entity, 'fieldName[index]' for array items (e.g., 'business_value[0]')",
+				),
+			data: z
+				.record(z.any())
+				.describe(
+					"Complete JSON object for the entity/item, matching the schema",
+				),
+		},
+		async (args) => {
+			try {
+				const result = await finalizeEntity(args, draftStore, specManager);
+				return {
+					content: [{ type: "text", text: result }],
+				};
+			} catch (error) {
+				logger.error(
+					{ error, tool: "finalize_entity" },
+					"Tool execution failed",
+				);
+				throw error;
+			}
+		},
+	);
+
+	// 4. list_drafts - List all active drafts
+	server.tool(
+		"list_drafts",
+		"List all active draft sessions with their status and progress.",
+		async () => {
+			try {
+				const result = await listDrafts({}, draftStore);
+				return {
+					content: [{ type: "text", text: result }],
+				};
+			} catch (error) {
+				logger.error({ error, tool: "list_drafts" }, "Tool execution failed");
+				throw error;
+			}
+		},
+	);
+
+	// 5. continue_draft - Get intelligent next-step instructions
+	server.tool(
+		"continue_draft",
+		"Get continuation instructions for a draft. Intelligently shows next question or finalization context.",
+		{
+			draftId: z.string().describe("The draft session ID"),
+		},
+		async (args) => {
+			try {
+				const result = await continueDraft(args, draftStore);
+				return {
+					content: [{ type: "text", text: result }],
+				};
+			} catch (error) {
+				logger.error(
+					{ error, tool: "continue_draft" },
+					"Tool execution failed",
+				);
+				throw error;
+			}
+		},
+	);
+
+	logger.info("Registered 5 draft workflow tools (unified API)");
 }
 
 /**
@@ -159,8 +306,15 @@ async function main() {
 			version: VERSION,
 		});
 
+		// Initialize core managers
+		const draftStore = new DraftStore();
+		const specManager = new SpecManager("./specs");
+
+		// Ensure spec folders exist
+		await specManager.ensureFolders();
+
 		// Register tools
-		registerTools(server);
+		registerTools(server, draftStore, specManager);
 
 		// Set up connection with retry logic
 		const transport = new StdioServerTransport();

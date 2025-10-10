@@ -1,10 +1,10 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import {
-	BusinessRequirementSchema,
 	type BusinessRequirement,
+	BusinessRequirementSchema,
 } from "@spec-mcp/schemas";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { EntityManager } from "../src/entity-manager";
 import {
 	cleanupTempDir,

@@ -103,7 +103,11 @@ program
 			console.log(`${colors.cyan}Requirements:${colors.reset}`);
 			for (const validation of requirementValidations) {
 				const entity = validation.entity;
-				const entityId = formatEntityId(entity.type, entity.number, entity.slug);
+				const entityId = formatEntityId(
+					entity.type,
+					entity.number,
+					entity.slug,
+				);
 				const fileName = `${entity.slug}.yaml`;
 				const hasErrors = validation.errors.length > 0;
 				const hasWarnings = validation.warnings.length > 0;
@@ -174,7 +178,11 @@ program
 			console.log(`${colors.cyan}Plans:${colors.reset}`);
 			for (const validation of planValidations) {
 				const entity = validation.entity;
-				const entityId = formatEntityId(entity.type, entity.number, entity.slug);
+				const entityId = formatEntityId(
+					entity.type,
+					entity.number,
+					entity.slug,
+				);
 				const fileName = `${entity.slug}.yaml`;
 				const hasErrors = validation.errors.length > 0;
 				const hasWarnings = validation.warnings.length > 0;
@@ -245,7 +253,11 @@ program
 			console.log(`${colors.cyan}Components:${colors.reset}`);
 			for (const validation of componentValidations) {
 				const entity = validation.entity;
-				const entityId = formatEntityId(entity.type, entity.number, entity.slug);
+				const entityId = formatEntityId(
+					entity.type,
+					entity.number,
+					entity.slug,
+				);
 				const fileName = `${entity.slug}.yaml`;
 				const hasErrors = validation.errors.length > 0;
 				const hasWarnings = validation.warnings.length > 0;

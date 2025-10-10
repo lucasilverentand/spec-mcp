@@ -1,6 +1,6 @@
-import { SpecManager } from "./src/spec-manager";
-import path from "node:path";
 import { promises as fs } from "node:fs";
+import path from "node:path";
+import { SpecManager } from "./src/spec-manager";
 
 async function generateTestOutput() {
 	const testDir = path.join(process.cwd(), "test-output");
@@ -225,8 +225,7 @@ async function generateTestOutput() {
 		type: "plan",
 		slug: "implement-authentication",
 		name: "Implement Authentication System",
-		description:
-			"Implementation plan for the user authentication system",
+		description: "Implementation plan for the user authentication system",
 		draft: false,
 		criteria: {
 			requirement: "brd-001-user-authentication",
@@ -253,8 +252,8 @@ async function generateTestOutput() {
 				id: "task-001",
 				task: "Set up authentication database tables",
 				status: {
-				created_at: new Date().toISOString(),
-				updated_at: new Date().toISOString(),
+					created_at: new Date().toISOString(),
+					updated_at: new Date().toISOString(),
 					completed: false,
 					completed_at: null,
 					verified: false,
@@ -266,8 +265,8 @@ async function generateTestOutput() {
 				id: "task-002",
 				task: "Implement password hashing with bcrypt",
 				status: {
-				created_at: new Date().toISOString(),
-				updated_at: new Date().toISOString(),
+					created_at: new Date().toISOString(),
+					updated_at: new Date().toISOString(),
 					completed: false,
 					completed_at: null,
 					verified: false,
@@ -468,8 +467,7 @@ async function generateTestOutput() {
 			{
 				id: "art-003",
 				title: "Principle of Least Privilege",
-				principle:
-					"Grant minimum necessary permissions for users and services",
+				principle: "Grant minimum necessary permissions for users and services",
 				rationale: "Limits potential damage from compromised accounts",
 				examples: ["Role-based access control", "Scoped API tokens"],
 				exceptions: [],
@@ -625,9 +623,13 @@ async function generateTestOutput() {
 	// ===========================================
 	// SUMMARY
 	// ===========================================
-	console.log("====================================================================");
+	console.log(
+		"====================================================================",
+	);
 	console.log("                    GENERATION COMPLETE");
-	console.log("====================================================================");
+	console.log(
+		"====================================================================",
+	);
 	console.log("");
 
 	const allBr = await specManager.business_requirements.list();
@@ -638,12 +640,24 @@ async function generateTestOutput() {
 	const allDecisions = await specManager.decisions.list();
 
 	console.log("📊 Summary:");
-	console.log(`  Business Requirements: ${allBr.length} (${allBr.filter(x => x.draft).length} drafts)`);
-	console.log(`  Technical Requirements: ${allTr.length} (${allTr.filter(x => x.draft).length} drafts)`);
-	console.log(`  Plans: ${allPlans.length} (${allPlans.filter(x => x.draft).length} drafts)`);
-	console.log(`  Components: ${allComponents.length} (${allComponents.filter(x => x.draft).length} drafts)`);
-	console.log(`  Constitutions: ${allConstitutions.length} (${allConstitutions.filter(x => x.draft).length} drafts)`);
-	console.log(`  Decisions: ${allDecisions.length} (${allDecisions.filter(x => x.draft).length} drafts)`);
+	console.log(
+		`  Business Requirements: ${allBr.length} (${allBr.filter((x) => x.draft).length} drafts)`,
+	);
+	console.log(
+		`  Technical Requirements: ${allTr.length} (${allTr.filter((x) => x.draft).length} drafts)`,
+	);
+	console.log(
+		`  Plans: ${allPlans.length} (${allPlans.filter((x) => x.draft).length} drafts)`,
+	);
+	console.log(
+		`  Components: ${allComponents.length} (${allComponents.filter((x) => x.draft).length} drafts)`,
+	);
+	console.log(
+		`  Constitutions: ${allConstitutions.length} (${allConstitutions.filter((x) => x.draft).length} drafts)`,
+	);
+	console.log(
+		`  Decisions: ${allDecisions.length} (${allDecisions.filter((x) => x.draft).length} drafts)`,
+	);
 	console.log("");
 
 	console.log("📁 Files created:");
@@ -663,7 +677,9 @@ async function generateTestOutput() {
 	console.log(`  decisions/dec-3-graphql-vs-rest.draft.yml`);
 	console.log("");
 	console.log(`✅ All files generated using SpecManager API in: ${testDir}`);
-	console.log("====================================================================");
+	console.log(
+		"====================================================================",
+	);
 }
 
 generateTestOutput().catch((error) => {

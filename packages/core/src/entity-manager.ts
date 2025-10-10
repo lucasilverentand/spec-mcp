@@ -1,6 +1,16 @@
 import type { Base, EntityType } from "@spec-mcp/schemas";
 import type { ZodType, ZodTypeDef } from "zod";
+import { EntityDrafter, type EntityDrafterState } from "./entity-drafter";
 import { FileManager } from "./file-manager";
+
+interface DraftFile<T extends Base> {
+	_draft_metadata: {
+		created_at: string;
+		updated_at: string;
+	};
+	_drafter_state: EntityDrafterState<T>;
+	entity_data: Partial<T>;
+}
 
 export class EntityManager<T extends Base> extends FileManager {
 	protected entityType: EntityType;
@@ -32,7 +42,11 @@ export class EntityManager<T extends Base> extends FileManager {
 		return this.entityType;
 	}
 
-	private getFilePath(entity: { number: number; slug: string; draft?: boolean }): string {
+	private getFilePath(entity: {
+		number: number;
+		slug: string;
+		draft?: boolean;
+	}): string {
 		const isDraft = entity.draft ?? false;
 		return `${this.subFolder}/${this.idPrefix}-${entity.number}-${entity.slug}${isDraft ? ".draft" : ""}.yml`;
 	}
@@ -40,9 +54,7 @@ export class EntityManager<T extends Base> extends FileManager {
 	private getFilePattern(): RegExp {
 		// Match: {idPrefix}-{number}-{slug} or {idPrefix}-{number}-{slug}.draft
 		// Note: extension is already stripped by listFiles()
-		return new RegExp(
-			`^${this.idPrefix}-(\\d+)-([a-z0-9-]+)(?:\\.draft)?$`,
-		);
+		return new RegExp(`^${this.idPrefix}-(\\d+)-([a-z0-9-]+)(?:\\.draft)?$`);
 	}
 
 	override async ensureFolder(): Promise<void> {
@@ -56,7 +68,7 @@ export class EntityManager<T extends Base> extends FileManager {
 
 		for (const fileName of fileNames) {
 			const match = fileName.match(pattern);
-			if (match && match[1]) {
+			if (match?.[1]) {
 				const fileNumber = Number.parseInt(match[1], 10);
 				if (fileNumber === number) {
 					return true;
@@ -74,10 +86,12 @@ export class EntityManager<T extends Base> extends FileManager {
 
 			for (const fileName of fileNames) {
 				const match = fileName.match(pattern);
-				if (match && match[1]) {
+				if (match?.[1]) {
 					const fileNumber = Number.parseInt(match[1], 10);
 					if (fileNumber === number) {
-						const data = await this.readYaml<T>(`${this.subFolder}/${fileName}.yml`);
+						const data = await this.readYaml<T>(
+							`${this.subFolder}/${fileName}.yml`,
+						);
 						return this.schema.parse(data);
 					}
 				}
@@ -89,8 +103,23 @@ export class EntityManager<T extends Base> extends FileManager {
 	}
 
 	async getBySlug(slug: string): Promise<T | null> {
-		const entities = await this.list();
-		return entities.find((e) => e.slug === slug) || null;
+		try {
+			const fileNames = await this.listFiles(this.subFolder, ".yml");
+			const pattern = this.getFilePattern();
+
+			for (const fileName of fileNames) {
+				const match = fileName.match(pattern);
+				if (match?.[2] && match[2] === slug) {
+					const data = await this.readYaml<T>(
+						`${this.subFolder}/${fileName}.yml`,
+					);
+					return this.schema.parse(data);
+				}
+			}
+			return null;
+		} catch {
+			return null;
+		}
 	}
 
 	async create(data: Omit<T, "number">): Promise<T> {
@@ -106,7 +135,7 @@ export class EntityManager<T extends Base> extends FileManager {
 				...data.status,
 				created_at: data.status?.created_at || now,
 				updated_at: data.status?.updated_at || now,
-			}
+			},
 		} as T;
 
 		// Validate with schema
@@ -134,7 +163,7 @@ export class EntityManager<T extends Base> extends FileManager {
 				...existing.status,
 				...(data.status || {}),
 				updated_at: new Date().toISOString(),
-			}
+			},
 		} as T;
 		const validated = this.schema.parse(updated);
 
@@ -157,7 +186,7 @@ export class EntityManager<T extends Base> extends FileManager {
 
 		for (const fileName of fileNames) {
 			const match = fileName.match(pattern);
-			if (match && match[1]) {
+			if (match?.[1]) {
 				const number = Number.parseInt(match[1], 10);
 				if (number > maxNumber) {
 					maxNumber = number;
@@ -189,7 +218,7 @@ export class EntityManager<T extends Base> extends FileManager {
 
 		for (const fileName of fileNames) {
 			const match = fileName.match(pattern);
-			if (match && match[1]) {
+			if (match?.[1]) {
 				const number = Number.parseInt(match[1], 10);
 				const entity = await this.get(number);
 				if (entity) {
@@ -200,5 +229,178 @@ export class EntityManager<T extends Base> extends FileManager {
 
 		// Sort by number
 		return entities.sort((a, b) => a.number - b.number);
+	}
+
+	/**
+	 * Save a draft to disk
+	 */
+	async saveDraft(
+		drafter: EntityDrafter<T>,
+		slug: string,
+		number?: number,
+	): Promise<number> {
+		await this.ensureFolder();
+
+		// Get or assign number
+		const draftNumber = number ?? (await this.getNextNumber());
+
+		const now = new Date().toISOString();
+		const draftFile: DraftFile<T> = {
+			_draft_metadata: {
+				created_at: now,
+				updated_at: now,
+			},
+			_drafter_state: drafter.toJSON(),
+			entity_data: drafter.data,
+		};
+
+		// Check if draft already exists to preserve created_at
+		const existing = await this.loadDraftFile(draftNumber);
+		if (existing) {
+			draftFile._draft_metadata.created_at =
+				existing._draft_metadata.created_at;
+		}
+
+		const filePath = this.getFilePath({
+			number: draftNumber,
+			slug,
+			draft: true,
+		});
+
+		await this.writeYaml(filePath, draftFile);
+		return draftNumber;
+	}
+
+	/**
+	 * Load a draft from disk
+	 */
+	async loadDraft(number: number): Promise<EntityDrafter<T> | null> {
+		const draftFile = await this.loadDraftFile(number);
+		if (!draftFile) {
+			return null;
+		}
+
+		return EntityDrafter.fromJSON(this.schema, draftFile._drafter_state);
+	}
+
+	/**
+	 * Load draft file (internal helper)
+	 */
+	private async loadDraftFile(number: number): Promise<DraftFile<T> | null> {
+		try {
+			const fileNames = await this.listFiles(this.subFolder, ".yml");
+			const pattern = this.getFilePattern();
+
+			for (const fileName of fileNames) {
+				const match = fileName.match(pattern);
+				if (match?.[1]) {
+					const fileNumber = Number.parseInt(match[1], 10);
+					// Check if this is a draft file (ends with .draft before .yml)
+					if (fileNumber === number && fileName.endsWith(".draft")) {
+						const data = await this.readYaml<DraftFile<T>>(
+							`${this.subFolder}/${fileName}.yml`,
+						);
+						return data;
+					}
+				}
+			}
+			return null;
+		} catch {
+			return null;
+		}
+	}
+
+	/**
+	 * Delete a draft
+	 */
+	async deleteDraft(number: number): Promise<void> {
+		const fileNames = await this.listFiles(this.subFolder, ".yml");
+		const pattern = this.getFilePattern();
+
+		for (const fileName of fileNames) {
+			const match = fileName.match(pattern);
+			if (match?.[1]) {
+				const fileNumber = Number.parseInt(match[1], 10);
+				if (fileNumber === number && fileName.endsWith(".draft")) {
+					await super.delete(`${this.subFolder}/${fileName}.yml`);
+					return;
+				}
+			}
+		}
+
+		throw new Error(`Draft with number ${number} not found`);
+	}
+
+	/**
+	 * Check if a draft exists
+	 */
+	async draftExists(number: number): Promise<boolean> {
+		const fileNames = await this.listFiles(this.subFolder, ".yml");
+		const pattern = this.getFilePattern();
+
+		for (const fileName of fileNames) {
+			const match = fileName.match(pattern);
+			if (match?.[1]) {
+				const fileNumber = Number.parseInt(match[1], 10);
+				if (fileNumber === number && fileName.endsWith(".draft")) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Promote a draft to a finalized entity
+	 * This deletes the draft file and creates the entity
+	 */
+	async promoteDraft(drafter: EntityDrafter<T>): Promise<T> {
+		if (!drafter.isComplete) {
+			throw new Error("Cannot promote draft: drafter is not complete");
+		}
+
+		// Create the entity from the drafter's data
+		const entity = await this.create(drafter.data as Omit<T, "number">);
+
+		// Try to delete the draft if it exists
+		// We don't know the exact number, so we search for it
+		const fileNames = await this.listFiles(this.subFolder, ".yml");
+
+		for (const fileName of fileNames) {
+			if (fileName.endsWith(".draft")) {
+				const draftFile = await this.readYaml<DraftFile<T>>(
+					`${this.subFolder}/${fileName}.yml`,
+				);
+				// Check if this draft's data matches our drafter
+				if (
+					JSON.stringify(draftFile._drafter_state) ===
+					JSON.stringify(drafter.toJSON())
+				) {
+					await super.delete(`${this.subFolder}/${fileName}.yml`);
+					break;
+				}
+			}
+		}
+
+		return entity;
+	}
+
+	/**
+	 * List all draft numbers
+	 */
+	async listDrafts(): Promise<number[]> {
+		const fileNames = await this.listFiles(this.subFolder, ".yml");
+		const pattern = this.getFilePattern();
+		const draftNumbers: number[] = [];
+
+		for (const fileName of fileNames) {
+			const match = fileName.match(pattern);
+			if (match?.[1] && fileName.endsWith(".draft")) {
+				const number = Number.parseInt(match[1], 10);
+				draftNumbers.push(number);
+			}
+		}
+
+		return draftNumbers.sort((a, b) => a - b);
 	}
 }

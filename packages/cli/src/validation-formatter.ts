@@ -3,9 +3,7 @@
  * @param errors - Array of error strings in the format "field: message" or "message"
  * @returns Map of field names to error messages
  */
-export function parseValidationErrors(
-	errors: string[],
-): Map<string, string[]> {
+export function parseValidationErrors(errors: string[]): Map<string, string[]> {
 	const fieldErrors = new Map<string, string[]>();
 
 	for (const error of errors) {

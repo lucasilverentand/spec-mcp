@@ -168,17 +168,15 @@ describe("SpecManager", () => {
 
 			await specManager.business_requirements.create(data);
 
-			const found = await specManager.business_requirements.getBySlug(
-				"unique-slug",
-			);
+			const found =
+				await specManager.business_requirements.getBySlug("unique-slug");
 			expect(found).not.toBeNull();
 			expect(found?.slug).toBe("unique-slug");
 		});
 
 		it("should return null for non-existent slug", async () => {
-			const found = await specManager.business_requirements.getBySlug(
-				"nonexistent",
-			);
+			const found =
+				await specManager.business_requirements.getBySlug("nonexistent");
 			expect(found).toBeNull();
 		});
 	});
