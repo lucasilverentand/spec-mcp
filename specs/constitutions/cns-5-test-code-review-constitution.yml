@@ -1,0 +1,57 @@
+type: constitution
+number: 5
+slug: test-code-review-constitution
+name: Test Code Review Constitution
+description: This constitution establishes the core principles and practices for conducting code reviews in our development process. It ensures consistency, quality, and collaborative learning across all code contributions.
+draft: false
+priority: medium
+status:
+  created_at: 2025-10-10T00:00:00.000Z
+  updated_at: 2025-10-10T00:00:00.000Z
+  completed: false
+  completed_at: null
+  verified: false
+  verified_at: null
+  notes: []
+articles:
+  - id: art-001
+    title: Timely Reviews
+    principle: All pull requests must receive an initial review within 24 hours of submission. Reviewers should provide feedback or approval within 48 hours of assignment.
+    rationale: Timely reviews prevent pull requests from becoming stale and reduce context switching costs. This keeps the development workflow moving, prevents merge conflicts from accumulating, and ensures developers get feedback while the code is fresh in their minds, leading to faster iteration and higher quality improvements.
+    examples:
+      - A critical authentication bug was caught during same-day review that would have exposed user sessions
+      - A feature PR sat for 5 days without review leading to 47 merge conflicts and 3 hours of resolution work - now prevented
+      - Developer received feedback within 24 hours on API design flaw before implementing dependent features
+    exceptions:
+      - Hotfix deployments for production outages can be merged with post-merge review
+      - Minor documentation or typo fixes can be self-merged
+      - During holidays or team off-hours best-effort review timing is acceptable
+    status: active
+
+  - id: art-002
+    title: Constructive Feedback
+    principle: Code review comments must be constructive and specific. Always suggest improvements or alternatives rather than simply pointing out problems. Focus on the code, not the developer.
+    rationale: Constructive feedback creates a positive learning environment that improves code quality without damaging team morale. This reduces defensive behavior during reviews, encourages developers to learn from mistakes, and builds psychological safety that leads to more thorough reviews and higher quality code contributions.
+    examples:
+      - Instead of commenting 'This function is messy' reviewer suggested 'Consider extracting the validation logic into a separate helper function for better testability'
+      - Junior developer received 'This could cause a race condition. Try using a mutex here like in auth-service.go:45' instead of 'Wrong approach'
+      - Team conflict was avoided when reviewer wrote 'The naming here could be clearer. What about renaming processData to validateAndTransformUserInput?' rather than 'Bad naming'
+    exceptions:
+      - Critical security vulnerabilities may require direct identification of the issue without extended explanations
+      - Obvious violations of established patterns may warrant brief corrections
+      - Time-sensitive production issues may need faster more direct communication
+    status: active
+
+  - id: art-003
+    title: Test Coverage Required
+    principle: All code changes must include tests that verify the new functionality or bug fix. Pull requests without tests require explicit justification and approval from a tech lead.
+    rationale: Test coverage prevents regressions, documents expected behavior, and enables confident refactoring. This reduces production bugs by catching issues before deployment, speeds up debugging when issues occur, and allows developers to modify code knowing tests will catch breaking changes.
+    examples:
+      - Payment processing bug was caught in CI tests before reaching production potentially saving thousands in failed transactions
+      - Developer refactored database layer with confidence because 200+ tests verified behavior remained correct
+      - Missing edge case in date validation was caught by test reviewer leading to additional test cases that prevented timezone bug
+    exceptions:
+      - Emergency hotfixes for production outages can be deployed with tests added immediately after
+      - Exploratory proof-of-concept code or prototypes being evaluated for feasibility
+      - Pure configuration changes or documentation updates that have no executable logic
+    status: active
