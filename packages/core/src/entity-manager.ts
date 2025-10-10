@@ -3,6 +3,8 @@ import type { ZodType, ZodTypeDef } from "zod";
 import { EntityDrafter, type EntityDrafterState } from "./entity-drafter";
 import { FileManager } from "./file-manager";
 
+export type { EntityDrafterState };
+
 interface DraftFile<T extends Base> {
 	_draft_metadata: {
 		created_at: string;
@@ -54,7 +56,8 @@ export class EntityManager<T extends Base> extends FileManager {
 	private getFilePattern(): RegExp {
 		// Match: {idPrefix}-{number}-{slug} or {idPrefix}-{number}-{slug}.draft
 		// Note: extension is already stripped by listFiles()
-		return new RegExp(`^${this.idPrefix}-(\\d+)-([a-z0-9-]+)(?:\\.draft)?$`);
+		// Group 1: number, Group 2: slug (without .draft suffix)
+		return new RegExp(`^${this.idPrefix}-(\\d+)-([a-z0-9-]+?)(?:\\.draft)?$`);
 	}
 
 	override async ensureFolder(): Promise<void> {
@@ -295,6 +298,17 @@ export class EntityManager<T extends Base> extends FileManager {
 	}
 
 	/**
+	 * Load draft state from disk (for use with restoreEntityDrafter)
+	 */
+	async loadDraftState(number: number): Promise<EntityDrafterState<T> | null> {
+		const draftFile = await this.loadDraftFile(number);
+		if (!draftFile) {
+			return null;
+		}
+		return draftFile._drafter_state;
+	}
+
+	/**
 	 * Load draft file (internal helper)
 	 */
 	private async loadDraftFile(number: number): Promise<DraftFile<T> | null> {
@@ -413,5 +427,27 @@ export class EntityManager<T extends Base> extends FileManager {
 		}
 
 		return draftNumbers.sort((a, b) => a - b);
+	}
+
+	/**
+	 * List all drafts with their number and slug metadata
+	 */
+	async listDraftsWithMetadata(): Promise<
+		Array<{ number: number; slug: string }>
+	> {
+		const fileNames = await this.listFiles(this.subFolder, ".yml");
+		const pattern = this.getFilePattern();
+		const drafts: Array<{ number: number; slug: string }> = [];
+
+		for (const fileName of fileNames) {
+			const match = fileName.match(pattern);
+			if (match?.[1] && match[2] && fileName.endsWith(".draft")) {
+				const number = Number.parseInt(match[1], 10);
+				const slug = match[2];
+				drafts.push({ number, slug });
+			}
+		}
+
+		return drafts.sort((a, b) => a.number - b.number);
 	}
 }

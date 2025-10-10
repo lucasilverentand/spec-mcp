@@ -8,7 +8,11 @@ import {
 	createTechnicalRequirementDrafterConfig,
 } from "./drafters";
 import type { EntityDrafter } from "./entity-drafter";
-import { createEntityDrafter } from "./entity-drafter-factory";
+import {
+	createEntityDrafter,
+	restoreEntityDrafter,
+} from "./entity-drafter-factory";
+import type { SpecManager } from "./spec-manager";
 
 /**
  * Manager for a single draft session using EntityDrafter
@@ -16,10 +20,21 @@ import { createEntityDrafter } from "./entity-drafter-factory";
 export class DraftManager<T extends Base = Base> {
 	private drafter: EntityDrafter<T>;
 	private entityType: EntityType;
+	private slug: string;
+	private number?: number;
 
-	constructor(drafter: EntityDrafter<T>, entityType: EntityType) {
+	constructor(
+		drafter: EntityDrafter<T>,
+		entityType: EntityType,
+		slug: string,
+		number?: number,
+	) {
 		this.drafter = drafter;
 		this.entityType = entityType;
+		this.slug = slug;
+		if (number !== undefined) {
+			this.number = number;
+		}
 	}
 
 	/**
@@ -149,6 +164,27 @@ export class DraftManager<T extends Base = Base> {
 	getType(): EntityType {
 		return this.entityType;
 	}
+
+	/**
+	 * Get slug
+	 */
+	getSlug(): string {
+		return this.slug;
+	}
+
+	/**
+	 * Get number
+	 */
+	getNumber(): number | undefined {
+		return this.number;
+	}
+
+	/**
+	 * Set number (assigned when first saved)
+	 */
+	setNumber(number: number): void {
+		this.number = number;
+	}
 }
 
 /**
@@ -156,11 +192,16 @@ export class DraftManager<T extends Base = Base> {
  */
 export class DraftStore {
 	private drafts: Map<string, DraftManager<Base>> = new Map();
+	private specManager: SpecManager;
+
+	constructor(specManager: SpecManager) {
+		this.specManager = specManager;
+	}
 
 	/**
 	 * Create a new draft session
 	 */
-	create(sessionId: string, type: EntityType): DraftManager {
+	create(sessionId: string, type: EntityType, slug: string): DraftManager {
 		if (this.drafts.has(sessionId)) {
 			throw new Error(`Draft already exists for session: ${sessionId}`);
 		}
@@ -193,7 +234,7 @@ export class DraftStore {
 		}
 
 		// Create manager
-		const manager = new DraftManager(drafter, type);
+		const manager = new DraftManager(drafter, type, slug);
 
 		// Store it
 		this.drafts.set(sessionId, manager);
@@ -289,5 +330,159 @@ export class DraftStore {
 		}
 
 		return result;
+	}
+
+	/**
+	 * Get the EntityManager for a given type
+	 */
+	private getEntityManager(type: EntityType) {
+		switch (type) {
+			case "business-requirement":
+				return this.specManager.business_requirements;
+			case "technical-requirement":
+				return this.specManager.tech_requirements;
+			case "plan":
+				return this.specManager.plans;
+			case "component":
+				return this.specManager.components;
+			case "constitution":
+				return this.specManager.constitutions;
+			case "decision":
+				return this.specManager.decisions;
+			default:
+				throw new Error(`Unknown entity type: ${type}`);
+		}
+	}
+
+	/**
+	 * Save a draft to disk using EntityManager's saveDraft method.
+	 * Assigns a number on first save if not already assigned.
+	 */
+	async save(sessionId: string): Promise<void> {
+		const manager = this.drafts.get(sessionId);
+		if (!manager) {
+			throw new Error(`Draft '${sessionId}' not found`);
+		}
+
+		const type = manager.getType();
+		const slug = manager.getSlug();
+		const drafter = manager.getDrafter();
+		const entityManager = this.getEntityManager(type);
+
+		// Assign number if not already assigned
+		let number = manager.getNumber();
+		if (number === undefined) {
+			number = await this.specManager.getNextNumber(type);
+			manager.setNumber(number);
+		}
+
+		// Save using EntityManager
+		// @ts-expect-error - TypeScript cannot verify the drafter type matches entityManager's specific type,
+		// but we know it's correct because both come from the same entity type switch case
+		await entityManager.saveDraft(drafter, slug, number);
+	}
+
+	/**
+	 * Get the drafter config for a given type
+	 */
+	private getDrafterConfig(type: EntityType) {
+		switch (type) {
+			case "business-requirement":
+				return createBusinessRequirementDrafterConfig();
+			case "technical-requirement":
+				return createTechnicalRequirementDrafterConfig();
+			case "plan":
+				return createPlanDrafterConfig();
+			case "component":
+				return createComponentDrafterConfig();
+			case "constitution":
+				return createConstitutionDrafterConfig();
+			case "decision":
+				return createDecisionDrafterConfig();
+			default:
+				throw new Error(`Unknown entity type: ${type}`);
+		}
+	}
+
+	/**
+	 * Load all drafts from disk on startup
+	 */
+	async loadAll(): Promise<void> {
+		const types: EntityType[] = [
+			"business-requirement",
+			"technical-requirement",
+			"plan",
+			"component",
+			"constitution",
+			"decision",
+		];
+
+		for (const type of types) {
+			try {
+				const entityManager = this.getEntityManager(type);
+				const draftInfos = await entityManager.listDraftsWithMetadata();
+
+				for (const { number, slug } of draftInfos) {
+					try {
+						// Load the draft state instead of the drafter directly
+						const drafterState = await entityManager.loadDraftState(number);
+						if (drafterState) {
+							// Get the config for this entity type
+							const config = this.getDrafterConfig(type);
+
+							// Restore the drafter with proper array field configs
+							// @ts-expect-error - TypeScript cannot verify the union types match at compile time,
+							// but we know they're correct because config and drafterState come from the same entity type
+							const drafter = restoreEntityDrafter(config, drafterState);
+
+							// Create session ID
+							const sessionId = `${type}-${slug}`;
+
+							// Create manager (cast drafter to Base type)
+							const manager = new DraftManager(
+								drafter as EntityDrafter<Base>,
+								type,
+								slug,
+								number,
+							);
+							this.drafts.set(sessionId, manager);
+						}
+					} catch (error) {
+						console.error(`Failed to load draft ${type} #${number}:`, error);
+					}
+				}
+			} catch (error) {
+				console.error(`Error loading drafts for ${type}:`, error);
+			}
+		}
+	}
+
+	/**
+	 * Delete a draft session and remove from disk
+	 */
+	async deleteWithFile(sessionId: string): Promise<boolean> {
+		const manager = this.drafts.get(sessionId);
+		if (!manager) {
+			return false;
+		}
+
+		const type = manager.getType();
+		const number = manager.getNumber();
+
+		// Delete from memory
+		const deleted = this.drafts.delete(sessionId);
+
+		// Delete from disk if it has a number
+		if (deleted && number !== undefined) {
+			const entityManager = this.getEntityManager(type);
+			try {
+				await entityManager.deleteDraft(number);
+			} catch (error) {
+				// Log but don't fail
+				console.error(`Failed to delete draft file for ${sessionId}:`, error);
+			}
+		}
+
+		return deleted;
 	}
 }
