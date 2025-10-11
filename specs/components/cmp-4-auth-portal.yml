@@ -1,0 +1,71 @@
+type: component
+number: 4
+slug: auth-portal
+name: Auth Portal
+description: User authentication and profile management application. Handles login, signup, password reset, and user settings.
+priority: medium
+status:
+  created_at: 2025-10-11T00:00:00Z
+  updated_at: 2025-10-11T00:00:00Z
+  completed: false
+  completed_at: null
+  verified: false
+  verified_at: null
+  notes: []
+component_type: app
+folder: apps/auth-portal
+tech_stack:
+  - React
+  - TypeScript
+  - Next.js
+  - Auth0
+  - LaunchDarkly
+deployments:
+  - platform: Vercel edge platform
+    url: https://auth.example.com
+    build_command: npm run build
+    deploy_command: Automatic deployment on main branch push via Vercel GitHub integration
+    environment_vars:
+      - NODE_ENV
+      - NEXT_PUBLIC_API_URL
+      - NEXT_PUBLIC_AUTH0_DOMAIN
+      - NEXT_PUBLIC_LAUNCHDARKLY_CLIENT_ID
+    secrets:
+      - AUTH0_CLIENT_SECRET
+      - SESSION_SECRET
+      - LAUNCHDARKLY_SDK_KEY
+
+  - platform: Vercel preview deployments
+    url: https://auth-staging.example.com
+    build_command: npm run build
+    deploy_command: Automatic deployment on staging branch push via Vercel GitHub integration
+    environment_vars:
+      - NODE_ENV
+      - NEXT_PUBLIC_API_URL
+      - NEXT_PUBLIC_AUTH0_DOMAIN
+      - NEXT_PUBLIC_LAUNCHDARKLY_CLIENT_ID
+    secrets:
+      - AUTH0_CLIENT_SECRET
+      - SESSION_SECRET
+      - LAUNCHDARKLY_SDK_KEY
+
+  - platform: Local development server
+    url: http://localhost:3001
+    build_command: npm run dev
+    deploy_command: Manual local execution via npm run dev
+    environment_vars:
+      - NODE_ENV
+      - NEXT_PUBLIC_API_URL
+      - NEXT_PUBLIC_AUTH0_DOMAIN
+      - NEXT_PUBLIC_LAUNCHDARKLY_CLIENT_ID
+    secrets:
+      - AUTH0_CLIENT_SECRET
+      - SESSION_SECRET
+      - LAUNCHDARKLY_SDK_KEY
+
+scope: []
+depends_on: []
+external_dependencies:
+  - Auth0
+  - LaunchDarkly
+dev_port: 3001

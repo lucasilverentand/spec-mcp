@@ -1,0 +1,57 @@
+id: pln-001
+type: plan
+slug: user-auth-example
+name: User Authentication Example
+overview: Add user authentication to web app (fulfills brd-101). Uses JWT tokens with bcrypt password hashing.
+
+architectural_decisions: []
+components: []
+research: ""
+
+tasks:
+  - id: task-001
+    priority: high
+    depends_on: []
+    task: Build login/register endpoints with JWT generation
+    considerations:
+      - Validate all user inputs
+      - Rate limit login attempts
+    references: []
+    files: []
+    status:
+      created_at: "2025-10-11T00:00:00Z"
+      updated_at: "2025-10-11T00:00:00Z"
+      started_at: null
+      completed: false
+      completed_at: null
+      verified: false
+      verified_at: null
+      notes: []
+    blocked: []
+
+  - id: task-002
+    priority: high
+    depends_on:
+      - task-001
+    task: Add JWT verification middleware to protected routes
+    considerations:
+      - Handle expired tokens gracefully
+    references: []
+    files: []
+    status:
+      created_at: "2025-10-11T00:00:00Z"
+      updated_at: "2025-10-11T00:00:00Z"
+      started_at: null
+      completed: false
+      completed_at: null
+      verified: false
+      verified_at: null
+      notes: []
+    blocked: []
+
+flows: []
+
+metadata:
+  created_at: "2025-10-11T00:00:00Z"
+  updated_at: "2025-10-11T00:00:00Z"
+  version: 1

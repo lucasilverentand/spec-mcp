@@ -1,0 +1,30 @@
+type: constitution
+number: 8
+slug: engineering-principles
+name: Engineering Principles Constitution
+description: Defines core engineering principles for the platform team. Guides technology choices and code quality standards. Reference during tech evaluations and architecture reviews.
+priority: medium
+status:
+  created_at: 2025-10-11T00:00:00Z
+  updated_at: 2025-10-11T00:00:00Z
+  completed: false
+  completed_at: null
+  verified: false
+  verified_at: null
+  notes: []
+articles:
+  - id: art-001
+    title: Library-First Principle
+    principle: Evaluate existing libraries before building custom solutions. Prefer battle-tested tools for non-core functionality like auth, payments, and data processing.
+    rationale: Custom JWT library had security bypass. Libraries reduce vulnerabilities and speed delivery by eliminating development time for non-core features.
+    examples: []
+    exceptions: []
+    status: needs-review
+
+  - id: art-002
+    title: Mandatory Code Reviews
+    principle: All code changes require review by at least one other engineer before merging. Reviewers must verify functionality, tests, and code quality.
+    rationale: Multiple production bugs from unreviewed code. Code reviews catch bugs early, share knowledge, and maintain quality standards across the team.
+    examples: []
+    exceptions: []
+    status: needs-review

@@ -1,0 +1,46 @@
+type: decision
+number: 4
+slug: standardize-zustand-state-management
+name: Standardize on Zustand for State Management
+description: Migrate from fragmented state management (Redux, Context API, local state) to a unified Zustand-based approach to reduce complexity and improve developer experience.
+priority: high
+status:
+  created_at: 2025-10-11T00:00:00Z
+  updated_at: 2025-10-11T00:00:00Z
+  completed: false
+  completed_at: null
+  verified: false
+  verified_at: null
+  notes: []
+decision: Standardize on Zustand for global state management. Migrate all Redux stores to Zustand by end of Q2. Use React Context only for theme/i18n. Keep component-local state for UI-only concerns. Add ESLint rule to prevent new Redux imports starting next sprint.
+context: Current React state management is fragmented across 3 different solutions (Redux, Context API, local state), causing confusion for developers and making it hard to debug state-related issues. Team spent 12hrs last sprint debugging cross-library state sync bugs.
+decision_status: proposed
+alternatives:
+  - "Keep Redux - rejected: too much boilerplate, hard to debug"
+  - "Switch to Jotai - rejected: less mature, smaller community"
+  - "MobX - rejected: learning curve too steep"
+  - "Valtio - rejected: proxy-based approach unfamiliar to team"
+references: []
+consequences:
+
+  - type: positive
+    description: "Boilerplate code reduced by ~60% (e.g., action creators, reducers eliminated). Typical store setup: Redux 50+ lines → Zustand 10-15 lines."
+
+
+  - type: positive
+    description: Simpler state flow with direct store access instead of Redux's dispatch/selector pattern reduces debugging time. Easier to trace state changes through DevTools.
+
+
+  - type: positive
+    description: "Bundle size reduction: Redux ecosystem ~12kb → Zustand 1kb (11kb savings), improving load time especially on slower connections."
+
+
+  - type: negative
+    description: 3-week migration effort required to convert all Redux stores to Zustand. Estimated 15 stores to migrate, ~1 day each including testing.
+    mitigation: Migrate incrementally, one store per sprint. Prioritize low-risk stores first. Comprehensive test coverage required before migrating each store. Code reviews for all migrations.
+
+
+  - type: risk
+    description: During migration period, codebase will have mixed state management patterns (Redux + Zustand simultaneously), potentially confusing developers and making debugging harder.
+    mitigation: "Clear documentation of migration status. Team sync meetings to communicate which stores are migrated. Migration tracking dashboard. Keep migration period as short as possible (target: complete within Q2)."
+
