@@ -1,5 +1,5 @@
 import z from "zod";
-import { BaseSchema } from "../shared/base";
+import { BaseSchema } from "../shared/base.js";
 
 export const ArticleStatusSchema = z
 	.enum(["needs-review", "active", "archived"])

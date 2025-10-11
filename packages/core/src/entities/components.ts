@@ -1,5 +1,5 @@
 import { type Component, ComponentSchema } from "@spec-mcp/schemas";
-import { EntityManager } from "../entity-manager";
+import { EntityManager } from "../entity-manager.js";
 
 export function createComponentsManager(
 	specsPath: string,

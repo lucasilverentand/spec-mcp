@@ -1,5 +1,5 @@
 import { type Decision, DecisionSchema } from "@spec-mcp/schemas";
-import { EntityManager } from "../entity-manager";
+import { EntityManager } from "../entity-manager.js";
 
 export function createDecisionsManager(
 	specsPath: string,

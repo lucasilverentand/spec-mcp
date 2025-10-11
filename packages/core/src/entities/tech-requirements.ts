@@ -2,7 +2,7 @@ import {
 	type TechnicalRequirement,
 	TechnicalRequirementSchema,
 } from "@spec-mcp/schemas";
-import { EntityManager } from "../entity-manager";
+import { EntityManager } from "../entity-manager.js";
 
 export function createTechRequirementsManager(
 	specsPath: string,

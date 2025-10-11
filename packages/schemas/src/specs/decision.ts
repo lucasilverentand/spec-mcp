@@ -1,6 +1,6 @@
 import z from "zod";
-import { BaseSchema } from "../shared/base";
-import { ReferenceSchema } from "../shared/reference";
+import { BaseSchema } from "../shared/base.js";
+import { ReferenceSchema } from "../shared/reference.js";
 
 export const DecisionIdSchema = z.string().regex(/^dec-\d{3}-[a-z0-9-]+$/, {
 	message: "Decision ID must follow format: dec-XXX-slug-here",

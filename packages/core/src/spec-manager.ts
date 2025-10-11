@@ -15,9 +15,9 @@ import {
 	createDecisionsManager,
 	createPlansManager,
 	createTechRequirementsManager,
-} from "./entities";
-import type { EntityManager } from "./entity-manager";
-import { FileManager } from "./file-manager";
+} from "./entities/index.js";
+import type { EntityManager } from "./entity-manager.js";
+import { FileManager } from "./file-manager.js";
 
 /**
  * Centralized counter structure stored in specs.yml

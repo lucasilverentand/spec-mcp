@@ -6,13 +6,13 @@ import {
 	createDecisionDrafterConfig,
 	createPlanDrafterConfig,
 	createTechnicalRequirementDrafterConfig,
-} from "./drafters";
-import type { EntityDrafter } from "./entity-drafter";
+} from "./drafters/index.js";
+import type { EntityDrafter } from "./entity-drafter.js";
 import {
 	createEntityDrafter,
 	restoreEntityDrafter,
-} from "./entity-drafter-factory";
-import type { SpecManager } from "./spec-manager";
+} from "./entity-drafter-factory.js";
+import type { SpecManager } from "./spec-manager.js";
 
 /**
  * Manager for a single draft session using EntityDrafter

@@ -1,6 +1,6 @@
 import z from "zod";
-import { BaseSchema } from "../shared/base";
-import { ScopeSchema } from "../shared/scope";
+import { BaseSchema } from "../shared/base.js";
+import { ScopeSchema } from "../shared/scope.js";
 
 export const ComponentTypeSchema = z.enum(["app", "service", "library"]);
 

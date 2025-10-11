@@ -1,5 +1,5 @@
 import z from "zod";
-import { EntityTypeSchema } from "./base";
+import { EntityTypeSchema } from "./base.js";
 
 export const DraftQuestionSchema = z.object({
 	id: z.string().min(1).describe("Unique identifier for the question"),

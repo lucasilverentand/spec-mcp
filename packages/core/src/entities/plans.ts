@@ -1,5 +1,5 @@
 import { type Plan, PlanSchema } from "@spec-mcp/schemas";
-import { EntityManager } from "../entity-manager";
+import { EntityManager } from "../entity-manager.js";
 
 export function createPlansManager(specsPath: string): EntityManager<Plan> {
 	return new EntityManager<Plan>({
