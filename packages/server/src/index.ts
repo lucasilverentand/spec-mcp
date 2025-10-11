@@ -5,13 +5,26 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { DraftStore, SpecManager } from "@spec-mcp/core";
 import { z } from "zod";
 import {
+	addTask,
+	addTaskTool,
 	answerQuestion,
 	continueDraft,
 	deleteDraft,
+	deleteSpec,
+	deleteSpecTool,
+	deleteTask,
+	deleteTaskTool,
 	finalizeEntity,
+	finishTask,
+	finishTaskTool,
+	getSpec,
+	getSpecTool,
 	listDrafts,
 	skipAnswer,
 	startDraft,
+	startTask,
+	startTaskTool,
+	validateEntityTool,
 } from "./tools/index.js";
 import { ErrorCode, McpError } from "./utils/error-codes.js";
 import { logger } from "./utils/logger.js";
@@ -329,7 +342,186 @@ function registerTools(
 		},
 	);
 
-	logger.info("Registered 7 draft workflow tools (unified API)");
+	// 8. validate_entity - Validate an entity by ID
+	server.tool(
+		"validate_entity",
+		"Validate an entity by its ID. Accepts formats: typ-123, typ-123-slug-here, or typ-123-slug-here.yml. Returns validation status and entity details.",
+		{
+			id: z
+				.string()
+				.describe(
+					"Entity identifier. Accepts: typ-123, typ-123-slug-here, or typ-123-slug-here.yml",
+				),
+		},
+		async (args) => {
+			try {
+				const result = await validateEntityTool(args, specManager);
+				return {
+					content: [{ type: "text", text: result }],
+				};
+			} catch (error) {
+				logger.error(
+					{ error, tool: "validate_entity" },
+					"Tool execution failed",
+				);
+				throw error;
+			}
+		},
+	);
+
+	// 9. delete_spec - Delete a spec entity
+	server.tool(
+		deleteSpecTool.name,
+		deleteSpecTool.description,
+		{
+			id: z.string().describe(deleteSpecTool.inputSchema.properties.id.description),
+		},
+		async (args) => {
+			try {
+				return await deleteSpec(specManager, args.id);
+			} catch (error) {
+				logger.error({ error, tool: "delete_spec" }, "Tool execution failed");
+				throw error;
+			}
+		},
+	);
+
+	// 10. get_spec - Get a spec entity
+	server.tool(
+		getSpecTool.name,
+		getSpecTool.description,
+		{
+			id: z.string().describe(getSpecTool.inputSchema.properties.id.description),
+			format: z
+				.enum(["yaml", "markdown"])
+				.optional()
+				.describe(getSpecTool.inputSchema.properties.format.description),
+		},
+		async (args) => {
+			try {
+				return await getSpec(
+					specManager,
+					args.id,
+					args.format as "yaml" | "markdown" | undefined,
+				);
+			} catch (error) {
+				logger.error({ error, tool: "get_spec" }, "Tool execution failed");
+				throw error;
+			}
+		},
+	);
+
+	// 11. add_task - Add a task to a plan
+	server.tool(
+		addTaskTool.name,
+		addTaskTool.description,
+		{
+			plan_id: z
+				.string()
+				.describe(addTaskTool.inputSchema.properties.plan_id.description),
+			task: z.string().describe(addTaskTool.inputSchema.properties.task.description),
+			priority: z
+				.enum(["critical", "high", "medium", "low", "nice-to-have"])
+				.optional()
+				.describe(addTaskTool.inputSchema.properties.priority?.description || ""),
+			depends_on: z
+				.array(z.string())
+				.optional()
+				.describe(addTaskTool.inputSchema.properties.depends_on?.description || ""),
+			considerations: z
+				.array(z.string())
+				.optional()
+				.describe(
+					addTaskTool.inputSchema.properties.considerations?.description || "",
+				),
+		},
+		async (args) => {
+			try {
+				const options: {
+					priority?: "critical" | "high" | "medium" | "low" | "nice-to-have";
+					depends_on?: string[];
+					considerations?: string[];
+				} = {};
+
+				if (args.priority) options.priority = args.priority;
+				if (args.depends_on) options.depends_on = args.depends_on;
+				if (args.considerations) options.considerations = args.considerations;
+
+				return await addTask(specManager, args.plan_id, args.task, options);
+			} catch (error) {
+				logger.error({ error, tool: "add_task" }, "Tool execution failed");
+				throw error;
+			}
+		},
+	);
+
+	// 12. delete_task - Delete a task from a plan
+	server.tool(
+		deleteTaskTool.name,
+		deleteTaskTool.description,
+		{
+			plan_id: z
+				.string()
+				.describe(deleteTaskTool.inputSchema.properties.plan_id.description),
+			task_id: z
+				.string()
+				.describe(deleteTaskTool.inputSchema.properties.task_id.description),
+		},
+		async (args) => {
+			try {
+				return await deleteTask(specManager, args.plan_id, args.task_id);
+			} catch (error) {
+				logger.error({ error, tool: "delete_task" }, "Tool execution failed");
+				throw error;
+			}
+		},
+	);
+
+	// 13. start_task - Mark a task as started
+	server.tool(
+		startTaskTool.name,
+		startTaskTool.description,
+		{
+			plan_id: z
+				.string()
+				.describe(startTaskTool.inputSchema.properties.plan_id.description),
+			task_id: z
+				.string()
+				.describe(startTaskTool.inputSchema.properties.task_id.description),
+		},
+		async (args) => {
+			try {
+				return await startTask(specManager, args.plan_id, args.task_id);
+			} catch (error) {
+				logger.error({ error, tool: "start_task" }, "Tool execution failed");
+				throw error;
+			}
+		},
+	);
+
+	// 14. finish_task - Mark a task as completed
+	server.tool(
+		finishTaskTool.name,
+		finishTaskTool.description,
+		{
+			plan_id: z
+				.string()
+				.describe(finishTaskTool.inputSchema.properties.plan_id.description),
+			task_id: z
+				.string()
+				.describe(finishTaskTool.inputSchema.properties.task_id.description),
+		},
+		async (args) => {
+			try {
+				return await finishTask(specManager, args.plan_id, args.task_id);
+			} catch (error) {
+				logger.error({ error, tool: "finish_task" }, "Tool execution failed");
+				throw error;
+			}
+		},
+	);
+
+	logger.info("Registered 14 tools (7 draft workflow + 1 validation + 6 manipulation)");
 }
 
 /**
