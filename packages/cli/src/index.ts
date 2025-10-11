@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { resolve } from "node:path";
-import { SpecManager } from "@spec-mcp/core";
+import { SpecManager, validateEntity } from "@spec-mcp/core";
 import type {
 	BusinessRequirement,
 	Component,
@@ -16,7 +16,7 @@ import {
 	getTreePrefix,
 	getValidationIcon,
 	parseValidationErrors,
-} from "./validation-formatter";
+} from "./validation-formatter.js";
 
 const program = new Command();
 
@@ -355,6 +355,71 @@ program
 		} catch (error) {
 			console.error(`${colors.red}✗ Error running validation:${colors.reset}`);
 			console.error(error instanceof Error ? error.message : String(error));
+			process.exit(1);
+		}
+	});
+
+program
+	.command("check")
+	.description("Validate a specific entity by ID")
+	.argument("<id>", "Entity ID (e.g., pln-001, pln-001-user-auth, or pln-001-user-auth.yml)")
+	.option("-p, --path <path>", "Path to specs folder", "./specs")
+	.action(async (id: string, options: { path: string }) => {
+		try {
+			const specsPath = resolve(process.cwd(), options.path);
+
+			// Initialize the spec manager with the provided path
+			const manager = new SpecManager(specsPath);
+
+			// Validate the entity
+			const result = await validateEntity(manager, id);
+
+			if (!result.valid) {
+				console.log(`\n${colors.red}✗ Validation Failed${colors.reset}\n`);
+				console.log(`Entity ID: ${colors.dim}${id}${colors.reset}\n`);
+				console.log(`${colors.red}Errors:${colors.reset}`);
+				for (const error of result.errors || []) {
+					console.log(`  ${colors.red}•${colors.reset} ${error}`);
+				}
+				console.log("");
+				process.exit(1);
+			}
+
+			// Valid entity - show details
+			const entity = result.entity!;
+			console.log(`\n${colors.green}✓ Validation Successful${colors.reset}\n`);
+			console.log(
+				`Entity ID: ${colors.cyan}${formatEntityId(entity.type, entity.number, entity.slug)}${colors.reset}`,
+			);
+			console.log(`Type: ${entity.type}`);
+			console.log(`Number: ${entity.number}`);
+
+			if (entity.slug) {
+				console.log(`Slug: ${entity.slug}`);
+			}
+
+			if ("name" in entity && entity.name) {
+				console.log(`Name: ${entity.name}`);
+			}
+
+			if ("draft" in entity) {
+				console.log(`Draft: ${entity.draft ? "Yes" : "No"}`);
+			}
+
+			if ("priority" in entity && entity.priority) {
+				console.log(`Priority: ${entity.priority}`);
+			}
+
+			console.log(`\n${colors.cyan}Timestamps:${colors.reset}`);
+			console.log(`  Created: ${entity.created_at}`);
+			console.log(`  Updated: ${entity.updated_at}`);
+
+			console.log(`\n${colors.green}Entity conforms to schema${colors.reset}\n`);
+			process.exit(0);
+		} catch (error) {
+			console.error(`\n${colors.red}✗ Error:${colors.reset}`);
+			console.error(error instanceof Error ? error.message : String(error));
+			console.log("");
 			process.exit(1);
 		}
 	});
