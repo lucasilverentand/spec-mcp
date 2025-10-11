@@ -4,16 +4,14 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { DraftStore, SpecManager } from "@spec-mcp/core";
 import { z } from "zod";
+import { registerArrayManipulationTools } from "./register-array-tools.js";
 import {
 	addTask,
 	addTaskTool,
 	answerQuestion,
 	continueDraft,
-	deleteDraft,
-	deleteSpec,
-	deleteSpecTool,
-	deleteTask,
-	deleteTaskTool,
+	deleteEntity,
+	deleteTool,
 	finalizeEntity,
 	finishTask,
 	finishTaskTool,
@@ -162,7 +160,7 @@ class ConnectionManager {
 }
 
 /**
- * Register MCP tools for draft workflow (New unified API - 7 tools)
+ * Register MCP tools for draft workflow (New unified API - 6 draft tools + core tools)
  */
 function registerTools(
 	server: McpServer,
@@ -182,6 +180,7 @@ function registerTools(
 					"business-requirement",
 					"technical-requirement",
 					"constitution",
+					"milestone",
 				])
 				.describe("Type of spec to create"),
 		},
@@ -278,27 +277,7 @@ function registerTools(
 		},
 	);
 
-	// 5. delete_draft - Delete a draft session
-	server.tool(
-		"delete_draft",
-		"Delete a draft session. This will permanently remove the draft from active sessions.",
-		{
-			draftId: z.string().describe("The draft ID to delete"),
-		},
-		async (args) => {
-			try {
-				const result = await deleteDraft(args, draftStore);
-				return {
-					content: [{ type: "text", text: result }],
-				};
-			} catch (error) {
-				logger.error({ error, tool: "delete_draft" }, "Tool execution failed");
-				throw error;
-			}
-		},
-	);
-
-	// 6. skip_answer - Skip an optional question
+	// 5. skip_answer - Skip an optional question
 	server.tool(
 		"skip_answer",
 		"Skip an optional question in the draft. Only works for questions marked as optional.",
@@ -319,7 +298,7 @@ function registerTools(
 		},
 	);
 
-	// 7. continue_draft - Get intelligent next-step instructions
+	// 6. continue_draft - Get intelligent next-step instructions
 	server.tool(
 		"continue_draft",
 		"Get continuation instructions for a draft. Intelligently shows next question or finalization context.",
@@ -342,7 +321,7 @@ function registerTools(
 		},
 	);
 
-	// 8. validate_entity - Validate an entity by ID
+	// 7. validate_entity - Validate an entity by ID
 	server.tool(
 		"validate_entity",
 		"Validate an entity by its ID. Accepts formats: typ-123, typ-123-slug-here, or typ-123-slug-here.yml. Returns validation status and entity details.",
@@ -369,29 +348,31 @@ function registerTools(
 		},
 	);
 
-	// 9. delete_spec - Delete a spec entity
+	// 8. delete - Delete any entity (specs, nested items, or drafts)
 	server.tool(
-		deleteSpecTool.name,
-		deleteSpecTool.description,
+		deleteTool.name,
+		deleteTool.description,
 		{
-			id: z.string().describe(deleteSpecTool.inputSchema.properties.id.description),
+			id: z.string().describe(deleteTool.inputSchema.properties.id.description),
 		},
 		async (args) => {
 			try {
-				return await deleteSpec(specManager, args.id);
+				return await deleteEntity(specManager, args.id, draftStore);
 			} catch (error) {
-				logger.error({ error, tool: "delete_spec" }, "Tool execution failed");
+				logger.error({ error, tool: "delete" }, "Tool execution failed");
 				throw error;
 			}
 		},
 	);
 
-	// 10. get_spec - Get a spec entity
+	// 9. get_spec - Get a spec entity
 	server.tool(
 		getSpecTool.name,
 		getSpecTool.description,
 		{
-			id: z.string().describe(getSpecTool.inputSchema.properties.id.description),
+			id: z
+				.string()
+				.describe(getSpecTool.inputSchema.properties.id.description),
 			format: z
 				.enum(["yaml", "markdown"])
 				.optional()
@@ -411,7 +392,7 @@ function registerTools(
 		},
 	);
 
-	// 11. add_task - Add a task to a plan
+	// 10. add_task - Add a task to a plan
 	server.tool(
 		addTaskTool.name,
 		addTaskTool.description,
@@ -419,20 +400,32 @@ function registerTools(
 			plan_id: z
 				.string()
 				.describe(addTaskTool.inputSchema.properties.plan_id.description),
-			task: z.string().describe(addTaskTool.inputSchema.properties.task.description),
+			task: z
+				.string()
+				.describe(addTaskTool.inputSchema.properties.task.description),
 			priority: z
 				.enum(["critical", "high", "medium", "low", "nice-to-have"])
 				.optional()
-				.describe(addTaskTool.inputSchema.properties.priority?.description || ""),
+				.describe(
+					addTaskTool.inputSchema.properties.priority?.description || "",
+				),
 			depends_on: z
 				.array(z.string())
 				.optional()
-				.describe(addTaskTool.inputSchema.properties.depends_on?.description || ""),
+				.describe(
+					addTaskTool.inputSchema.properties.depends_on?.description || "",
+				),
 			considerations: z
 				.array(z.string())
 				.optional()
 				.describe(
 					addTaskTool.inputSchema.properties.considerations?.description || "",
+				),
+			supersede_id: z
+				.string()
+				.optional()
+				.describe(
+					addTaskTool.inputSchema.properties.supersede_id?.description || "",
 				),
 		},
 		async (args) => {
@@ -441,11 +434,13 @@ function registerTools(
 					priority?: "critical" | "high" | "medium" | "low" | "nice-to-have";
 					depends_on?: string[];
 					considerations?: string[];
+					supersede_id?: string;
 				} = {};
 
 				if (args.priority) options.priority = args.priority;
 				if (args.depends_on) options.depends_on = args.depends_on;
 				if (args.considerations) options.considerations = args.considerations;
+				if (args.supersede_id) options.supersede_id = args.supersede_id;
 
 				return await addTask(specManager, args.plan_id, args.task, options);
 			} catch (error) {
@@ -455,29 +450,7 @@ function registerTools(
 		},
 	);
 
-	// 12. delete_task - Delete a task from a plan
-	server.tool(
-		deleteTaskTool.name,
-		deleteTaskTool.description,
-		{
-			plan_id: z
-				.string()
-				.describe(deleteTaskTool.inputSchema.properties.plan_id.description),
-			task_id: z
-				.string()
-				.describe(deleteTaskTool.inputSchema.properties.task_id.description),
-		},
-		async (args) => {
-			try {
-				return await deleteTask(specManager, args.plan_id, args.task_id);
-			} catch (error) {
-				logger.error({ error, tool: "delete_task" }, "Tool execution failed");
-				throw error;
-			}
-		},
-	);
-
-	// 13. start_task - Mark a task as started
+	// 11. start_task - Mark a task as started
 	server.tool(
 		startTaskTool.name,
 		startTaskTool.description,
@@ -499,7 +472,7 @@ function registerTools(
 		},
 	);
 
-	// 14. finish_task - Mark a task as completed
+	// 12. finish_task - Mark a task as completed
 	server.tool(
 		finishTaskTool.name,
 		finishTaskTool.description,
@@ -521,7 +494,9 @@ function registerTools(
 		},
 	);
 
-	logger.info("Registered 14 tools (7 draft workflow + 1 validation + 6 manipulation)");
+	logger.info(
+		"Registered 12 core tools (6 draft workflow + 1 validation + 1 delete + 1 get_spec + 3 task manipulation)",
+	);
 }
 
 /**
@@ -550,6 +525,7 @@ async function main() {
 
 		// Register tools
 		registerTools(server, draftStore, specManager);
+		registerArrayManipulationTools(server, specManager);
 
 		// Set up connection with retry logic
 		const transport = new StdioServerTransport();
