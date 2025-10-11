@@ -1,6 +1,6 @@
 import type { Criteria } from "./criteria.js";
-import { getTaskState } from "./task.js";
 import type { Task } from "./task.js";
+import { getTaskState } from "./task.js";
 
 /**
  * Requirement state derived from criteria completion
@@ -39,7 +39,10 @@ export function getPlanState(plan: PlanRef): RequirementState {
 export function getCriterionState(
 	criterionId: string,
 	requirementId: string,
-	allPlans: Array<{ criteria?: { requirement: string; criteria: string }; tasks: Task[] }>,
+	allPlans: Array<{
+		criteria?: { requirement: string; criteria: string };
+		tasks: Task[];
+	}>,
 ): RequirementState {
 	const implementingPlans = allPlans.filter(
 		(p) =>
@@ -64,7 +67,10 @@ export function getCriterionState(
  */
 export function getRequirementState(
 	requirement: { id: string; criteria: Criteria[] },
-	allPlans: Array<{ criteria?: { requirement: string; criteria: string }; tasks: Task[] }>,
+	allPlans: Array<{
+		criteria?: { requirement: string; criteria: string };
+		tasks: Task[];
+	}>,
 ): RequirementState {
 	if (requirement.criteria.length === 0) {
 		return "not-started";
@@ -86,7 +92,10 @@ export function getRequirementState(
  */
 export function getRequirementCompletionStats(
 	requirement: { id: string; criteria: Criteria[] },
-	allPlans: Array<{ criteria?: { requirement: string; criteria: string }; tasks: Task[] }>,
+	allPlans: Array<{
+		criteria?: { requirement: string; criteria: string };
+		tasks: Task[];
+	}>,
 ): {
 	total: number;
 	notStarted: number;

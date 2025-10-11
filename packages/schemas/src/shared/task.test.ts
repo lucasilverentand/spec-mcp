@@ -178,11 +178,7 @@ describe("Task State Management", () => {
 				"task-001",
 				"task-002",
 			]);
-			const { canStart, reason } = canStartTask(task3, [
-				task1,
-				task2,
-				task3,
-			]);
+			const { canStart, reason } = canStartTask(task3, [task1, task2, task3]);
 			expect(canStart).toBe(false);
 			expect(reason).toContain("task-002");
 		});
@@ -291,10 +287,7 @@ describe("Task State Management", () => {
 		it("should not allow completing when dependencies are not completed", () => {
 			const task1 = createTask("task-001", "in-progress");
 			const task2 = createTask("task-002", "in-progress", ["task-001"]);
-			const { canComplete, reason } = canCompleteTask(task2, [
-				task1,
-				task2,
-			]);
+			const { canComplete, reason } = canCompleteTask(task2, [task1, task2]);
 			expect(canComplete).toBe(false);
 			expect(reason).toContain("uncompleted tasks");
 			expect(reason).toContain("task-001");
@@ -307,11 +300,7 @@ describe("Task State Management", () => {
 				"task-001",
 				"task-002",
 			]);
-			const { canComplete } = canCompleteTask(task3, [
-				task1,
-				task2,
-				task3,
-			]);
+			const { canComplete } = canCompleteTask(task3, [task1, task2, task3]);
 			expect(canComplete).toBe(true);
 		});
 	});

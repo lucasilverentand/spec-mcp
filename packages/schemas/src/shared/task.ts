@@ -114,9 +114,7 @@ export const BlockedReasonSchema = z.object({
 	blocked_by: z
 		.array(TaskIdSchema)
 		.default([])
-		.describe(
-			"IDs of tasks that are blocking this one (if applicable)",
-		),
+		.describe("IDs of tasks that are blocking this one (if applicable)"),
 	external_dependency: z
 		.string()
 		.optional()
@@ -168,6 +166,19 @@ export const TaskSchema = z.object({
 		.describe(
 			"List of blocking issues (current and historical). Only unresolved blocks (resolved_at is null) are active.",
 		),
+	// Supersession tracking - for audit trail and updates
+	supersedes: TaskIdSchema.nullable()
+		.default(null)
+		.describe("ID of the task this replaces (if any)"),
+	superseded_by: TaskIdSchema.nullable()
+		.default(null)
+		.describe("ID of the task that replaces this (if superseded)"),
+	superseded_at: z
+		.string()
+		.datetime()
+		.nullable()
+		.default(null)
+		.describe("Timestamp when this task was superseded"),
 });
 
 export const TasksSchema = z
@@ -221,7 +232,11 @@ export function getUpdatedAt(status: CompletionStatus): string {
 /**
  * Task state derived from completion status
  */
-export type TaskState = "not-started" | "in-progress" | "completed" | "verified";
+export type TaskState =
+	| "not-started"
+	| "in-progress"
+	| "completed"
+	| "verified";
 
 /**
  * Calculate the current state of a task from its status
@@ -260,7 +275,11 @@ export function canStartTask(
 	if (task.depends_on && task.depends_on.length > 0) {
 		const uncompletedDeps = task.depends_on.filter((depId) => {
 			const dep = allTasks.find((t) => t.id === depId);
-			return dep && getTaskState(dep.status) !== "completed" && getTaskState(dep.status) !== "verified";
+			return (
+				dep &&
+				getTaskState(dep.status) !== "completed" &&
+				getTaskState(dep.status) !== "verified"
+			);
 		});
 
 		if (uncompletedDeps.length > 0) {
@@ -303,7 +322,11 @@ export function canCompleteTask(
 	if (task.depends_on && task.depends_on.length > 0) {
 		const uncompletedDeps = task.depends_on.filter((depId) => {
 			const dep = allTasks.find((t) => t.id === depId);
-			return dep && getTaskState(dep.status) !== "completed" && getTaskState(dep.status) !== "verified";
+			return (
+				dep &&
+				getTaskState(dep.status) !== "completed" &&
+				getTaskState(dep.status) !== "verified"
+			);
 		});
 
 		if (uncompletedDeps.length > 0) {
@@ -360,4 +383,63 @@ export function canStartTaskWithBlocking(
 	}
 
 	return { canStart: true };
+}
+
+/**
+ * Check if a task is currently active (not superseded)
+ */
+export function isActiveTask(task: Task): boolean {
+	return task.superseded_by === null;
+}
+
+/**
+ * Get all active (non-superseded) tasks from a list
+ */
+export function getActiveTasks(tasks: Task[]): Task[] {
+	return tasks.filter(isActiveTask);
+}
+
+/**
+ * Get the supersession history for a task (walking backwards)
+ */
+export function getTaskHistory(tasks: Task[], taskId: string): Task[] {
+	const history: Task[] = [];
+	let current = tasks.find((t) => t.id === taskId);
+
+	// Walk backwards through supersedes chain
+	while (current?.supersedes) {
+		const prev = tasks.find((t) => t.id === current?.supersedes);
+		if (prev) {
+			history.unshift(prev);
+			current = prev;
+		} else {
+			break;
+		}
+	}
+
+	// Add the current task at the end
+	if (current) {
+		history.push(current);
+	}
+
+	return history;
+}
+
+/**
+ * Get the latest version of a task (following superseded_by chain)
+ */
+export function getLatestTask(tasks: Task[], taskId: string): Task | null {
+	let current = tasks.find((t) => t.id === taskId);
+
+	// Walk forwards through superseded_by chain
+	while (current?.superseded_by) {
+		const next = tasks.find((t) => t.id === current?.superseded_by);
+		if (next) {
+			current = next;
+		} else {
+			break;
+		}
+	}
+
+	return current || null;
 }

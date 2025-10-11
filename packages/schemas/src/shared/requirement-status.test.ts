@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import type { Criteria } from "./criteria.js";
-import type { Task } from "./task.js";
 import {
 	getCriterionState,
 	getPlanState,
 	getRequirementCompletionStats,
 	getRequirementState,
 } from "./requirement-status.js";
+import type { Task } from "./task.js";
 
 describe("Requirement State Tracking", () => {
 	// Helper to create a simple criterion (no status - computed from plans!)
@@ -77,35 +77,50 @@ describe("Requirement State Tracking", () => {
 
 		it("should return 'not-started' when all tasks are not started", () => {
 			const plan = {
-				tasks: [createTask("task-001", "not-started"), createTask("task-002", "not-started")],
+				tasks: [
+					createTask("task-001", "not-started"),
+					createTask("task-002", "not-started"),
+				],
 			};
 			expect(getPlanState(plan)).toBe("not-started");
 		});
 
 		it("should return 'in-progress' when any task is started", () => {
 			const plan = {
-				tasks: [createTask("task-001", "not-started"), createTask("task-002", "in-progress")],
+				tasks: [
+					createTask("task-001", "not-started"),
+					createTask("task-002", "in-progress"),
+				],
 			};
 			expect(getPlanState(plan)).toBe("in-progress");
 		});
 
 		it("should return 'completed' when all tasks are completed", () => {
 			const plan = {
-				tasks: [createTask("task-001", "completed"), createTask("task-002", "completed")],
+				tasks: [
+					createTask("task-001", "completed"),
+					createTask("task-002", "completed"),
+				],
 			};
 			expect(getPlanState(plan)).toBe("completed");
 		});
 
 		it("should return 'verified' when all tasks are verified", () => {
 			const plan = {
-				tasks: [createTask("task-001", "verified"), createTask("task-002", "verified")],
+				tasks: [
+					createTask("task-001", "verified"),
+					createTask("task-002", "verified"),
+				],
 			};
 			expect(getPlanState(plan)).toBe("verified");
 		});
 
 		it("should return 'completed' when mix of completed and verified", () => {
 			const plan = {
-				tasks: [createTask("task-001", "completed"), createTask("task-002", "verified")],
+				tasks: [
+					createTask("task-001", "completed"),
+					createTask("task-002", "verified"),
+				],
 			};
 			expect(getPlanState(plan)).toBe("completed");
 		});
@@ -124,7 +139,9 @@ describe("Requirement State Tracking", () => {
 					tasks: [createTask("task-001", "in-progress")],
 				},
 			];
-			expect(getCriterionState("crit-001", "req-001", plans)).toBe("in-progress");
+			expect(getCriterionState("crit-001", "req-001", plans)).toBe(
+				"in-progress",
+			);
 		});
 
 		it("should aggregate state from multiple implementing plans", () => {
@@ -163,7 +180,9 @@ describe("Requirement State Tracking", () => {
 					tasks: [createTask("task-001", "completed")],
 				},
 			];
-			expect(getCriterionState("crit-001", "req-001", plans)).toBe("not-started");
+			expect(getCriterionState("crit-001", "req-001", plans)).toBe(
+				"not-started",
+			);
 		});
 
 		it("should ignore plans for different criteria", () => {
@@ -173,7 +192,9 @@ describe("Requirement State Tracking", () => {
 					tasks: [createTask("task-001", "completed")],
 				},
 			];
-			expect(getCriterionState("crit-001", "req-001", plans)).toBe("not-started");
+			expect(getCriterionState("crit-001", "req-001", plans)).toBe(
+				"not-started",
+			);
 		});
 	});
 
