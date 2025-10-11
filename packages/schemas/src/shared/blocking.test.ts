@@ -9,10 +9,7 @@ import {
 } from "./task.js";
 
 describe("Task Blocking", () => {
-	const createTask = (
-		id: string,
-		blocked: Task["blocked"] = [],
-	): Task => {
+	const createTask = (id: string, blocked: Task["blocked"] = []): Task => {
 		const now = "2025-01-01T10:00:00Z";
 		return {
 			id,
@@ -163,9 +160,7 @@ describe("Task Blocking", () => {
 				},
 			]);
 
-			const { canStart, reason } = canStartTaskWithBlocking(task, [
-				task,
-			]);
+			const { canStart, reason } = canStartTaskWithBlocking(task, [task]);
 			expect(canStart).toBe(false);
 			expect(reason).toContain("blocked");
 			expect(reason).toContain("API access credentials");
@@ -195,9 +190,7 @@ describe("Task Blocking", () => {
 				},
 			]);
 
-			const { canStart, reason } = canStartTaskWithBlocking(task, [
-				task,
-			]);
+			const { canStart, reason } = canStartTaskWithBlocking(task, [task]);
 			expect(canStart).toBe(false);
 			expect(reason).toContain("blocked");
 		});
@@ -291,9 +284,7 @@ describe("Task Blocking", () => {
 
 			expect(isTaskBlocked(task)).toBe(true);
 			const blocks = getActiveBlocks(task);
-			expect(blocks[0].external_dependency).toBe(
-				"Legal compliance review",
-			);
+			expect(blocks[0].external_dependency).toBe("Legal compliance review");
 		});
 	});
 
@@ -319,9 +310,7 @@ describe("Task Blocking", () => {
 			const activeBlocks = getActiveBlocks(task);
 			expect(activeBlocks).toHaveLength(2);
 
-			const { canStart, reason } = canStartTaskWithBlocking(task, [
-				task,
-			]);
+			const { canStart, reason } = canStartTaskWithBlocking(task, [task]);
 			expect(canStart).toBe(false);
 			expect(reason).toContain("infrastructure provisioning");
 			expect(reason).toContain("security review");

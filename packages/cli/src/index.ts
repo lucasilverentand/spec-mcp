@@ -362,7 +362,10 @@ program
 program
 	.command("check")
 	.description("Validate a specific entity by ID")
-	.argument("<id>", "Entity ID (e.g., pln-001, pln-001-user-auth, or pln-001-user-auth.yml)")
+	.argument(
+		"<id>",
+		"Entity ID (e.g., pln-001, pln-001-user-auth, or pln-001-user-auth.yml)",
+	)
 	.option("-p, --path <path>", "Path to specs folder", "./specs")
 	.action(async (id: string, options: { path: string }) => {
 		try {
@@ -414,7 +417,9 @@ program
 			console.log(`  Created: ${entity.created_at}`);
 			console.log(`  Updated: ${entity.updated_at}`);
 
-			console.log(`\n${colors.green}Entity conforms to schema${colors.reset}\n`);
+			console.log(
+				`\n${colors.green}Entity conforms to schema${colors.reset}\n`,
+			);
 			process.exit(0);
 		} catch (error) {
 			console.error(`\n${colors.red}✗ Error:${colors.reset}`);

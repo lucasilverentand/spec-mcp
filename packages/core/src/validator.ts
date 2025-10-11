@@ -24,7 +24,9 @@ interface ParsedId {
  */
 const PREFIX_TO_TYPE: Record<string, EntityType> = {
 	brq: "business-requirement",
+	brd: "business-requirement", // Alias for brq (plan schema uses brd)
 	trq: "technical-requirement",
+	prd: "technical-requirement", // Alias for trq (plan schema uses prd)
 	pln: "plan",
 	cmp: "component",
 	cns: "constitution",
@@ -35,7 +37,9 @@ const PREFIX_TO_TYPE: Record<string, EntityType> = {
  * Parse an entity identifier
  * Accepts formats:
  * - typ-123
+ * - typ-001 (with padding)
  * - typ-123-slug-here
+ * - typ-001-slug-here (with padding)
  * - typ-123-slug-here.yml
  * - typ-123.yml
  */
@@ -44,7 +48,8 @@ function parseEntityId(id: string): ParsedId | null {
 	const cleanId = id.replace(/\.(yml|yaml)$/, "");
 
 	// Match pattern: prefix-number or prefix-number-slug
-	const match = cleanId.match(/^([a-z]{3})-(\d+)(?:-([a-z0-9-]+))?$/);
+	// Accept 1-3 digits (with or without zero-padding)
+	const match = cleanId.match(/^([a-z]{3})-(\d{1,3})(?:-([a-z0-9-]+))?$/);
 
 	if (!match) {
 		return null;
@@ -99,19 +104,20 @@ export async function validateEntity(
 	}
 
 	// Get the appropriate manager
-	const manager = specManager[
-		entityType === "business-requirement"
-			? "business_requirements"
-			: entityType === "technical-requirement"
-				? "tech_requirements"
-				: entityType === "plan"
-					? "plans"
-					: entityType === "component"
-						? "components"
-						: entityType === "constitution"
-							? "constitutions"
-							: "decisions"
-	];
+	const manager =
+		specManager[
+			entityType === "business-requirement"
+				? "business_requirements"
+				: entityType === "technical-requirement"
+					? "tech_requirements"
+					: entityType === "plan"
+						? "plans"
+						: entityType === "component"
+							? "components"
+							: entityType === "constitution"
+								? "constitutions"
+								: "decisions"
+		];
 
 	// Fetch the entity
 	let entity: Base | null = null;
@@ -196,9 +202,7 @@ async function validateReferences(
 			if (typeof refId === "string") {
 				const refResult = await validateEntity(specManager, refId);
 				if (!refResult.valid) {
-					errors.push(
-						`Referenced entity not found in depends_on: ${refId}`,
-					);
+					errors.push(`Referenced entity not found in depends_on: ${refId}`);
 				}
 			}
 		}
@@ -215,10 +219,7 @@ async function validateReferences(
 			criteria?: string;
 		};
 		if (criteria.requirement) {
-			const refResult = await validateEntity(
-				specManager,
-				criteria.requirement,
-			);
+			const refResult = await validateEntity(specManager, criteria.requirement);
 			if (!refResult.valid) {
 				errors.push(
 					`Referenced requirement not found: ${criteria.requirement}`,
@@ -231,7 +232,9 @@ async function validateReferences(
 	if ("supersedes" in entity && typeof entity.supersedes === "string") {
 		const refResult = await validateEntity(specManager, entity.supersedes);
 		if (!refResult.valid) {
-			errors.push(`Referenced decision not found in supersedes: ${entity.supersedes}`);
+			errors.push(
+				`Referenced decision not found in supersedes: ${entity.supersedes}`,
+			);
 		}
 	}
 

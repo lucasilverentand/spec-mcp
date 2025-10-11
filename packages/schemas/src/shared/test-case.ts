@@ -1,4 +1,5 @@
 import z from "zod";
+import { createSupersessionSchema } from "./supersession.js";
 
 export const TestCaseIdSchema = z
 	.string()
@@ -29,6 +30,7 @@ export const TestCaseSchema = z.object({
 		.boolean()
 		.default(false)
 		.describe("Whether the test case is currently passing"),
+	...createSupersessionSchema(TestCaseIdSchema),
 });
 
 export const TestCasesSchema = z

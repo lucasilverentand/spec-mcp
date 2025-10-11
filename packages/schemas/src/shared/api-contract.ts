@@ -1,4 +1,5 @@
 import z from "zod";
+import { createSupersessionSchema } from "./supersession.js";
 
 export const ApiContractExampleSchema = z.object({
 	name: z.string().min(1).describe("Name of the example"),
@@ -42,6 +43,7 @@ export const ApiContractSchema = z.object({
 		.array(ApiContractExampleSchema)
 		.default([])
 		.describe("Usage examples for the API"),
+	...createSupersessionSchema(ApiContractIdSchema),
 });
 
 export const ApiContractsSchema = z

@@ -5,6 +5,7 @@ import type {
 	Constitution,
 	Decision,
 	EntityType,
+	Milestone,
 	Plan,
 	TechnicalRequirement,
 } from "@spec-mcp/schemas";
@@ -13,6 +14,7 @@ import {
 	createComponentsManager,
 	createConstitutionsManager,
 	createDecisionsManager,
+	createMilestonesManager,
 	createPlansManager,
 	createTechRequirementsManager,
 } from "./entities/index.js";
@@ -30,6 +32,8 @@ interface SpecsMetadata {
 		components: number;
 		constitutions: number;
 		decisions: number;
+		milestones: number;
+		tasks: number; // Global task counter across all plans
 	};
 }
 
@@ -43,6 +47,7 @@ export class SpecManager {
 	public readonly components: EntityManager<Component>;
 	public readonly constitutions: EntityManager<Constitution>;
 	public readonly decisions: EntityManager<Decision>;
+	public readonly milestones: EntityManager<Milestone>;
 
 	/**
 	 * Create a new SpecManager
@@ -60,6 +65,7 @@ export class SpecManager {
 		this.components = createComponentsManager(this.specsPath);
 		this.constitutions = createConstitutionsManager(this.specsPath);
 		this.decisions = createDecisionsManager(this.specsPath);
+		this.milestones = createMilestonesManager(this.specsPath);
 	}
 
 	/**
@@ -81,6 +87,7 @@ export class SpecManager {
 			this.components.ensureFolder(),
 			this.constitutions.ensureFolder(),
 			this.decisions.ensureFolder(),
+			this.milestones.ensureFolder(),
 		]);
 	}
 
@@ -96,6 +103,7 @@ export class SpecManager {
 		| Component
 		| Constitution
 		| Decision
+		| Milestone
 	> {
 		switch (type) {
 			case "business-requirement":
@@ -110,6 +118,8 @@ export class SpecManager {
 				return this.constitutions;
 			case "decision":
 				return this.decisions;
+			case "milestone":
+				return this.milestones;
 			default:
 				throw new Error(`Unknown entity type: ${type}`);
 		}
@@ -132,6 +142,8 @@ export class SpecManager {
 				return "constitutions";
 			case "decision":
 				return "decisions";
+			case "milestone":
+				return "milestones";
 			default:
 				throw new Error(`Unknown entity type: ${type}`);
 		}
@@ -158,6 +170,8 @@ export class SpecManager {
 				components: 0,
 				constitutions: 0,
 				decisions: 0,
+				milestones: 0,
+				tasks: 0,
 			},
 		};
 	}
@@ -200,5 +214,59 @@ export class SpecManager {
 			const maxNumber = await manager.getMaxNumber();
 			return maxNumber + 1;
 		}
+	}
+
+	/**
+	 * Get next available task ID (globally unique across all plans)
+	 */
+	async getNextTaskId(): Promise<string> {
+		try {
+			// Read current metadata
+			const metadata = await this.readMetadata();
+			let currentCounter = metadata.counters.tasks;
+
+			// If counter is 0, initialize by scanning all plans
+			if (currentCounter === 0) {
+				currentCounter = await this.getMaxTaskNumber();
+			}
+
+			// Increment counter
+			const nextNumber = currentCounter + 1;
+			metadata.counters.tasks = nextNumber;
+
+			// Save updated metadata
+			await this.writeMetadata(metadata);
+
+			return `task-${String(nextNumber).padStart(3, "0")}`;
+		} catch (_error) {
+			// On any error, fall back to scanning all plans
+			const maxNumber = await this.getMaxTaskNumber();
+			const nextNumber = maxNumber + 1;
+			return `task-${String(nextNumber).padStart(3, "0")}`;
+		}
+	}
+
+	/**
+	 * Get the maximum task number across all plans
+	 */
+	private async getMaxTaskNumber(): Promise<number> {
+		const plans = await this.plans.list();
+		let maxTaskNum = 0;
+
+		for (const plan of plans) {
+			if (!plan.tasks) continue;
+
+			for (const task of plan.tasks) {
+				const match = task.id.match(/^task-(\d+)$/);
+				if (match?.[1]) {
+					const num = Number.parseInt(match[1], 10);
+					if (num > maxTaskNum) {
+						maxTaskNum = num;
+					}
+				}
+			}
+		}
+
+		return maxTaskNum;
 	}
 }

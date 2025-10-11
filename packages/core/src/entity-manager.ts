@@ -168,11 +168,12 @@ export class EntityManager<T extends Base> extends FileManager {
 		const now = new Date().toISOString();
 
 		// Add timestamps if not present
+		const dataWithTimestamps = data as Partial<Base>;
 		const entity = {
 			...data,
 			number,
-			created_at: (data as any).created_at || now,
-			updated_at: (data as any).updated_at || now,
+			created_at: dataWithTimestamps.created_at || now,
+			updated_at: dataWithTimestamps.updated_at || now,
 		} as T;
 
 		// Validate with schema

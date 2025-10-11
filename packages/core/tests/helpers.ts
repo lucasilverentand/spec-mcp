@@ -53,22 +53,11 @@ export async function fileExists(filePath: string): Promise<boolean> {
  */
 export function createTestEntity<T extends Base>(
 	partial: Partial<T> & Pick<T, "type" | "slug" | "name" | "description">,
-): Omit<T, "number"> {
-	const now = new Date().toISOString();
+): Omit<T, "number" | "created_at" | "updated_at"> {
 	return {
-		draft: false,
 		priority: "medium",
-		status: {
-			created_at: now,
-			updated_at: now,
-			completed: false,
-			completed_at: null,
-			verified: false,
-			verified_at: null,
-			notes: [],
-		},
 		...partial,
-	} as Omit<T, "number">;
+	} as Omit<T, "number" | "created_at" | "updated_at">;
 }
 
 /**
@@ -76,9 +65,9 @@ export function createTestEntity<T extends Base>(
  */
 export function createTestBusinessRequirement(
 	overrides?: Partial<BusinessRequirement>,
-): Omit<BusinessRequirement, "number"> {
-	return createTestEntity({
-		type: "business-requirement",
+): Omit<BusinessRequirement, "number" | "created_at" | "updated_at"> {
+	const baseData = {
+		type: "business-requirement" as const,
 		slug: "test-br",
 		name: "Test Business Requirement",
 		description: "A test business requirement",
@@ -100,11 +89,17 @@ export function createTestBusinessRequirement(
 				id: "crit-001",
 				description: "Test criterion",
 				rationale: "This criterion is essential for validating the requirement",
-				status: "needs-review" as const,
+				supersedes: null,
+				superseded_by: null,
+				superseded_at: null,
 			},
 		],
+		references: [],
+		stakeholders: [],
 		...overrides,
-	});
+	};
+
+	return createTestEntity(baseData);
 }
 
 /**
@@ -112,9 +107,9 @@ export function createTestBusinessRequirement(
  */
 export function createTestTechnicalRequirement(
 	overrides?: Partial<TechnicalRequirement>,
-): Omit<TechnicalRequirement, "number"> {
-	return createTestEntity({
-		type: "technical-requirement",
+): Omit<TechnicalRequirement, "number" | "created_at" | "updated_at"> {
+	const baseData = {
+		type: "technical-requirement" as const,
 		slug: "test-tr",
 		name: "Test Technical Requirement",
 		description: "A test technical requirement",
@@ -124,11 +119,18 @@ export function createTestTechnicalRequirement(
 				id: "crit-001",
 				description: "Test criterion",
 				rationale: "This criterion is essential for validating the requirement",
-				status: "needs-review" as const,
+				supersedes: null,
+				superseded_by: null,
+				superseded_at: null,
 			},
 		],
+		constraints: [],
+		dependencies: [],
+		references: [],
 		...overrides,
-	});
+	};
+
+	return createTestEntity(baseData);
 }
 
 /**
@@ -136,9 +138,9 @@ export function createTestTechnicalRequirement(
  */
 export function createTestPlan(
 	overrides?: Partial<Plan>,
-): Omit<Plan, "number"> {
-	return createTestEntity({
-		type: "plan",
+): Omit<Plan, "number" | "created_at" | "updated_at"> {
+	const baseData = {
+		type: "plan" as const,
 		slug: "test-plan",
 		name: "Test Plan",
 		description: "A test plan",
@@ -147,9 +149,10 @@ export function createTestPlan(
 			criteria: "crit-001",
 		},
 		scope: [
-			{ type: "in-scope", description: "Feature implementation" },
-			{ type: "out-of-scope", description: "Performance optimization" },
+			{ type: "in-scope" as const, description: "Feature implementation" },
+			{ type: "out-of-scope" as const, description: "Performance optimization" },
 		],
+		depends_on: [],
 		tasks: [],
 		flows: [],
 		test_cases: [],
@@ -157,7 +160,9 @@ export function createTestPlan(
 		data_models: [],
 		references: [],
 		...overrides,
-	});
+	};
+
+	return createTestEntity(baseData);
 }
 
 /**
@@ -165,19 +170,24 @@ export function createTestPlan(
  */
 export function createTestComponent(
 	overrides?: Partial<Component>,
-): Omit<Component, "number"> {
-	return createTestEntity({
-		type: "component",
+): Omit<Component, "number" | "created_at" | "updated_at"> {
+	const baseData = {
+		type: "component" as const,
 		slug: "test-component",
 		name: "Test Component",
 		description: "A test component",
-		component_type: "service",
+		component_type: "service" as const,
 		scope: [
-			{ type: "in-scope", description: "Core functionality" },
-			{ type: "out-of-scope", description: "Advanced features" },
+			{ type: "in-scope" as const, description: "Core functionality" },
+			{ type: "out-of-scope" as const, description: "Advanced features" },
 		],
+		tech_stack: [],
+		deployment: [],
+		external_dependencies: [],
 		...overrides,
-	});
+	};
+
+	return createTestEntity(baseData);
 }
 
 /**
@@ -185,9 +195,9 @@ export function createTestComponent(
  */
 export function createTestConstitution(
 	overrides?: Partial<Constitution>,
-): Omit<Constitution, "number"> {
-	return createTestEntity({
-		type: "constitution",
+): Omit<Constitution, "number" | "created_at" | "updated_at"> {
+	const baseData = {
+		type: "constitution" as const,
 		slug: "test-constitution",
 		name: "Test Constitution",
 		description: "A test constitution",
@@ -199,11 +209,16 @@ export function createTestConstitution(
 				rationale: "Testing ensures quality",
 				examples: ["Unit tests", "Integration tests"],
 				exceptions: [],
-				status: "active",
+				status: "active" as const,
+				supersedes: null,
+				superseded_by: null,
+				superseded_at: null,
 			},
 		],
 		...overrides,
-	});
+	};
+
+	return createTestEntity(baseData);
 }
 
 /**
@@ -211,9 +226,9 @@ export function createTestConstitution(
  */
 export function createTestDecision(
 	overrides?: Partial<Decision>,
-): Omit<Decision, "number"> {
-	return createTestEntity({
-		type: "decision",
+): Omit<Decision, "number" | "created_at" | "updated_at"> {
+	const baseData = {
+		type: "decision" as const,
 		slug: "test-decision",
 		name: "Test Decision",
 		description: "A test decision",
@@ -221,18 +236,23 @@ export function createTestDecision(
 			"We decided to use TypeScript for type safety and better developer experience",
 		context:
 			"The team needed better tooling and wanted to catch errors at compile time rather than runtime",
+		decision_status: "proposed" as const,
 		consequences: [
 			{
-				type: "positive",
+				type: "positive" as const,
 				description: "Better IDE support and autocomplete",
 			},
 			{
-				type: "negative",
+				type: "negative" as const,
 				description: "Steeper learning curve for new developers",
 			},
 		],
+		alternatives: [],
+		references: [],
 		...overrides,
-	});
+	};
+
+	return createTestEntity(baseData);
 }
 
 /**

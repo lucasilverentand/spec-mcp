@@ -19,14 +19,14 @@ importers:
         specifier: ^2.2.5
         version: 2.2.5
       '@types/node':
-        specifier: ^24.7.0
-        version: 24.7.0
+        specifier: ^24.7.1
+        version: 24.7.1
       '@vitest/coverage-v8':
         specifier: ^3.2.4
         version: 3.2.4(vitest@3.2.4)
       knip:
-        specifier: ^5.64.2
-        version: 5.64.2(@types/node@24.7.0)(typescript@5.9.3)
+        specifier: ^5.64.3
+        version: 5.64.3(@types/node@24.7.1)(typescript@5.9.3)
       turbo:
         specifier: ^2.5.8
         version: 2.5.8
@@ -35,7 +35,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: ^3.2.4
-        version: 3.2.4(@types/node@24.7.0)
+        version: 3.2.4(@types/node@24.7.1)
 
   packages/cli:
     dependencies:
@@ -868,8 +868,8 @@ packages:
       - supports-color
     dev: false
 
-  /@napi-rs/wasm-runtime@1.0.6:
-    resolution: {integrity: sha512-DXj75ewm11LIWUk198QSKUTxjyRjsBwk09MuMk5DGK+GDUtyPhhEHOGP/Xwwj3DjQXXkivoBirmOnKrLfc0+9g==}
+  /@napi-rs/wasm-runtime@1.0.7:
+    resolution: {integrity: sha512-SeDnOO0Tk7Okiq6DbXmmBODgOAb9dp9gjlphokTUxmt8U3liIP1ZsozBahH69j/RJv+Rfs6IwUKHTgQYJ/HBAw==}
     requiresBuild: true
     dependencies:
       '@emnapi/core': 1.5.0
@@ -1025,7 +1025,7 @@ packages:
     cpu: [wasm32]
     requiresBuild: true
     dependencies:
-      '@napi-rs/wasm-runtime': 1.0.6
+      '@napi-rs/wasm-runtime': 1.0.7
     dev: true
     optional: true
 
@@ -1450,8 +1450,8 @@ packages:
       undici-types: 7.12.0
     dev: true
 
-  /@types/node@24.7.0:
-    resolution: {integrity: sha512-IbKooQVqUBrlzWTi79E8Fw78l8k1RNtlDDNWsFZs7XonuQSJ8oNYfEeclhprUldXISRMLzBpILuKgPlIxm+/Yw==}
+  /@types/node@24.7.1:
+    resolution: {integrity: sha512-CmyhGZanP88uuC5GpWU9q+fI61j2SkhO3UGMUdfYRE6Bcy0ccyzn1Rqj9YAB/ZY4kOXmNf0ocah5GtphmLMP6Q==}
     dependencies:
       undici-types: 7.14.0
     dev: true
@@ -1505,7 +1505,7 @@ packages:
       std-env: 3.9.0
       test-exclude: 7.0.1
       tinyrainbow: 2.0.0
-      vitest: 3.2.4(@types/node@24.5.2)
+      vitest: 3.2.4(@types/node@24.7.1)
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -1542,7 +1542,7 @@ packages:
       '@vitest/spy': 3.2.4
       estree-walker: 3.0.3
       magic-string: 0.30.19
-      vite: 7.1.9(@types/node@24.5.2)
+      vite: 7.1.9(@types/node@24.7.1)
     dev: true
 
   /@vitest/pretty-format@3.2.4:
@@ -2520,8 +2520,8 @@ packages:
     resolution: {integrity: sha512-xbbCH5dCYU5T8LcEhhuh7HJ88HXuW3qsI3Y0zOZFKfZEHcpWiHU/Jxzk629Brsab/mMiHQti9wMP+845RPe3Vg==}
     dev: false
 
-  /knip@5.64.2(@types/node@24.7.0)(typescript@5.9.3):
-    resolution: {integrity: sha512-gyIN+ZqZjyxdsocvkZx2HMy7D9+5WAgFrTM69sGg1QZ8wZuabtanhAP8ZnroctU26sQ5bO2RSPvjnOn0pRNuKw==}
+  /knip@5.64.3(@types/node@24.7.1)(typescript@5.9.3):
+    resolution: {integrity: sha512-P9dZetEZfSBwNBFwj55CAnPAMdzVLTTscWx6rdB8eBmPqXPji8F3L+hhWi+Xp+u9O6Xp2ClRDq2JENSK8Z04Qg==}
     engines: {node: '>=18.18.0'}
     hasBin: true
     peerDependencies:
@@ -2529,7 +2529,7 @@ packages:
       typescript: '>=5.0.4 <7'
     dependencies:
       '@nodelib/fs.walk': 1.2.8
-      '@types/node': 24.7.0
+      '@types/node': 24.7.1
       fast-glob: 3.3.3
       formatly: 0.3.0
       jiti: 2.6.1
@@ -3715,7 +3715,7 @@ packages:
       - yaml
     dev: true
 
-  /vite-node@3.2.4(@types/node@24.7.0):
+  /vite-node@3.2.4(@types/node@24.7.1):
     resolution: {integrity: sha512-EbKSKh+bh1E1IFxeO0pg1n4dvoOTt0UDiXMd/qn++r98+jPO1xtJilvXldeuQ8giIB5IkpjCgMleHMNEsGH6pg==}
     engines: {node: ^18.0.0 || ^20.0.0 || >=22.0.0}
     hasBin: true
@@ -3724,7 +3724,7 @@ packages:
       debug: 4.4.3
       es-module-lexer: 1.7.0
       pathe: 2.0.3
-      vite: 7.1.9(@types/node@24.7.0)
+      vite: 7.1.9(@types/node@24.7.1)
     transitivePeerDependencies:
       - '@types/node'
       - jiti
@@ -3883,7 +3883,7 @@ packages:
       fsevents: 2.3.3
     dev: true
 
-  /vite@7.1.9(@types/node@24.7.0):
+  /vite@7.1.9(@types/node@24.7.1):
     resolution: {integrity: sha512-4nVGliEpxmhCL8DslSAUdxlB6+SMrhB0a1v5ijlh1xB1nEPuy1mxaHxysVucLHuWryAxLWg6a5ei+U4TLn/rFg==}
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
@@ -3923,7 +3923,7 @@ packages:
       yaml:
         optional: true
     dependencies:
-      '@types/node': 24.7.0
+      '@types/node': 24.7.1
       esbuild: 0.25.10
       fdir: 6.5.0(picomatch@4.0.3)
       picomatch: 4.0.3
@@ -4125,7 +4125,7 @@ packages:
       - yaml
     dev: true
 
-  /vitest@3.2.4(@types/node@24.7.0):
+  /vitest@3.2.4(@types/node@24.7.1):
     resolution: {integrity: sha512-LUCP5ev3GURDysTWiP47wRRUpLKMOfPh+yKTx3kVIEiu5KOMeqzpnYNsKyOoVrULivR8tLcks4+lga33Whn90A==}
     engines: {node: ^18.0.0 || ^20.0.0 || >=22.0.0}
     hasBin: true
@@ -4154,7 +4154,7 @@ packages:
         optional: true
     dependencies:
       '@types/chai': 5.2.2
-      '@types/node': 24.7.0
+      '@types/node': 24.7.1
       '@vitest/expect': 3.2.4
       '@vitest/mocker': 3.2.4(vite@7.1.9)
       '@vitest/pretty-format': 3.2.4
@@ -4174,8 +4174,8 @@ packages:
       tinyglobby: 0.2.15
       tinypool: 1.1.1
       tinyrainbow: 2.0.0
-      vite: 7.1.9(@types/node@24.7.0)
-      vite-node: 3.2.4(@types/node@24.7.0)
+      vite: 7.1.9(@types/node@24.7.1)
+      vite-node: 3.2.4(@types/node@24.7.1)
       why-is-node-running: 2.3.0
     transitivePeerDependencies:
       - jiti

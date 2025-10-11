@@ -1,4 +1,5 @@
 import z from "zod";
+import { createSupersessionSchema } from "./supersession.js";
 
 export const FlowStepIdSchema = z.string().regex(/^step-\d{3}$/, {
 	message: "ID must follow the format step-000",
@@ -36,6 +37,7 @@ export const FlowSchema = z.object({
 		.array(FlowStepSchema)
 		.min(1)
 		.describe("Ordered list of steps in the flow"),
+	...createSupersessionSchema(FlowIdSchema),
 });
 
 export const FlowsSchema = z

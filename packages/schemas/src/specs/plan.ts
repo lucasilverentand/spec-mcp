@@ -19,6 +19,12 @@ export const RequirementIdSchema = z
 		message: "Requirement ID must follow format: req-XXX-slug-here",
 	});
 
+const MilestoneIdSchemaForPlan = z
+	.string()
+	.regex(/^mls-\d{3}-[a-z0-9-]+$/, {
+		message: "Milestone ID must follow format: mls-XXX-slug-here",
+	});
+
 // Schema for stored plans (no ID field)
 export const PlanSchema = BaseSchema.extend({
 	type: z.literal("plan").describe("Entity type is always 'plan'"),
@@ -38,6 +44,10 @@ export const PlanSchema = BaseSchema.extend({
 		.array(PlanIdSchema)
 		.default([])
 		.describe("Other plans this plan relies on"),
+	milestones: z
+		.array(MilestoneIdSchemaForPlan)
+		.default([])
+		.describe("Milestones this plan contributes to"),
 	tasks: TasksSchema.describe("List of tasks to be completed"),
 	flows: FlowsSchema.describe("List of flows involved in the plan"),
 	test_cases: TestCasesSchema.describe("Test cases to validate the plan"),

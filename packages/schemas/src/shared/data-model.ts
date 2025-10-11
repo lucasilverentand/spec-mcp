@@ -1,4 +1,5 @@
 import z from "zod";
+import { createSupersessionSchema } from "./supersession.js";
 
 export const DataModelIdSchema = z
 	.string()
@@ -78,6 +79,7 @@ export const DataModelSchema = z.object({
 		.array(DataModelExampleSchema)
 		.default([])
 		.describe("Example instances of the data model"),
+	...createSupersessionSchema(DataModelIdSchema),
 });
 
 export const DataModelsSchema = z
