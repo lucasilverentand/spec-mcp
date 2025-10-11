@@ -196,9 +196,11 @@ Bad: "it's easier" (not specific)`,
 				itemSchema: CriteriaSchema,
 				collectionQuestion: {
 					id: "q-criteria",
-					question: `List acceptance criteria (comma-separated).
+					question: `List criteria (comma-separated).
 
-What "done" means. Consider: Functional (features work), Performance (speed, scale), Security/compliance (data protection), UX (accessibility, mobile), Integration (existing systems)
+NOTE: These will be stored in the 'criteria' field. Each criterion defines what "done" means.
+
+Consider: Functional (features work), Performance (speed, scale), Security/compliance (data protection), UX (accessibility, mobile), Integration (existing systems)
 
 Each testable (pass/fail). 4-10 criteria.
 
@@ -210,6 +212,8 @@ Bad: 'System is good' (not testable)`,
 					{
 						id: "cr-q-001",
 						question: `Criterion (testable, measurable) and rationale.
+
+NOTE: This item will be stored in the 'criteria' array.
 
 CRITERION (specific, testable) + RATIONALE (why matters for success)
 

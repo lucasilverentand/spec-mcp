@@ -38,7 +38,15 @@ export const ItemPrioritySchema = z.enum([
 	"nice-to-have",
 ]);
 
-export const ItemStatusSchema = z.object({
+export const BaseSchema = z.object({
+	type: EntityTypeSchema.describe("Type of the entity"),
+	number: z.number().int().nonnegative().describe("Unique sequential number"),
+	slug: EntitySlugSchema.describe("URL-friendly identifier"),
+	name: z.string().min(1).describe("Display name of the entity"),
+	description: z.string().min(1).describe("Detailed description of the entity"),
+	priority: ItemPrioritySchema.default("medium").describe(
+		"Priority level of the plan. 'critical' plans must be completed before 'high', 'high' before 'medium', and 'medium' before 'low'.",
+	),
 	created_at: z
 		.string()
 		.datetime()
@@ -47,46 +55,6 @@ export const ItemStatusSchema = z.object({
 		.string()
 		.datetime()
 		.describe("Timestamp when entity was last updated"),
-	completed: z
-		.boolean()
-		.default(false)
-		.describe("Whether the item has been completed"),
-	completed_at: z
-		.string()
-		.datetime()
-		.nullable()
-		.default(null)
-		.describe("Timestamp when the item was completed"),
-	verified: z
-		.boolean()
-		.default(false)
-		.describe("Whether the item's completion has been verified by a reviewer"),
-	verified_at: z
-		.string()
-		.datetime()
-		.nullable()
-		.default(null)
-		.describe("Timestamp when the item was verified"),
-	notes: z
-		.array(z.string())
-		.default([])
-		.describe("Log of notes taken during item execution"),
-});
-
-export const BaseSchema = z.object({
-	type: EntityTypeSchema.describe("Type of the entity"),
-	number: z.number().int().nonnegative().describe("Unique sequential number"),
-	slug: EntitySlugSchema.describe("URL-friendly identifier"),
-	name: z.string().min(1).describe("Display name of the entity"),
-	description: z.string().min(1).describe("Detailed description of the entity"),
-	draft: z
-		.boolean()
-		.default(false)
-		.describe("Whether this is a draft version of the entity"),
-	priority: ItemPrioritySchema.default("medium").describe(
-		"Priority level of the plan. 'critical' plans must be completed before 'high', 'high' before 'medium', and 'medium' before 'low'.",
-	),
-	status: ItemStatusSchema.describe("Current status of the entity"),
 });
 
 export type EntityType = z.infer<typeof EntityTypeSchema>;

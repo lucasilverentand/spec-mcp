@@ -158,7 +158,9 @@ Tool guidance:
 				itemSchema: CriteriaSchema,
 				collectionQuestion: {
 					id: "q-criteria",
-					question: `List acceptance criteria defining "done" (comma-separated).
+					question: `List criteria defining "done" (comma-separated).
+
+NOTE: These will be stored in the 'criteria' field.
 
 How to verify successful implementation? Consider: Functional tests, Performance tests, Security tests, Integration tests, Reliability tests, Ops readiness (monitoring/logs/docs), Code quality
 
@@ -172,6 +174,8 @@ Bad: 'Code is good' (not testable)`,
 					{
 						id: "cr-q-001",
 						question: `Criterion (specific, testable) and rationale.
+
+NOTE: This item will be stored in the 'criteria' array.
 
 CRITERION (measurable, clear pass/fail) + RATIONALE (why matters, what risk mitigated)
 

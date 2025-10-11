@@ -4,9 +4,9 @@ import {
 	EntitySlugSchema,
 	EntityTypeSchema,
 	ItemPrioritySchema,
-	ItemStatusSchema,
-} from "./shared/base";
-import { ReferenceSchema, ReferenceTypeSchema } from "./shared/reference";
+} from "./shared/base.js";
+import { ReferenceSchema, ReferenceTypeSchema } from "./shared/reference.js";
+import { CompletionStatusSchema } from "./shared/task.js";
 
 describe("Base Schemas", () => {
 	describe("EntityTypeSchema", () => {
@@ -72,6 +72,7 @@ describe("Base Schemas", () => {
 
 	describe("BaseSchema", () => {
 		it("should validate a complete base entity", () => {
+			const now = new Date().toISOString();
 			const validBase = {
 				type: "business-requirement",
 				number: 1,
@@ -79,13 +80,8 @@ describe("Base Schemas", () => {
 				name: "Test Requirement",
 				description: "A test requirement",
 				priority: "medium",
-				status: {
-					created_at: new Date().toISOString(),
-					updated_at: new Date().toISOString(),
-					verified: false,
-					verified_at: null,
-					notes: [],
-				},
+				created_at: now,
+				updated_at: now,
 			};
 			expect(() => BaseSchema.parse(validBase)).not.toThrow();
 		});
@@ -97,13 +93,8 @@ describe("Base Schemas", () => {
 				slug: "test",
 				name: "Test",
 				description: "Test",
-				status: {
-					created_at: "invalid-date",
-					updated_at: new Date().toISOString(),
-					verified: false,
-					verified_at: null,
-					notes: [],
-				},
+				created_at: "invalid-date",
+				updated_at: new Date().toISOString(),
 			};
 			expect(() => BaseSchema.parse(invalidBase)).toThrow();
 		});
@@ -233,34 +224,77 @@ describe("Reference Schemas", () => {
 	});
 });
 
-describe("Status Schemas", () => {
-	describe("ItemStatusSchema", () => {
+describe("Task Status Schemas", () => {
+	describe("CompletionStatusSchema", () => {
 		it("should set defaults correctly", () => {
 			const now = new Date().toISOString();
-			const result = ItemStatusSchema.parse({
+			const result = CompletionStatusSchema.parse({
 				created_at: now,
-				updated_at: now,
 			});
 			expect(result.created_at).toBe(now);
-			expect(result.updated_at).toBe(now);
-			expect(result.completed).toBe(false);
-			expect(result.verified).toBe(false);
+			expect(result.started_at).toBeNull();
+			expect(result.completed_at).toBeNull();
 			expect(result.verified_at).toBeNull();
 			expect(result.notes).toEqual([]);
 		});
 
-		it("should accept valid item status", () => {
+		it("should accept valid completion status", () => {
+			const created = new Date("2025-01-01T10:00:00Z").toISOString();
+			const started = new Date("2025-01-01T11:00:00Z").toISOString();
+			const completed = new Date("2025-01-01T12:00:00Z").toISOString();
+			const verified = new Date("2025-01-01T13:00:00Z").toISOString();
+
+			const status = {
+				created_at: created,
+				started_at: started,
+				completed_at: completed,
+				verified_at: verified,
+				notes: [
+					{ text: "Reviewed and approved", timestamp: completed },
+					{ text: "Tested successfully", timestamp: verified },
+				],
+			};
+			expect(() => CompletionStatusSchema.parse(status)).not.toThrow();
+		});
+
+		it("should reject if timestamps are out of order", () => {
+			const created = new Date("2025-01-01T12:00:00Z").toISOString();
+			const started = new Date("2025-01-01T10:00:00Z").toISOString(); // Before created!
+
+			const status = {
+				created_at: created,
+				started_at: started,
+				completed_at: null,
+				verified_at: null,
+				notes: [],
+			};
+			expect(() => CompletionStatusSchema.parse(status)).toThrow();
+		});
+
+		it("should reject if completed_at is before started_at", () => {
+			const created = new Date("2025-01-01T10:00:00Z").toISOString();
+			const started = new Date("2025-01-01T12:00:00Z").toISOString();
+			const completed = new Date("2025-01-01T11:00:00Z").toISOString(); // Before started!
+
+			const status = {
+				created_at: created,
+				started_at: started,
+				completed_at: completed,
+				verified_at: null,
+				notes: [],
+			};
+			expect(() => CompletionStatusSchema.parse(status)).toThrow();
+		});
+
+		it("should accept status with only created_at (minimal)", () => {
 			const now = new Date().toISOString();
 			const status = {
 				created_at: now,
-				updated_at: now,
-				completed: true,
-				completed_at: now,
-				verified: true,
-				verified_at: now,
-				notes: ["Reviewed and approved", "Tested successfully"],
 			};
-			expect(() => ItemStatusSchema.parse(status)).not.toThrow();
+			const result = CompletionStatusSchema.parse(status);
+			expect(result.started_at).toBeNull();
+			expect(result.completed_at).toBeNull();
+			expect(result.verified_at).toBeNull();
 		});
 	});
 });

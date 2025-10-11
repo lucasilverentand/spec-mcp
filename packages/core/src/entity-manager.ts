@@ -1,7 +1,7 @@
 import type { Base, EntityType } from "@spec-mcp/schemas";
 import type { ZodType, ZodTypeDef } from "zod";
-import { EntityDrafter, type EntityDrafterState } from "./entity-drafter";
-import { FileManager } from "./file-manager";
+import { EntityDrafter, type EntityDrafterState } from "./entity-drafter.js";
+import { FileManager } from "./file-manager.js";
 
 export type { EntityDrafterState };
 
@@ -167,15 +167,12 @@ export class EntityManager<T extends Base> extends FileManager {
 		const number = providedNumber ?? (await this.getNextNumber());
 		const now = new Date().toISOString();
 
-		// Add timestamps to status if not present
+		// Add timestamps if not present
 		const entity = {
 			...data,
 			number,
-			status: {
-				...data.status,
-				created_at: data.status?.created_at || now,
-				updated_at: data.status?.updated_at || now,
-			},
+			created_at: (data as any).created_at || now,
+			updated_at: (data as any).updated_at || now,
 		} as T;
 
 		// Validate with schema
@@ -190,25 +187,20 @@ export class EntityManager<T extends Base> extends FileManager {
 			throw new Error(`Entity with number ${number} not found`);
 		}
 
-		// If slug or draft status is being changed, we need to rename the file
+		// If slug is being changed, we need to rename the file
 		const oldSlug = existing.slug;
-		const oldDraft = existing.draft;
 
 		// Update the updated_at timestamp
 		const updated = {
 			...existing,
 			...data,
 			number: existing.number,
-			status: {
-				...existing.status,
-				...(data.status || {}),
-				updated_at: new Date().toISOString(),
-			},
+			updated_at: new Date().toISOString(),
 		} as T;
 		const validated = this.schema.parse(updated);
 
-		// If slug or draft status changed, delete old file
-		if (validated.slug !== oldSlug || validated.draft !== oldDraft) {
+		// If slug changed, delete old file
+		if (validated.slug !== oldSlug) {
 			await super.delete(this.getFilePath(existing));
 		}
 
