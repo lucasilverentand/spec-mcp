@@ -2,7 +2,7 @@ import type { ToolResponse } from "@modelcontextprotocol/sdk/types.js";
 import type { SpecManager } from "@spec-mcp/core";
 import { validateEntity } from "@spec-mcp/core";
 import type { Plan } from "@spec-mcp/schemas";
-import { canStartTask, getTaskState } from "@spec-mcp/schemas";
+import { canStartTask } from "@spec-mcp/schemas";
 
 /**
  * Mark a task as started by adding a note

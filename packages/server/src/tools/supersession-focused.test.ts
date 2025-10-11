@@ -1,0 +1,454 @@
+import { SpecManager } from "@spec-mcp/core";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import {
+	cleanupTempDir,
+	createTempDir,
+	createTestBusinessRequirement,
+	createTestPlan,
+} from "../../../core/tests/helpers.js";
+import { addCriteria, addTask } from "./index.js";
+
+/**
+ * Helper to format entity IDs with padding as required by plan schema
+ */
+function formatEntityId(prefix: string, number: number, slug: string): string {
+	return `${prefix}-${String(number).padStart(3, "0")}-${slug}`;
+}
+
+/**
+ * Focused tests for supersession functionality and reference updating
+ * Tests the core supersession behavior:
+ * 1. Superseding creates new item with new ID
+ * 2. Old item marked as superseded
+ * 3. References are updated throughout the spec
+ * 4. Cannot supersede already-superseded items
+ * 5. Supersession chains work correctly
+ */
+describe("Supersession Core Functionality", () => {
+	let tempDir: string;
+	let specManager: SpecManager;
+
+	beforeEach(async () => {
+		tempDir = await createTempDir("supersession-focused");
+		specManager = new SpecManager(tempDir);
+		await specManager.ensureFolders();
+	});
+
+	afterEach(async () => {
+		await cleanupTempDir(tempDir);
+	});
+
+	describe("Task Supersession", () => {
+		it("should supersede a task and update all depends_on references", async () => {
+			// Create a requirement first so plan validation passes
+			const brd = await specManager.business_requirements.create(
+				createTestBusinessRequirement({ slug: "test-req" }),
+			);
+
+			// Create plan with proper reference to requirement
+			const plan = await specManager.plans.create(
+				createTestPlan({
+					slug: "test-plan",
+					tasks: [],
+					criteria: {
+						requirement: formatEntityId("brd", brd.number, "test-req"),
+						criteria: "crit-001",
+					},
+				}),
+			);
+			const planId = formatEntityId("pln", plan.number, "test-plan");
+
+			// Create task-001
+			await addTask(specManager, planId, "Foundation task");
+
+			// Create task-002 that depends on task-001
+			await addTask(specManager, planId, "Dependent task", {
+				depends_on: ["task-001"],
+			});
+
+			// Create task-003 that also depends on task-001
+			await addTask(specManager, planId, "Another dependent task", {
+				depends_on: ["task-001"],
+			});
+
+			// Supersede task-001
+			const result = await addTask(
+				specManager,
+				planId,
+				"Updated foundation task",
+				{
+					supersede_id: "task-001",
+				},
+			);
+
+			expect(result.content[0].text).toContain("success");
+			expect(result.content[0].text).toContain("task-004");
+
+			const updatedPlan = await specManager.plans.get(plan.number);
+			expect(updatedPlan?.tasks).toHaveLength(4);
+
+			// Verify old task is superseded
+			const oldTask = updatedPlan?.tasks.find((t) => t.id === "task-001");
+			expect(oldTask?.superseded_by).toBe("task-004");
+			expect(oldTask?.superseded_at).toBeTruthy();
+
+			// Verify new task
+			const newTask = updatedPlan?.tasks.find((t) => t.id === "task-004");
+			expect(newTask?.supersedes).toBe("task-001");
+			expect(newTask?.task).toBe("Updated foundation task");
+			expect(newTask?.superseded_by).toBeNull();
+
+			// Verify ALL references were updated
+			const task2 = updatedPlan?.tasks.find((t) => t.id === "task-002");
+			expect(task2?.depends_on).toEqual(["task-004"]);
+			expect(task2?.depends_on).not.toContain("task-001");
+
+			const task3 = updatedPlan?.tasks.find((t) => t.id === "task-003");
+			expect(task3?.depends_on).toEqual(["task-004"]);
+			expect(task3?.depends_on).not.toContain("task-001");
+		});
+
+		it("should prevent superseding an already superseded task", async () => {
+			const brd = await specManager.business_requirements.create(
+				createTestBusinessRequirement({ slug: "test-req" }),
+			);
+
+			const plan = await specManager.plans.create(
+				createTestPlan({
+					slug: "test-plan",
+					tasks: [],
+					criteria: {
+						requirement: formatEntityId("brd", brd.number, "test-req"),
+						criteria: "crit-001",
+					},
+				}),
+			);
+			const planId = formatEntityId("pln", plan.number, "test-plan");
+
+			await addTask(specManager, planId, "Original task");
+			await addTask(specManager, planId, "First update", {
+				supersede_id: "task-001",
+			});
+
+			// Try to supersede the already-superseded task-001
+			const result = await addTask(specManager, planId, "Second update", {
+				supersede_id: "task-001",
+			});
+
+			expect(result.isError).toBe(true);
+			expect(result.content[0].text).toContain("already been superseded");
+			expect(result.content[0].text).toContain("task-002");
+		});
+
+		it("should handle complex dependency chains with multiple references", async () => {
+			const brd = await specManager.business_requirements.create(
+				createTestBusinessRequirement({ slug: "test-req" }),
+			);
+
+			const plan = await specManager.plans.create(
+				createTestPlan({
+					slug: "test-plan",
+					tasks: [],
+					criteria: {
+						requirement: formatEntityId("brd", brd.number, "test-req"),
+						criteria: "crit-001",
+					},
+				}),
+			);
+			const planId = formatEntityId("pln", plan.number, "test-plan");
+
+			// Create complex dependency web: task-001 <- task-002 <- task-003
+			//                                    task-001 <- task-003
+			await addTask(specManager, planId, "Foundation");
+			await addTask(specManager, planId, "Middle", {
+				depends_on: ["task-001"],
+			});
+			await addTask(specManager, planId, "Top", {
+				depends_on: ["task-001", "task-002"],
+			});
+
+			// Supersede the foundation
+			await addTask(specManager, planId, "New foundation", {
+				supersede_id: "task-001",
+			});
+
+			const updatedPlan = await specManager.plans.get(plan.number);
+
+			// task-002 should now depend on task-004
+			const task2 = updatedPlan?.tasks.find((t) => t.id === "task-002");
+			expect(task2?.depends_on).toEqual(["task-004"]);
+
+			// task-003 should depend on both task-004 and task-002
+			const task3 = updatedPlan?.tasks.find((t) => t.id === "task-003");
+			expect(task3?.depends_on).toContain("task-004");
+			expect(task3?.depends_on).toContain("task-002");
+			expect(task3?.depends_on).not.toContain("task-001");
+		});
+
+		it("should create supersession chains correctly", async () => {
+			const brd = await specManager.business_requirements.create(
+				createTestBusinessRequirement({ slug: "test-req" }),
+			);
+
+			const plan = await specManager.plans.create(
+				createTestPlan({
+					slug: "test-plan",
+					tasks: [],
+					criteria: {
+						requirement: formatEntityId("brd", brd.number, "test-req"),
+						criteria: "crit-001",
+					},
+				}),
+			);
+			const planId = formatEntityId("pln", plan.number, "test-plan");
+
+			// Create v1 -> v2 -> v3 chain
+			await addTask(specManager, planId, "Version 1");
+			await addTask(specManager, planId, "Version 2", {
+				supersede_id: "task-001",
+			});
+			await addTask(specManager, planId, "Version 3", {
+				supersede_id: "task-002",
+			});
+
+			const updatedPlan = await specManager.plans.get(plan.number);
+
+			// Verify chain structure
+			const task1 = updatedPlan?.tasks.find((t) => t.id === "task-001");
+			expect(task1?.supersedes).toBeNull();
+			expect(task1?.superseded_by).toBe("task-002");
+
+			const task2 = updatedPlan?.tasks.find((t) => t.id === "task-002");
+			expect(task2?.supersedes).toBe("task-001");
+			expect(task2?.superseded_by).toBe("task-003");
+
+			const task3 = updatedPlan?.tasks.find((t) => t.id === "task-003");
+			expect(task3?.supersedes).toBe("task-002");
+			expect(task3?.superseded_by).toBeNull();
+		});
+
+		it("should update blocked_by references when superseding", async () => {
+			const brd = await specManager.business_requirements.create(
+				createTestBusinessRequirement({ slug: "test-req" }),
+			);
+
+			const plan = await specManager.plans.create(
+				createTestPlan({
+					slug: "test-plan",
+					tasks: [],
+					criteria: {
+						requirement: formatEntityId("brd", brd.number, "test-req"),
+						criteria: "crit-001",
+					},
+				}),
+			);
+			const planId = formatEntityId("pln", plan.number, "test-plan");
+
+			await addTask(specManager, planId, "Blocking task");
+			await addTask(specManager, planId, "Blocked task");
+
+			// Manually add a blocker
+			const planData = await specManager.plans.get(plan.number);
+			if (!planData) throw new Error("Plan not found");
+
+			const task2 = planData.tasks.find((t) => t.id === "task-002");
+			if (!task2) throw new Error("Task 2 not found");
+
+			const updatedTask2 = {
+				...task2,
+				blocked: [
+					{
+						reason: "Waiting for task-001",
+						blocked_by: ["task-001"],
+						blocked_at: new Date().toISOString(),
+						resolved_at: null,
+					},
+				],
+			};
+
+			await specManager.plans.update(planData.number, {
+				tasks: planData.tasks.map((t) =>
+					t.id === "task-002" ? updatedTask2 : t,
+				),
+			});
+
+			// Supersede task-001
+			await addTask(specManager, planId, "New blocking task", {
+				supersede_id: "task-001",
+			});
+
+			const finalPlan = await specManager.plans.get(plan.number);
+			const blockedTask = finalPlan?.tasks.find((t) => t.id === "task-002");
+
+			expect(blockedTask?.blocked[0].blocked_by).toEqual(["task-003"]);
+			expect(blockedTask?.blocked[0].blocked_by).not.toContain("task-001");
+		});
+	});
+
+	describe("Criteria Supersession", () => {
+		it("should supersede criteria correctly", async () => {
+			const brd = await specManager.business_requirements.create(
+				createTestBusinessRequirement({ slug: "test-brd" }),
+			);
+			const brdId = formatEntityId("brd", brd.number, "test-brd");
+
+			// Add a new criteria
+			await addCriteria(
+				specManager,
+				brdId,
+				"Original requirement",
+				"Original rationale",
+			);
+
+			// Supersede it
+			const result = await addCriteria(
+				specManager,
+				brdId,
+				"Updated requirement",
+				"Updated rationale",
+				"crit-002", // supersede the one we just added
+			);
+
+			expect(result.content[0].text).toContain("success");
+			expect(result.content[0].text).toContain("crit-003");
+
+			const updatedBrd = await specManager.business_requirements.get(brd.number);
+
+			// Find the superseded criteria
+			const oldCriteria = updatedBrd?.criteria.find((c) => c.id === "crit-002");
+			expect(oldCriteria?.superseded_by).toBe("crit-003");
+			expect(oldCriteria?.superseded_at).toBeTruthy();
+			expect(oldCriteria?.description).toBe("Original requirement");
+
+			// Find the new criteria
+			const newCriteria = updatedBrd?.criteria.find((c) => c.id === "crit-003");
+			expect(newCriteria?.supersedes).toBe("crit-002");
+			expect(newCriteria?.description).toBe("Updated requirement");
+			expect(newCriteria?.rationale).toBe("Updated rationale");
+			expect(newCriteria?.superseded_by).toBeNull();
+		});
+
+		it("should prevent superseding already superseded criteria", async () => {
+			const brd = await specManager.business_requirements.create(
+				createTestBusinessRequirement({ slug: "test-brd" }),
+			);
+			const brdId = formatEntityId("brd", brd.number, "test-brd");
+
+			await addCriteria(specManager, brdId, "Version 1", "Rationale 1");
+			await addCriteria(
+				specManager,
+				brdId,
+				"Version 2",
+				"Rationale 1",
+				"crit-002",
+			);
+
+			// Try to supersede the already superseded item
+			const result = await addCriteria(
+				specManager,
+				brdId,
+				"Version 3",
+				"Rationale 1",
+				"crit-002", // This is already superseded
+			);
+
+			expect(result.isError).toBe(true);
+			expect(result.content[0].text).toContain("already been superseded");
+		});
+
+		it("should build correct supersession chains", async () => {
+			const brd = await specManager.business_requirements.create(
+				createTestBusinessRequirement({ slug: "test-brd" }),
+			);
+			const brdId = formatEntityId("brd", brd.number, "test-brd");
+
+			// Build a chain: crit-002 -> crit-003 -> crit-004
+			await addCriteria(specManager, brdId, "V1", "R1");
+			await addCriteria(specManager, brdId, "V2", "R1", "crit-002");
+			await addCriteria(specManager, brdId, "V3", "R1", "crit-003");
+
+			const updatedBrd = await specManager.business_requirements.get(brd.number);
+
+			const crit2 = updatedBrd?.criteria.find((c) => c.id === "crit-002");
+			expect(crit2?.supersedes).toBeNull();
+			expect(crit2?.superseded_by).toBe("crit-003");
+
+			const crit3 = updatedBrd?.criteria.find((c) => c.id === "crit-003");
+			expect(crit3?.supersedes).toBe("crit-002");
+			expect(crit3?.superseded_by).toBe("crit-004");
+
+			const crit4 = updatedBrd?.criteria.find((c) => c.id === "crit-004");
+			expect(crit4?.supersedes).toBe("crit-003");
+			expect(crit4?.superseded_by).toBeNull();
+		});
+	});
+
+	describe("Timestamp and Audit Trail", () => {
+		it("should set superseded_at timestamp", async () => {
+			const brd = await specManager.business_requirements.create(
+				createTestBusinessRequirement({ slug: "test-brd" }),
+			);
+			const brdId = formatEntityId("brd", brd.number, "test-brd");
+
+			await addCriteria(specManager, brdId, "Original", "Rationale");
+
+			const beforeSupersede = new Date().toISOString();
+			await new Promise((resolve) => setTimeout(resolve, 10));
+
+			await addCriteria(specManager, brdId, "Updated", "Rationale", "crit-002");
+
+			const afterSupersede = new Date().toISOString();
+
+			const updatedBrd = await specManager.business_requirements.get(brd.number);
+			const oldCriteria = updatedBrd?.criteria.find((c) => c.id === "crit-002");
+
+			expect(oldCriteria?.superseded_at).toBeTruthy();
+			expect(oldCriteria?.superseded_at).toBeGreaterThanOrEqual(
+				beforeSupersede,
+			);
+			expect(oldCriteria?.superseded_at).toBeLessThanOrEqual(afterSupersede);
+		});
+
+		it("should preserve audit trail through multiple supersessions", async () => {
+			const brd = await specManager.business_requirements.create(
+				createTestBusinessRequirement({ slug: "test-req" }),
+			);
+
+			const plan = await specManager.plans.create(
+				createTestPlan({
+					slug: "test-plan",
+					tasks: [],
+					criteria: {
+						requirement: formatEntityId("brd", brd.number, "test-req"),
+						criteria: "crit-001",
+					},
+				}),
+			);
+			const planId = formatEntityId("pln", plan.number, "test-plan");
+
+			await addTask(specManager, planId, "V1");
+			await new Promise((resolve) => setTimeout(resolve, 10));
+
+			await addTask(specManager, planId, "V2", { supersede_id: "task-001" });
+			await new Promise((resolve) => setTimeout(resolve, 10));
+
+			await addTask(specManager, planId, "V3", { supersede_id: "task-002" });
+
+			const updatedPlan = await specManager.plans.get(plan.number);
+
+			// All versions should exist
+			expect(updatedPlan?.tasks).toHaveLength(3);
+
+			// Timestamps should be in order
+			const task1 = updatedPlan?.tasks.find((t) => t.id === "task-001");
+			const task2 = updatedPlan?.tasks.find((t) => t.id === "task-002");
+
+			expect(task1?.superseded_at).toBeTruthy();
+			expect(task2?.superseded_at).toBeTruthy();
+
+			if (task1?.superseded_at && task2?.superseded_at) {
+				expect(task1.superseded_at).toBeLessThan(task2.superseded_at);
+			}
+		});
+	});
+});

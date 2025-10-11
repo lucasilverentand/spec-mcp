@@ -6,7 +6,7 @@ import yaml from "yaml";
 /**
  * Format entity as markdown
  */
-function formatAsMarkdown(entity: any): string {
+function formatAsMarkdown(entity: Record<string, unknown>): string {
 	const lines: string[] = [];
 
 	// Header
