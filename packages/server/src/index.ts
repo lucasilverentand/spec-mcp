@@ -6,6 +6,8 @@ import { DraftStore, SpecManager } from "@spec-mcp/core";
 import { getModeConfig, getServerMode } from "./config/mode-config.js";
 import { registerArrayManipulationTools } from "./register-array-tools.js";
 import { registerCoreTools } from "./register-core-tools.js";
+import { registerPrompts } from "./register-prompts.js";
+import { registerResources } from "./register-resources.js";
 import { ConditionalToolRegistrar } from "./utils/conditional-tool-registration.js";
 import { ErrorCode, McpError } from "./utils/error-codes.js";
 import { logger } from "./utils/logger.js";
@@ -184,6 +186,12 @@ async function main() {
 
 		// Log registration summary
 		registrar.logSummary();
+
+		// Register guide resources
+		registerResources(server);
+
+		// Register prompts
+		registerPrompts(server);
 
 		// Set up connection with retry logic
 		const transport = new StdioServerTransport();
