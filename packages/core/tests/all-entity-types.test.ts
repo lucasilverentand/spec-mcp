@@ -81,19 +81,6 @@ describe("All Entity Types - CRUD Operations", () => {
 
 			expect(all).toHaveLength(2);
 		});
-
-		// TODO: Update to use saveDraft/promoteDraft methods instead of obsolete draft field
-		it.skip("should create draft plans", async () => {
-			const data = createTestPlan({
-				slug: "draft-plan",
-				name: "Draft Plan",
-				draft: true,
-			});
-
-			const created = await specManager.plans.create(data);
-
-			expect(created.draft).toBe(true);
-		});
 	});
 
 	describe("Components", () => {
@@ -155,19 +142,6 @@ describe("All Entity Types - CRUD Operations", () => {
 			const all = await specManager.components.list();
 
 			expect(all).toHaveLength(2);
-		});
-
-		// TODO: Update to use saveDraft/promoteDraft methods instead of obsolete draft field
-		it.skip("should create draft components", async () => {
-			const data = createTestComponent({
-				slug: "draft-component",
-				name: "Draft Component",
-				draft: true,
-			});
-
-			const created = await specManager.components.create(data);
-
-			expect(created.draft).toBe(true);
 		});
 	});
 
@@ -234,19 +208,6 @@ describe("All Entity Types - CRUD Operations", () => {
 
 			expect(all).toHaveLength(2);
 		});
-
-		// TODO: Update to use saveDraft/promoteDraft methods instead of obsolete draft field
-		it.skip("should create draft constitutions", async () => {
-			const data = createTestConstitution({
-				slug: "draft-constitution",
-				name: "Draft Constitution",
-				draft: true,
-			});
-
-			const created = await specManager.constitutions.create(data);
-
-			expect(created.draft).toBe(true);
-		});
 	});
 
 	describe("Decisions", () => {
@@ -305,19 +266,6 @@ describe("All Entity Types - CRUD Operations", () => {
 			const all = await specManager.decisions.list();
 
 			expect(all).toHaveLength(2);
-		});
-
-		// TODO: Update to use saveDraft/promoteDraft methods instead of obsolete draft field
-		it.skip("should create draft decisions", async () => {
-			const data = createTestDecision({
-				slug: "draft-decision",
-				name: "Draft Decision",
-				draft: true,
-			});
-
-			const created = await specManager.decisions.create(data);
-
-			expect(created.draft).toBe(true);
 		});
 	});
 
