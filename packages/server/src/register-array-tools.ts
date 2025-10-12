@@ -1,6 +1,5 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { SpecManager } from "@spec-mcp/core";
-import type { Reference } from "@spec-mcp/schemas";
 import { z } from "zod";
 import {
 	// Decision tools
@@ -27,24 +26,10 @@ import {
 	// Plan Array tools
 	addFlow,
 	addFlowTool,
-	addReferenceToBrd,
-	addReferenceToBrdTool,
-	addReferenceToDecision,
-	addReferenceToDecisionTool,
-	// Milestone tools
-	addReferenceToMilestone,
-	addReferenceToMilestoneTool,
-	// Reference tools
-	addReferenceToPlan,
-	addReferenceToPlanTool,
-	addReferenceToPrd,
-	addReferenceToPrdTool,
 	addStakeholder,
 	addStakeholderTool,
 	// Component tools
 	addTech,
-	addTechnicalDependency,
-	addTechnicalDependencyTool,
 	addTechTool,
 	// Test Case tools
 	addTestCase,
@@ -52,22 +37,12 @@ import {
 	// Business Requirement tools
 	addUserStory,
 	addUserStoryTool,
-	updateBusinessRequirement,
-	updateBusinessRequirementTool,
-	updateComponent,
-	updateComponentTool,
-	updateDecision,
-	updateDecisionTool,
-	// Update tools
-	updatePlan,
-	updatePlanTool,
-	updateTechnicalRequirement,
-	updateTechnicalRequirementTool,
 } from "./tools/index.js";
 import { logger } from "./utils/logger.js";
 
 /**
- * Register all array manipulation and update tools (41 tools)
+ * Register all array manipulation tools (18 tools)
+ * Note: Reference and update tools are now handled by unified tools in main registration
  */
 export function registerArrayManipulationTools(
 	server: McpServer,
@@ -428,36 +403,7 @@ export function registerArrayManipulationTools(
 		},
 	);
 
-	server.tool(
-		addReferenceToDecisionTool.name,
-		addReferenceToDecisionTool.description,
-		{
-			decision_id: z.string(),
-			reference: z.object({
-				type: z.enum(["url", "documentation", "file", "code", "other"]),
-				name: z.string(),
-				description: z.string(),
-				importance: z.enum(["low", "medium", "high", "critical"]).optional(),
-			}),
-		},
-		async (args) => {
-			try {
-				return await addReferenceToDecision(
-					specManager,
-					args.decision_id,
-					args.reference as Reference,
-				);
-			} catch (error) {
-				logger.error(
-					{ error, tool: "add_reference_to_decision" },
-					"Tool execution failed",
-				);
-				throw error;
-			}
-		},
-	);
-
-	// COMPONENT TOOLS (6)
+	// COMPONENT TOOLS (3)
 	server.tool(
 		addTechTool.name,
 		addTechTool.description,
@@ -533,304 +479,9 @@ export function registerArrayManipulationTools(
 		},
 	);
 
-	// REFERENCE TOOLS (8)
-	server.tool(
-		addReferenceToPlanTool.name,
-		addReferenceToPlanTool.description,
-		{
-			plan_id: z.string(),
-			reference: z.object({
-				type: z.enum(["url", "documentation", "file", "code", "other"]),
-				name: z.string(),
-				description: z.string(),
-				importance: z.enum(["low", "medium", "high", "critical"]).optional(),
-			}),
-		},
-		async (args) => {
-			try {
-				return await addReferenceToPlan(
-					specManager,
-					args.plan_id,
-					args.reference as Reference,
-				);
-			} catch (error) {
-				logger.error(
-					{ error, tool: "add_reference_to_plan" },
-					"Tool execution failed",
-				);
-				throw error;
-			}
-		},
-	);
+	// NOTE: Reference tools (add_reference_to_*) and Update tools (update_*)
+	// are now handled by the unified add_reference and update_spec tools
+	// registered in the main index.ts file
 
-	server.tool(
-		addReferenceToBrdTool.name,
-		addReferenceToBrdTool.description,
-		{
-			brd_id: z.string(),
-			reference: z.object({
-				type: z.enum(["url", "documentation", "file", "code", "other"]),
-				name: z.string(),
-				description: z.string(),
-				importance: z.enum(["low", "medium", "high", "critical"]).optional(),
-			}),
-		},
-		async (args) => {
-			try {
-				return await addReferenceToBrd(
-					specManager,
-					args.brd_id,
-					args.reference as Reference,
-				);
-			} catch (error) {
-				logger.error(
-					{ error, tool: "add_reference_to_brd" },
-					"Tool execution failed",
-				);
-				throw error;
-			}
-		},
-	);
-
-	server.tool(
-		addTechnicalDependencyTool.name,
-		addTechnicalDependencyTool.description,
-		{
-			requirement_id: z.string(),
-			reference: z.object({
-				type: z.enum(["url", "documentation", "file", "code", "other"]),
-				name: z.string(),
-				description: z.string(),
-				importance: z.enum(["low", "medium", "high", "critical"]).optional(),
-			}),
-		},
-		async (args) => {
-			try {
-				return await addTechnicalDependency(
-					specManager,
-					args.requirement_id,
-					args.reference as Reference,
-				);
-			} catch (error) {
-				logger.error(
-					{ error, tool: "add_technical_dependency" },
-					"Tool execution failed",
-				);
-				throw error;
-			}
-		},
-	);
-
-	server.tool(
-		addReferenceToPrdTool.name,
-		addReferenceToPrdTool.description,
-		{
-			prd_id: z.string(),
-			reference: z.object({
-				type: z.enum(["url", "documentation", "file", "code", "other"]),
-				name: z.string(),
-				description: z.string(),
-				importance: z.enum(["low", "medium", "high", "critical"]).optional(),
-			}),
-		},
-		async (args) => {
-			try {
-				return await addReferenceToPrd(
-					specManager,
-					args.prd_id,
-					args.reference as Reference,
-				);
-			} catch (error) {
-				logger.error(
-					{ error, tool: "add_reference_to_prd" },
-					"Tool execution failed",
-				);
-				throw error;
-			}
-		},
-	);
-
-	// UPDATE TOOLS (5)
-	server.tool(
-		updatePlanTool.name,
-		updatePlanTool.description,
-		{
-			plan_id: z.string(),
-			title: z.string().optional(),
-			description: z.string().optional(),
-			scope: z
-				.object({
-					in_scope: z.array(z.string()),
-					out_of_scope: z.array(z.string()),
-				})
-				.optional(),
-		},
-		async (args) => {
-			try {
-				const updates: Record<string, unknown> = {};
-				if (args.title !== undefined) updates.title = args.title;
-				if (args.description !== undefined)
-					updates.description = args.description;
-				if (args.scope !== undefined) updates.scope = args.scope;
-				return await updatePlan(specManager, args.plan_id, updates);
-			} catch (error) {
-				logger.error({ error, tool: "update_plan" }, "Tool execution failed");
-				throw error;
-			}
-		},
-	);
-
-	server.tool(
-		updateBusinessRequirementTool.name,
-		updateBusinessRequirementTool.description,
-		{
-			brd_id: z.string(),
-			title: z.string().optional(),
-			description: z.string().optional(),
-			business_goals: z.array(z.string()).optional(),
-		},
-		async (args) => {
-			try {
-				const updates: Record<string, unknown> = {};
-				if (args.title !== undefined) updates.title = args.title;
-				if (args.description !== undefined)
-					updates.description = args.description;
-				if (args.business_goals !== undefined)
-					updates.business_goals = args.business_goals;
-				return await updateBusinessRequirement(
-					specManager,
-					args.brd_id,
-					updates,
-				);
-			} catch (error) {
-				logger.error(
-					{ error, tool: "update_business_requirement" },
-					"Tool execution failed",
-				);
-				throw error;
-			}
-		},
-	);
-
-	server.tool(
-		updateTechnicalRequirementTool.name,
-		updateTechnicalRequirementTool.description,
-		{
-			requirement_id: z.string(),
-			title: z.string().optional(),
-			description: z.string().optional(),
-			priority: z.enum(["critical", "high", "medium", "low"]).optional(),
-		},
-		async (args) => {
-			try {
-				const updates: Record<string, unknown> = {};
-				if (args.title !== undefined) updates.title = args.title;
-				if (args.description !== undefined)
-					updates.description = args.description;
-				if (args.priority !== undefined) updates.priority = args.priority;
-				return await updateTechnicalRequirement(
-					specManager,
-					args.requirement_id,
-					updates,
-				);
-			} catch (error) {
-				logger.error(
-					{ error, tool: "update_technical_requirement" },
-					"Tool execution failed",
-				);
-				throw error;
-			}
-		},
-	);
-
-	server.tool(
-		updateDecisionTool.name,
-		updateDecisionTool.description,
-		{
-			decision_id: z.string(),
-			title: z.string().optional(),
-			context: z.string().optional(),
-			decision: z.string().optional(),
-			status: z
-				.enum(["proposed", "accepted", "rejected", "deprecated"])
-				.optional(),
-		},
-		async (args) => {
-			try {
-				const updates: Record<string, unknown> = {};
-				if (args.title !== undefined) updates.title = args.title;
-				if (args.context !== undefined) updates.context = args.context;
-				if (args.decision !== undefined) updates.decision = args.decision;
-				if (args.status !== undefined) updates.status = args.status;
-				return await updateDecision(specManager, args.decision_id, updates);
-			} catch (error) {
-				logger.error(
-					{ error, tool: "update_decision" },
-					"Tool execution failed",
-				);
-				throw error;
-			}
-		},
-	);
-
-	server.tool(
-		updateComponentTool.name,
-		updateComponentTool.description,
-		{
-			component_id: z.string(),
-			title: z.string().optional(),
-			description: z.string().optional(),
-			type: z
-				.enum(["service", "library", "application", "database", "other"])
-				.optional(),
-		},
-		async (args) => {
-			try {
-				const updates: Record<string, unknown> = {};
-				if (args.title !== undefined) updates.title = args.title;
-				if (args.description !== undefined)
-					updates.description = args.description;
-				if (args.type !== undefined) updates.type = args.type;
-				return await updateComponent(specManager, args.component_id, updates);
-			} catch (error) {
-				logger.error(
-					{ error, tool: "update_component" },
-					"Tool execution failed",
-				);
-				throw error;
-			}
-		},
-	);
-
-	// MILESTONE TOOLS (1)
-	server.tool(
-		addReferenceToMilestoneTool.name,
-		addReferenceToMilestoneTool.description,
-		{
-			milestone_id: z.string(),
-			reference: z.object({
-				type: z.enum(["url", "documentation", "file", "code", "other"]),
-				name: z.string(),
-				description: z.string(),
-				importance: z.enum(["low", "medium", "high", "critical"]).optional(),
-			}),
-		},
-		async (args) => {
-			try {
-				return await addReferenceToMilestone(
-					specManager,
-					args.milestone_id,
-					args.reference as Reference,
-				);
-			} catch (error) {
-				logger.error(
-					{ error, tool: "add_reference_to_milestone" },
-					"Tool execution failed",
-				);
-				throw error;
-			}
-		},
-	);
-
-	logger.info("Registered 26 array manipulation and update tools");
+	logger.info("Registered 18 array manipulation tools");
 }

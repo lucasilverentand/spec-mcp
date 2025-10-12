@@ -3,9 +3,12 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { DraftStore, SpecManager } from "@spec-mcp/core";
+import { ReferenceSchema } from "@spec-mcp/schemas";
 import { z } from "zod";
 import { registerArrayManipulationTools } from "./register-array-tools.js";
 import {
+	addReference,
+	addReferenceTool,
 	addTask,
 	addTaskTool,
 	answerQuestion,
@@ -13,15 +16,35 @@ import {
 	deleteEntity,
 	deleteTool,
 	finalizeEntity,
-	finishTask,
-	finishTaskTool,
+	finishPlan,
+	finishPlanTool,
+	finishTaskGit,
+	finishTaskGitTool,
 	getSpec,
 	getSpecTool,
+	getWorktreeContext,
+	getWorktreeContextTool,
 	listDrafts,
 	skipAnswer,
 	startDraft,
-	startTask,
-	startTaskTool,
+	startPlan,
+	startPlanTool,
+	startTaskGit,
+	startTaskGitTool,
+	switchToMain,
+	switchToMainTool,
+	switchWorktree,
+	switchWorktreeTool,
+	updateBusinessRequirement,
+	updateBusinessRequirementTool,
+	updateComponent,
+	updateComponentTool,
+	updateDecision,
+	updateDecisionTool,
+	updatePlan,
+	updatePlanTool,
+	updateTechnicalRequirement,
+	updateTechnicalRequirementTool,
 	validateEntityTool,
 } from "./tools/index.js";
 import { ErrorCode, McpError } from "./utils/error-codes.js";
@@ -166,6 +189,7 @@ function registerTools(
 	server: McpServer,
 	draftStore: DraftStore,
 	specManager: SpecManager,
+	projectRoot: string,
 ) {
 	// 1. start_draft - Create a new draft
 	server.tool(
@@ -450,21 +474,40 @@ function registerTools(
 		},
 	);
 
-	// 11. start_task - Mark a task as started
+	// 11. start_plan - Create worktree and branch for a plan
 	server.tool(
-		startTaskTool.name,
-		startTaskTool.description,
+		startPlanTool.name,
+		startPlanTool.description,
 		{
 			plan_id: z
 				.string()
-				.describe(startTaskTool.inputSchema.properties.plan_id.description),
-			task_id: z
-				.string()
-				.describe(startTaskTool.inputSchema.properties.task_id.description),
+				.describe(startPlanTool.inputSchema.properties.plan_id.description),
 		},
 		async (args) => {
 			try {
-				return await startTask(specManager, args.plan_id, args.task_id);
+				return await startPlan(specManager, args.plan_id, projectRoot);
+			} catch (error) {
+				logger.error({ error, tool: "start_plan" }, "Tool execution failed");
+				throw error;
+			}
+		},
+	);
+
+	// 12. start_task - Mark a task as started
+	server.tool(
+		startTaskGitTool.name,
+		startTaskGitTool.description,
+		{
+			plan_id: z
+				.string()
+				.describe(startTaskGitTool.inputSchema.properties.plan_id.description),
+			task_id: z
+				.string()
+				.describe(startTaskGitTool.inputSchema.properties.task_id.description),
+		},
+		async (args) => {
+			try {
+				return await startTaskGit(specManager, args.plan_id, args.task_id);
 			} catch (error) {
 				logger.error({ error, tool: "start_task" }, "Tool execution failed");
 				throw error;
@@ -472,21 +515,30 @@ function registerTools(
 		},
 	);
 
-	// 12. finish_task - Mark a task as completed
+	// 13. finish_task - Commit task and mark as completed
 	server.tool(
-		finishTaskTool.name,
-		finishTaskTool.description,
+		finishTaskGitTool.name,
+		finishTaskGitTool.description,
 		{
 			plan_id: z
 				.string()
-				.describe(finishTaskTool.inputSchema.properties.plan_id.description),
+				.describe(finishTaskGitTool.inputSchema.properties.plan_id.description),
 			task_id: z
 				.string()
-				.describe(finishTaskTool.inputSchema.properties.task_id.description),
+				.describe(finishTaskGitTool.inputSchema.properties.task_id.description),
+			summary: z
+				.string()
+				.describe(finishTaskGitTool.inputSchema.properties.summary.description),
 		},
 		async (args) => {
 			try {
-				return await finishTask(specManager, args.plan_id, args.task_id);
+				return await finishTaskGit(
+					specManager,
+					args.plan_id,
+					args.task_id,
+					args.summary,
+					projectRoot,
+				);
 			} catch (error) {
 				logger.error({ error, tool: "finish_task" }, "Tool execution failed");
 				throw error;
@@ -494,8 +546,365 @@ function registerTools(
 		},
 	);
 
+	// 14. finish_plan - Push branch and create PR
+	server.tool(
+		finishPlanTool.name,
+		finishPlanTool.description,
+		{
+			plan_id: z
+				.string()
+				.describe(finishPlanTool.inputSchema.properties.plan_id.description),
+		},
+		async (args) => {
+			try {
+				return await finishPlan(specManager, args.plan_id, projectRoot);
+			} catch (error) {
+				logger.error({ error, tool: "finish_plan" }, "Tool execution failed");
+				throw error;
+			}
+		},
+	);
+
+	// 15. get_worktree_context - Get current worktree
+	server.tool(
+		getWorktreeContextTool.name,
+		getWorktreeContextTool.description,
+		async () => {
+			try {
+				return await getWorktreeContext(specManager);
+			} catch (error) {
+				logger.error(
+					{ error, tool: "get_worktree_context" },
+					"Tool execution failed",
+				);
+				throw error;
+			}
+		},
+	);
+
+	// 16. switch_worktree - Switch to a plan worktree
+	server.tool(
+		switchWorktreeTool.name,
+		switchWorktreeTool.description,
+		{
+			plan_id: z
+				.string()
+				.describe(
+					switchWorktreeTool.inputSchema.properties.plan_id.description,
+				),
+		},
+		async (args) => {
+			try {
+				return await switchWorktree(specManager, args.plan_id, projectRoot);
+			} catch (error) {
+				logger.error(
+					{ error, tool: "switch_worktree" },
+					"Tool execution failed",
+				);
+				throw error;
+			}
+		},
+	);
+
+	// 17. switch_to_main - Switch back to main
+	server.tool(switchToMainTool.name, switchToMainTool.description, async () => {
+		try {
+			return await switchToMain(specManager);
+		} catch (error) {
+			logger.error({ error, tool: "switch_to_main" }, "Tool execution failed");
+			throw error;
+		}
+	});
+
+	// 18. add_reference - Unified reference tool
+	server.tool(
+		addReferenceTool.name,
+		addReferenceTool.description,
+		{
+			spec_id: z
+				.string()
+				.describe(addReferenceTool.inputSchema.properties.spec_id.description),
+			reference: ReferenceSchema.describe(
+				"Reference object with type-specific fields",
+			),
+			is_technical_dependency: z
+				.boolean()
+				.optional()
+				.describe(
+					addReferenceTool.inputSchema.properties.is_technical_dependency
+						?.description || "",
+				),
+		},
+		async (args) => {
+			try {
+				return await addReference(
+					specManager,
+					args.spec_id,
+					args.reference,
+					args.is_technical_dependency,
+				);
+			} catch (error) {
+				logger.error({ error, tool: "add_reference" }, "Tool execution failed");
+				throw error;
+			}
+		},
+	);
+
+	// 19. update_plan
+	server.tool(
+		updatePlanTool.name,
+		updatePlanTool.description,
+		{
+			plan_id: z
+				.string()
+				.describe(updatePlanTool.inputSchema.properties.plan_id.description),
+			title: z
+				.string()
+				.optional()
+				.describe(
+					updatePlanTool.inputSchema.properties.title?.description || "",
+				),
+			description: z
+				.string()
+				.optional()
+				.describe(
+					updatePlanTool.inputSchema.properties.description?.description || "",
+				),
+			scope: z
+				.object({
+					in_scope: z.array(z.string()),
+					out_of_scope: z.array(z.string()),
+				})
+				.optional()
+				.describe(
+					updatePlanTool.inputSchema.properties.scope?.description || "",
+				),
+		},
+		async (args) => {
+			try {
+				const updates: Record<string, unknown> = {};
+				if (args.title !== undefined) updates.title = args.title;
+				if (args.description !== undefined)
+					updates.description = args.description;
+				if (args.scope !== undefined) updates.scope = args.scope;
+				return await updatePlan(specManager, args.plan_id, updates);
+			} catch (error) {
+				logger.error({ error, tool: "update_plan" }, "Tool execution failed");
+				throw error;
+			}
+		},
+	);
+
+	// 20. update_business_requirement
+	server.tool(
+		updateBusinessRequirementTool.name,
+		updateBusinessRequirementTool.description,
+		{
+			brd_id: z
+				.string()
+				.describe(
+					updateBusinessRequirementTool.inputSchema.properties.brd_id
+						.description,
+				),
+			title: z
+				.string()
+				.optional()
+				.describe(
+					updateBusinessRequirementTool.inputSchema.properties.title
+						?.description || "",
+				),
+			description: z
+				.string()
+				.optional()
+				.describe(
+					updateBusinessRequirementTool.inputSchema.properties.description
+						?.description || "",
+				),
+			business_goals: z
+				.array(z.string())
+				.optional()
+				.describe("New business goals (if updating)"),
+		},
+		async (args) => {
+			try {
+				const updates: Record<string, unknown> = {};
+				if (args.title !== undefined) updates.title = args.title;
+				if (args.description !== undefined)
+					updates.description = args.description;
+				if (args.business_goals !== undefined)
+					updates.business_goals = args.business_goals;
+				return await updateBusinessRequirement(
+					specManager,
+					args.brd_id,
+					updates,
+				);
+			} catch (error) {
+				logger.error(
+					{ error, tool: "update_business_requirement" },
+					"Tool execution failed",
+				);
+				throw error;
+			}
+		},
+	);
+
+	// 21. update_technical_requirement
+	server.tool(
+		updateTechnicalRequirementTool.name,
+		updateTechnicalRequirementTool.description,
+		{
+			requirement_id: z
+				.string()
+				.describe(
+					updateTechnicalRequirementTool.inputSchema.properties.prd_id
+						.description,
+				),
+			title: z
+				.string()
+				.optional()
+				.describe(
+					updateTechnicalRequirementTool.inputSchema.properties.title
+						?.description || "",
+				),
+			description: z
+				.string()
+				.optional()
+				.describe(
+					updateTechnicalRequirementTool.inputSchema.properties.description
+						?.description || "",
+				),
+			priority: z
+				.enum(["critical", "high", "medium", "low"])
+				.optional()
+				.describe("New priority level (if updating)"),
+		},
+		async (args) => {
+			try {
+				const updates: Record<string, unknown> = {};
+				if (args.title !== undefined) updates.title = args.title;
+				if (args.description !== undefined)
+					updates.description = args.description;
+				if (args.priority !== undefined) updates.priority = args.priority;
+				return await updateTechnicalRequirement(
+					specManager,
+					args.requirement_id,
+					updates,
+				);
+			} catch (error) {
+				logger.error(
+					{ error, tool: "update_technical_requirement" },
+					"Tool execution failed",
+				);
+				throw error;
+			}
+		},
+	);
+
+	// 22. update_decision
+	server.tool(
+		updateDecisionTool.name,
+		updateDecisionTool.description,
+		{
+			decision_id: z
+				.string()
+				.describe(
+					updateDecisionTool.inputSchema.properties.decision_id.description,
+				),
+			title: z
+				.string()
+				.optional()
+				.describe(
+					updateDecisionTool.inputSchema.properties.title?.description || "",
+				),
+			context: z
+				.string()
+				.optional()
+				.describe(
+					updateDecisionTool.inputSchema.properties.context?.description || "",
+				),
+			decision: z
+				.string()
+				.optional()
+				.describe(
+					updateDecisionTool.inputSchema.properties.decision?.description || "",
+				),
+			status: z
+				.enum(["proposed", "accepted", "rejected", "deprecated"])
+				.optional()
+				.describe(
+					updateDecisionTool.inputSchema.properties.decision_status
+						?.description || "",
+				),
+		},
+		async (args) => {
+			try {
+				const updates: Record<string, unknown> = {};
+				if (args.title !== undefined) updates.title = args.title;
+				if (args.context !== undefined) updates.context = args.context;
+				if (args.decision !== undefined) updates.decision = args.decision;
+				if (args.status !== undefined) updates.status = args.status;
+				return await updateDecision(specManager, args.decision_id, updates);
+			} catch (error) {
+				logger.error(
+					{ error, tool: "update_decision" },
+					"Tool execution failed",
+				);
+				throw error;
+			}
+		},
+	);
+
+	// 23. update_component
+	server.tool(
+		updateComponentTool.name,
+		updateComponentTool.description,
+		{
+			component_id: z
+				.string()
+				.describe(
+					updateComponentTool.inputSchema.properties.component_id.description,
+				),
+			title: z
+				.string()
+				.optional()
+				.describe(
+					updateComponentTool.inputSchema.properties.title?.description || "",
+				),
+			description: z
+				.string()
+				.optional()
+				.describe(
+					updateComponentTool.inputSchema.properties.description?.description ||
+						"",
+				),
+			type: z
+				.enum(["service", "library", "application", "database", "other"])
+				.optional()
+				.describe(
+					updateComponentTool.inputSchema.properties.component_type
+						?.description || "",
+				),
+		},
+		async (args) => {
+			try {
+				const updates: Record<string, unknown> = {};
+				if (args.title !== undefined) updates.title = args.title;
+				if (args.description !== undefined)
+					updates.description = args.description;
+				if (args.type !== undefined) updates.type = args.type;
+				return await updateComponent(specManager, args.component_id, updates);
+			} catch (error) {
+				logger.error(
+					{ error, tool: "update_component" },
+					"Tool execution failed",
+				);
+				throw error;
+			}
+		},
+	);
+
 	logger.info(
-		"Registered 12 core tools (6 draft workflow + 1 validation + 1 delete + 1 get_spec + 3 task manipulation)",
+		"Registered 23 core tools (6 draft workflow + 1 validation + 1 delete + 1 get_spec + 8 git workflow + 1 unified reference + 5 update tools)",
 	);
 }
 
@@ -514,6 +923,7 @@ async function main() {
 		});
 
 		// Initialize core managers
+		const projectRoot = process.cwd();
 		const specManager = new SpecManager("./specs");
 		const draftStore = new DraftStore(specManager);
 
@@ -524,7 +934,7 @@ async function main() {
 		await draftStore.loadAll();
 
 		// Register tools
-		registerTools(server, draftStore, specManager);
+		registerTools(server, draftStore, specManager, projectRoot);
 		registerArrayManipulationTools(server, specManager);
 
 		// Set up connection with retry logic
