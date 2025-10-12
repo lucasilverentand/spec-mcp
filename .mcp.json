@@ -3,6 +3,13 @@
 		"spec-mcp": {
 			"command": "node",
 			"args": ["packages/server/dist/index.js"]
+		},
+		"spec-plan": {
+			"command": "node",
+			"args": ["packages/server/dist/index.js"],
+			"env": {
+				"MODE": "plan"
+			}
 		}
 	}
 }
