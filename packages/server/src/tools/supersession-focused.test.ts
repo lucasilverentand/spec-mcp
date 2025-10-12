@@ -160,11 +160,11 @@ describe("Supersession Core Functionality", () => {
 
 			// Create complex dependency web: task-001 <- task-002 <- task-003
 			//                                    task-001 <- task-003
-			await addTask(specManager, planId, "Foundation");
-			await addTask(specManager, planId, "Middle", {
+			await addTask(specManager, planId, "Foundation task");
+			await addTask(specManager, planId, "Middle layer task", {
 				depends_on: ["task-001"],
 			});
-			await addTask(specManager, planId, "Top", {
+			await addTask(specManager, planId, "Top level task", {
 				depends_on: ["task-001", "task-002"],
 			});
 
@@ -435,10 +435,14 @@ describe("Supersession Core Functionality", () => {
 			await addTask(specManager, planId, "Version 1 task");
 			await new Promise((resolve) => setTimeout(resolve, 10));
 
-			await addTask(specManager, planId, "Version 2 task", { supersede_id: "task-001" });
+			await addTask(specManager, planId, "Version 2 task", {
+				supersede_id: "task-001",
+			});
 			await new Promise((resolve) => setTimeout(resolve, 10));
 
-			await addTask(specManager, planId, "Version 3 task", { supersede_id: "task-002" });
+			await addTask(specManager, planId, "Version 3 task", {
+				supersede_id: "task-002",
+			});
 
 			const updatedPlan = await specManager.plans.get(plan.number);
 

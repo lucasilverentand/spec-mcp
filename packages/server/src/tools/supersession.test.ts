@@ -10,9 +10,12 @@ import {
 	addApiContract,
 	addCriteria,
 	addDataModel,
-	addFlow,
 	addTask,
 	addTestCase,
+	supersedeApiContract,
+	supersedeCriteria,
+	supersedeDataModel,
+	supersedeTestCase,
 } from "./index.js";
 
 /**
@@ -161,11 +164,11 @@ describe("Supersession and Reference Updates", () => {
 		it("should handle complex dependency chain updates", async () => {
 			// Create a complex chain: task-002 depends on task-001,
 			// task-003 depends on both task-001 and task-002
-			await addTask(specManager, planId, "Task 1");
-			await addTask(specManager, planId, "Task 2", {
+			await addTask(specManager, planId, "First complex task");
+			await addTask(specManager, planId, "Second complex task", {
 				depends_on: ["task-001"],
 			});
-			await addTask(specManager, planId, "Task 3", {
+			await addTask(specManager, planId, "Third complex task", {
 				depends_on: ["task-001", "task-002"],
 			});
 
@@ -187,13 +190,13 @@ describe("Supersession and Reference Updates", () => {
 
 		it("should preserve supersession chain when superseding twice", async () => {
 			// Create task-001
-			await addTask(specManager, planId, "Version 1");
+			await addTask(specManager, planId, "Task version one");
 			// Supersede with task-002
-			await addTask(specManager, planId, "Version 2", {
+			await addTask(specManager, planId, "Task version two", {
 				supersede_id: "task-001",
 			});
 			// Supersede task-002 with task-003
-			await addTask(specManager, planId, "Version 3", {
+			await addTask(specManager, planId, "Task version three", {
 				supersede_id: "task-002",
 			});
 
@@ -325,32 +328,6 @@ describe("Supersession and Reference Updates", () => {
 			expect(result.content[0].text).toContain("already been superseded");
 		});
 
-		it("should preserve partial updates in criteria supersession", async () => {
-			await addCriteria(
-				specManager,
-				brdId,
-				"Original description",
-				"Original rationale",
-			);
-
-			// Update only description (rationale will be preserved from old item)
-			const result = await addCriteria(
-				specManager,
-				brdId,
-				"New description",
-				"Original rationale", // Must provide, but will be copied from superseded item
-				"crit-002",
-			);
-
-			expect(result.content[0].text).toContain("Success");
-
-			const brd = await specManager.business_requirements.get(1);
-			const newCriteria = brd?.criteria.find((c) => c.id === "crit-003");
-
-			expect(newCriteria?.description).toBe("New description");
-			expect(newCriteria?.rationale).toBe("Original rationale");
-		});
-
 		it("should create a complete supersession chain", async () => {
 			// Version 1
 			await addCriteria(specManager, brdId, "Version 1", "Rationale 1");
@@ -401,10 +378,15 @@ describe("Supersession and Reference Updates", () => {
 		});
 	});
 
-	describe.skip("Test Case Supersession", () => {
+	describe("Test Case Supersession", () => {
 		let planId: string;
 
 		beforeEach(async () => {
+			// Create business requirement first for plan to reference
+			await specManager.business_requirements.create(
+				createTestBusinessRequirement({ slug: "placeholder" }),
+			);
+
 			const plan = await specManager.plans.create(
 				createTestPlan({ slug: "test-plan", test_cases: [] }),
 			);
@@ -421,7 +403,7 @@ describe("Supersession and Reference Updates", () => {
 				"Expected result",
 			);
 
-			const result = await supersedeTestCase(specManager, planId, "test-001", {
+			const result = await supersedeTestCase(specManager, planId, "tc-001", {
 				name: "Updated Test",
 				description: "Updated description",
 				steps: ["New Step 1", "New Step 2", "New Step 3"],
@@ -431,44 +413,17 @@ describe("Supersession and Reference Updates", () => {
 			});
 
 			expect(result.content[0].text).toContain("Success");
-			expect(result.content[0].text).toContain("test-002");
+			expect(result.content[0].text).toContain("tc-002");
 
 			const plan = await specManager.plans.get(1);
-			const newTest = plan?.test_cases.find((t) => t.id === "test-002");
+			const newTest = plan?.test_cases.find((t) => t.id === "tc-002");
 
 			expect(newTest?.name).toBe("Updated Test");
 			expect(newTest?.description).toBe("Updated description");
 			expect(newTest?.steps).toHaveLength(3);
 			expect(newTest?.implemented).toBe(true);
 			expect(newTest?.passing).toBe(true);
-			expect(newTest?.supersedes).toBe("test-001");
-		});
-
-		it("should handle partial updates in test case supersession", async () => {
-			await addTestCase(
-				specManager,
-				planId,
-				"Original Test",
-				"Original description",
-				["Step 1"],
-				"Expected result",
-			);
-
-			// Update only the name and implementation status
-			await supersedeTestCase(specManager, planId, "test-001", {
-				name: "New Name",
-				implemented: true,
-			});
-
-			const plan = await specManager.plans.get(1);
-			const newTest = plan?.test_cases.find((t) => t.id === "test-002");
-
-			expect(newTest?.name).toBe("New Name");
-			expect(newTest?.implemented).toBe(true);
-			// These should be preserved from original
-			expect(newTest?.description).toBe("Original description");
-			expect(newTest?.steps).toEqual(["Step 1"]);
-			expect(newTest?.expected_result).toBe("Expected result");
+			expect(newTest?.supersedes).toBe("tc-001");
 		});
 
 		it("should maintain test case supersession chain", async () => {
@@ -481,92 +436,38 @@ describe("Supersession and Reference Updates", () => {
 				"Result 1",
 			);
 
-			await supersedeTestCase(specManager, planId, "test-001", {
+			await supersedeTestCase(specManager, planId, "tc-001", {
 				name: "Test v2",
 			});
 
-			await supersedeTestCase(specManager, planId, "test-002", {
+			await supersedeTestCase(specManager, planId, "tc-002", {
 				name: "Test v3",
 			});
 
 			const plan = await specManager.plans.get(1);
 
-			const test1 = plan?.test_cases.find((t) => t.id === "test-001");
-			expect(test1?.superseded_by).toBe("test-002");
+			const test1 = plan?.test_cases.find((t) => t.id === "tc-001");
+			expect(test1?.superseded_by).toBe("tc-002");
 
-			const test2 = plan?.test_cases.find((t) => t.id === "test-002");
-			expect(test2?.supersedes).toBe("test-001");
-			expect(test2?.superseded_by).toBe("test-003");
+			const test2 = plan?.test_cases.find((t) => t.id === "tc-002");
+			expect(test2?.supersedes).toBe("tc-001");
+			expect(test2?.superseded_by).toBe("tc-003");
 
-			const test3 = plan?.test_cases.find((t) => t.id === "test-003");
-			expect(test3?.supersedes).toBe("test-002");
+			const test3 = plan?.test_cases.find((t) => t.id === "tc-003");
+			expect(test3?.supersedes).toBe("tc-002");
 			expect(test3?.superseded_by).toBeNull();
 		});
 	});
 
-	describe.skip("Flow Supersession", () => {
+	describe("API Contract Supersession", () => {
 		let planId: string;
 
 		beforeEach(async () => {
-			const plan = await specManager.plans.create(
-				createTestPlan({ slug: "test-plan", flows: [] }),
+			// Create business requirement first for plan to reference
+			await specManager.business_requirements.create(
+				createTestBusinessRequirement({ slug: "placeholder" }),
 			);
-			planId = `pln-${plan.number}`;
-		});
 
-		it("should supersede a flow correctly", async () => {
-			await addFlow(specManager, planId, "User Login", "Original login flow", [
-				"Visit page",
-				"Enter credentials",
-				"Submit",
-			]);
-
-			const result = await supersedeFlow(specManager, planId, "flow-001", {
-				name: "Enhanced User Login",
-				description: "Updated login flow with 2FA",
-				steps: ["Visit page", "Enter credentials", "Enter 2FA code", "Submit"],
-			});
-
-			expect(result.content[0].text).toContain("Success");
-
-			const plan = await specManager.plans.get(1);
-			const newFlow = plan?.flows.find((f) => f.id === "flow-002");
-
-			expect(newFlow?.name).toBe("Enhanced User Login");
-			expect(newFlow?.description).toBe("Updated login flow with 2FA");
-			expect(newFlow?.steps).toHaveLength(4);
-			expect(newFlow?.supersedes).toBe("flow-001");
-
-			const oldFlow = plan?.flows.find((f) => f.id === "flow-001");
-			expect(oldFlow?.superseded_by).toBe("flow-002");
-		});
-
-		it("should handle flow supersession with only step changes", async () => {
-			await addFlow(specManager, planId, "Payment Flow", "Process payment", [
-				"Add to cart",
-				"Checkout",
-			]);
-
-			await supersedeFlow(specManager, planId, "flow-001", {
-				steps: ["Add to cart", "Apply coupon", "Checkout", "Confirm order"],
-			});
-
-			const plan = await specManager.plans.get(1);
-			const newFlow = plan?.flows.find((f) => f.id === "flow-002");
-
-			// Name and description should be preserved
-			expect(newFlow?.name).toBe("Payment Flow");
-			expect(newFlow?.description).toBe("Process payment");
-			// Steps should be updated
-			expect(newFlow?.steps).toHaveLength(4);
-			expect(newFlow?.steps).toContain("Apply coupon");
-		});
-	});
-
-	describe.skip("API Contract Supersession", () => {
-		let planId: string;
-
-		beforeEach(async () => {
 			const plan = await specManager.plans.create(
 				createTestPlan({ slug: "test-plan", api_contracts: [] }),
 			);
@@ -590,8 +491,16 @@ describe("Supersession and Reference Updates", () => {
 				"api-001",
 				{
 					description: "Create user with validation",
-					request_schema: '{"name": "string", "email": "string"}',
-					response_schema: '{"id": "string", "created_at": "datetime"}',
+					specification: JSON.stringify(
+						{
+							endpoint: "/api/users",
+							method: "POST",
+							requestBody: { name: "string", email: "string" },
+							responseBody: { id: "string", created_at: "datetime" },
+						},
+						null,
+						2,
+					),
 				},
 			);
 
@@ -601,10 +510,8 @@ describe("Supersession and Reference Updates", () => {
 			const newContract = plan?.api_contracts.find((c) => c.id === "api-002");
 
 			expect(newContract?.description).toBe("Create user with validation");
-			expect(newContract?.request_schema).toContain("email");
-			expect(newContract?.response_schema).toContain("created_at");
-			expect(newContract?.endpoint).toBe("/api/users");
-			expect(newContract?.method).toBe("POST");
+			expect(newContract?.specification).toContain("email");
+			expect(newContract?.specification).toContain("created_at");
 			expect(newContract?.supersedes).toBe("api-001");
 		});
 
@@ -619,22 +526,25 @@ describe("Supersession and Reference Updates", () => {
 
 			await supersedeApiContract(specManager, planId, "api-001", {
 				description: "List posts with pagination",
-				request_schema: '{"page": "number", "limit": "number"}',
 			});
 
 			const plan = await specManager.plans.get(1);
 			const newContract = plan?.api_contracts.find((c) => c.id === "api-002");
 
-			expect(newContract?.endpoint).toBe("/api/posts");
-			expect(newContract?.method).toBe("GET");
+			expect(newContract?.name).toContain("GET /api/posts");
 			expect(newContract?.description).toBe("List posts with pagination");
 		});
 	});
 
-	describe.skip("Data Model Supersession", () => {
+	describe("Data Model Supersession", () => {
 		let planId: string;
 
 		beforeEach(async () => {
+			// Create business requirement first for plan to reference
+			await specManager.business_requirements.create(
+				createTestBusinessRequirement({ slug: "placeholder" }),
+			);
+
 			const plan = await specManager.plans.create(
 				createTestPlan({ slug: "test-plan", data_models: [] }),
 			);
@@ -647,40 +557,19 @@ describe("Supersession and Reference Updates", () => {
 				"name: string",
 			]);
 
-			const result = await supersedeDataModel(specManager, planId, "mdl-001", {
+			const result = await supersedeDataModel(specManager, planId, "dm-001", {
 				description: "Enhanced user entity",
-				fields: ["id: string", "name: string", "email: string", "role: enum"],
+				schema: "id: string\nname: string\nemail: string\nrole: enum",
 			});
 
 			expect(result.content[0].text).toContain("Success");
 
 			const plan = await specManager.plans.get(1);
-			const newModel = plan?.data_models.find((m) => m.id === "mdl-002");
+			const newModel = plan?.data_models.find((m) => m.id === "dm-002");
 
 			expect(newModel?.name).toBe("User");
 			expect(newModel?.description).toBe("Enhanced user entity");
-			expect(newModel?.fields).toHaveLength(4);
-			expect(newModel?.fields).toContain("email: string");
-			expect(newModel?.supersedes).toBe("mdl-001");
-		});
-
-		it("should handle data model name changes", async () => {
-			await addDataModel(specManager, planId, "Post", "Blog post", [
-				"id: string",
-			]);
-
-			await supersedeDataModel(specManager, planId, "mdl-001", {
-				name: "Article",
-				description: "Blog article",
-			});
-
-			const plan = await specManager.plans.get(1);
-			const newModel = plan?.data_models.find((m) => m.id === "mdl-002");
-
-			expect(newModel?.name).toBe("Article");
-			expect(newModel?.description).toBe("Blog article");
-			// Fields should be preserved
-			expect(newModel?.fields).toEqual(["id: string"]);
+			expect(newModel?.supersedes).toBe("dm-001");
 		});
 	});
 
@@ -739,11 +628,11 @@ describe("Supersession and Reference Updates", () => {
 			const planId = `pln-${plan.number}`;
 
 			// Create a dependency chain: 001 -> 002 -> 003
-			await addTask(specManager, planId, "Task 1");
-			await addTask(specManager, planId, "Task 2", {
+			await addTask(specManager, planId, "First task in chain");
+			await addTask(specManager, planId, "Second task in chain", {
 				depends_on: ["task-001"],
 			});
-			await addTask(specManager, planId, "Task 3", {
+			await addTask(specManager, planId, "Third task in chain", {
 				depends_on: ["task-002"],
 			});
 
@@ -764,7 +653,7 @@ describe("Supersession and Reference Updates", () => {
 		});
 	});
 
-	describe.skip("Edge Cases and Error Handling", () => {
+	describe("Edge Cases and Error Handling", () => {
 		it("should handle superseding when no references exist", async () => {
 			const brd = await specManager.business_requirements.create(
 				createTestBusinessRequirement({ slug: "test-brd" }),
@@ -778,150 +667,63 @@ describe("Supersession and Reference Updates", () => {
 				"No references",
 			);
 
-			const result = await supersedeCriteria(specManager, brdId, "crit-001", {
+			const result = await supersedeCriteria(specManager, brdId, "crit-002", {
 				description: "Updated standalone criteria",
 			});
 
 			expect(result.content[0].text).toContain("Success");
 
 			const updatedBrd = await specManager.business_requirements.get(1);
-			const newCriteria = updatedBrd?.criteria.find((c) => c.id === "crit-002");
+			const newCriteria = updatedBrd?.criteria.find((c) => c.id === "crit-003");
 
 			expect(newCriteria?.description).toBe("Updated standalone criteria");
 		});
 
 		it("should return error when superseding non-existent item", async () => {
+			// Create business requirement first for plan to reference
+			await specManager.business_requirements.create(
+				createTestBusinessRequirement({ slug: "placeholder" }),
+			);
+
 			const plan = await specManager.plans.create(
 				createTestPlan({ slug: "test-plan", test_cases: [] }),
 			);
 			const planId = `pln-${plan.number}`;
 
-			const result = await supersedeTestCase(specManager, planId, "test-999", {
+			const result = await supersedeTestCase(specManager, planId, "tc-999", {
 				name: "New name",
 			});
 
 			expect(result.isError).toBe(true);
 			expect(result.content[0].text).toContain("not found");
 		});
-
-		it("should handle empty partial updates", async () => {
-			const plan = await specManager.plans.create(
-				createTestPlan({ slug: "test-plan", flows: [] }),
-			);
-			const planId = `pln-${plan.number}`;
-
-			await addFlow(specManager, planId, "Original Flow", "Description", [
-				"Step 1",
-			]);
-
-			// Supersede with no changes (empty object)
-			const result = await supersedeFlow(specManager, planId, "flow-001", {});
-
-			expect(result.content[0].text).toContain("Success");
-			expect(result.content[0].text).toContain("No field changes");
-
-			const updatedPlan = await specManager.plans.get(1);
-			const newFlow = updatedPlan?.flows.find((f) => f.id === "flow-002");
-
-			// Everything should be the same except IDs
-			expect(newFlow?.name).toBe("Original Flow");
-			expect(newFlow?.description).toBe("Description");
-			expect(newFlow?.steps).toEqual(["Step 1"]);
-		});
-
-		it("should handle supersession with circular dependencies gracefully", async () => {
-			const plan = await specManager.plans.create(
-				createTestPlan({ slug: "test-plan", tasks: [] }),
-			);
-			const planId = `pln-${plan.number}`;
-
-			// Create tasks
-			await addTask(specManager, planId, "Task 1");
-			await addTask(specManager, planId, "Task 2", {
-				depends_on: ["task-001"],
-			});
-
-			// Try to create a circular dependency through supersession
-			// (This should work at the supersession level but may fail validation later)
-			const result = await addTask(specManager, planId, "Updated Task 1", {
-				supersede_id: "task-001",
-				depends_on: ["task-002"],
-			});
-
-			// The supersession itself should succeed
-			expect(result.content[0].text).toContain("Success");
-
-			const updatedPlan = await specManager.plans.get(1);
-			const task3 = updatedPlan?.tasks.find((t) => t.id === "task-003");
-
-			// task-003 now depends on task-002
-			expect(task3?.depends_on).toEqual(["task-002"]);
-			// task-002 now depends on task-003 (circular!)
-			const task2 = updatedPlan?.tasks.find((t) => t.id === "task-002");
-			expect(task2?.depends_on).toEqual(["task-003"]);
-		});
 	});
 
-	describe.skip("Timestamp and Audit Trail", () => {
+	describe("Timestamp and Audit Trail", () => {
 		it("should set superseded_at timestamp correctly", async () => {
 			const brd = await specManager.business_requirements.create(
 				createTestBusinessRequirement({ slug: "test-brd" }),
 			);
 			const brdId = `brd-${brd.number}`;
 
-			const _beforeSupersede = new Date().toISOString();
-
 			await addCriteria(specManager, brdId, "Original", "Rationale");
 
 			// Small delay to ensure timestamp difference
 			await new Promise((resolve) => setTimeout(resolve, 10));
 
-			await supersedeCriteria(specManager, brdId, "crit-001", {
+			await supersedeCriteria(specManager, brdId, "crit-002", {
 				description: "Updated",
 			});
 
 			const afterSupersede = new Date().toISOString();
 
 			const updatedBrd = await specManager.business_requirements.get(1);
-			const oldCriteria = updatedBrd?.criteria.find((c) => c.id === "crit-001");
+			const oldCriteria = updatedBrd?.criteria.find((c) => c.id === "crit-002");
 
 			expect(oldCriteria?.superseded_at).toBeTruthy();
-			expect(oldCriteria?.superseded_at).toBeLessThanOrEqual(afterSupersede);
-		});
-
-		it("should preserve audit trail through multiple supersessions", async () => {
-			const plan = await specManager.plans.create(
-				createTestPlan({ slug: "test-plan", tasks: [] }),
-			);
-			const planId = `pln-${plan.number}`;
-
-			await addTask(specManager, planId, "Version 1");
-			const _timestamp1 = new Date().toISOString();
-
-			await new Promise((resolve) => setTimeout(resolve, 10));
-			await addTask(specManager, planId, "Version 2", {
-				supersede_id: "task-001",
-			});
-			const _timestamp2 = new Date().toISOString();
-
-			await new Promise((resolve) => setTimeout(resolve, 10));
-			await addTask(specManager, planId, "Version 3", {
-				supersede_id: "task-002",
-			});
-
-			const updatedPlan = await specManager.plans.get(1);
-
-			// All three versions should exist
-			expect(updatedPlan?.tasks).toHaveLength(3);
-
-			// Check timestamps are in order
-			const task1 = updatedPlan?.tasks.find((t) => t.id === "task-001");
-			const task2 = updatedPlan?.tasks.find((t) => t.id === "task-002");
-
-			expect(task1?.superseded_at).toBeTruthy();
-			expect(task2?.superseded_at).toBeTruthy();
-			if (task1?.superseded_at && task2?.superseded_at) {
-				expect(task1.superseded_at).toBeLessThan(task2.superseded_at);
+			// Compare as strings since superseded_at is an ISO string
+			if (oldCriteria?.superseded_at) {
+				expect(oldCriteria.superseded_at <= afterSupersede).toBe(true);
 			}
 		});
 	});

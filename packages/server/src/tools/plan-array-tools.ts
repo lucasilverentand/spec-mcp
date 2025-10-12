@@ -43,7 +43,10 @@ export async function addFlow(
 				id: `step-${String(index + 1).padStart(3, "0")}`,
 				name: step,
 				description: step,
-				next_steps: index < steps.length - 1 ? [`step-${String(index + 2).padStart(3, "0")}`] : [],
+				next_steps:
+					index < steps.length - 1
+						? [`step-${String(index + 2).padStart(3, "0")}`]
+						: [],
 			};
 		}
 		return step;
@@ -131,9 +134,7 @@ export async function supersedeFlow(
 	specManager: SpecManager,
 	planId: string,
 	flowId: string,
-	updates: Partial<
-		Pick<Flow, "type" | "name" | "description" | "steps">
-	>,
+	updates: Partial<Pick<Flow, "type" | "name" | "description" | "steps">>,
 ): Promise<CallToolResult> {
 	const config: ArrayToolConfig<Plan, Flow> = {
 		toolName: "supersede_flow",
@@ -181,12 +182,16 @@ export async function addApiContract(
 	};
 
 	// Build the specification as an OpenAPI-style object
-	const specification = JSON.stringify({
-		endpoint,
-		method,
-		requestBody: requestBody ? JSON.parse(requestBody) : undefined,
-		responseBody: responseBody ? JSON.parse(responseBody) : undefined,
-	}, null, 2);
+	const specification = JSON.stringify(
+		{
+			endpoint,
+			method,
+			requestBody: requestBody ? JSON.parse(requestBody) : undefined,
+			responseBody: responseBody ? JSON.parse(responseBody) : undefined,
+		},
+		null,
+		2,
+	);
 
 	return addItemWithId(
 		specManager,
@@ -204,6 +209,34 @@ export async function addApiContract(
 		config,
 		options?.supersede_id,
 	);
+}
+
+/**
+ * Supersede an existing API contract with updated values
+ * Creates a new API contract with a new ID and marks the old one as superseded
+ */
+export async function supersedeApiContract(
+	specManager: SpecManager,
+	planId: string,
+	contractId: string,
+	updates: Partial<
+		Pick<
+			ApiContract,
+			"name" | "description" | "contract_type" | "specification" | "examples"
+		>
+	>,
+): Promise<CallToolResult> {
+	const config: ArrayToolConfig<Plan, ApiContract> = {
+		toolName: "supersede_api_contract",
+		description: "Supersede API contract in a plan",
+		specType: "plan",
+		arrayFieldName: "api_contracts",
+		idPrefix: "api",
+		getArray: (spec) => spec.api_contracts || [],
+		setArray: (_spec, items) => ({ api_contracts: items }),
+	};
+
+	return supersedeItemWithId(specManager, planId, contractId, updates, config);
 }
 
 export const addApiContractTool = {
@@ -308,6 +341,42 @@ export async function addDataModel(
 		config,
 		supersede_id,
 	);
+}
+
+/**
+ * Supersede an existing data model with updated values
+ * Creates a new data model with a new ID and marks the old one as superseded
+ */
+export async function supersedeDataModel(
+	specManager: SpecManager,
+	planId: string,
+	modelId: string,
+	updates: Partial<
+		Pick<
+			DataModel,
+			| "name"
+			| "description"
+			| "format"
+			| "schema"
+			| "fields"
+			| "relationships"
+			| "constraints"
+			| "indexes"
+			| "examples"
+		>
+	>,
+): Promise<CallToolResult> {
+	const config: ArrayToolConfig<Plan, DataModel> = {
+		toolName: "supersede_data_model",
+		description: "Supersede data model in a plan",
+		specType: "plan",
+		arrayFieldName: "data_models",
+		idPrefix: "dm",
+		getArray: (spec) => spec.data_models || [],
+		setArray: (_spec, items) => ({ data_models: items }),
+	};
+
+	return supersedeItemWithId(specManager, planId, modelId, updates, config);
 }
 
 export const addDataModelTool = {

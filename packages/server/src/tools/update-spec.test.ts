@@ -247,17 +247,11 @@ describe("Update Spec Tools", () => {
 		});
 
 		// TODO: Update this test - tech_stack schema was changed to use strings not objects
-		it.skip("should preserve arrays when updating", async () => {
+		it("should preserve arrays when updating", async () => {
 			const component = await specManager.components.create(
 				createTestComponent({
 					slug: "test-component",
-					tech_stack: [
-						{
-							name: "React",
-							version: "18.0.0",
-							purpose: "Frontend",
-						},
-					],
+					tech_stack: ["React 18.0.0 - Frontend framework"],
 				}),
 			);
 
@@ -267,7 +261,7 @@ describe("Update Spec Tools", () => {
 
 			const updated = await specManager.components.get(1);
 			expect(updated?.tech_stack).toHaveLength(1);
-			expect(updated?.tech_stack[0].name).toBe("React");
+			expect(updated?.tech_stack[0]).toBe("React 18.0.0 - Frontend framework");
 		});
 	});
 

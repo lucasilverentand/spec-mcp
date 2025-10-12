@@ -72,7 +72,12 @@ export async function updateSpec<
 
 		// Get the appropriate manager method
 		const manager = getSpecManager(specManager, spec.type);
-		await manager.update(spec.number, filteredUpdates as any);
+		// Type assertion needed because filteredUpdates is Record<string, unknown>
+		// but manager expects Partial<T> where T is the specific spec type
+		await manager.update(
+			spec.number,
+			filteredUpdates as Parameters<typeof manager.update>[1],
+		);
 
 		// Build summary of what was updated
 		const updatedFields = Object.keys(filteredUpdates);

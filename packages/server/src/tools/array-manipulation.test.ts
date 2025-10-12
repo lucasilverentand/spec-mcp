@@ -78,7 +78,7 @@ describe("Array Manipulation Tools", () => {
 			);
 		});
 
-		it.skip("should remove a criteria", async () => {
+		it("should remove a criteria", async () => {
 			await addCriteria(specManager, brdId, "Test criteria", "Test rationale");
 			const result = await removeCriteria(specManager, brdId, "crit-001");
 
@@ -88,7 +88,7 @@ describe("Array Manipulation Tools", () => {
 			expect(brd?.criteria).toHaveLength(1);
 		});
 
-		it.skip("should supersede a criteria", async () => {
+		it("should supersede a criteria", async () => {
 			await addCriteria(
 				specManager,
 				brdId,
@@ -143,9 +143,17 @@ describe("Array Manipulation Tools", () => {
 			expect(brd?.user_stories[1].role).toBe("user");
 		});
 
-		it.skip("should remove a user story", async () => {
-			await addUserStory(specManager, brdId, "user", "test", "benefit");
-			const result = await removeUserStory(specManager, brdId, 0);
+		it("should remove a user story", async () => {
+			// BRD already has one user story from createTestBusinessRequirement
+			await addUserStory(
+				specManager,
+				brdId,
+				"user",
+				"test feature",
+				"test benefit",
+			);
+			// Now there are 2 user stories, remove the second one (index 1)
+			const result = await removeUserStory(specManager, brdId, 1);
 
 			expect(result.content[0].text).toContain("Success");
 
@@ -202,7 +210,7 @@ describe("Array Manipulation Tools", () => {
 			expect(plan?.test_cases[0].name).toBe("Login Flow Test");
 		});
 
-		it.skip("should supersede a test case", async () => {
+		it("should supersede a test case", async () => {
 			await addTestCase(
 				specManager,
 				planId,
@@ -293,21 +301,21 @@ describe("Array Manipulation Tools", () => {
 			expect(plan?.data_models[0].name).toBe("User");
 		});
 
-		it.skip("should supersede a flow", async () => {
+		it("should supersede a flow", async () => {
 			await addFlow(specManager, planId, "Original", "Original desc", [
 				"Step 1",
 			]);
 
-			const result = await supersedeFlow(specManager, planId, "flw-001", {
+			const result = await supersedeFlow(specManager, planId, "flow-001", {
 				name: "Updated Flow Name",
 			});
 
 			expect(result.content[0].text).toContain("Success");
 
 			const plan = await specManager.plans.get(1);
-			const newFlow = plan?.flows.find((f) => f.id === "flw-002");
+			const newFlow = plan?.flows.find((f) => f.id === "flow-002");
 			expect(newFlow?.name).toBe("Updated Flow Name");
-			expect(newFlow?.supersedes).toBe("flw-001");
+			expect(newFlow?.supersedes).toBe("flow-001");
 		});
 	});
 
@@ -332,7 +340,9 @@ describe("Array Manipulation Tools", () => {
 
 			const decision = await specManager.decisions.get(1);
 			expect(decision?.alternatives).toHaveLength(1);
-			expect(decision?.alternatives[0]).toBe("Alternative 1: First alternative with pros and cons");
+			expect(decision?.alternatives[0]).toBe(
+				"Alternative 1: First alternative with pros and cons",
+			);
 		});
 
 		it("should add a consequence", async () => {
@@ -372,7 +382,9 @@ describe("Array Manipulation Tools", () => {
 
 			const component = await specManager.components.get(1);
 			expect(component?.tech_stack).toHaveLength(1);
-			expect(component?.tech_stack[0]).toBe("React 18.0.0 - Frontend framework");
+			expect(component?.tech_stack[0]).toBe(
+				"React 18.0.0 - Frontend framework",
+			);
 		});
 
 		it("should add deployment", async () => {
@@ -406,7 +418,9 @@ describe("Array Manipulation Tools", () => {
 
 			const component = await specManager.components.get(1);
 			expect(component?.external_dependencies).toHaveLength(1);
-			expect(component?.external_dependencies[0]).toBe("Stripe API - Payment processing");
+			expect(component?.external_dependencies[0]).toBe(
+				"Stripe API - Payment processing",
+			);
 		});
 	});
 

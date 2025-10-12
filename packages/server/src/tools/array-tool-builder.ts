@@ -163,7 +163,12 @@ export async function addItemWithId<
 
 		// Get the appropriate manager method
 		const manager = getSpecManager(specManager, spec.type);
-		await manager.update(spec.number, updates as any);
+		// Type assertion needed because TypeScript can't verify the connection between
+		// the config.setArray return type and the manager's expected update parameter type
+		await manager.update(
+			spec.number,
+			updates as Parameters<typeof manager.update>[1],
+		);
 
 		if (supersede_id) {
 			// Show what changed
@@ -334,7 +339,12 @@ export async function removeItemWithId<
 
 		// Get the appropriate manager method
 		const manager = getSpecManager(specManager, spec.type);
-		await manager.update(spec.number, updates as any);
+		// Type assertion needed because TypeScript can't verify the connection between
+		// the config.setArray return type and the manager's expected update parameter type
+		await manager.update(
+			spec.number,
+			updates as Parameters<typeof manager.update>[1],
+		);
 
 		return {
 			content: [
@@ -479,7 +489,12 @@ export async function supersedeItemWithId<
 
 		// Get the appropriate manager method
 		const manager = getSpecManager(specManager, spec.type);
-		await manager.update(spec.number, updates as any);
+		// Type assertion needed because TypeScript can't verify the connection between
+		// the config.setArray return type and the manager's expected update parameter type
+		await manager.update(
+			spec.number,
+			updates as Parameters<typeof manager.update>[1],
+		);
 
 		// Show what changed
 		const changes: string[] = [];
@@ -567,7 +582,12 @@ export async function addSimpleItem<
 
 		// Get the appropriate manager method
 		const manager = getSpecManager(specManager, spec.type);
-		await manager.update(spec.number, updates as any);
+		// Type assertion needed because TypeScript can't verify the connection between
+		// the config.setArray return type and the manager's expected update parameter type
+		await manager.update(
+			spec.number,
+			updates as Parameters<typeof manager.update>[1],
+		);
 
 		return {
 			content: [
@@ -655,7 +675,12 @@ export async function removeSimpleItem<
 
 		// Get the appropriate manager method
 		const manager = getSpecManager(specManager, spec.type);
-		await manager.update(spec.number, updates as any);
+		// Type assertion needed because TypeScript can't verify the connection between
+		// the config.setArray return type and the manager's expected update parameter type
+		await manager.update(
+			spec.number,
+			updates as Parameters<typeof manager.update>[1],
+		);
 
 		return {
 			content: [

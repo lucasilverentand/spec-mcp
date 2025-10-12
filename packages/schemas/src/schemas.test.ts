@@ -249,10 +249,7 @@ describe("Task Status Schemas", () => {
 				started_at: started,
 				completed_at: completed,
 				verified_at: verified,
-				notes: [
-					"Reviewed and approved",
-					"Tested successfully",
-				],
+				notes: ["Reviewed and approved", "Tested successfully"],
 			};
 			expect(() => CompletionStatusSchema.parse(status)).not.toThrow();
 		});
