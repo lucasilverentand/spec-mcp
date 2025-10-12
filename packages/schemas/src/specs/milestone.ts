@@ -1,7 +1,6 @@
 import z from "zod";
 import { BaseSchema } from "../shared/base.js";
 import { ReferencesSchema } from "../shared/reference.js";
-import { CompletionStatusSchema } from "../shared/task.js";
 
 export const MilestoneIdSchema = z
 	.string()
@@ -18,7 +17,6 @@ export const MilestoneSchema = BaseSchema.extend({
 		.nullable()
 		.default(null)
 		.describe("Target completion date for the milestone"),
-	status: CompletionStatusSchema.describe("Current status of the milestone"),
 	references: ReferencesSchema.describe(
 		"External references for additional context",
 	),

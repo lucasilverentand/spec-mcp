@@ -33,13 +33,6 @@ describe("MilestoneSchema", () => {
 			description: "Initial product release with core features",
 			priority: "high",
 			target_date: "2025-12-31T00:00:00Z",
-			status: {
-				created_at: "2025-01-01T00:00:00Z",
-				started_at: null,
-				completed_at: null,
-				verified_at: null,
-				notes: [],
-			},
 			references: [],
 			created_at: "2025-01-01T00:00:00Z",
 			updated_at: "2025-01-01T00:00:00Z",
@@ -56,13 +49,6 @@ describe("MilestoneSchema", () => {
 			slug: "beta-release",
 			name: "Beta Release",
 			description: "Beta version for testing",
-			status: {
-				created_at: "2025-01-01T00:00:00Z",
-				started_at: null,
-				completed_at: null,
-				verified_at: null,
-				notes: [],
-			},
 			created_at: "2025-01-01T00:00:00Z",
 			updated_at: "2025-01-01T00:00:00Z",
 		};
@@ -73,7 +59,7 @@ describe("MilestoneSchema", () => {
 		expect(result.references).toEqual([]); // default
 	});
 
-	it("should validate milestone with progress tracking", () => {
+	it("should validate milestone without status field", () => {
 		const milestone = {
 			type: "milestone",
 			number: 1,
@@ -81,26 +67,15 @@ describe("MilestoneSchema", () => {
 			name: "MVP Release",
 			description: "Minimum viable product",
 			priority: "critical",
-			status: {
-				created_at: "2025-01-01T00:00:00Z",
-				started_at: "2025-01-15T00:00:00Z",
-				completed_at: "2025-02-01T00:00:00Z",
-				verified_at: "2025-02-05T00:00:00Z",
-				notes: [
-					"Started development",
-					"All features complete",
-					"Verified by QA team",
-				],
-			},
 			created_at: "2025-01-01T00:00:00Z",
 			updated_at: "2025-02-05T00:00:00Z",
 		};
 
 		const result = MilestoneSchema.parse(milestone);
-		expect(result.status.started_at).toBe("2025-01-15T00:00:00Z");
-		expect(result.status.completed_at).toBe("2025-02-01T00:00:00Z");
-		expect(result.status.verified_at).toBe("2025-02-05T00:00:00Z");
-		expect(result.status.notes).toHaveLength(3);
+		expect(result.priority).toBe("critical");
+		expect(result.slug).toBe("mvp");
+		// Status is no longer part of the schema
+		expect("status" in result).toBe(false);
 	});
 
 	it("should validate milestone with references", () => {
@@ -110,13 +85,6 @@ describe("MilestoneSchema", () => {
 			slug: "q1-release",
 			name: "Q1 Release",
 			description: "First quarter deliverables",
-			status: {
-				created_at: "2025-01-01T00:00:00Z",
-				started_at: null,
-				completed_at: null,
-				verified_at: null,
-				notes: [],
-			},
 			references: [
 				{
 					type: "url",
@@ -150,13 +118,6 @@ describe("MilestoneSchema", () => {
 			slug: "v1-launch",
 			name: "Version 1.0 Launch",
 			description: "Initial product release",
-			status: {
-				created_at: "2025-01-01T00:00:00Z",
-				started_at: null,
-				completed_at: null,
-				verified_at: null,
-				notes: [],
-			},
 			created_at: "2025-01-01T00:00:00Z",
 			updated_at: "2025-01-01T00:00:00Z",
 		};
@@ -172,34 +133,6 @@ describe("MilestoneSchema", () => {
 			name: "Version 1.0 Launch",
 			description: "Initial product release",
 			priority: "super-urgent", // invalid
-			status: {
-				created_at: "2025-01-01T00:00:00Z",
-				started_at: null,
-				completed_at: null,
-				verified_at: null,
-				notes: [],
-			},
-			created_at: "2025-01-01T00:00:00Z",
-			updated_at: "2025-01-01T00:00:00Z",
-		};
-
-		expect(() => MilestoneSchema.parse(milestone)).toThrow();
-	});
-
-	it("should reject milestone with invalid status timestamps", () => {
-		const milestone = {
-			type: "milestone",
-			number: 1,
-			slug: "v1-launch",
-			name: "Version 1.0 Launch",
-			description: "Initial product release",
-			status: {
-				created_at: "2025-01-01T00:00:00Z",
-				started_at: "2025-02-01T00:00:00Z",
-				completed_at: "2025-01-15T00:00:00Z", // before started_at
-				verified_at: null,
-				notes: [],
-			},
 			created_at: "2025-01-01T00:00:00Z",
 			updated_at: "2025-01-01T00:00:00Z",
 		};
@@ -215,13 +148,6 @@ describe("MilestoneSchema", () => {
 			name: "Version 1.0 Launch",
 			description: "Initial product release",
 			target_date: "not-a-date",
-			status: {
-				created_at: "2025-01-01T00:00:00Z",
-				started_at: null,
-				completed_at: null,
-				verified_at: null,
-				notes: [],
-			},
 			created_at: "2025-01-01T00:00:00Z",
 			updated_at: "2025-01-01T00:00:00Z",
 		};
@@ -245,13 +171,6 @@ describe("MilestoneSchema", () => {
 			slug: "v1-launch",
 			name: "Version 1.0 Launch",
 			description: "Initial product release",
-			status: {
-				created_at: "2025-01-01T00:00:00Z",
-				started_at: null,
-				completed_at: null,
-				verified_at: null,
-				notes: [],
-			},
 			created_at: "2025-01-01T00:00:00Z",
 			updated_at: "2025-01-01T00:00:00Z",
 			extra_field: "should not be here",
