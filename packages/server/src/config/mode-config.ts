@@ -32,16 +32,8 @@ export const ToolCategories = {
 	// Core spec management (3)
 	SPEC_MANAGEMENT: ["get_spec", "validate_entity", "delete"],
 
-	// Git workflow tools (7)
-	GIT_WORKFLOW: [
-		"start_plan",
-		"start_task",
-		"finish_task",
-		"finish_plan",
-		"get_worktree_context",
-		"switch_worktree",
-		"switch_to_main",
-	],
+	// Task workflow tools (2)
+	TASK_WORKFLOW: ["start_task", "finish_task"],
 
 	// Task management (1)
 	TASK_MANAGEMENT: ["add_task"],
@@ -105,9 +97,9 @@ export const ModeConfigs: Record<ServerMode, ModeConfig> = {
 	work: {
 		mode: "work",
 		description:
-			"Work mode: Implementation and git workflow tools with essential spec access",
+			"Work mode: Implementation and task workflow tools with essential spec access",
 		enabledTools: new Set([
-			...ToolCategories.GIT_WORKFLOW,
+			...ToolCategories.TASK_WORKFLOW,
 			...ToolCategories.TASK_MANAGEMENT,
 			...ToolCategories.SPEC_MANAGEMENT,
 			...ToolCategories.UPDATE_TOOLS.filter((t) => t === "update_plan"), // Only allow updating plan scope
@@ -126,7 +118,7 @@ export const ModeConfigs: Record<ServerMode, ModeConfig> = {
 		enabledTools: new Set([
 			...ToolCategories.DRAFT_WORKFLOW,
 			...ToolCategories.SPEC_MANAGEMENT,
-			...ToolCategories.GIT_WORKFLOW,
+			...ToolCategories.TASK_WORKFLOW,
 			...ToolCategories.TASK_MANAGEMENT,
 			...ToolCategories.REFERENCE_MANAGEMENT,
 			...ToolCategories.UPDATE_TOOLS,

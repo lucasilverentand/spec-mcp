@@ -16,25 +16,15 @@ import {
 	deleteEntity,
 	deleteTool,
 	finalizeEntity,
-	finishPlan,
-	finishPlanTool,
 	finishTaskGit,
 	finishTaskGitTool,
 	getSpec,
 	getSpecTool,
-	getWorktreeContext,
-	getWorktreeContextTool,
 	listDrafts,
 	skipAnswer,
 	startDraft,
-	startPlan,
-	startPlanTool,
 	startTaskGit,
 	startTaskGitTool,
-	switchToMain,
-	switchToMainTool,
-	switchWorktree,
-	switchWorktreeTool,
 	updateBusinessRequirement,
 	updateBusinessRequirementTool,
 	updateComponent,
@@ -57,7 +47,7 @@ export function registerCoreTools(
 	registrar: ConditionalToolRegistrar,
 	draftStore: DraftStore,
 	specManager: SpecManager,
-	projectRoot: string,
+	_projectRoot: string,
 ): void {
 	// ========== DRAFT WORKFLOW TOOLS (6) ==========
 
@@ -347,26 +337,7 @@ export function registerCoreTools(
 		},
 	);
 
-	// ========== GIT WORKFLOW TOOLS (7) ==========
-
-	registrar.registerTool(
-		startPlanTool.name,
-		startPlanTool.description,
-		{
-			plan_id: z
-				.string()
-				.describe(startPlanTool.inputSchema.properties.plan_id.description),
-		},
-		// biome-ignore lint/suspicious/noExplicitAny: Handler receives validated args from Zod schema
-		async (args: any) => {
-			try {
-				return await startPlan(specManager, args.plan_id, projectRoot);
-			} catch (error) {
-				logger.error({ error, tool: "start_plan" }, "Tool execution failed");
-				throw error;
-			}
-		},
-	);
+	// ========== TASK WORKFLOW TOOLS (2) ==========
 
 	registrar.registerTool(
 		startTaskGitTool.name,
@@ -412,85 +383,9 @@ export function registerCoreTools(
 					args.plan_id,
 					args.task_id,
 					args.summary,
-					projectRoot,
 				);
 			} catch (error) {
 				logger.error({ error, tool: "finish_task" }, "Tool execution failed");
-				throw error;
-			}
-		},
-	);
-
-	registrar.registerTool(
-		finishPlanTool.name,
-		finishPlanTool.description,
-		{
-			plan_id: z
-				.string()
-				.describe(finishPlanTool.inputSchema.properties.plan_id.description),
-		},
-		// biome-ignore lint/suspicious/noExplicitAny: Handler receives validated args from Zod schema
-		async (args: any) => {
-			try {
-				return await finishPlan(specManager, args.plan_id, projectRoot);
-			} catch (error) {
-				logger.error({ error, tool: "finish_plan" }, "Tool execution failed");
-				throw error;
-			}
-		},
-	);
-
-	registrar.registerTool(
-		getWorktreeContextTool.name,
-		getWorktreeContextTool.description,
-		async () => {
-			try {
-				return await getWorktreeContext(specManager);
-			} catch (error) {
-				logger.error(
-					{ error, tool: "get_worktree_context" },
-					"Tool execution failed",
-				);
-				throw error;
-			}
-		},
-	);
-
-	registrar.registerTool(
-		switchWorktreeTool.name,
-		switchWorktreeTool.description,
-		{
-			plan_id: z
-				.string()
-				.describe(
-					switchWorktreeTool.inputSchema.properties.plan_id.description,
-				),
-		},
-		// biome-ignore lint/suspicious/noExplicitAny: Handler receives validated args from Zod schema
-		async (args: any) => {
-			try {
-				return await switchWorktree(specManager, args.plan_id, projectRoot);
-			} catch (error) {
-				logger.error(
-					{ error, tool: "switch_worktree" },
-					"Tool execution failed",
-				);
-				throw error;
-			}
-		},
-	);
-
-	registrar.registerTool(
-		switchToMainTool.name,
-		switchToMainTool.description,
-		async () => {
-			try {
-				return await switchToMain(specManager);
-			} catch (error) {
-				logger.error(
-					{ error, tool: "switch_to_main" },
-					"Tool execution failed",
-				);
 				throw error;
 			}
 		},
