@@ -13,6 +13,13 @@ const guides = [
 		file: "getting-started.md",
 	},
 	{
+		uri: "spec-mcp://guide/spec-types",
+		name: "Spec Types Guide",
+		description:
+			"Complete guide to spec types, their purposes, relationships, and where to start",
+		file: "spec-types.md",
+	},
+	{
 		uri: "spec-mcp://guide/planning-workflow",
 		name: "Planning Workflow",
 		description: "Complete workflow for planning features with specs",

@@ -1,19 +1,4 @@
-/**
- * Generated file - DO NOT EDIT
- * Run 'pnpm embed-guides' to regenerate
- */
-
-/**
- * Guide resource definitions with embedded content
- */
-export const GUIDE_RESOURCES = [
-	{
-		uri: "spec-mcp://guide/spec-types",
-		name: "Spec Types Guide",
-		description:
-			"Complete guide to spec types, their purposes, relationships, and where to start",
-		mimeType: "text/markdown",
-		content: `# Spec Types Guide
+# Spec Types Guide
 
 This guide explains the different specification types in spec-mcp, their purposes, relationships, and where to start when building specs for your project.
 
@@ -274,8 +259,6 @@ Update specs as implementation progresses. Keep plans in sync with code.
 
 ## Next Steps
 
-- Create additional guides as needed for planning workflow, best practices, and implementation patterns
-- See the spec types above to understand how to structure your project documentation
-`,
-	},
-] as const;
+- See [Planning Workflow](spec-mcp://guide/planning-workflow) for how to create and execute plans
+- See [Best Practices](spec-mcp://guide/best-practices) for tips on writing effective specs
+- See [Implementation Workflow](spec-mcp://guide/implementation-workflow) for development workflow
