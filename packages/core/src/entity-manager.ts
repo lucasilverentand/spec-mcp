@@ -151,7 +151,7 @@ export class EntityManager<T extends Base> extends FileManager {
 	 * This allows Zod defaults to be applied when parsing
 	 * Also handles null values for fields that should have defaults
 	 */
-	private removeUndefined(obj: any): any {
+	private removeUndefined(obj: unknown): unknown {
 		if (obj === null) {
 			return null;
 		}
@@ -162,19 +162,32 @@ export class EntityManager<T extends Base> extends FileManager {
 			return obj.map((item) => this.removeUndefined(item));
 		}
 		if (typeof obj === "object") {
-			const cleaned: any = {};
-			for (const [key, value] of Object.entries(obj)) {
+			const cleaned: Record<string, unknown> = {};
+			for (const [key, value] of Object.entries(
+				obj as Record<string, unknown>,
+			)) {
 				// Remove undefined values to allow Zod defaults
 				if (value === undefined) {
 					continue;
 				}
 				// Also remove null values for array fields that should default to []
 				// This is a workaround for YAML/Zod interaction issues
-				if (value === null && (key === "depends_on" || key === "considerations" ||
-					key === "references" || key === "files" || key === "blocked" ||
-					key === "tasks" || key === "flows" || key === "test_cases" ||
-					key === "criteria" || key === "user_stories" || key === "business_value" ||
-					key === "alternatives" || key === "consequences")) {
+				if (
+					value === null &&
+					(key === "depends_on" ||
+						key === "considerations" ||
+						key === "references" ||
+						key === "files" ||
+						key === "blocked" ||
+						key === "tasks" ||
+						key === "flows" ||
+						key === "test_cases" ||
+						key === "criteria" ||
+						key === "user_stories" ||
+						key === "business_value" ||
+						key === "alternatives" ||
+						key === "consequences")
+				) {
 					continue;
 				}
 				cleaned[key] = this.removeUndefined(value);
@@ -237,7 +250,7 @@ export class EntityManager<T extends Base> extends FileManager {
 
 		// Clean the incoming data to remove undefined values
 		// This prevents undefined from overriding existing values
-		const cleanedData = this.removeUndefined(data as any);
+		const cleanedData = this.removeUndefined(data) as Partial<T>;
 
 		// Update the updated_at timestamp
 		const updated = {
