@@ -40,14 +40,16 @@ interface SpecsMetadata {
 export class SpecManager {
 	private specsPath: string;
 	private fileManager: FileManager;
+	private originalPath: string; // Track original path for switching back
+	private currentWorktreePath: string | null = null; // Track current worktree
 
-	public readonly business_requirements: EntityManager<BusinessRequirement>;
-	public readonly tech_requirements: EntityManager<TechnicalRequirement>;
-	public readonly plans: EntityManager<Plan>;
-	public readonly components: EntityManager<Component>;
-	public readonly constitutions: EntityManager<Constitution>;
-	public readonly decisions: EntityManager<Decision>;
-	public readonly milestones: EntityManager<Milestone>;
+	public business_requirements: EntityManager<BusinessRequirement>;
+	public tech_requirements: EntityManager<TechnicalRequirement>;
+	public plans: EntityManager<Plan>;
+	public components: EntityManager<Component>;
+	public constitutions: EntityManager<Constitution>;
+	public decisions: EntityManager<Decision>;
+	public milestones: EntityManager<Milestone>;
 
 	/**
 	 * Create a new SpecManager
@@ -55,6 +57,7 @@ export class SpecManager {
 	 */
 	constructor(specsPath: string = "./specs") {
 		this.specsPath = specsPath;
+		this.originalPath = specsPath;
 		this.fileManager = new FileManager(specsPath);
 
 		this.business_requirements = createBusinessRequirementsManager(
@@ -268,5 +271,66 @@ export class SpecManager {
 		}
 
 		return maxTaskNum;
+	}
+
+	/**
+	 * Switch to a worktree specs directory
+	 * @param worktreePath - Path to the worktree root (e.g., ../plan/pln-001-feature)
+	 */
+	async switchToWorktree(worktreePath: string): Promise<void> {
+		const newSpecsPath = resolve(worktreePath, "specs");
+
+		// Update the specs path
+		this.specsPath = newSpecsPath;
+		this.currentWorktreePath = worktreePath;
+
+		// Reinitialize all managers with the new path
+		this.fileManager = new FileManager(newSpecsPath);
+		this.business_requirements =
+			createBusinessRequirementsManager(newSpecsPath);
+		this.tech_requirements = createTechRequirementsManager(newSpecsPath);
+		this.plans = createPlansManager(newSpecsPath);
+		this.components = createComponentsManager(newSpecsPath);
+		this.constitutions = createConstitutionsManager(newSpecsPath);
+		this.decisions = createDecisionsManager(newSpecsPath);
+		this.milestones = createMilestonesManager(newSpecsPath);
+
+		// Ensure folders exist in the worktree
+		await this.ensureFolders();
+	}
+
+	/**
+	 * Switch back to the original specs directory
+	 */
+	async switchToMain(): Promise<void> {
+		// Reset to original path
+		this.specsPath = this.originalPath;
+		this.currentWorktreePath = null;
+
+		// Reinitialize all managers with the original path
+		this.fileManager = new FileManager(this.originalPath);
+		this.business_requirements = createBusinessRequirementsManager(
+			this.originalPath,
+		);
+		this.tech_requirements = createTechRequirementsManager(this.originalPath);
+		this.plans = createPlansManager(this.originalPath);
+		this.components = createComponentsManager(this.originalPath);
+		this.constitutions = createConstitutionsManager(this.originalPath);
+		this.decisions = createDecisionsManager(this.originalPath);
+		this.milestones = createMilestonesManager(this.originalPath);
+	}
+
+	/**
+	 * Get the current worktree path (null if on main)
+	 */
+	getCurrentWorktree(): string | null {
+		return this.currentWorktreePath;
+	}
+
+	/**
+	 * Check if currently in a worktree
+	 */
+	isInWorktree(): boolean {
+		return this.currentWorktreePath !== null;
 	}
 }
