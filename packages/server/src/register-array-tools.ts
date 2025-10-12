@@ -1,4 +1,3 @@
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { SpecManager } from "@spec-mcp/core";
 import { z } from "zod";
 import {
@@ -38,18 +37,19 @@ import {
 	addUserStory,
 	addUserStoryTool,
 } from "./tools/index.js";
+import type { ConditionalToolRegistrar } from "./utils/conditional-tool-registration.js";
 import { logger } from "./utils/logger.js";
 
 /**
- * Register all array manipulation tools (18 tools)
+ * Register all array manipulation tools (18 tools) with mode-based filtering
  * Note: Reference and update tools are now handled by unified tools in main registration
  */
 export function registerArrayManipulationTools(
-	server: McpServer,
+	registrar: ConditionalToolRegistrar,
 	specManager: SpecManager,
 ) {
 	// CRITERIA TOOLS (1)
-	server.tool(
+	registrar.registerTool(
 		addCriteriaTool.name,
 		addCriteriaTool.description,
 		{
@@ -58,7 +58,8 @@ export function registerArrayManipulationTools(
 			rationale: z.string(),
 			supersede_id: z.string().optional(),
 		},
-		async (args) => {
+		// biome-ignore lint/suspicious/noExplicitAny: Handler receives validated args from Zod schema
+		async (args: any) => {
 			try {
 				return await addCriteria(
 					specManager,
@@ -75,7 +76,7 @@ export function registerArrayManipulationTools(
 	);
 
 	// BUSINESS REQUIREMENT TOOLS (6)
-	server.tool(
+	registrar.registerTool(
 		addUserStoryTool.name,
 		addUserStoryTool.description,
 		{
@@ -84,7 +85,8 @@ export function registerArrayManipulationTools(
 			feature: z.string(),
 			benefit: z.string(),
 		},
-		async (args) => {
+		// biome-ignore lint/suspicious/noExplicitAny: Handler receives validated args from Zod schema
+		async (args: any) => {
 			try {
 				return await addUserStory(
 					specManager,
@@ -103,7 +105,7 @@ export function registerArrayManipulationTools(
 		},
 	);
 
-	server.tool(
+	registrar.registerTool(
 		addBusinessValueTool.name,
 		addBusinessValueTool.description,
 		{
@@ -116,7 +118,8 @@ export function registerArrayManipulationTools(
 			]),
 			value: z.string(),
 		},
-		async (args) => {
+		// biome-ignore lint/suspicious/noExplicitAny: Handler receives validated args from Zod schema
+		async (args: any) => {
 			try {
 				return await addBusinessValue(
 					specManager,
@@ -134,7 +137,7 @@ export function registerArrayManipulationTools(
 		},
 	);
 
-	server.tool(
+	registrar.registerTool(
 		addStakeholderTool.name,
 		addStakeholderTool.description,
 		{
@@ -153,7 +156,8 @@ export function registerArrayManipulationTools(
 			interest: z.string(),
 			email: z.string().optional(),
 		},
-		async (args) => {
+		// biome-ignore lint/suspicious/noExplicitAny: Handler receives validated args from Zod schema
+		async (args: any) => {
 			try {
 				return await addStakeholder(
 					specManager,
@@ -174,7 +178,7 @@ export function registerArrayManipulationTools(
 	);
 
 	// TECHNICAL REQUIREMENT TOOLS (2)
-	server.tool(
+	registrar.registerTool(
 		addConstraintTool.name,
 		addConstraintTool.description,
 		{
@@ -189,7 +193,8 @@ export function registerArrayManipulationTools(
 			]),
 			description: z.string(),
 		},
-		async (args) => {
+		// biome-ignore lint/suspicious/noExplicitAny: Handler receives validated args from Zod schema
+		async (args: any) => {
 			try {
 				return await addConstraint(
 					specManager,
@@ -208,7 +213,7 @@ export function registerArrayManipulationTools(
 	);
 
 	// TEST CASE TOOLS (1)
-	server.tool(
+	registrar.registerTool(
 		addTestCaseTool.name,
 		addTestCaseTool.description,
 		{
@@ -221,7 +226,8 @@ export function registerArrayManipulationTools(
 			passing: z.boolean().optional(),
 			supersede_id: z.string().optional(),
 		},
-		async (args) => {
+		// biome-ignore lint/suspicious/noExplicitAny: Handler receives validated args from Zod schema
+		async (args: any) => {
 			try {
 				const options: {
 					implemented?: boolean;
@@ -250,7 +256,7 @@ export function registerArrayManipulationTools(
 	);
 
 	// PLAN ARRAY TOOLS (9)
-	server.tool(
+	registrar.registerTool(
 		addFlowTool.name,
 		addFlowTool.description,
 		{
@@ -268,7 +274,8 @@ export function registerArrayManipulationTools(
 			),
 			supersede_id: z.string().optional(),
 		},
-		async (args) => {
+		// biome-ignore lint/suspicious/noExplicitAny: Handler receives validated args from Zod schema
+		async (args: any) => {
 			try {
 				return await addFlow(
 					specManager,
@@ -286,7 +293,7 @@ export function registerArrayManipulationTools(
 		},
 	);
 
-	server.tool(
+	registrar.registerTool(
 		addApiContractTool.name,
 		addApiContractTool.description,
 		{
@@ -296,7 +303,8 @@ export function registerArrayManipulationTools(
 			contract_type: z.string(),
 			specification: z.string(),
 		},
-		async (args) => {
+		// biome-ignore lint/suspicious/noExplicitAny: Handler receives validated args from Zod schema
+		async (args: any) => {
 			try {
 				return await addApiContract(
 					specManager,
@@ -316,7 +324,7 @@ export function registerArrayManipulationTools(
 		},
 	);
 
-	server.tool(
+	registrar.registerTool(
 		addDataModelTool.name,
 		addDataModelTool.description,
 		{
@@ -327,10 +335,13 @@ export function registerArrayManipulationTools(
 			schema: z.string(),
 			supersede_id: z.string().optional(),
 		},
-		async (args) => {
+		// biome-ignore lint/suspicious/noExplicitAny: Handler receives validated args from Zod schema
+		async (args: any) => {
 			try {
 				// Convert schema string to fields array
-				const fields = args.schema.split("\n").filter((line) => line.trim());
+				const fields = args.schema
+					.split("\n")
+					.filter((line: string) => line.trim());
 				return await addDataModel(
 					specManager,
 					args.plan_id,
@@ -351,14 +362,15 @@ export function registerArrayManipulationTools(
 	);
 
 	// DECISION TOOLS (6)
-	server.tool(
+	registrar.registerTool(
 		addAlternativeTool.name,
 		addAlternativeTool.description,
 		{
 			decision_id: z.string(),
 			alternative: z.string(),
 		},
-		async (args) => {
+		// biome-ignore lint/suspicious/noExplicitAny: Handler receives validated args from Zod schema
+		async (args: any) => {
 			try {
 				return await addAlternative(
 					specManager,
@@ -375,7 +387,7 @@ export function registerArrayManipulationTools(
 		},
 	);
 
-	server.tool(
+	registrar.registerTool(
 		addConsequenceTool.name,
 		addConsequenceTool.description,
 		{
@@ -384,7 +396,8 @@ export function registerArrayManipulationTools(
 			description: z.string(),
 			mitigation: z.string().optional(),
 		},
-		async (args) => {
+		// biome-ignore lint/suspicious/noExplicitAny: Handler receives validated args from Zod schema
+		async (args: any) => {
 			try {
 				return await addConsequence(
 					specManager,
@@ -404,14 +417,15 @@ export function registerArrayManipulationTools(
 	);
 
 	// COMPONENT TOOLS (3)
-	server.tool(
+	registrar.registerTool(
 		addTechTool.name,
 		addTechTool.description,
 		{
 			component_id: z.string(),
 			tech: z.string(),
 		},
-		async (args) => {
+		// biome-ignore lint/suspicious/noExplicitAny: Handler receives validated args from Zod schema
+		async (args: any) => {
 			try {
 				return await addTech(specManager, args.component_id, args.tech);
 			} catch (error) {
@@ -421,7 +435,7 @@ export function registerArrayManipulationTools(
 		},
 	);
 
-	server.tool(
+	registrar.registerTool(
 		addDeploymentTool.name,
 		addDeploymentTool.description,
 		{
@@ -433,7 +447,8 @@ export function registerArrayManipulationTools(
 			environment_vars: z.array(z.string()).optional(),
 			secrets: z.array(z.string()).optional(),
 		},
-		async (args) => {
+		// biome-ignore lint/suspicious/noExplicitAny: Handler receives validated args from Zod schema
+		async (args: any) => {
 			try {
 				return await addDeployment(
 					specManager,
@@ -455,14 +470,15 @@ export function registerArrayManipulationTools(
 		},
 	);
 
-	server.tool(
+	registrar.registerTool(
 		addExternalDependencyTool.name,
 		addExternalDependencyTool.description,
 		{
 			component_id: z.string(),
 			dependency: z.string(),
 		},
-		async (args) => {
+		// biome-ignore lint/suspicious/noExplicitAny: Handler receives validated args from Zod schema
+		async (args: any) => {
 			try {
 				return await addExternalDependency(
 					specManager,
