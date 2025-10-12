@@ -1,5 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { SpecManager } from "@spec-mcp/core";
+import type { Reference } from "@spec-mcp/schemas";
 import { z } from "zod";
 import {
 	// Decision tools
@@ -51,11 +52,6 @@ import {
 	// Business Requirement tools
 	addUserStory,
 	addUserStoryTool,
-	// Milestone status tools
-	completeMilestone,
-	completeMilestoneTool,
-	startMilestone,
-	startMilestoneTool,
 	updateBusinessRequirement,
 	updateBusinessRequirementTool,
 	updateComponent,
@@ -67,8 +63,6 @@ import {
 	updatePlanTool,
 	updateTechnicalRequirement,
 	updateTechnicalRequirementTool,
-	verifyMilestone,
-	verifyMilestoneTool,
 } from "./tools/index.js";
 import { logger } from "./utils/logger.js";
 
@@ -304,10 +298,10 @@ export function registerArrayManipulationTools(
 				return await addFlow(
 					specManager,
 					args.plan_id,
-					args.type,
 					args.name,
 					args.description,
 					args.steps,
+					args.type,
 					args.supersede_id,
 				);
 			} catch (error) {
@@ -360,13 +354,15 @@ export function registerArrayManipulationTools(
 		},
 		async (args) => {
 			try {
+				// Convert schema string to fields array
+				const fields = args.schema.split("\n").filter((line) => line.trim());
 				return await addDataModel(
 					specManager,
 					args.plan_id,
 					args.name,
 					args.description,
+					fields,
 					args.format,
-					args.schema,
 					args.supersede_id,
 				);
 			} catch (error) {
@@ -449,7 +445,7 @@ export function registerArrayManipulationTools(
 				return await addReferenceToDecision(
 					specManager,
 					args.decision_id,
-					args.reference as any,
+					args.reference as Reference,
 				);
 			} catch (error) {
 				logger.error(
@@ -555,7 +551,7 @@ export function registerArrayManipulationTools(
 				return await addReferenceToPlan(
 					specManager,
 					args.plan_id,
-					args.reference as any,
+					args.reference as Reference,
 				);
 			} catch (error) {
 				logger.error(
@@ -584,7 +580,7 @@ export function registerArrayManipulationTools(
 				return await addReferenceToBrd(
 					specManager,
 					args.brd_id,
-					args.reference as any,
+					args.reference as Reference,
 				);
 			} catch (error) {
 				logger.error(
@@ -613,7 +609,7 @@ export function registerArrayManipulationTools(
 				return await addTechnicalDependency(
 					specManager,
 					args.requirement_id,
-					args.reference as any,
+					args.reference as Reference,
 				);
 			} catch (error) {
 				logger.error(
@@ -642,7 +638,7 @@ export function registerArrayManipulationTools(
 				return await addReferenceToPrd(
 					specManager,
 					args.prd_id,
-					args.reference as any,
+					args.reference as Reference,
 				);
 			} catch (error) {
 				logger.error(
@@ -806,65 +802,7 @@ export function registerArrayManipulationTools(
 		},
 	);
 
-	// MILESTONE TOOLS (4)
-	server.tool(
-		startMilestoneTool.name,
-		startMilestoneTool.description,
-		{
-			milestone_id: z.string(),
-		},
-		async (args) => {
-			try {
-				return await startMilestone(specManager, args.milestone_id);
-			} catch (error) {
-				logger.error(
-					{ error, tool: "start_milestone" },
-					"Tool execution failed",
-				);
-				throw error;
-			}
-		},
-	);
-
-	server.tool(
-		completeMilestoneTool.name,
-		completeMilestoneTool.description,
-		{
-			milestone_id: z.string(),
-		},
-		async (args) => {
-			try {
-				return await completeMilestone(specManager, args.milestone_id);
-			} catch (error) {
-				logger.error(
-					{ error, tool: "complete_milestone" },
-					"Tool execution failed",
-				);
-				throw error;
-			}
-		},
-	);
-
-	server.tool(
-		verifyMilestoneTool.name,
-		verifyMilestoneTool.description,
-		{
-			milestone_id: z.string(),
-			note: z.string().optional(),
-		},
-		async (args) => {
-			try {
-				return await verifyMilestone(specManager, args.milestone_id, args.note);
-			} catch (error) {
-				logger.error(
-					{ error, tool: "verify_milestone" },
-					"Tool execution failed",
-				);
-				throw error;
-			}
-		},
-	);
-
+	// MILESTONE TOOLS (1)
 	server.tool(
 		addReferenceToMilestoneTool.name,
 		addReferenceToMilestoneTool.description,
@@ -882,7 +820,7 @@ export function registerArrayManipulationTools(
 				return await addReferenceToMilestone(
 					specManager,
 					args.milestone_id,
-					args.reference as any,
+					args.reference as Reference,
 				);
 			} catch (error) {
 				logger.error(
