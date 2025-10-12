@@ -24,6 +24,7 @@ function formatEntityId(prefix: string, number: number, slug: string): string {
  * 4. Cannot supersede already-superseded items
  * 5. Supersession chains work correctly
  */
+// TODO: Supersession tests need debugging - mixed case sensitivity and logic issues
 describe("Supersession Core Functionality", () => {
 	let tempDir: string;
 	let specManager: SpecManager;
@@ -81,7 +82,7 @@ describe("Supersession Core Functionality", () => {
 				},
 			);
 
-			expect(result.content[0].text).toContain("success");
+			expect(result.content[0].text).toContain("Success");
 			expect(result.content[0].text).toContain("task-004");
 
 			const updatedPlan = await specManager.plans.get(plan.number);
@@ -203,11 +204,11 @@ describe("Supersession Core Functionality", () => {
 			const planId = formatEntityId("pln", plan.number, "test-plan");
 
 			// Create v1 -> v2 -> v3 chain
-			await addTask(specManager, planId, "Version 1");
-			await addTask(specManager, planId, "Version 2", {
+			await addTask(specManager, planId, "Version 1 of task");
+			await addTask(specManager, planId, "Version 2 of task", {
 				supersede_id: "task-001",
 			});
-			await addTask(specManager, planId, "Version 3", {
+			await addTask(specManager, planId, "Version 3 of task", {
 				supersede_id: "task-002",
 			});
 
@@ -309,10 +310,12 @@ describe("Supersession Core Functionality", () => {
 				"crit-002", // supersede the one we just added
 			);
 
-			expect(result.content[0].text).toContain("success");
+			expect(result.content[0].text).toContain("Success");
 			expect(result.content[0].text).toContain("crit-003");
 
-			const updatedBrd = await specManager.business_requirements.get(brd.number);
+			const updatedBrd = await specManager.business_requirements.get(
+				brd.number,
+			);
 
 			// Find the superseded criteria
 			const oldCriteria = updatedBrd?.criteria.find((c) => c.id === "crit-002");
@@ -367,7 +370,9 @@ describe("Supersession Core Functionality", () => {
 			await addCriteria(specManager, brdId, "V2", "R1", "crit-002");
 			await addCriteria(specManager, brdId, "V3", "R1", "crit-003");
 
-			const updatedBrd = await specManager.business_requirements.get(brd.number);
+			const updatedBrd = await specManager.business_requirements.get(
+				brd.number,
+			);
 
 			const crit2 = updatedBrd?.criteria.find((c) => c.id === "crit-002");
 			expect(crit2?.supersedes).toBeNull();
@@ -399,14 +404,15 @@ describe("Supersession Core Functionality", () => {
 
 			const afterSupersede = new Date().toISOString();
 
-			const updatedBrd = await specManager.business_requirements.get(brd.number);
+			const updatedBrd = await specManager.business_requirements.get(
+				brd.number,
+			);
 			const oldCriteria = updatedBrd?.criteria.find((c) => c.id === "crit-002");
 
 			expect(oldCriteria?.superseded_at).toBeTruthy();
-			expect(oldCriteria?.superseded_at).toBeGreaterThanOrEqual(
-				beforeSupersede,
-			);
-			expect(oldCriteria?.superseded_at).toBeLessThanOrEqual(afterSupersede);
+			// ISO strings can be compared lexicographically
+			expect(oldCriteria?.superseded_at! >= beforeSupersede).toBe(true);
+			expect(oldCriteria?.superseded_at! <= afterSupersede).toBe(true);
 		});
 
 		it("should preserve audit trail through multiple supersessions", async () => {
@@ -426,13 +432,13 @@ describe("Supersession Core Functionality", () => {
 			);
 			const planId = formatEntityId("pln", plan.number, "test-plan");
 
-			await addTask(specManager, planId, "V1");
+			await addTask(specManager, planId, "Version 1 task");
 			await new Promise((resolve) => setTimeout(resolve, 10));
 
-			await addTask(specManager, planId, "V2", { supersede_id: "task-001" });
+			await addTask(specManager, planId, "Version 2 task", { supersede_id: "task-001" });
 			await new Promise((resolve) => setTimeout(resolve, 10));
 
-			await addTask(specManager, planId, "V3", { supersede_id: "task-002" });
+			await addTask(specManager, planId, "Version 3 task", { supersede_id: "task-002" });
 
 			const updatedPlan = await specManager.plans.get(plan.number);
 
@@ -447,7 +453,8 @@ describe("Supersession Core Functionality", () => {
 			expect(task2?.superseded_at).toBeTruthy();
 
 			if (task1?.superseded_at && task2?.superseded_at) {
-				expect(task1.superseded_at).toBeLessThan(task2.superseded_at);
+				// ISO strings can be compared lexicographically
+				expect(task1.superseded_at < task2.superseded_at).toBe(true);
 			}
 		});
 	});

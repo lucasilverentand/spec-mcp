@@ -1,4 +1,4 @@
-import type { ToolResponse } from "@modelcontextprotocol/sdk/types.js";
+import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { SpecManager } from "@spec-mcp/core";
 import type {
 	BusinessRequirement,
@@ -24,7 +24,7 @@ export async function updatePlan(
 		description?: string;
 		scope?: Scope;
 	},
-): Promise<ToolResponse> {
+): Promise<CallToolResult> {
 	return updateSpec<Plan>(specManager, planId, updates, "plan");
 }
 
@@ -92,7 +92,7 @@ export async function updateBusinessRequirement(
 		title?: string;
 		description?: string;
 	},
-): Promise<ToolResponse> {
+): Promise<CallToolResult> {
 	return updateSpec<BusinessRequirement>(
 		specManager,
 		brdId,
@@ -140,7 +140,7 @@ export async function updateTechnicalRequirement(
 		implementation_approach?: string;
 		implementation_notes?: string;
 	},
-): Promise<ToolResponse> {
+): Promise<CallToolResult> {
 	return updateSpec<TechnicalRequirement>(
 		specManager,
 		prdId,
@@ -200,7 +200,7 @@ export async function updateDecision(
 		context?: string;
 		decision_status?: DecisionStatus;
 	},
-): Promise<ToolResponse> {
+): Promise<CallToolResult> {
 	return updateSpec<Decision>(specManager, decisionId, updates, "decision");
 }
 
@@ -257,7 +257,7 @@ export async function updateComponent(
 		dev_port?: number;
 		notes?: string;
 	},
-): Promise<ToolResponse> {
+): Promise<CallToolResult> {
 	return updateSpec<Component>(specManager, componentId, updates, "component");
 }
 

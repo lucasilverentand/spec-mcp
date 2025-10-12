@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 
+import { spawn } from "node:child_process";
 import { resolve } from "node:path";
-import { SpecManager, validateEntity } from "@spec-mcp/core";
+import { DraftStore, SpecManager, validateEntity } from "@spec-mcp/core";
+import { DashboardServer } from "@spec-mcp/dashboard/server";
 import type {
 	BusinessRequirement,
 	Component,
@@ -428,5 +430,87 @@ program
 			process.exit(1);
 		}
 	});
+
+program
+	.command("dashboard")
+	.description("Start the web dashboard")
+	.option("-p, --port <port>", "Port number", "3737")
+	.option("-h, --host <host>", "Host address", "localhost")
+	.option("--specs-path <path>", "Path to specs folder", "./specs")
+	.option("--open", "Open browser automatically", false)
+	.action(
+		async (options: {
+			port: string;
+			host: string;
+			specsPath: string;
+			open: boolean;
+		}) => {
+			try {
+				const port = Number.parseInt(options.port, 10);
+				const specsPath = resolve(process.cwd(), options.specsPath);
+
+				console.log(
+					`\n${colors.cyan}Starting Spec MCP Dashboard...${colors.reset}`,
+				);
+				console.log(`${colors.dim}Specs path: ${specsPath}${colors.reset}`);
+
+				// Initialize managers
+				const specManager = new SpecManager(specsPath);
+				await specManager.ensureFolders();
+
+				const draftStore = new DraftStore(specManager);
+				await draftStore.loadAll();
+
+				// Start dashboard WebSocket server
+				const dashboard = new DashboardServer(specManager, draftStore, {
+					port,
+					host: options.host,
+					autoOpen: options.open,
+					specsPath,
+				});
+
+				await dashboard.start();
+
+				// Open browser if requested
+				if (options.open) {
+					setTimeout(() => {
+						const url = `http://${options.host}:${port}`;
+						const command =
+							process.platform === "darwin"
+								? "open"
+								: process.platform === "win32"
+									? "start"
+									: "xdg-open";
+						spawn(command, [url], { stdio: "ignore" });
+						console.log(`\n${colors.dim}Opening browser...${colors.reset}`);
+					}, 2000);
+				}
+
+				console.log(`\n${colors.cyan}Dashboard is running.${colors.reset}`);
+				console.log(`${colors.dim}Press Ctrl+C to stop${colors.reset}\n`);
+
+				// Handle shutdown
+				const shutdown = async () => {
+					console.log(`\n${colors.cyan}Shutting down...${colors.reset}`);
+					await dashboard.stop();
+					console.log(`${colors.green}✓${colors.reset} Dashboard stopped\n`);
+					process.exit(0);
+				};
+
+				process.on("SIGINT", shutdown);
+				process.on("SIGTERM", shutdown);
+
+				// Keep process alive
+				await new Promise(() => {});
+			} catch (error) {
+				console.error(
+					`\n${colors.red}✗ Failed to start dashboard:${colors.reset}`,
+				);
+				console.error(error instanceof Error ? error.message : String(error));
+				console.log("");
+				process.exit(1);
+			}
+		},
+	);
 
 program.parse();

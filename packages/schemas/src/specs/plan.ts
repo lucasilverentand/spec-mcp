@@ -19,11 +19,9 @@ export const RequirementIdSchema = z
 		message: "Requirement ID must follow format: req-XXX-slug-here",
 	});
 
-const MilestoneIdSchemaForPlan = z
-	.string()
-	.regex(/^mls-\d{3}-[a-z0-9-]+$/, {
-		message: "Milestone ID must follow format: mls-XXX-slug-here",
-	});
+const MilestoneIdSchemaForPlan = z.string().regex(/^mls-\d{3}-[a-z0-9-]+$/, {
+	message: "Milestone ID must follow format: mls-XXX-slug-here",
+});
 
 // Schema for stored plans (no ID field)
 export const PlanSchema = BaseSchema.extend({

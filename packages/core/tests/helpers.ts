@@ -135,6 +135,8 @@ export function createTestTechnicalRequirement(
 
 /**
  * Create a minimal test plan
+ * Note: If you need to create a plan that references a real requirement,
+ * create the requirement first and pass the criteria in overrides.
  */
 export function createTestPlan(
 	overrides?: Partial<Plan>,
@@ -144,15 +146,19 @@ export function createTestPlan(
 		slug: "test-plan",
 		name: "Test Plan",
 		description: "A test plan",
-		criteria: {
-			requirement: "brd-001-test-req",
+		criteria: overrides?.criteria || {
+			requirement: "brd-001-placeholder",
 			criteria: "crit-001",
 		},
 		scope: [
 			{ type: "in-scope" as const, description: "Feature implementation" },
-			{ type: "out-of-scope" as const, description: "Performance optimization" },
+			{
+				type: "out-of-scope" as const,
+				description: "Performance optimization",
+			},
 		],
 		depends_on: [],
+		milestones: [],
 		tasks: [],
 		flows: [],
 		test_cases: [],

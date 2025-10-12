@@ -1,4 +1,4 @@
-import type { ToolResponse } from "@modelcontextprotocol/sdk/types.js";
+import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { SpecManager } from "@spec-mcp/core";
 import type { Constraint, TechnicalRequirement } from "@spec-mcp/schemas";
 import { type ArrayToolConfig, addSimpleItem } from "./array-tool-builder.js";
@@ -18,7 +18,7 @@ export async function addConstraint(
 		| "infrastructure"
 		| "other",
 	description: string,
-): Promise<ToolResponse> {
+): Promise<CallToolResult> {
 	const config: ArrayToolConfig<TechnicalRequirement, Constraint> = {
 		toolName: "add_constraint",
 		description: "Add technical constraint to a requirement",

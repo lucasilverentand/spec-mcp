@@ -1,4 +1,4 @@
-import type { ToolResponse } from "@modelcontextprotocol/sdk/types.js";
+import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { SpecManager } from "@spec-mcp/core";
 import type {
 	ApiContract,
@@ -7,7 +7,11 @@ import type {
 	FlowStep,
 	Plan,
 } from "@spec-mcp/schemas";
-import { type ArrayToolConfig, addItemWithId } from "./array-tool-builder.js";
+import {
+	type ArrayToolConfig,
+	addItemWithId,
+	supersedeItemWithId,
+} from "./array-tool-builder.js";
 
 // ============================================================================
 // FLOW TOOLS
@@ -16,12 +20,12 @@ import { type ArrayToolConfig, addItemWithId } from "./array-tool-builder.js";
 export async function addFlow(
 	specManager: SpecManager,
 	planId: string,
-	type: string,
 	name: string,
 	description: string | undefined,
-	steps: FlowStep[],
+	steps: string[] | FlowStep[],
+	type?: string,
 	supersede_id?: string,
-): Promise<ToolResponse> {
+): Promise<CallToolResult> {
 	const config: ArrayToolConfig<Plan, Flow> = {
 		toolName: "add_flow",
 		description: "Add flow to a plan",
@@ -32,14 +36,27 @@ export async function addFlow(
 		setArray: (_spec, items) => ({ flows: items }),
 	};
 
+	// Convert string array to FlowStep array if needed
+	const flowSteps: FlowStep[] = steps.map((step, index) => {
+		if (typeof step === "string") {
+			return {
+				id: `step-${String(index + 1).padStart(3, "0")}`,
+				name: step,
+				description: step,
+				next_steps: index < steps.length - 1 ? [`step-${String(index + 2).padStart(3, "0")}`] : [],
+			};
+		}
+		return step;
+	});
+
 	return addItemWithId(
 		specManager,
 		planId,
 		{
-			type,
+			type: type || "user",
 			name,
 			description,
-			steps,
+			steps: flowSteps,
 		} as Omit<Flow, "id" | "supersedes" | "superseded_by" | "superseded_at">,
 		config,
 		supersede_id,
@@ -106,6 +123,31 @@ export const addFlowTool = {
 	} as const,
 };
 
+/**
+ * Supersede an existing flow with updated values
+ * Creates a new flow with a new ID and marks the old one as superseded
+ */
+export async function supersedeFlow(
+	specManager: SpecManager,
+	planId: string,
+	flowId: string,
+	updates: Partial<
+		Pick<Flow, "type" | "name" | "description" | "steps">
+	>,
+): Promise<CallToolResult> {
+	const config: ArrayToolConfig<Plan, Flow> = {
+		toolName: "supersede_flow",
+		description: "Supersede flow in a plan",
+		specType: "plan",
+		arrayFieldName: "flows",
+		idPrefix: "flow",
+		getArray: (spec) => spec.flows || [],
+		setArray: (_spec, items) => ({ flows: items }),
+	};
+
+	return supersedeItemWithId(specManager, planId, flowId, updates, config);
+}
+
 // ============================================================================
 // API CONTRACT TOOLS
 // ============================================================================
@@ -113,10 +155,11 @@ export const addFlowTool = {
 export async function addApiContract(
 	specManager: SpecManager,
 	planId: string,
-	name: string,
+	endpoint: string,
+	method: string,
 	description: string,
-	contract_type: string,
-	specification: string,
+	requestBody?: string,
+	responseBody?: string,
 	options?: {
 		examples?: Array<{
 			name: string;
@@ -126,7 +169,7 @@ export async function addApiContract(
 		}>;
 		supersede_id?: string;
 	},
-): Promise<ToolResponse> {
+): Promise<CallToolResult> {
 	const config: ArrayToolConfig<Plan, ApiContract> = {
 		toolName: "add_api_contract",
 		description: "Add API contract to a plan",
@@ -137,13 +180,21 @@ export async function addApiContract(
 		setArray: (_spec, items) => ({ api_contracts: items }),
 	};
 
+	// Build the specification as an OpenAPI-style object
+	const specification = JSON.stringify({
+		endpoint,
+		method,
+		requestBody: requestBody ? JSON.parse(requestBody) : undefined,
+		responseBody: responseBody ? JSON.parse(responseBody) : undefined,
+	}, null, 2);
+
 	return addItemWithId(
 		specManager,
 		planId,
 		{
-			name,
+			name: `${method} ${endpoint}`,
 			description,
-			contract_type,
+			contract_type: "rest",
 			specification,
 			examples: options?.examples || [],
 		} as Omit<
@@ -220,10 +271,10 @@ export async function addDataModel(
 	planId: string,
 	name: string,
 	description: string,
-	format: string,
-	schema: string,
+	fields: string[],
+	format?: string,
 	supersede_id?: string,
-): Promise<ToolResponse> {
+): Promise<CallToolResult> {
 	const config: ArrayToolConfig<Plan, DataModel> = {
 		toolName: "add_data_model",
 		description: "Add data model to a plan",
@@ -234,13 +285,16 @@ export async function addDataModel(
 		setArray: (_spec, items) => ({ data_models: items }),
 	};
 
+	// Convert fields array to a schema string
+	const schema = fields.join("\n");
+
 	return addItemWithId(
 		specManager,
 		planId,
 		{
 			name,
 			description,
-			format,
+			format: format || "typescript",
 			schema,
 			fields: [],
 			relationships: [],

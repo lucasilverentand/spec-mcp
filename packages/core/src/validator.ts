@@ -31,6 +31,7 @@ const PREFIX_TO_TYPE: Record<string, EntityType> = {
 	cmp: "component",
 	cns: "constitution",
 	dcs: "decision",
+	mls: "milestone",
 };
 
 /**
@@ -116,7 +117,9 @@ export async function validateEntity(
 							? "components"
 							: entityType === "constitution"
 								? "constitutions"
-								: "decisions"
+								: entityType === "milestone"
+									? "milestones"
+									: "decisions"
 		];
 
 	// Fetch the entity

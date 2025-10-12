@@ -40,8 +40,7 @@ Placeholder.
 	{
 		uri: "spec-mcp://guide/best-practices",
 		name: "Best Practices",
-		description:
-			"Patterns, anti-patterns, and tips for spec-driven development",
+		description: "Patterns, anti-patterns, and tips for spec-driven development",
 		mimeType: "text/markdown",
 		content: `# best-practices
 
@@ -57,5 +56,5 @@ Placeholder.
 
 Placeholder.
 `,
-	},
+	}
 ] as const;

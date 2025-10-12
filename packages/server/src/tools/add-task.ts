@@ -1,4 +1,4 @@
-import type { ToolResponse } from "@modelcontextprotocol/sdk/types.js";
+import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { SpecManager } from "@spec-mcp/core";
 import { validateEntity } from "@spec-mcp/core";
 import type { Plan, Task } from "@spec-mcp/schemas";
@@ -17,7 +17,7 @@ export async function addTask(
 		considerations?: string[];
 		supersede_id?: string;
 	},
-): Promise<ToolResponse> {
+): Promise<CallToolResult> {
 	try {
 		// Validate and find the plan
 		const result = await validateEntity(specManager, planId);
@@ -48,7 +48,18 @@ export async function addTask(
 			};
 		}
 
-		const existingTasks = plan.tasks || [];
+		// Sanitize existing tasks to ensure all defaults are applied
+		const existingTasks = (plan.tasks || []).map((t) => ({
+			...t,
+			depends_on: t.depends_on ?? [],
+			considerations: t.considerations ?? [],
+			references: t.references ?? [],
+			files: t.files ?? [],
+			blocked: t.blocked ?? [],
+			supersedes: t.supersedes ?? null,
+			superseded_by: t.superseded_by ?? null,
+			superseded_at: t.superseded_at ?? null,
+		}));
 
 		// If superseding, validate the old task exists and isn't already superseded
 		let oldTask: Task | undefined;
@@ -86,27 +97,23 @@ export async function addTask(
 		const now = new Date().toISOString();
 
 		// Create the new task
+		// Note: We explicitly set all fields to avoid undefined values
 		const newTask: Task = {
-			...(oldTask || {}),
 			id: newTaskId,
-			priority: options?.priority || oldTask?.priority || "medium",
-			depends_on: options?.depends_on || oldTask?.depends_on || [],
+			priority: options?.priority ?? oldTask?.priority ?? "medium",
+			depends_on: options?.depends_on ?? oldTask?.depends_on ?? [],
 			task,
-			considerations: options?.considerations || oldTask?.considerations || [],
-			references: oldTask?.references || [],
-			files: oldTask?.files || [],
+			considerations: options?.considerations ?? oldTask?.considerations ?? [],
+			references: oldTask?.references ?? [],
+			files: oldTask?.files ?? [],
 			status: oldTask
 				? {
-						...oldTask.status,
 						created_at: now,
 						started_at: null,
 						completed_at: null,
 						verified_at: null,
 						notes: [
-							{
-								text: `Created by superseding ${options.supersede_id}`,
-								timestamp: now,
-							},
+							`Created by superseding ${options?.supersede_id ?? "unknown"}`,
 						],
 					}
 				: {
@@ -116,8 +123,8 @@ export async function addTask(
 						verified_at: null,
 						notes: [],
 					},
-			blocked: oldTask?.blocked || [],
-			supersedes: options?.supersede_id || null,
+			blocked: oldTask?.blocked ?? [],
+			supersedes: options?.supersede_id ?? null,
 			superseded_by: null,
 			superseded_at: null,
 		};
@@ -137,22 +144,20 @@ export async function addTask(
 				if (t.id === options.supersede_id) {
 					return updatedOldTask;
 				}
-				// Update references in depends_on
-				const updatedTask = { ...t };
-				if (t.depends_on && t.depends_on.length > 0) {
-					updatedTask.depends_on = t.depends_on.map((depId) =>
+				// Update references in depends_on and blocked
+				// IMPORTANT: Always set these fields explicitly to avoid undefined
+				const updatedTask = {
+					...t,
+					depends_on: (t.depends_on ?? []).map((depId) =>
 						depId === options.supersede_id ? newTaskId : depId,
-					);
-				}
-				// Update references in blocked_by within blocked array
-				if (t.blocked && t.blocked.length > 0) {
-					updatedTask.blocked = t.blocked.map((block) => ({
+					),
+					blocked: (t.blocked ?? []).map((block) => ({
 						...block,
 						blocked_by: block.blocked_by.map((blockId) =>
 							blockId === options.supersede_id ? newTaskId : blockId,
 						),
-					}));
-				}
+					})),
+				};
 				return updatedTask;
 			});
 
@@ -163,9 +168,22 @@ export async function addTask(
 			updatedTasks = [...existingTasks, newTask];
 		}
 
+		// Ensure all tasks have proper defaults applied (fix undefined fields from YAML)
+		const sanitizedTasks = updatedTasks.map((t) => ({
+			...t,
+			depends_on: t.depends_on ?? [],
+			considerations: t.considerations ?? [],
+			references: t.references ?? [],
+			files: t.files ?? [],
+			blocked: t.blocked ?? [],
+			supersedes: t.supersedes ?? null,
+			superseded_by: t.superseded_by ?? null,
+			superseded_at: t.superseded_at ?? null,
+		}));
+
 		// Update the plan
 		await specManager.plans.update(plan.number, {
-			tasks: updatedTasks,
+			tasks: sanitizedTasks,
 		});
 
 		if (options?.supersede_id) {

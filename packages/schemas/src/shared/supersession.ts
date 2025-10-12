@@ -7,17 +7,17 @@ import z from "zod";
 export function createSupersessionSchema<T extends z.ZodString>(idSchema: T) {
 	return {
 		supersedes: idSchema
-			.nullable()
+			.nullish()
 			.default(null)
 			.describe("ID of the item this replaces (if any)"),
 		superseded_by: idSchema
-			.nullable()
+			.nullish()
 			.default(null)
 			.describe("ID of the item that replaces this (if superseded)"),
 		superseded_at: z
 			.string()
 			.datetime()
-			.nullable()
+			.nullish()
 			.default(null)
 			.describe("Timestamp when this item was superseded"),
 	};

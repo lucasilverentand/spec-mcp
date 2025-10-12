@@ -1,12 +1,29 @@
-import type { ToolResponse } from "@modelcontextprotocol/sdk/types.js";
+import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { SpecManager } from "@spec-mcp/core";
 import { validateEntity } from "@spec-mcp/core";
+import type {
+	BusinessRequirement,
+	Component,
+	Constitution,
+	Decision,
+	Plan,
+	TechnicalRequirement,
+} from "@spec-mcp/schemas";
+import { isCompleted, isVerified } from "@spec-mcp/schemas";
 import yaml from "yaml";
+
+type Entity =
+	| Plan
+	| BusinessRequirement
+	| TechnicalRequirement
+	| Decision
+	| Component
+	| Constitution;
 
 /**
  * Format entity as markdown
  */
-function formatAsMarkdown(entity: Record<string, unknown>): string {
+function formatAsMarkdown(entity: Entity): string {
 	const lines: string[] = [];
 
 	// Header
@@ -16,9 +33,6 @@ function formatAsMarkdown(entity: Record<string, unknown>): string {
 	lines.push(`**Number:** ${entity.number}`);
 	lines.push(`**Slug:** ${entity.slug}`);
 	lines.push(`**Priority:** ${entity.priority}`);
-	if (entity.draft) {
-		lines.push(`**Status:** DRAFT`);
-	}
 	lines.push("");
 
 	// Description
@@ -27,26 +41,11 @@ function formatAsMarkdown(entity: Record<string, unknown>): string {
 	lines.push(entity.description);
 	lines.push("");
 
-	// Status
-	lines.push("## Status");
+	// Metadata
+	lines.push("## Metadata");
 	lines.push("");
-	lines.push(`- **Created:** ${entity.status.created_at}`);
-	lines.push(`- **Updated:** ${entity.status.updated_at}`);
-	lines.push(`- **Completed:** ${entity.status.completed ? "Yes" : "No"}`);
-	if (entity.status.completed_at) {
-		lines.push(`- **Completed At:** ${entity.status.completed_at}`);
-	}
-	lines.push(`- **Verified:** ${entity.status.verified ? "Yes" : "No"}`);
-	if (entity.status.verified_at) {
-		lines.push(`- **Verified At:** ${entity.status.verified_at}`);
-	}
-	if (entity.status.notes && entity.status.notes.length > 0) {
-		lines.push("");
-		lines.push("### Notes:");
-		for (const note of entity.status.notes) {
-			lines.push(`- ${note}`);
-		}
-	}
+	lines.push(`- **Created:** ${entity.created_at}`);
+	lines.push(`- **Updated:** ${entity.updated_at}`);
 	lines.push("");
 
 	// Type-specific fields
@@ -61,20 +60,29 @@ function formatAsMarkdown(entity: Record<string, unknown>): string {
 		}
 
 		// Scope
-		if (entity.scope) {
+		if (entity.scope && entity.scope.length > 0) {
 			lines.push("## Scope");
 			lines.push("");
-			if (entity.scope.in_scope && entity.scope.in_scope.length > 0) {
+			const inScope = entity.scope.filter((s) => s.type === "in-scope");
+			const outOfScope = entity.scope.filter((s) => s.type === "out-of-scope");
+
+			if (inScope.length > 0) {
 				lines.push("### In Scope:");
-				for (const item of entity.scope.in_scope) {
-					lines.push(`- ${item}`);
+				for (const item of inScope) {
+					lines.push(`- ${item.description}`);
+					if (item.rationale) {
+						lines.push(`  *${item.rationale}*`);
+					}
 				}
 				lines.push("");
 			}
-			if (entity.scope.out_of_scope && entity.scope.out_of_scope.length > 0) {
+			if (outOfScope.length > 0) {
 				lines.push("### Out of Scope:");
-				for (const item of entity.scope.out_of_scope) {
-					lines.push(`- ${item}`);
+				for (const item of outOfScope) {
+					lines.push(`- ${item.description}`);
+					if (item.rationale) {
+						lines.push(`  *${item.rationale}*`);
+					}
 				}
 				lines.push("");
 			}
@@ -95,10 +103,10 @@ function formatAsMarkdown(entity: Record<string, unknown>): string {
 			lines.push("## Tasks");
 			lines.push("");
 			for (const task of entity.tasks) {
-				const statusIcon = task.status.completed
-					? "✓"
-					: task.status.verified
-						? "✓✓"
+				const statusIcon = isVerified(task.status)
+					? "✓✓"
+					: isCompleted(task.status)
+						? "✓"
 						: "○";
 				lines.push(`### ${statusIcon} ${task.id}: ${task.task}`);
 				lines.push("");
@@ -135,12 +143,20 @@ function formatAsMarkdown(entity: Record<string, unknown>): string {
 			for (const flow of entity.flows) {
 				lines.push(`### ${flow.id}: ${flow.name}`);
 				lines.push("");
-				lines.push(flow.description);
-				lines.push("");
+				if (flow.description) {
+					lines.push(flow.description);
+					lines.push("");
+				}
 				if (flow.steps && flow.steps.length > 0) {
 					lines.push("**Steps:**");
 					for (let i = 0; i < flow.steps.length; i++) {
-						lines.push(`${i + 1}. ${flow.steps[i]}`);
+						const step = flow.steps[i];
+						if (step) {
+							lines.push(`${i + 1}. ${step.name}`);
+							if (step.description) {
+								lines.push(`   ${step.description}`);
+							}
+						}
 					}
 					lines.push("");
 				}
@@ -152,11 +168,11 @@ function formatAsMarkdown(entity: Record<string, unknown>): string {
 			lines.push("## Test Cases");
 			lines.push("");
 			for (const testCase of entity.test_cases) {
-				const statusIcon = testCase.passed
+				const statusIcon = testCase.passing
 					? "✓"
-					: testCase.passed === false
-						? "✗"
-						: "○";
+					: testCase.implemented
+						? "○"
+						: "✗";
 				lines.push(`### ${statusIcon} ${testCase.id}: ${testCase.name}`);
 				lines.push("");
 				lines.push(testCase.description);
@@ -169,9 +185,8 @@ function formatAsMarkdown(entity: Record<string, unknown>): string {
 			lines.push("## API Contracts");
 			lines.push("");
 			for (const contract of entity.api_contracts) {
-				lines.push(`### ${contract.id}: ${contract.endpoint}`);
+				lines.push(`### ${contract.id}: ${contract.name}`);
 				lines.push("");
-				lines.push(`**Method:** ${contract.method}`);
 				lines.push(`**Description:** ${contract.description}`);
 				lines.push("");
 			}
@@ -194,7 +209,13 @@ function formatAsMarkdown(entity: Record<string, unknown>): string {
 			lines.push("## References");
 			lines.push("");
 			for (const ref of entity.references) {
-				lines.push(`- [${ref.name}](${ref.url})`);
+				if (ref.type === "url") {
+					lines.push(`- [${ref.name}](${ref.url})`);
+				} else if (ref.type === "file") {
+					lines.push(`- [${ref.name}](${ref.path})`);
+				} else {
+					lines.push(`- ${ref.name}`);
+				}
 				if (ref.description) {
 					lines.push(`  ${ref.description}`);
 				}
@@ -216,7 +237,7 @@ export async function getSpec(
 	specManager: SpecManager,
 	id: string,
 	format: "yaml" | "markdown" = "markdown",
-): Promise<ToolResponse> {
+): Promise<CallToolResult> {
 	try {
 		// Validate and find the entity
 		const result = await validateEntity(specManager, id);
@@ -233,7 +254,7 @@ export async function getSpec(
 			};
 		}
 
-		const entity = result.entity;
+		const entity = result.entity as Entity;
 
 		let output: string;
 		if (format === "yaml") {

@@ -1,0 +1,15 @@
+{
+	"extends": "./tsconfig.json",
+	"compilerOptions": {
+		"rootDir": "./src",
+		"outDir": "./dist"
+	},
+	"include": ["src/**/*.ts", "src/**/*.tsx"],
+	"exclude": [
+		"src/**/*.astro",
+		"src/pages/**/*",
+		"src/layouts/**/*",
+		"dist",
+		"node_modules"
+	]
+}

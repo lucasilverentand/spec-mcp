@@ -1,4 +1,4 @@
-import type { ToolResponse } from "@modelcontextprotocol/sdk/types.js";
+import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { SpecManager } from "@spec-mcp/core";
 import type { Component, Deployment } from "@spec-mcp/schemas";
 import { type ArrayToolConfig, addSimpleItem } from "./array-tool-builder.js";
@@ -11,7 +11,7 @@ export async function addTech(
 	specManager: SpecManager,
 	componentId: string,
 	tech: string,
-): Promise<ToolResponse> {
+): Promise<CallToolResult> {
 	const config: ArrayToolConfig<Component, string> = {
 		toolName: "add_tech",
 		description: "Add technology to component tech stack",
@@ -80,7 +80,7 @@ export async function addDeployment(
 	environment_vars?: string[],
 	secrets?: string[],
 	notes?: string,
-): Promise<ToolResponse> {
+): Promise<CallToolResult> {
 	const config: ArrayToolConfig<Component, Deployment> = {
 		toolName: "add_deployment",
 		description: "Add deployment configuration to a component",
@@ -93,11 +93,11 @@ export async function addDeployment(
 
 	const deployment: Deployment = {
 		platform,
+		environment_vars: environment_vars || [],
+		secrets: secrets || [],
 		...(url && { url }),
 		...(build_command && { build_command }),
 		...(deploy_command && { deploy_command }),
-		...(environment_vars && { environment_vars }),
-		...(secrets && { secrets }),
 		...(notes && { notes }),
 	};
 
@@ -179,7 +179,7 @@ export async function addExternalDependency(
 	specManager: SpecManager,
 	componentId: string,
 	dependency: string,
-): Promise<ToolResponse> {
+): Promise<CallToolResult> {
 	const config: ArrayToolConfig<Component, string> = {
 		toolName: "add_external_dependency",
 		description: "Add external dependency to a component",

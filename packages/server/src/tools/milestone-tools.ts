@@ -1,4 +1,4 @@
-import type { ToolResponse } from "@modelcontextprotocol/sdk/types.js";
+import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { SpecManager } from "@spec-mcp/core";
 import { validateEntity } from "@spec-mcp/core";
 import type { Milestone, Reference } from "@spec-mcp/schemas";
@@ -15,7 +15,7 @@ import { type ArrayToolConfig, addSimpleItem } from "./array-tool-builder.js";
 export async function startMilestone(
 	specManager: SpecManager,
 	milestoneId: string,
-): Promise<ToolResponse> {
+): Promise<CallToolResult> {
 	try {
 		const result = await validateEntity(specManager, milestoneId);
 
@@ -108,7 +108,7 @@ export const startMilestoneTool = {
 export async function completeMilestone(
 	specManager: SpecManager,
 	milestoneId: string,
-): Promise<ToolResponse> {
+): Promise<CallToolResult> {
 	try {
 		const result = await validateEntity(specManager, milestoneId);
 
@@ -166,7 +166,9 @@ export async function completeMilestone(
 			});
 
 			if (incompletePlans.length > 0) {
-				const planIds = incompletePlans.map((p) => `${p.type}-${p.number}-${p.slug}`).join(", ");
+				const planIds = incompletePlans
+					.map((p) => `${p.type}-${p.number}-${p.slug}`)
+					.join(", ");
 				return {
 					content: [
 						{
@@ -233,7 +235,7 @@ export async function verifyMilestone(
 	specManager: SpecManager,
 	milestoneId: string,
 	note?: string,
-): Promise<ToolResponse> {
+): Promise<CallToolResult> {
 	try {
 		const result = await validateEntity(specManager, milestoneId);
 
@@ -289,7 +291,7 @@ export async function verifyMilestone(
 
 		const now = new Date().toISOString();
 		const notes = note
-			? [...milestone.status.notes, { text: note, timestamp: now }]
+			? [...milestone.status.notes, `${note} (verified at ${now})`]
 			: milestone.status.notes;
 
 		await specManager.milestones.update(milestone.number, {
@@ -350,7 +352,7 @@ export async function addReferenceToMilestone(
 	specManager: SpecManager,
 	milestoneId: string,
 	reference: Reference,
-): Promise<ToolResponse> {
+): Promise<CallToolResult> {
 	const config: ArrayToolConfig<Milestone, Reference> = {
 		toolName: "add_reference",
 		description: "Add reference to a milestone",

@@ -41,12 +41,9 @@ export const TaskIdSchema = z
 	.nonempty();
 
 /**
- * Note/event with timestamp for audit trail
+ * Note/event for audit trail (simple string format)
  */
-export const StatusNoteSchema = z.object({
-	text: z.string().min(1).describe("Note content"),
-	timestamp: z.string().datetime().describe("When the note was added"),
-});
+export const StatusNoteSchema = z.string().min(1).describe("Note content");
 
 /**
  * Minimal completion status - stores only timestamps, everything else computed
@@ -167,16 +164,16 @@ export const TaskSchema = z.object({
 			"List of blocking issues (current and historical). Only unresolved blocks (resolved_at is null) are active.",
 		),
 	// Supersession tracking - for audit trail and updates
-	supersedes: TaskIdSchema.nullable()
+	supersedes: TaskIdSchema.nullish()
 		.default(null)
 		.describe("ID of the task this replaces (if any)"),
-	superseded_by: TaskIdSchema.nullable()
+	superseded_by: TaskIdSchema.nullish()
 		.default(null)
 		.describe("ID of the task that replaces this (if superseded)"),
 	superseded_at: z
 		.string()
 		.datetime()
-		.nullable()
+		.nullish()
 		.default(null)
 		.describe("Timestamp when this task was superseded"),
 });
@@ -221,7 +218,6 @@ export function getUpdatedAt(status: CompletionStatus): string {
 		status.started_at,
 		status.completed_at,
 		status.verified_at,
-		...status.notes.map((n) => n.timestamp),
 	].filter((t): t is string => t !== null);
 
 	// Return latest timestamp (they're ISO strings, so lexicographic sort works)

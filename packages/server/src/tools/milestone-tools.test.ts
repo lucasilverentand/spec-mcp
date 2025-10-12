@@ -11,6 +11,7 @@ import {
 	verifyMilestone,
 } from "./milestone-tools.js";
 
+// TODO: Milestone entity type needs to be added to SpecManager before these tests can run
 describe("Milestone Tools", () => {
 	let specManager: SpecManager;
 	let tempDir: string;
@@ -22,6 +23,51 @@ describe("Milestone Tools", () => {
 		tempDir = mkdtempSync(join(tmpdir(), "milestone-test-"));
 		specManager = new SpecManager(tempDir);
 		await specManager.ensureFolders();
+
+		// Create a business requirement for the plan to reference
+		await specManager.business_requirements.create({
+			type: "business-requirement",
+			number: 1,
+			slug: "user-management",
+			name: "User Management",
+			description: "User management features including login and registration",
+			priority: "high",
+			criteria: [
+				{
+					id: "crit-001",
+					description: "System should support user authentication",
+					rationale: "Security requirement",
+					supersedes: null,
+					superseded_by: null,
+					superseded_at: null,
+				},
+				{
+					id: "crit-002",
+					description: "System should support user registration",
+					rationale: "User acquisition requirement",
+					supersedes: null,
+					superseded_by: null,
+					superseded_at: null,
+				},
+			],
+			user_stories: [
+				{
+					role: "user",
+					feature: "login to the system",
+					benefit: "access my account",
+				},
+			],
+			business_value: [
+				{
+					type: "revenue",
+					value: "Enable user-based monetization",
+				},
+			],
+			depends_on: [],
+			references: [],
+			created_at: "2025-01-01T00:00:00Z",
+			updated_at: "2025-01-01T00:00:00Z",
+		});
 
 		// Create a test milestone
 		const milestone: Milestone = {
@@ -117,7 +163,7 @@ describe("Milestone Tools", () => {
 		// Clean up temp directory
 		try {
 			rmSync(tempDir, { recursive: true, force: true });
-		} catch (error) {
+		} catch (_error) {
 			// Ignore cleanup errors
 		}
 	});
@@ -127,9 +173,11 @@ describe("Milestone Tools", () => {
 			const result = await startMilestone(specManager, milestoneId);
 
 			expect(result.isError).toBeUndefined();
-			expect(result.content[0].text).toContain("Successfully started milestone");
+			expect(result.content[0].text).toContain(
+				"Successfully started milestone",
+			);
 
-			const milestone = await specManager.milestones.read(1);
+			const milestone = await specManager.milestones.get(1);
 			expect(milestone.status.started_at).toBeTruthy();
 			expect(milestone.status.completed_at).toBeNull();
 		});
@@ -163,7 +211,7 @@ describe("Milestone Tools", () => {
 			await startMilestone(specManager, milestoneId);
 
 			// Complete all tasks in the plan
-			const plan = await specManager.plans.read(1);
+			const plan = await specManager.plans.get(1);
 			plan.tasks[0].status.started_at = "2025-01-02T00:00:00Z";
 			plan.tasks[0].status.completed_at = "2025-01-03T00:00:00Z";
 			await specManager.plans.update(1, { tasks: plan.tasks });
@@ -173,7 +221,7 @@ describe("Milestone Tools", () => {
 			expect(result.isError).toBeUndefined();
 			expect(result.content[0].text).toContain("Successfully completed");
 
-			const milestone = await specManager.milestones.read(1);
+			const milestone = await specManager.milestones.get(1);
 			expect(milestone.status.completed_at).toBeTruthy();
 			expect(milestone.status.verified_at).toBeNull();
 		});
@@ -191,7 +239,7 @@ describe("Milestone Tools", () => {
 			await startMilestone(specManager, milestoneId);
 
 			// Complete all tasks
-			const plan = await specManager.plans.read(1);
+			const plan = await specManager.plans.get(1);
 			plan.tasks[0].status.started_at = "2025-01-02T00:00:00Z";
 			plan.tasks[0].status.completed_at = "2025-01-03T00:00:00Z";
 			await specManager.plans.update(1, { tasks: plan.tasks });
@@ -205,7 +253,7 @@ describe("Milestone Tools", () => {
 
 		it("should auto-start milestone if not started", async () => {
 			// Complete all tasks without starting milestone
-			const plan = await specManager.plans.read(1);
+			const plan = await specManager.plans.get(1);
 			plan.tasks[0].status.started_at = "2025-01-02T00:00:00Z";
 			plan.tasks[0].status.completed_at = "2025-01-03T00:00:00Z";
 			await specManager.plans.update(1, { tasks: plan.tasks });
@@ -214,7 +262,7 @@ describe("Milestone Tools", () => {
 
 			expect(result.isError).toBeUndefined();
 
-			const milestone = await specManager.milestones.read(1);
+			const milestone = await specManager.milestones.get(1);
 			expect(milestone.status.started_at).toBeTruthy();
 			expect(milestone.status.completed_at).toBeTruthy();
 		});
@@ -232,7 +280,7 @@ describe("Milestone Tools", () => {
 			// Start and complete milestone
 			await startMilestone(specManager, milestoneId);
 
-			const plan = await specManager.plans.read(1);
+			const plan = await specManager.plans.get(1);
 			plan.tasks[0].status.started_at = "2025-01-02T00:00:00Z";
 			plan.tasks[0].status.completed_at = "2025-01-03T00:00:00Z";
 			await specManager.plans.update(1, { tasks: plan.tasks });
@@ -246,7 +294,7 @@ describe("Milestone Tools", () => {
 			expect(result.isError).toBeUndefined();
 			expect(result.content[0].text).toContain("Successfully verified");
 
-			const milestone = await specManager.milestones.read(1);
+			const milestone = await specManager.milestones.get(1);
 			expect(milestone.status.verified_at).toBeTruthy();
 		});
 
@@ -259,10 +307,10 @@ describe("Milestone Tools", () => {
 
 			expect(result.isError).toBeUndefined();
 
-			const milestone = await specManager.milestones.read(1);
+			const milestone = await specManager.milestones.get(1);
 			expect(milestone.status.verified_at).toBeTruthy();
 			expect(milestone.status.notes).toHaveLength(1);
-			expect(milestone.status.notes[0].text).toBe("Verified by QA team");
+			expect(milestone.status.notes[0]).toContain("Verified by QA team");
 		});
 
 		it("should reject verifying an incomplete milestone", async () => {
@@ -289,10 +337,7 @@ describe("Milestone Tools", () => {
 
 			await specManager.milestones.create(newMilestone);
 
-			const result = await verifyMilestone(
-				specManager,
-				"mls-002-beta-release",
-			);
+			const result = await verifyMilestone(specManager, "mls-002-beta-release");
 
 			expect(result.isError).toBe(true);
 			expect(result.content[0].text).toContain("must be completed");
@@ -332,7 +377,7 @@ describe("Milestone Tools", () => {
 			expect(result.isError).toBeUndefined();
 			expect(result.content[0].text).toContain("Successfully added");
 
-			const milestone = await specManager.milestones.read(1);
+			const milestone = await specManager.milestones.get(1);
 			expect(milestone.references).toHaveLength(1);
 			expect(milestone.references[0].type).toBe("url");
 			expect(milestone.references[0].name).toBe("Release Notes");
@@ -343,7 +388,8 @@ describe("Milestone Tools", () => {
 				type: "documentation" as const,
 				name: "Project Plan",
 				description: "Detailed project plan",
-				url: "https://example.com/project-plan",
+				library: "project-management",
+				search_term: "project planning guide",
 				importance: "high" as const,
 			};
 
@@ -355,7 +401,7 @@ describe("Milestone Tools", () => {
 
 			expect(result.isError).toBeUndefined();
 
-			const milestone = await specManager.milestones.read(1);
+			const milestone = await specManager.milestones.get(1);
 			expect(milestone.references).toHaveLength(1);
 			expect(milestone.references[0].type).toBe("documentation");
 			expect(milestone.references[0].importance).toBe("high");
@@ -379,7 +425,7 @@ describe("Milestone Tools", () => {
 			await addReferenceToMilestone(specManager, milestoneId, ref1);
 			await addReferenceToMilestone(specManager, milestoneId, ref2);
 
-			const milestone = await specManager.milestones.read(1);
+			const milestone = await specManager.milestones.get(1);
 			expect(milestone.references).toHaveLength(2);
 		});
 
@@ -467,7 +513,7 @@ describe("Milestone Tools", () => {
 			await startMilestone(specManager, milestoneId);
 
 			// Complete only first plan
-			const plan1 = await specManager.plans.read(1);
+			const plan1 = await specManager.plans.get(1);
 			plan1.tasks[0].status.started_at = "2025-01-02T00:00:00Z";
 			plan1.tasks[0].status.completed_at = "2025-01-03T00:00:00Z";
 			await specManager.plans.update(1, { tasks: plan1.tasks });
@@ -478,7 +524,7 @@ describe("Milestone Tools", () => {
 			expect(result.content[0].text).toContain("not yet complete");
 
 			// Complete second plan
-			const updatedPlan2 = await specManager.plans.read(2);
+			const updatedPlan2 = await specManager.plans.get(2);
 			updatedPlan2.tasks[0].status.started_at = "2025-01-04T00:00:00Z";
 			updatedPlan2.tasks[0].status.completed_at = "2025-01-05T00:00:00Z";
 			await specManager.plans.update(2, { tasks: updatedPlan2.tasks });
@@ -513,7 +559,10 @@ describe("Milestone Tools", () => {
 			await specManager.milestones.create(standaloneMilestone);
 
 			await startMilestone(specManager, "mls-002-documentation");
-			const result = await completeMilestone(specManager, "mls-002-documentation");
+			const result = await completeMilestone(
+				specManager,
+				"mls-002-documentation",
+			);
 
 			// Should complete successfully since there are no plans to block it
 			expect(result.isError).toBeUndefined();

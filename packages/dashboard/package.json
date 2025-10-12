@@ -1,0 +1,61 @@
+{
+	"name": "@spec-mcp/dashboard",
+	"version": "0.1.0",
+	"description": "Web-based dashboard for spec-mcp server",
+	"type": "module",
+	"exports": {
+		".": {
+			"import": "./dist/index.js",
+			"types": "./dist/index.d.ts"
+		},
+		"./server": {
+			"import": "./dist/lib/dashboard-server.js",
+			"types": "./dist/lib/dashboard-server.d.ts"
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"dev": "astro dev",
+		"build": "astro build && tsc -p tsconfig.build.json",
+		"preview": "astro preview",
+		"clean": "rm -rf dist .astro",
+		"typecheck": "tsc --noEmit",
+		"test": "vitest run",
+		"test:watch": "vitest watch"
+	},
+	"dependencies": {
+		"@spec-mcp/core": "workspace:*",
+		"@spec-mcp/schemas": "workspace:*",
+		"chokidar": "^4.0.3",
+		"ws": "^8.18.0"
+	},
+	"devDependencies": {
+		"@astrojs/check": "^0.9.4",
+		"@astrojs/node": "^8.3.4",
+		"@astrojs/react": "^3.6.2",
+		"@astrojs/tailwind": "^5.1.2",
+		"@radix-ui/react-progress": "^1.1.7",
+		"@radix-ui/react-slot": "^1.2.3",
+		"@spec-mcp/tsconfig": "workspace:*",
+		"@types/node": "^24.5.2",
+		"@types/react": "^18.3.12",
+		"@types/react-dom": "^18.3.1",
+		"@types/ws": "^8.5.13",
+		"astro": "^4.16.18",
+		"class-variance-authority": "^0.7.1",
+		"clsx": "^2.1.1",
+		"lucide-react": "^0.462.0",
+		"react": "^18.3.1",
+		"react-dom": "^18.3.1",
+		"tailwind-merge": "^2.5.5",
+		"tailwindcss": "^3.4.15",
+		"tailwindcss-animate": "^1.0.7",
+		"typescript": "^5.9.2",
+		"vitest": "^3.2.4"
+	},
+	"engines": {
+		"node": ">=18.0.0"
+	}
+}

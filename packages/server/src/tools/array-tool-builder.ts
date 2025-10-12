@@ -1,4 +1,4 @@
-import type { ToolResponse } from "@modelcontextprotocol/sdk/types.js";
+import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { SpecManager } from "@spec-mcp/core";
 import { validateEntity } from "@spec-mcp/core";
 import type { Supersedable } from "@spec-mcp/schemas";
@@ -40,7 +40,7 @@ export async function addItemWithId<
 	>,
 	config: ArrayToolConfig<TSpec, TItem>,
 	supersede_id?: string,
-): Promise<ToolResponse> {
+): Promise<CallToolResult> {
 	try {
 		// Validate and find the spec
 		const result = await validateEntity(specManager, specId);
@@ -57,7 +57,7 @@ export async function addItemWithId<
 			};
 		}
 
-		const spec = result.entity as TSpec;
+		const spec = result.entity as unknown as TSpec;
 
 		if (spec.type !== config.specType) {
 			return {
@@ -113,13 +113,14 @@ export async function addItemWithId<
 		const maxNum = existingItems.reduce((max, item) => {
 			const match = item.id.match(/^[a-z]+-(\d+)$/);
 			if (match) {
-				const num = Number.parseInt(match[1], 10);
+				const num = Number.parseInt(match[1]!, 10);
 				return num > max ? num : max;
 			}
 			return max;
 		}, 0);
 
-		const newId = `${config.idPrefix}-${String(maxNum + 1).padStart(3, "0")}`;
+		const prefix = config.idPrefix || "item";
+		const newId = `${prefix}-${String(maxNum + 1).padStart(3, "0")}`;
 		const now = new Date().toISOString();
 
 		// Create the new item with supersession fields
@@ -162,7 +163,7 @@ export async function addItemWithId<
 
 		// Get the appropriate manager method
 		const manager = getSpecManager(specManager, spec.type);
-		await manager.update(spec.number, updates);
+		await manager.update(spec.number, updates as any);
 
 		if (supersede_id) {
 			// Show what changed
@@ -192,7 +193,7 @@ export async function addItemWithId<
 				content: [
 					{
 						type: "text",
-						text: `Successfully superseded ${config.idPrefix} ${supersede_id} with new ${config.idPrefix} ${newId}${changesSummary}\n\nThe old item remains in the spec for audit trail but is marked as superseded.\n\nAll references to ${supersede_id} have been updated to ${newId}.`,
+						text: `Successfully superseded ${supersede_id} with new ${newId}${changesSummary}\n\nThe old item remains in the spec for audit trail but is marked as superseded.\n\nAll references to ${supersede_id} have been updated to ${newId}.`,
 					},
 				],
 			};
@@ -202,7 +203,7 @@ export async function addItemWithId<
 			content: [
 				{
 					type: "text",
-					text: `Successfully added ${config.idPrefix} ${newId} to ${config.specType} ${specId}`,
+					text: `Successfully added ${newId} to ${config.specType} ${specId}`,
 				},
 			],
 		};
@@ -278,7 +279,7 @@ export async function removeItemWithId<
 	specId: string,
 	itemId: string,
 	config: ArrayToolConfig<TSpec, TItem>,
-): Promise<ToolResponse> {
+): Promise<CallToolResult> {
 	try {
 		// Validate and find the spec
 		const result = await validateEntity(specManager, specId);
@@ -295,7 +296,7 @@ export async function removeItemWithId<
 			};
 		}
 
-		const spec = result.entity as TSpec;
+		const spec = result.entity as unknown as TSpec;
 
 		if (spec.type !== config.specType) {
 			return {
@@ -333,13 +334,13 @@ export async function removeItemWithId<
 
 		// Get the appropriate manager method
 		const manager = getSpecManager(specManager, spec.type);
-		await manager.update(spec.number, updates);
+		await manager.update(spec.number, updates as any);
 
 		return {
 			content: [
 				{
 					type: "text",
-					text: `Successfully removed ${config.idPrefix} ${itemId} from ${config.specType} ${specId}`,
+					text: `Successfully removed ${itemId} from ${config.specType} ${specId}`,
 				},
 			],
 		};
@@ -371,7 +372,7 @@ export async function supersedeItemWithId<
 		Omit<TItem, "id" | "supersedes" | "superseded_by" | "superseded_at">
 	>,
 	config: ArrayToolConfig<TSpec, TItem>,
-): Promise<ToolResponse> {
+): Promise<CallToolResult> {
 	try {
 		// Validate and find the spec
 		const result = await validateEntity(specManager, specId);
@@ -388,7 +389,7 @@ export async function supersedeItemWithId<
 			};
 		}
 
-		const spec = result.entity as TSpec;
+		const spec = result.entity as unknown as TSpec;
 
 		if (spec.type !== config.specType) {
 			return {
@@ -437,13 +438,14 @@ export async function supersedeItemWithId<
 		const maxNum = existingItems.reduce((max, item) => {
 			const match = item.id.match(/^[a-z]+-(\d+)$/);
 			if (match) {
-				const num = Number.parseInt(match[1], 10);
+				const num = Number.parseInt(match[1]!, 10);
 				return num > max ? num : max;
 			}
 			return max;
 		}, 0);
 
-		const newId = `${config.idPrefix}-${String(maxNum + 1).padStart(3, "0")}`;
+		const prefix = config.idPrefix || "item";
+		const newId = `${prefix}-${String(maxNum + 1).padStart(3, "0")}`;
 		const now = new Date().toISOString();
 
 		// Create the new item, merging old and new data
@@ -463,17 +465,21 @@ export async function supersedeItemWithId<
 			superseded_at: now,
 		} as TItem;
 
-		// Update the items array
-		const updatedItems = existingItems.map((item) =>
-			item.id === itemId ? updatedOldItem : item,
-		);
+		// Update all references to the old ID with the new ID
+		const updatedItems = existingItems.map((item) => {
+			if (item.id === itemId) {
+				return updatedOldItem;
+			}
+			// Update references in the item
+			return updateReferencesInItem(item, itemId, newId) as TItem;
+		});
 		updatedItems.push(newItem);
 
 		const updates = config.setArray(spec, updatedItems);
 
 		// Get the appropriate manager method
 		const manager = getSpecManager(specManager, spec.type);
-		await manager.update(spec.number, updates);
+		await manager.update(spec.number, updates as any);
 
 		// Show what changed
 		const changes: string[] = [];
@@ -493,7 +499,7 @@ export async function supersedeItemWithId<
 			content: [
 				{
 					type: "text",
-					text: `Successfully superseded ${config.idPrefix} ${itemId} with new ${config.idPrefix} ${newId}${changesSummary}\n\nThe old item remains in the spec for audit trail but is marked as superseded.`,
+					text: `Successfully superseded ${itemId} with new ${newId}${changesSummary}\n\nThe old item remains in the spec for audit trail but is marked as superseded.\n\nAll references to ${itemId} have been updated to ${newId}.`,
 				},
 			],
 		};
@@ -521,7 +527,7 @@ export async function addSimpleItem<
 	specId: string,
 	newItem: TItem,
 	config: ArrayToolConfig<TSpec, TItem>,
-): Promise<ToolResponse> {
+): Promise<CallToolResult> {
 	try {
 		// Validate and find the spec
 		const result = await validateEntity(specManager, specId);
@@ -538,7 +544,7 @@ export async function addSimpleItem<
 			};
 		}
 
-		const spec = result.entity as TSpec;
+		const spec = result.entity as unknown as TSpec;
 
 		if (spec.type !== config.specType) {
 			return {
@@ -561,7 +567,7 @@ export async function addSimpleItem<
 
 		// Get the appropriate manager method
 		const manager = getSpecManager(specManager, spec.type);
-		await manager.update(spec.number, updates);
+		await manager.update(spec.number, updates as any);
 
 		return {
 			content: [
@@ -596,7 +602,7 @@ export async function removeSimpleItem<
 	specId: string,
 	index: number,
 	config: ArrayToolConfig<TSpec, TItem>,
-): Promise<ToolResponse> {
+): Promise<CallToolResult> {
 	try {
 		// Validate and find the spec
 		const result = await validateEntity(specManager, specId);
@@ -613,7 +619,7 @@ export async function removeSimpleItem<
 			};
 		}
 
-		const spec = result.entity as TSpec;
+		const spec = result.entity as unknown as TSpec;
 
 		if (spec.type !== config.specType) {
 			return {
@@ -649,7 +655,7 @@ export async function removeSimpleItem<
 
 		// Get the appropriate manager method
 		const manager = getSpecManager(specManager, spec.type);
-		await manager.update(spec.number, updates);
+		await manager.update(spec.number, updates as any);
 
 		return {
 			content: [
@@ -680,15 +686,17 @@ function getSpecManager(specManager: SpecManager, specType: string) {
 		case "plan":
 			return specManager.plans;
 		case "business-requirement":
-			return specManager.businessRequirements;
+			return specManager.business_requirements;
 		case "technical-requirement":
-			return specManager.technicalRequirements;
+			return specManager.tech_requirements;
 		case "decision":
 			return specManager.decisions;
 		case "component":
 			return specManager.components;
 		case "constitution":
 			return specManager.constitutions;
+		case "milestone":
+			return specManager.milestones;
 		default:
 			throw new Error(`Unknown spec type: ${specType}`);
 	}

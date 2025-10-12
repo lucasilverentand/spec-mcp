@@ -28,6 +28,7 @@
 	},
 	"dependencies": {
 		"@spec-mcp/core": "workspace:*",
+		"@spec-mcp/dashboard": "workspace:*",
 		"@spec-mcp/schemas": "workspace:*",
 		"commander": "^12.1.0"
 	},

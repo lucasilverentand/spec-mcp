@@ -1,4 +1,4 @@
-import type { ToolResponse } from "@modelcontextprotocol/sdk/types.js";
+import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { DraftStore, SpecManager } from "@spec-mcp/core";
 import { validateEntity } from "@spec-mcp/core";
 import type {
@@ -23,7 +23,12 @@ function getEntityTypeFromId(id: string): {
 		return { isSpec: false, isDraft: true };
 	}
 
-	const prefix = id.split("-")[0];
+	const parts = id.split("-");
+	const prefix = parts[0];
+
+	if (!prefix) {
+		return { isSpec: false, isDraft: false };
+	}
 
 	// Spec types
 	const specTypes: Record<string, string> = {
@@ -64,7 +69,12 @@ function getArrayFieldFromItemId(itemId: string): {
 	itemType: string;
 	supportedSpecTypes: string[];
 } | null {
-	const prefix = itemId.split("-")[0];
+	const parts = itemId.split("-");
+	const prefix = parts[0];
+
+	if (!prefix) {
+		return null;
+	}
 
 	const fieldMap: Record<
 		string,
@@ -114,7 +124,7 @@ export async function deleteEntity(
 	specManager: SpecManager,
 	id: string,
 	draftStore?: DraftStore,
-): Promise<ToolResponse> {
+): Promise<CallToolResult> {
 	try {
 		const entityInfo = getEntityTypeFromId(id);
 
@@ -172,7 +182,7 @@ export async function deleteEntity(
 async function deleteDraft(
 	draftStore: DraftStore,
 	draftId: string,
-): Promise<ToolResponse> {
+): Promise<CallToolResult> {
 	// Check if draft exists
 	if (!draftStore.has(draftId)) {
 		return {
@@ -217,7 +227,7 @@ async function deleteDraft(
 async function deleteSpec(
 	specManager: SpecManager,
 	specId: string,
-): Promise<ToolResponse> {
+): Promise<CallToolResult> {
 	// Validate and find the entity
 	const result = await validateEntity(specManager, specId);
 
@@ -270,7 +280,7 @@ async function deleteNestedItem(
 	specManager: SpecManager,
 	itemId: string,
 	_itemTypeName: string,
-): Promise<ToolResponse> {
+): Promise<CallToolResult> {
 	// Determine what type of item we're deleting based on item ID
 	const arrayInfo = getArrayFieldFromItemId(itemId);
 
@@ -379,7 +389,12 @@ async function findSpecContainingItem(
 > {
 	// Search through appropriate spec types
 	for (const specType of arrayInfo.supportedSpecTypes) {
-		let manager;
+		let manager:
+			| typeof specManager.plans
+			| typeof specManager.business_requirements
+			| typeof specManager.tech_requirements
+			| typeof specManager.decisions
+			| typeof specManager.components;
 		switch (specType) {
 			case "plan":
 				manager = specManager.plans;
@@ -401,12 +416,12 @@ async function findSpecContainingItem(
 		}
 
 		// Get all entities of this type
-		const entities = await manager.getAll();
+		const entities = await manager.list();
 
 		// Search for the item in each entity
 		for (const entity of entities) {
 			const array =
-				(entity[arrayInfo.fieldName as keyof typeof entity] as
+				(entity[arrayInfo.fieldName as keyof typeof entity] as unknown as
 					| Array<{ id: string }>
 					| undefined) || [];
 
@@ -427,7 +442,7 @@ async function deleteTask(
 	plan: Plan,
 	taskId: string,
 	itemType: string,
-): Promise<ToolResponse> {
+): Promise<CallToolResult> {
 	if (plan.type !== "plan") {
 		return {
 			content: [
@@ -473,7 +488,7 @@ async function deleteTask(
 		};
 	}
 
-	const taskDescription = existingTasks[taskIndex].task;
+	const taskDescription = existingTasks[taskIndex]!.task;
 	const updatedTasks = existingTasks.filter((t) => t.id !== taskId);
 
 	await specManager.plans.update(plan.number, {
@@ -498,7 +513,7 @@ async function deleteCriteria(
 	spec: BusinessRequirement | TechnicalRequirement,
 	criteriaId: string,
 	itemType: string,
-): Promise<ToolResponse> {
+): Promise<CallToolResult> {
 	const existingCriteria = spec.criteria || [];
 	const criteriaIndex = existingCriteria.findIndex((c) => c.id === criteriaId);
 
@@ -514,7 +529,7 @@ async function deleteCriteria(
 		};
 	}
 
-	const criteriaDescription = existingCriteria[criteriaIndex].description;
+	const criteriaDescription = existingCriteria[criteriaIndex]!.description;
 	const updatedCriteria = existingCriteria.filter((c) => c.id !== criteriaId);
 
 	const manager =
@@ -545,7 +560,7 @@ async function deleteArrayItem(
 	itemId: string,
 	fieldName: string,
 	itemType: string,
-): Promise<ToolResponse> {
+): Promise<CallToolResult> {
 	if (plan.type !== "plan") {
 		return {
 			content: [

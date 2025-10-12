@@ -1,11 +1,16 @@
-import type { ToolResponse } from "@modelcontextprotocol/sdk/types.js";
+import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { SpecManager } from "@spec-mcp/core";
 import type {
 	BusinessRequirement,
 	Criteria,
 	TechnicalRequirement,
 } from "@spec-mcp/schemas";
-import { type ArrayToolConfig, addItemWithId } from "./array-tool-builder.js";
+import {
+	type ArrayToolConfig,
+	addItemWithId,
+	removeItemWithId,
+	supersedeItemWithId,
+} from "./array-tool-builder.js";
 
 /**
  * Add a criteria to a Business or Technical Requirement
@@ -17,7 +22,7 @@ export async function addCriteria(
 	description: string,
 	rationale: string,
 	supersede_id?: string,
-): Promise<ToolResponse> {
+): Promise<CallToolResult> {
 	// Determine spec type from ID
 	const specType = specId.startsWith("brd-")
 		? "business-requirement"
@@ -97,3 +102,97 @@ export const addCriteriaTool = {
 		required: ["spec_id", "description", "rationale"],
 	} as const,
 };
+
+/**
+ * Supersede an existing criteria with updated values
+ * Creates a new criteria with a new ID and marks the old one as superseded
+ */
+export async function supersedeCriteria(
+	specManager: SpecManager,
+	specId: string,
+	criteriaId: string,
+	updates: Partial<Pick<Criteria, "description" | "rationale">>,
+): Promise<CallToolResult> {
+	// Determine spec type from ID
+	const specType = specId.startsWith("brd-")
+		? "business-requirement"
+		: specId.startsWith("prd-")
+			? "technical-requirement"
+			: null;
+
+	if (!specType) {
+		return {
+			content: [
+				{
+					type: "text",
+					text: `Invalid spec ID format: ${specId}. Must start with brd- or prd-`,
+				},
+			],
+			isError: true,
+		};
+	}
+
+	const config: ArrayToolConfig<
+		BusinessRequirement | TechnicalRequirement,
+		Criteria
+	> = {
+		toolName: "supersede_criteria",
+		description: "Supersede acceptance criteria in a requirement",
+		specType,
+		arrayFieldName: "criteria" as keyof (
+			| BusinessRequirement
+			| TechnicalRequirement
+		),
+		idPrefix: "crit",
+		getArray: (spec) => spec.criteria || [],
+		setArray: (_spec, items) => ({ criteria: items }),
+	};
+
+	return supersedeItemWithId(specManager, specId, criteriaId, updates, config);
+}
+
+/**
+ * Remove a criteria from a requirement completely
+ */
+export async function removeCriteria(
+	specManager: SpecManager,
+	specId: string,
+	criteriaId: string,
+): Promise<CallToolResult> {
+	// Determine spec type from ID
+	const specType = specId.startsWith("brd-")
+		? "business-requirement"
+		: specId.startsWith("prd-")
+			? "technical-requirement"
+			: null;
+
+	if (!specType) {
+		return {
+			content: [
+				{
+					type: "text",
+					text: `Invalid spec ID format: ${specId}. Must start with brd- or prd-`,
+				},
+			],
+			isError: true,
+		};
+	}
+
+	const config: ArrayToolConfig<
+		BusinessRequirement | TechnicalRequirement,
+		Criteria
+	> = {
+		toolName: "remove_criteria",
+		description: "Remove acceptance criteria from a requirement",
+		specType,
+		arrayFieldName: "criteria" as keyof (
+			| BusinessRequirement
+			| TechnicalRequirement
+		),
+		idPrefix: "crit",
+		getArray: (spec) => spec.criteria || [],
+		setArray: (_spec, items) => ({ criteria: items }),
+	};
+
+	return removeItemWithId(specManager, specId, criteriaId, config);
+}

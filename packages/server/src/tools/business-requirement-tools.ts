@@ -1,4 +1,4 @@
-import type { ToolResponse } from "@modelcontextprotocol/sdk/types.js";
+import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { SpecManager } from "@spec-mcp/core";
 import type {
 	BusinessRequirement,
@@ -7,7 +7,11 @@ import type {
 	StakeholderRole,
 	UserStory,
 } from "@spec-mcp/schemas";
-import { type ArrayToolConfig, addSimpleItem } from "./array-tool-builder.js";
+import {
+	type ArrayToolConfig,
+	addSimpleItem,
+	removeSimpleItem,
+} from "./array-tool-builder.js";
 
 // ============================================================================
 // USER STORY TOOLS
@@ -19,7 +23,7 @@ export async function addUserStory(
 	role: string,
 	feature: string,
 	benefit: string,
-): Promise<ToolResponse> {
+): Promise<CallToolResult> {
 	const config: ArrayToolConfig<BusinessRequirement, UserStory> = {
 		toolName: "add_user_story",
 		description: "Add user story to a business requirement",
@@ -83,6 +87,24 @@ export const removeUserStoryTool = {
 	} as const,
 };
 
+export async function removeUserStory(
+	specManager: SpecManager,
+	specId: string,
+	index: number,
+): Promise<CallToolResult> {
+	const config: ArrayToolConfig<BusinessRequirement, UserStory> = {
+		toolName: "remove_user_story",
+		description: "Remove user story from a business requirement",
+		specType: "business-requirement",
+		arrayFieldName: "user_stories",
+		idPrefix: "",
+		getArray: (spec) => spec.user_stories || [],
+		setArray: (_spec, items) => ({ user_stories: items }),
+	};
+
+	return removeSimpleItem(specManager, specId, index, config);
+}
+
 // ============================================================================
 // BUSINESS VALUE TOOLS
 // ============================================================================
@@ -92,7 +114,7 @@ export async function addBusinessValue(
 	specId: string,
 	type: "revenue" | "cost-savings" | "customer-satisfaction" | "other",
 	value: string,
-): Promise<ToolResponse> {
+): Promise<CallToolResult> {
 	const config: ArrayToolConfig<BusinessRequirement, BusinessValue> = {
 		toolName: "add_business_value",
 		description: "Add business value to a business requirement",
@@ -164,7 +186,7 @@ export async function addStakeholder(
 	name: string,
 	interest: string,
 	email?: string,
-): Promise<ToolResponse> {
+): Promise<CallToolResult> {
 	const config: ArrayToolConfig<BusinessRequirement, Stakeholder> = {
 		toolName: "add_stakeholder",
 		description: "Add stakeholder to a business requirement",

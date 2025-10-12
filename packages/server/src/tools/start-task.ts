@@ -1,4 +1,4 @@
-import type { ToolResponse } from "@modelcontextprotocol/sdk/types.js";
+import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { SpecManager } from "@spec-mcp/core";
 import { validateEntity } from "@spec-mcp/core";
 import type { Plan } from "@spec-mcp/schemas";
@@ -11,7 +11,7 @@ export async function startTask(
 	specManager: SpecManager,
 	planId: string,
 	taskId: string,
-): Promise<ToolResponse> {
+): Promise<CallToolResult> {
 	try {
 		// Validate and find the plan
 		const result = await validateEntity(specManager, planId);
@@ -59,6 +59,17 @@ export async function startTask(
 		}
 
 		const task = existingTasks[taskIndex];
+		if (!task) {
+			return {
+				content: [
+					{
+						type: "text",
+						text: `Task ${taskId} not found in plan ${planId}`,
+					},
+				],
+				isError: true,
+			};
+		}
 
 		// Check if task can be started using the helper function
 		const { canStart, reason } = canStartTask(task, existingTasks);

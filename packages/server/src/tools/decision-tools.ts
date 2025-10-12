@@ -1,4 +1,4 @@
-import type { ToolResponse } from "@modelcontextprotocol/sdk/types.js";
+import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { SpecManager } from "@spec-mcp/core";
 import type {
 	Consequence,
@@ -16,7 +16,7 @@ export async function addAlternative(
 	specManager: SpecManager,
 	decisionId: string,
 	alternative: string,
-): Promise<ToolResponse> {
+): Promise<CallToolResult> {
 	const config: ArrayToolConfig<Decision, string> = {
 		toolName: "add_alternative",
 		description: "Add alternative to a decision",
@@ -79,7 +79,7 @@ export async function addConsequence(
 	type: ConsequenceType,
 	description: string,
 	mitigation?: string,
-): Promise<ToolResponse> {
+): Promise<CallToolResult> {
 	const config: ArrayToolConfig<Decision, Consequence> = {
 		toolName: "add_consequence",
 		description: "Add consequence to a decision",
@@ -156,7 +156,7 @@ export async function addReferenceToDecision(
 	specManager: SpecManager,
 	decisionId: string,
 	reference: Reference,
-): Promise<ToolResponse> {
+): Promise<CallToolResult> {
 	const config: ArrayToolConfig<Decision, Reference> = {
 		toolName: "add_reference",
 		description: "Add reference to a decision",

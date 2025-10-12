@@ -56,17 +56,7 @@ describe("EntityDrafter - Array Field Protection", () => {
 			slug: "test-constitution",
 			name: "Test Constitution",
 			description: "Test description",
-			draft: false,
 			priority: "high",
-			status: {
-				created_at: "2025-01-01T00:00:00Z",
-				updated_at: "2025-01-01T00:00:00Z",
-				completed: false,
-				completed_at: null,
-				verified: false,
-				verified_at: null,
-				notes: [],
-			},
 			// THIS SHOULD BE IGNORED! The finalize method should strip this out
 			articles: [
 				{
@@ -135,17 +125,7 @@ describe("EntityDrafter - Array Field Protection", () => {
 			slug: "test-constitution",
 			name: "Test Constitution",
 			description: "Test description",
-			draft: false,
 			priority: "high",
-			status: {
-				created_at: "2025-01-01T00:00:00Z",
-				updated_at: "2025-01-01T00:00:00Z",
-				completed: false,
-				completed_at: null,
-				verified: false,
-				verified_at: null,
-				notes: [],
-			},
 			// Try to inject EMPTY array - should be ignored
 			articles: [] as unknown,
 		});

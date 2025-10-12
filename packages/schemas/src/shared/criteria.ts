@@ -20,16 +20,16 @@ export const CriteriaSchema = z.object({
 		.describe("Rationale explaining why this criterion is important"),
 	// NO status field - computed from tasks in plans!
 	// Supersession tracking - for audit trail and updates
-	supersedes: CriteriaIdSchema.nullable()
+	supersedes: CriteriaIdSchema.nullish()
 		.default(null)
 		.describe("ID of the criteria this replaces (if any)"),
-	superseded_by: CriteriaIdSchema.nullable()
+	superseded_by: CriteriaIdSchema.nullish()
 		.default(null)
 		.describe("ID of the criteria that replaces this (if superseded)"),
 	superseded_at: z
 		.string()
 		.datetime()
-		.nullable()
+		.nullish()
 		.default(null)
 		.describe("Timestamp when this criteria was superseded"),
 });

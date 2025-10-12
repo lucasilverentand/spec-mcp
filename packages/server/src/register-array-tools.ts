@@ -254,6 +254,16 @@ export function registerArrayManipulationTools(
 		},
 		async (args) => {
 			try {
+				const options: {
+					implemented?: boolean;
+					passing?: boolean;
+					supersede_id?: string;
+				} = {};
+				if (args.implemented !== undefined)
+					options.implemented = args.implemented;
+				if (args.passing !== undefined) options.passing = args.passing;
+				if (args.supersede_id !== undefined)
+					options.supersede_id = args.supersede_id;
 				return await addTestCase(
 					specManager,
 					args.plan_id,
@@ -261,11 +271,7 @@ export function registerArrayManipulationTools(
 					args.description,
 					args.steps,
 					args.expected_result,
-					{
-						implemented: args.implemented,
-						passing: args.passing,
-						supersede_id: args.supersede_id,
-					},
+					Object.keys(options).length > 0 ? options : undefined,
 				);
 			} catch (error) {
 				logger.error({ error, tool: "add_test_case" }, "Tool execution failed");
@@ -280,54 +286,32 @@ export function registerArrayManipulationTools(
 		addFlowTool.description,
 		{
 			plan_id: z.string(),
+			type: z.string(),
 			name: z.string(),
-			description: z.string(),
-			steps: z.array(z.string()),
+			description: z.string().optional(),
+			steps: z.array(
+				z.object({
+					id: z.string(),
+					name: z.string(),
+					description: z.string().optional(),
+					next_steps: z.array(z.string()).default([]),
+				}),
+			),
+			supersede_id: z.string().optional(),
 		},
 		async (args) => {
 			try {
 				return await addFlow(
 					specManager,
 					args.plan_id,
+					args.type,
 					args.name,
 					args.description,
 					args.steps,
+					args.supersede_id,
 				);
 			} catch (error) {
 				logger.error({ error, tool: "add_flow" }, "Tool execution failed");
-				throw error;
-			}
-		},
-	);
-
-	server.tool(
-		supersedeFlowTool.name,
-		supersedeFlowTool.description,
-		{
-			plan_id: z.string(),
-			flow_id: z.string(),
-			name: z.string().optional(),
-			description: z.string().optional(),
-			steps: z.array(z.string()).optional(),
-		},
-		async (args) => {
-			try {
-				const updates: Record<string, unknown> = {};
-				if (args.name !== undefined) updates.name = args.name;
-				if (args.description !== undefined)
-					updates.description = args.description;
-				if (args.steps !== undefined) updates.steps = args.steps;
-				return await supersedeFlow(
-					specManager,
-					args.plan_id,
-					args.flow_id,
-					updates,
-				);
-			} catch (error) {
-				logger.error(
-					{ error, tool: "supersede_flow" },
-					"Tool execution failed",
-				);
 				throw error;
 			}
 		},
@@ -338,65 +322,24 @@ export function registerArrayManipulationTools(
 		addApiContractTool.description,
 		{
 			plan_id: z.string(),
-			endpoint: z.string(),
-			method: z.enum(["GET", "POST", "PUT", "PATCH", "DELETE"]),
+			name: z.string(),
 			description: z.string(),
-			request_schema: z.string().optional(),
-			response_schema: z.string().optional(),
+			contract_type: z.string(),
+			specification: z.string(),
 		},
 		async (args) => {
 			try {
 				return await addApiContract(
 					specManager,
 					args.plan_id,
-					args.endpoint,
-					args.method,
+					args.name,
 					args.description,
-					args.request_schema,
-					args.response_schema,
+					args.contract_type,
+					args.specification,
 				);
 			} catch (error) {
 				logger.error(
 					{ error, tool: "add_api_contract" },
-					"Tool execution failed",
-				);
-				throw error;
-			}
-		},
-	);
-
-	server.tool(
-		supersedeApiContractTool.name,
-		supersedeApiContractTool.description,
-		{
-			plan_id: z.string(),
-			contract_id: z.string(),
-			endpoint: z.string().optional(),
-			method: z.enum(["GET", "POST", "PUT", "PATCH", "DELETE"]).optional(),
-			description: z.string().optional(),
-			request_schema: z.string().optional(),
-			response_schema: z.string().optional(),
-		},
-		async (args) => {
-			try {
-				const updates: Record<string, unknown> = {};
-				if (args.endpoint !== undefined) updates.endpoint = args.endpoint;
-				if (args.method !== undefined) updates.method = args.method;
-				if (args.description !== undefined)
-					updates.description = args.description;
-				if (args.request_schema !== undefined)
-					updates.request_schema = args.request_schema;
-				if (args.response_schema !== undefined)
-					updates.response_schema = args.response_schema;
-				return await supersedeApiContract(
-					specManager,
-					args.plan_id,
-					args.contract_id,
-					updates,
-				);
-			} catch (error) {
-				logger.error(
-					{ error, tool: "supersede_api_contract" },
 					"Tool execution failed",
 				);
 				throw error;
@@ -411,7 +354,9 @@ export function registerArrayManipulationTools(
 			plan_id: z.string(),
 			name: z.string(),
 			description: z.string(),
-			fields: z.array(z.string()),
+			format: z.string(),
+			schema: z.string(),
+			supersede_id: z.string().optional(),
 		},
 		async (args) => {
 			try {
@@ -420,44 +365,13 @@ export function registerArrayManipulationTools(
 					args.plan_id,
 					args.name,
 					args.description,
-					args.fields,
+					args.format,
+					args.schema,
+					args.supersede_id,
 				);
 			} catch (error) {
 				logger.error(
 					{ error, tool: "add_data_model" },
-					"Tool execution failed",
-				);
-				throw error;
-			}
-		},
-	);
-
-	server.tool(
-		supersedeDataModelTool.name,
-		supersedeDataModelTool.description,
-		{
-			plan_id: z.string(),
-			model_id: z.string(),
-			name: z.string().optional(),
-			description: z.string().optional(),
-			fields: z.array(z.string()).optional(),
-		},
-		async (args) => {
-			try {
-				const updates: Record<string, unknown> = {};
-				if (args.name !== undefined) updates.name = args.name;
-				if (args.description !== undefined)
-					updates.description = args.description;
-				if (args.fields !== undefined) updates.fields = args.fields;
-				return await supersedeDataModel(
-					specManager,
-					args.plan_id,
-					args.model_id,
-					updates,
-				);
-			} catch (error) {
-				logger.error(
-					{ error, tool: "supersede_data_model" },
 					"Tool execution failed",
 				);
 				throw error;
@@ -471,20 +385,14 @@ export function registerArrayManipulationTools(
 		addAlternativeTool.description,
 		{
 			decision_id: z.string(),
-			title: z.string(),
-			description: z.string(),
-			pros: z.array(z.string()),
-			cons: z.array(z.string()),
+			alternative: z.string(),
 		},
 		async (args) => {
 			try {
 				return await addAlternative(
 					specManager,
 					args.decision_id,
-					args.title,
-					args.description,
-					args.pros,
-					args.cons,
+					args.alternative,
 				);
 			} catch (error) {
 				logger.error(
@@ -501,8 +409,9 @@ export function registerArrayManipulationTools(
 		addConsequenceTool.description,
 		{
 			decision_id: z.string(),
-			type: z.enum(["positive", "negative", "neutral"]),
+			type: z.enum(["positive", "negative", "risk"]),
 			description: z.string(),
+			mitigation: z.string().optional(),
 		},
 		async (args) => {
 			try {
@@ -511,6 +420,7 @@ export function registerArrayManipulationTools(
 					args.decision_id,
 					args.type,
 					args.description,
+					args.mitigation,
 				);
 			} catch (error) {
 				logger.error(
@@ -527,16 +437,19 @@ export function registerArrayManipulationTools(
 		addReferenceToDecisionTool.description,
 		{
 			decision_id: z.string(),
-			url: z.string(),
-			description: z.string().optional(),
+			reference: z.object({
+				type: z.enum(["url", "documentation", "file", "code", "other"]),
+				name: z.string(),
+				description: z.string(),
+				importance: z.enum(["low", "medium", "high", "critical"]).optional(),
+			}),
 		},
 		async (args) => {
 			try {
 				return await addReferenceToDecision(
 					specManager,
 					args.decision_id,
-					args.url,
-					args.description,
+					args.reference as any,
 				);
 			} catch (error) {
 				logger.error(
@@ -554,19 +467,11 @@ export function registerArrayManipulationTools(
 		addTechTool.description,
 		{
 			component_id: z.string(),
-			name: z.string(),
-			version: z.string().optional(),
-			purpose: z.string(),
+			tech: z.string(),
 		},
 		async (args) => {
 			try {
-				return await addTech(
-					specManager,
-					args.component_id,
-					args.name,
-					args.version,
-					args.purpose,
-				);
+				return await addTech(specManager, args.component_id, args.tech);
 			} catch (error) {
 				logger.error({ error, tool: "add_tech" }, "Tool execution failed");
 				throw error;
@@ -579,18 +484,24 @@ export function registerArrayManipulationTools(
 		addDeploymentTool.description,
 		{
 			component_id: z.string(),
-			environment: z.enum(["development", "staging", "production", "other"]),
 			platform: z.string(),
-			configuration: z.string().optional(),
+			url: z.string().optional(),
+			build_command: z.string().optional(),
+			deploy_command: z.string().optional(),
+			environment_vars: z.array(z.string()).optional(),
+			secrets: z.array(z.string()).optional(),
 		},
 		async (args) => {
 			try {
 				return await addDeployment(
 					specManager,
 					args.component_id,
-					args.environment,
 					args.platform,
-					args.configuration,
+					args.url,
+					args.build_command,
+					args.deploy_command,
+					args.environment_vars,
+					args.secrets,
 				);
 			} catch (error) {
 				logger.error(
@@ -607,18 +518,14 @@ export function registerArrayManipulationTools(
 		addExternalDependencyTool.description,
 		{
 			component_id: z.string(),
-			name: z.string(),
-			type: z.enum(["api", "service", "library", "database", "other"]),
-			description: z.string(),
+			dependency: z.string(),
 		},
 		async (args) => {
 			try {
 				return await addExternalDependency(
 					specManager,
 					args.component_id,
-					args.name,
-					args.type,
-					args.description,
+					args.dependency,
 				);
 			} catch (error) {
 				logger.error(
@@ -636,16 +543,19 @@ export function registerArrayManipulationTools(
 		addReferenceToPlanTool.description,
 		{
 			plan_id: z.string(),
-			url: z.string(),
-			description: z.string().optional(),
+			reference: z.object({
+				type: z.enum(["url", "documentation", "file", "code", "other"]),
+				name: z.string(),
+				description: z.string(),
+				importance: z.enum(["low", "medium", "high", "critical"]).optional(),
+			}),
 		},
 		async (args) => {
 			try {
 				return await addReferenceToPlan(
 					specManager,
 					args.plan_id,
-					args.url,
-					args.description,
+					args.reference as any,
 				);
 			} catch (error) {
 				logger.error(
@@ -662,16 +572,19 @@ export function registerArrayManipulationTools(
 		addReferenceToBrdTool.description,
 		{
 			brd_id: z.string(),
-			url: z.string(),
-			description: z.string().optional(),
+			reference: z.object({
+				type: z.enum(["url", "documentation", "file", "code", "other"]),
+				name: z.string(),
+				description: z.string(),
+				importance: z.enum(["low", "medium", "high", "critical"]).optional(),
+			}),
 		},
 		async (args) => {
 			try {
 				return await addReferenceToBrd(
 					specManager,
 					args.brd_id,
-					args.url,
-					args.description,
+					args.reference as any,
 				);
 			} catch (error) {
 				logger.error(
@@ -688,14 +601,19 @@ export function registerArrayManipulationTools(
 		addTechnicalDependencyTool.description,
 		{
 			requirement_id: z.string(),
-			spec_id: z.string(),
+			reference: z.object({
+				type: z.enum(["url", "documentation", "file", "code", "other"]),
+				name: z.string(),
+				description: z.string(),
+				importance: z.enum(["low", "medium", "high", "critical"]).optional(),
+			}),
 		},
 		async (args) => {
 			try {
 				return await addTechnicalDependency(
 					specManager,
 					args.requirement_id,
-					args.spec_id,
+					args.reference as any,
 				);
 			} catch (error) {
 				logger.error(
@@ -712,16 +630,19 @@ export function registerArrayManipulationTools(
 		addReferenceToPrdTool.description,
 		{
 			prd_id: z.string(),
-			url: z.string(),
-			description: z.string().optional(),
+			reference: z.object({
+				type: z.enum(["url", "documentation", "file", "code", "other"]),
+				name: z.string(),
+				description: z.string(),
+				importance: z.enum(["low", "medium", "high", "critical"]).optional(),
+			}),
 		},
 		async (args) => {
 			try {
 				return await addReferenceToPrd(
 					specManager,
 					args.prd_id,
-					args.url,
-					args.description,
+					args.reference as any,
 				);
 			} catch (error) {
 				logger.error(
@@ -933,11 +854,7 @@ export function registerArrayManipulationTools(
 		},
 		async (args) => {
 			try {
-				return await verifyMilestone(
-					specManager,
-					args.milestone_id,
-					args.note,
-				);
+				return await verifyMilestone(specManager, args.milestone_id, args.note);
 			} catch (error) {
 				logger.error(
 					{ error, tool: "verify_milestone" },
@@ -965,7 +882,7 @@ export function registerArrayManipulationTools(
 				return await addReferenceToMilestone(
 					specManager,
 					args.milestone_id,
-					args.reference,
+					args.reference as any,
 				);
 			} catch (error) {
 				logger.error(

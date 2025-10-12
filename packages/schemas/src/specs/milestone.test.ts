@@ -87,9 +87,9 @@ describe("MilestoneSchema", () => {
 				completed_at: "2025-02-01T00:00:00Z",
 				verified_at: "2025-02-05T00:00:00Z",
 				notes: [
-					{ text: "Started development", timestamp: "2025-01-15T00:00:00Z" },
-					{ text: "All features complete", timestamp: "2025-02-01T00:00:00Z" },
-					{ text: "Verified by QA team", timestamp: "2025-02-05T00:00:00Z" },
+					"Started development",
+					"All features complete",
+					"Verified by QA team",
 				],
 			},
 			created_at: "2025-01-01T00:00:00Z",

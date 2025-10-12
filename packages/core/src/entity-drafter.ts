@@ -319,6 +319,15 @@ The system will automatically merge array fields: ${prefilledFields.join(", ") |
 			}
 		}
 
+		// Add timestamps if missing (required by Base schema)
+		const now = new Date().toISOString();
+		if (!sanitizedInput.created_at) {
+			sanitizedInput.created_at = now;
+		}
+		if (!sanitizedInput.updated_at) {
+			sanitizedInput.updated_at = now;
+		}
+
 		// Merge prefilled array data from finalized array drafters
 		const prefilledArrayData = this.getPrefilledArrayData();
 		const mergedData = { ...sanitizedInput, ...prefilledArrayData };

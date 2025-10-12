@@ -1,4 +1,4 @@
-import type { ToolResponse } from "@modelcontextprotocol/sdk/types.js";
+import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { SpecManager } from "@spec-mcp/core";
 import type {
 	BusinessRequirement,
@@ -16,7 +16,7 @@ export async function addReferenceToPlan(
 	specManager: SpecManager,
 	planId: string,
 	reference: Reference,
-): Promise<ToolResponse> {
+): Promise<CallToolResult> {
 	const config: ArrayToolConfig<Plan, Reference> = {
 		toolName: "add_reference_to_plan",
 		description: "Add reference to a plan",
@@ -38,7 +38,7 @@ export async function addReferenceToBrd(
 	specManager: SpecManager,
 	brdId: string,
 	reference: Reference,
-): Promise<ToolResponse> {
+): Promise<CallToolResult> {
 	const config: ArrayToolConfig<BusinessRequirement, Reference> = {
 		toolName: "add_reference_to_brd",
 		description: "Add reference to a business requirement",
@@ -60,7 +60,7 @@ export async function addTechnicalDependency(
 	specManager: SpecManager,
 	prdId: string,
 	reference: Reference,
-): Promise<ToolResponse> {
+): Promise<CallToolResult> {
 	const config: ArrayToolConfig<TechnicalRequirement, Reference> = {
 		toolName: "add_technical_dependency",
 		description: "Add technical dependency to a technical requirement",
@@ -82,7 +82,7 @@ export async function addReferenceToPrd(
 	specManager: SpecManager,
 	prdId: string,
 	reference: Reference,
-): Promise<ToolResponse> {
+): Promise<CallToolResult> {
 	const config: ArrayToolConfig<TechnicalRequirement, Reference> = {
 		toolName: "add_reference_to_prd",
 		description: "Add reference to a technical requirement",

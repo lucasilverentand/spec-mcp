@@ -1,4 +1,4 @@
-import type { ToolResponse } from "@modelcontextprotocol/sdk/types.js";
+import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { SpecManager } from "@spec-mcp/core";
 import { validateEntity } from "@spec-mcp/core";
 
@@ -15,7 +15,7 @@ export async function updateSpec<
 		Omit<TSpec, "type" | "number" | "created_at" | "updated_at">
 	>,
 	specType: string,
-): Promise<ToolResponse> {
+): Promise<CallToolResult> {
 	try {
 		// Validate and find the spec
 		const result = await validateEntity(specManager, specId);
@@ -32,7 +32,7 @@ export async function updateSpec<
 			};
 		}
 
-		const spec = result.entity as TSpec;
+		const spec = result.entity;
 
 		if (spec.type !== specType) {
 			return {
@@ -47,11 +47,13 @@ export async function updateSpec<
 		}
 
 		// Filter out undefined values (only update fields that were provided)
-		const filteredUpdates: Partial<TSpec> = {};
-		const filteredUpdatesRecord = filteredUpdates as Record<string, unknown>;
+		// Also map 'title' to 'name' for schema compatibility
+		const filteredUpdates: Record<string, unknown> = {};
 		for (const [key, value] of Object.entries(updates)) {
 			if (value !== undefined) {
-				filteredUpdatesRecord[key] = value;
+				// Map 'title' to 'name' since schemas use 'name' but tools use 'title'
+				const actualKey = key === "title" ? "name" : key;
+				filteredUpdates[actualKey] = value;
 			}
 		}
 
@@ -70,7 +72,7 @@ export async function updateSpec<
 
 		// Get the appropriate manager method
 		const manager = getSpecManager(specManager, spec.type);
-		await manager.update(spec.number, filteredUpdates);
+		await manager.update(spec.number, filteredUpdates as any);
 
 		// Build summary of what was updated
 		const updatedFields = Object.keys(filteredUpdates);
@@ -105,9 +107,9 @@ function getSpecManager(specManager: SpecManager, specType: string) {
 		case "plan":
 			return specManager.plans;
 		case "business-requirement":
-			return specManager.businessRequirements;
+			return specManager.business_requirements;
 		case "technical-requirement":
-			return specManager.technicalRequirements;
+			return specManager.tech_requirements;
 		case "decision":
 			return specManager.decisions;
 		case "component":

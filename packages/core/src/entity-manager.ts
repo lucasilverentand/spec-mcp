@@ -120,7 +120,9 @@ export class EntityManager<T extends Base> extends FileManager {
 						const data = await this.readYaml<T>(
 							`${this.subFolder}/${fileName}.yml`,
 						);
-						return this.schema.parse(data);
+						// Remove undefined values to allow Zod defaults to apply
+						const cleaned = this.removeUndefined(data);
+						return this.schema.parse(cleaned);
 					}
 				}
 
@@ -132,7 +134,9 @@ export class EntityManager<T extends Base> extends FileManager {
 						const data = await this.readYaml<T>(
 							`${this.subFolder}/${fileName}.yml`,
 						);
-						return this.schema.parse(data);
+						// Remove undefined values to allow Zod defaults to apply
+						const cleaned = this.removeUndefined(data);
+						return this.schema.parse(cleaned);
 					}
 				}
 			}
@@ -140,6 +144,44 @@ export class EntityManager<T extends Base> extends FileManager {
 		} catch {
 			return null;
 		}
+	}
+
+	/**
+	 * Recursively remove undefined values from an object
+	 * This allows Zod defaults to be applied when parsing
+	 * Also handles null values for fields that should have defaults
+	 */
+	private removeUndefined(obj: any): any {
+		if (obj === null) {
+			return null;
+		}
+		if (obj === undefined) {
+			return undefined;
+		}
+		if (Array.isArray(obj)) {
+			return obj.map((item) => this.removeUndefined(item));
+		}
+		if (typeof obj === "object") {
+			const cleaned: any = {};
+			for (const [key, value] of Object.entries(obj)) {
+				// Remove undefined values to allow Zod defaults
+				if (value === undefined) {
+					continue;
+				}
+				// Also remove null values for array fields that should default to []
+				// This is a workaround for YAML/Zod interaction issues
+				if (value === null && (key === "depends_on" || key === "considerations" ||
+					key === "references" || key === "files" || key === "blocked" ||
+					key === "tasks" || key === "flows" || key === "test_cases" ||
+					key === "criteria" || key === "user_stories" || key === "business_value" ||
+					key === "alternatives" || key === "consequences")) {
+					continue;
+				}
+				cleaned[key] = this.removeUndefined(value);
+			}
+			return cleaned;
+		}
+		return obj;
 	}
 
 	async getBySlug(slug: string): Promise<T | null> {
@@ -153,7 +195,9 @@ export class EntityManager<T extends Base> extends FileManager {
 					const data = await this.readYaml<T>(
 						`${this.subFolder}/${fileName}.yml`,
 					);
-					return this.schema.parse(data);
+					// Remove undefined values to allow Zod defaults to apply
+					const cleaned = this.removeUndefined(data);
+					return this.schema.parse(cleaned);
 				}
 			}
 			return null;
@@ -191,10 +235,14 @@ export class EntityManager<T extends Base> extends FileManager {
 		// If slug is being changed, we need to rename the file
 		const oldSlug = existing.slug;
 
+		// Clean the incoming data to remove undefined values
+		// This prevents undefined from overriding existing values
+		const cleanedData = this.removeUndefined(data as any);
+
 		// Update the updated_at timestamp
 		const updated = {
 			...existing,
-			...data,
+			...cleanedData,
 			number: existing.number,
 			updated_at: new Date().toISOString(),
 		} as T;

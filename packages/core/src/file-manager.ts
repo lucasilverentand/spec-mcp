@@ -69,6 +69,7 @@ export class FileManager {
 		const content = YAML.stringify(data, {
 			lineWidth: 0, // Disable line wrapping
 			blockQuote: "literal", // Use literal style for multiline strings
+			keepUndefined: false, // Don't write undefined values
 		});
 
 		// Add blank lines before object array items (- key:) and after them

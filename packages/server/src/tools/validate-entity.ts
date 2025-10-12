@@ -59,17 +59,37 @@ export async function validateEntityTool(
 		response += `Priority: ${entity.priority}\n`;
 	}
 
-	if (entity.status) {
+	if (
+		"status" in entity &&
+		entity.status &&
+		typeof entity.status === "object"
+	) {
+		const status = entity.status as {
+			created_at?: string;
+			updated_at?: string;
+			completed?: boolean;
+			completed_at?: string | null;
+			verified?: boolean;
+			verified_at?: string | null;
+		};
 		response += `\nStatus:\n`;
-		response += `  Created: ${entity.status.created_at}\n`;
-		response += `  Updated: ${entity.status.updated_at}\n`;
-		response += `  Completed: ${entity.status.completed ? "Yes" : "No"}\n`;
-		if (entity.status.completed_at) {
-			response += `  Completed At: ${entity.status.completed_at}\n`;
+		if (status.created_at) {
+			response += `  Created: ${status.created_at}\n`;
 		}
-		response += `  Verified: ${entity.status.verified ? "Yes" : "No"}\n`;
-		if (entity.status.verified_at) {
-			response += `  Verified At: ${entity.status.verified_at}\n`;
+		if (status.updated_at) {
+			response += `  Updated: ${status.updated_at}\n`;
+		}
+		if (typeof status.completed === "boolean") {
+			response += `  Completed: ${status.completed ? "Yes" : "No"}\n`;
+		}
+		if (status.completed_at) {
+			response += `  Completed At: ${status.completed_at}\n`;
+		}
+		if (typeof status.verified === "boolean") {
+			response += `  Verified: ${status.verified ? "Yes" : "No"}\n`;
+		}
+		if (status.verified_at) {
+			response += `  Verified At: ${status.verified_at}\n`;
 		}
 	}
 

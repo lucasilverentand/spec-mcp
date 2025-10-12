@@ -1,0 +1,17 @@
+{
+	"extends": "@spec-mcp/tsconfig/base.json",
+	"compilerOptions": {
+		"jsx": "react-jsx",
+		"jsxImportSource": "react",
+		"baseUrl": ".",
+		"paths": {
+			"@/*": ["./src/*"]
+		},
+		"rootDir": ".",
+		"noEmit": false,
+		"declaration": true,
+		"declarationMap": true
+	},
+	"include": ["src/**/*"],
+	"exclude": ["dist", "node_modules"]
+}

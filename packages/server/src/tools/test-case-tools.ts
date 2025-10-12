@@ -1,7 +1,11 @@
-import type { ToolResponse } from "@modelcontextprotocol/sdk/types.js";
+import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { SpecManager } from "@spec-mcp/core";
 import type { Plan, TestCase } from "@spec-mcp/schemas";
-import { type ArrayToolConfig, addItemWithId } from "./array-tool-builder.js";
+import {
+	type ArrayToolConfig,
+	addItemWithId,
+	supersedeItemWithId,
+} from "./array-tool-builder.js";
 
 /**
  * Add a test case to a Plan
@@ -19,7 +23,7 @@ export async function addTestCase(
 		passing?: boolean;
 		supersede_id?: string;
 	},
-): Promise<ToolResponse> {
+): Promise<CallToolResult> {
 	const config: ArrayToolConfig<Plan, TestCase> = {
 		toolName: "add_test_case",
 		description: "Add test case to a plan",
@@ -96,3 +100,36 @@ export const addTestCaseTool = {
 		required: ["plan_id", "name", "description", "steps", "expected_result"],
 	} as const,
 };
+
+/**
+ * Supersede an existing test case with updated values
+ * Creates a new test case with a new ID and marks the old one as superseded
+ */
+export async function supersedeTestCase(
+	specManager: SpecManager,
+	planId: string,
+	testCaseId: string,
+	updates: Partial<
+		Pick<
+			TestCase,
+			| "name"
+			| "description"
+			| "steps"
+			| "expected_result"
+			| "implemented"
+			| "passing"
+		>
+	>,
+): Promise<CallToolResult> {
+	const config: ArrayToolConfig<Plan, TestCase> = {
+		toolName: "supersede_test_case",
+		description: "Supersede test case in a plan",
+		specType: "plan",
+		arrayFieldName: "test_cases",
+		idPrefix: "tc",
+		getArray: (spec) => spec.test_cases || [],
+		setArray: (_spec, items) => ({ test_cases: items }),
+	};
+
+	return supersedeItemWithId(specManager, planId, testCaseId, updates, config);
+}

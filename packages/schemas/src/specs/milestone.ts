@@ -1,7 +1,7 @@
 import z from "zod";
 import { BaseSchema } from "../shared/base.js";
-import { CompletionStatusSchema } from "../shared/task.js";
 import { ReferencesSchema } from "../shared/reference.js";
+import { CompletionStatusSchema } from "../shared/task.js";
 
 export const MilestoneIdSchema = z
 	.string()

@@ -12,7 +12,8 @@
 			"**/node_modules/**",
 			"**/coverage/**",
 			"**/*.tsbuildinfo",
-			"**/pnpm-lock.yaml"
+			"**/pnpm-lock.yaml",
+			"**/*.astro"
 		]
 	},
 	"formatter": {
@@ -24,7 +25,8 @@
 		"rules": {
 			"recommended": true,
 			"suspicious": {
-				"noControlCharactersInRegex": "off"
+				"noControlCharactersInRegex": "off",
+				"noUnknownAtRules": "off"
 			},
 			"style": {
 				"noNonNullAssertion": "off"

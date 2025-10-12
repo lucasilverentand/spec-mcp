@@ -1,0 +1,43 @@
+---
+import "@/styles/globals.css";
+
+// biome-ignore lint/correctness/noUnusedVariables: Used in HTML template below
+const { title } = Astro.props as { title: string };
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>{title}</title>
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+	</head>
+	<body class="min-h-screen bg-background">
+		<header class="border-b">
+			<div class="container mx-auto px-6 py-4">
+				<div class="flex items-center justify-between">
+					<div>
+						<h1 class="text-2xl font-bold">Spec MCP Dashboard</h1>
+						<p class="text-sm text-muted-foreground">Monitor and manage your specifications</p>
+					</div>
+					<nav class="flex items-center gap-4">
+						<a href="/" class="text-sm font-medium hover:underline">Dashboard</a>
+						<a href="/drafts" class="text-sm font-medium hover:underline">Drafts</a>
+						<a href="/specs" class="text-sm font-medium hover:underline">Specs</a>
+					</nav>
+				</div>
+			</div>
+		</header>
+		<main class="container mx-auto px-6 py-8">
+			<slot />
+		</main>
+		<footer class="border-t mt-auto">
+			<div class="container mx-auto px-6 py-4">
+				<p class="text-sm text-muted-foreground text-center">
+					Spec MCP Dashboard v0.1.0
+				</p>
+			</div>
+		</footer>
+	</body>
+</html>

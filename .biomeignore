@@ -1,0 +1,2 @@
+# Ignore Astro files - they have imports that appear unused but are used in templates
+**/*.astro
