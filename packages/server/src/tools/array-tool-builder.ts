@@ -161,13 +161,12 @@ export async function addItemWithId<
 
 		const updates = config.setArray(spec, updatedItems);
 
-		// Get the appropriate manager method
-		const manager = getSpecManager(specManager, spec.type);
-		// Type assertion needed because TypeScript can't verify the connection between
-		// the config.setArray return type and the manager's expected update parameter type
-		await manager.update(
+		// Perform the update with proper type narrowing
+		await performUpdate(
+			specManager,
+			spec.type,
 			spec.number,
-			updates as Parameters<typeof manager.update>[1],
+			updates as Record<string, unknown>,
 		);
 
 		if (supersede_id) {
@@ -337,13 +336,12 @@ export async function removeItemWithId<
 		const updatedItems = existingItems.filter((item) => item.id !== itemId);
 		const updates = config.setArray(spec, updatedItems);
 
-		// Get the appropriate manager method
-		const manager = getSpecManager(specManager, spec.type);
-		// Type assertion needed because TypeScript can't verify the connection between
-		// the config.setArray return type and the manager's expected update parameter type
-		await manager.update(
+		// Perform the update with proper type narrowing
+		await performUpdate(
+			specManager,
+			spec.type,
 			spec.number,
-			updates as Parameters<typeof manager.update>[1],
+			updates as Record<string, unknown>,
 		);
 
 		return {
@@ -487,13 +485,12 @@ export async function supersedeItemWithId<
 
 		const updates = config.setArray(spec, updatedItems);
 
-		// Get the appropriate manager method
-		const manager = getSpecManager(specManager, spec.type);
-		// Type assertion needed because TypeScript can't verify the connection between
-		// the config.setArray return type and the manager's expected update parameter type
-		await manager.update(
+		// Perform the update with proper type narrowing
+		await performUpdate(
+			specManager,
+			spec.type,
 			spec.number,
-			updates as Parameters<typeof manager.update>[1],
+			updates as Record<string, unknown>,
 		);
 
 		// Show what changed
@@ -580,13 +577,12 @@ export async function addSimpleItem<
 		const updatedItems = [...existingItems, newItem];
 		const updates = config.setArray(spec, updatedItems);
 
-		// Get the appropriate manager method
-		const manager = getSpecManager(specManager, spec.type);
-		// Type assertion needed because TypeScript can't verify the connection between
-		// the config.setArray return type and the manager's expected update parameter type
-		await manager.update(
+		// Perform the update with proper type narrowing
+		await performUpdate(
+			specManager,
+			spec.type,
 			spec.number,
-			updates as Parameters<typeof manager.update>[1],
+			updates as Record<string, unknown>,
 		);
 
 		return {
@@ -673,13 +669,12 @@ export async function removeSimpleItem<
 		const updatedItems = existingItems.filter((_, i) => i !== index);
 		const updates = config.setArray(spec, updatedItems);
 
-		// Get the appropriate manager method
-		const manager = getSpecManager(specManager, spec.type);
-		// Type assertion needed because TypeScript can't verify the connection between
-		// the config.setArray return type and the manager's expected update parameter type
-		await manager.update(
+		// Perform the update with proper type narrowing
+		await performUpdate(
+			specManager,
+			spec.type,
 			spec.number,
-			updates as Parameters<typeof manager.update>[1],
+			updates as Record<string, unknown>,
 		);
 
 		return {
@@ -704,24 +699,60 @@ export async function removeSimpleItem<
 }
 
 /**
- * Helper to get the appropriate spec manager
+ * Helper to get the appropriate spec manager and perform an update
+ * This avoids the union type issue by performing the update inline with proper narrowing
  */
-function getSpecManager(specManager: SpecManager, specType: string) {
+async function performUpdate(
+	specManager: SpecManager,
+	specType: string,
+	specNumber: number,
+	updates: Record<string, unknown>,
+): Promise<void> {
 	switch (specType) {
 		case "plan":
-			return specManager.plans;
+			await specManager.plans.update(
+				specNumber,
+				updates as Parameters<typeof specManager.plans.update>[1],
+			);
+			break;
 		case "business-requirement":
-			return specManager.business_requirements;
+			await specManager.business_requirements.update(
+				specNumber,
+				updates as Parameters<
+					typeof specManager.business_requirements.update
+				>[1],
+			);
+			break;
 		case "technical-requirement":
-			return specManager.tech_requirements;
+			await specManager.tech_requirements.update(
+				specNumber,
+				updates as Parameters<typeof specManager.tech_requirements.update>[1],
+			);
+			break;
 		case "decision":
-			return specManager.decisions;
+			await specManager.decisions.update(
+				specNumber,
+				updates as Parameters<typeof specManager.decisions.update>[1],
+			);
+			break;
 		case "component":
-			return specManager.components;
+			await specManager.components.update(
+				specNumber,
+				updates as Parameters<typeof specManager.components.update>[1],
+			);
+			break;
 		case "constitution":
-			return specManager.constitutions;
+			await specManager.constitutions.update(
+				specNumber,
+				updates as Parameters<typeof specManager.constitutions.update>[1],
+			);
+			break;
 		case "milestone":
-			return specManager.milestones;
+			await specManager.milestones.update(
+				specNumber,
+				updates as Parameters<typeof specManager.milestones.update>[1],
+			);
+			break;
 		default:
 			throw new Error(`Unknown spec type: ${specType}`);
 	}

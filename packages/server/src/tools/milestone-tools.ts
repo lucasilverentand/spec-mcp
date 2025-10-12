@@ -1,7 +1,6 @@
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { SpecManager } from "@spec-mcp/core";
-import { validateEntity } from "@spec-mcp/core";
-import type { Milestone, Reference, Plan } from "@spec-mcp/schemas";
+import type { Milestone, Plan, Reference } from "@spec-mcp/schemas";
 import { type ArrayToolConfig, addSimpleItem } from "./array-tool-builder.js";
 
 // ============================================================================
@@ -25,9 +24,7 @@ export type MilestoneStatus = {
  * - completed: if all linked plan tasks are completed (or verified)
  * - verified: if all linked plan tasks are verified
  */
-export function calculateMilestoneStatus(
-	linkedPlans: Plan[],
-): MilestoneStatus {
+export function calculateMilestoneStatus(linkedPlans: Plan[]): MilestoneStatus {
 	// If no plans are linked, milestone is not started
 	if (linkedPlans.length === 0) {
 		return {
@@ -58,9 +55,7 @@ export function calculateMilestoneStatus(
 		.map((s) => s.started_at)
 		.filter((t): t is string => t !== null);
 	const started_at =
-		startedTimestamps.length > 0
-			? startedTimestamps.sort()[0] || null
-			: null;
+		startedTimestamps.length > 0 ? startedTimestamps.sort()[0] || null : null;
 
 	// Check if all tasks are completed or verified
 	const allTasksCompleted = allTaskStatuses.every(

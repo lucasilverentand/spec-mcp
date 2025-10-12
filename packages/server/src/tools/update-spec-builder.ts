@@ -70,14 +70,8 @@ export async function updateSpec<
 			};
 		}
 
-		// Get the appropriate manager method
-		const manager = getSpecManager(specManager, spec.type);
-		// Type assertion needed because filteredUpdates is Record<string, unknown>
-		// but manager expects Partial<T> where T is the specific spec type
-		await manager.update(
-			spec.number,
-			filteredUpdates as Parameters<typeof manager.update>[1],
-		);
+		// Perform the update with proper type narrowing
+		await performUpdate(specManager, spec.type, spec.number, filteredUpdates);
 
 		// Build summary of what was updated
 		const updatedFields = Object.keys(filteredUpdates);
@@ -105,22 +99,60 @@ export async function updateSpec<
 }
 
 /**
- * Helper to get the appropriate spec manager
+ * Helper to perform an update with proper type narrowing
+ * This avoids the union type issue by performing the update inline with proper narrowing
  */
-function getSpecManager(specManager: SpecManager, specType: string) {
+async function performUpdate(
+	specManager: SpecManager,
+	specType: string,
+	specNumber: number,
+	updates: Record<string, unknown>,
+): Promise<void> {
 	switch (specType) {
 		case "plan":
-			return specManager.plans;
+			await specManager.plans.update(
+				specNumber,
+				updates as Parameters<typeof specManager.plans.update>[1],
+			);
+			break;
 		case "business-requirement":
-			return specManager.business_requirements;
+			await specManager.business_requirements.update(
+				specNumber,
+				updates as Parameters<
+					typeof specManager.business_requirements.update
+				>[1],
+			);
+			break;
 		case "technical-requirement":
-			return specManager.tech_requirements;
+			await specManager.tech_requirements.update(
+				specNumber,
+				updates as Parameters<typeof specManager.tech_requirements.update>[1],
+			);
+			break;
 		case "decision":
-			return specManager.decisions;
+			await specManager.decisions.update(
+				specNumber,
+				updates as Parameters<typeof specManager.decisions.update>[1],
+			);
+			break;
 		case "component":
-			return specManager.components;
+			await specManager.components.update(
+				specNumber,
+				updates as Parameters<typeof specManager.components.update>[1],
+			);
+			break;
 		case "constitution":
-			return specManager.constitutions;
+			await specManager.constitutions.update(
+				specNumber,
+				updates as Parameters<typeof specManager.constitutions.update>[1],
+			);
+			break;
+		case "milestone":
+			await specManager.milestones.update(
+				specNumber,
+				updates as Parameters<typeof specManager.milestones.update>[1],
+			);
+			break;
 		default:
 			throw new Error(`Unknown spec type: ${specType}`);
 	}

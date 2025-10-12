@@ -15,7 +15,7 @@ describe("Milestone Tools", () => {
 	let specManager: SpecManager;
 	let tempDir: string;
 	let milestoneId: string;
-	let planId: string;
+	let _planId: string;
 
 	beforeEach(async () => {
 		// Create temp directory
@@ -148,7 +148,7 @@ describe("Milestone Tools", () => {
 		};
 
 		await specManager.plans.create(plan);
-		planId = "pln-001-auth-system";
+		_planId = "pln-001-auth-system";
 	});
 
 	afterEach(() => {
@@ -226,18 +226,20 @@ describe("Milestone Tools", () => {
 				number: 2,
 				slug: "api-endpoints",
 				name: "API Endpoints",
-				tasks: [{
-					...plan1.tasks[0],
-					id: "task-002",
-					task: "Implement API endpoints",
-					status: {
-						created_at: "2025-01-01T00:00:00Z",
-						started_at: "2025-01-02T00:00:00Z",
-						completed_at: null,
-						verified_at: null,
-						notes: [],
+				tasks: [
+					{
+						...plan1.tasks[0],
+						id: "task-002",
+						task: "Implement API endpoints",
+						status: {
+							created_at: "2025-01-01T00:00:00Z",
+							started_at: "2025-01-02T00:00:00Z",
+							completed_at: null,
+							verified_at: null,
+							notes: [],
+						},
 					},
-				}],
+				],
 			};
 
 			const status = calculateMilestoneStatus([plan1, plan2]);
@@ -256,17 +258,19 @@ describe("Milestone Tools", () => {
 				...plan1,
 				number: 2,
 				slug: "api-endpoints",
-				tasks: [{
-					...plan1.tasks[0],
-					id: "task-002",
-					status: {
-						created_at: "2025-01-01T00:00:00Z",
-						started_at: "2025-01-02T00:00:00Z",
-						completed_at: null,
-						verified_at: null,
-						notes: [],
+				tasks: [
+					{
+						...plan1.tasks[0],
+						id: "task-002",
+						status: {
+							created_at: "2025-01-01T00:00:00Z",
+							started_at: "2025-01-02T00:00:00Z",
+							completed_at: null,
+							verified_at: null,
+							notes: [],
+						},
 					},
-				}],
+				],
 			};
 
 			const status = calculateMilestoneStatus([plan1, plan2]);
@@ -315,7 +319,10 @@ describe("Milestone Tools", () => {
 
 			await specManager.milestones.create(standaloneMilestone);
 
-			const status = await getMilestoneStatus(specManager, "mls-002-documentation");
+			const status = await getMilestoneStatus(
+				specManager,
+				"mls-002-documentation",
+			);
 
 			expect(status.started_at).toBeNull();
 			expect(status.completed_at).toBeNull();
