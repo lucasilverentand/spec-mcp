@@ -1,6 +1,6 @@
 {
 	"name": "@spec-mcp/cli",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"description": "CLI tool for managing spec-mcp specifications",
 	"type": "module",
 	"bin": {
