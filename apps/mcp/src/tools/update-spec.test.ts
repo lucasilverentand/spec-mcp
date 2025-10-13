@@ -9,7 +9,7 @@ import {
 	createTestDecision,
 	createTestPlan,
 	createTestTechnicalRequirement,
-} from "../../../core/tests/helpers.js";
+} from "@spec-mcp/core/tests/helpers";
 import {
 	updateBusinessRequirement,
 	updateComponent,

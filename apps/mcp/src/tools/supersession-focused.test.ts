@@ -5,7 +5,7 @@ import {
 	createTempDir,
 	createTestBusinessRequirement,
 	createTestPlan,
-} from "../../../core/tests/helpers.js";
+} from "@spec-mcp/core/tests/helpers";
 import { addCriteria, addTask } from "./index.js";
 
 /**

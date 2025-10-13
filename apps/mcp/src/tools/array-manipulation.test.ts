@@ -7,7 +7,7 @@ import {
 	createTestComponent,
 	createTestDecision,
 	createTestPlan,
-} from "../../../core/tests/helpers.js";
+} from "@spec-mcp/core/tests/helpers";
 import {
 	// Decision tools
 	addAlternative,
