@@ -60,7 +60,7 @@ describe("CLI - parseValidationErrors", () => {
 });
 
 describe("CLI - Command Structure", () => {
-	it("should define the spec-validate command", async () => {
+	it("should define the spec-mcp command", async () => {
 		// Test that the CLI exports the expected command structure
 		const { Command } = await import("commander");
 		expect(Command).toBeDefined();
@@ -69,12 +69,12 @@ describe("CLI - Command Structure", () => {
 	it("should have correct program metadata", () => {
 		// The program should have name, description, and version
 		const expectedMetadata = {
-			name: "spec-validate",
-			description: "CLI tool for validating spec-mcp specifications",
+			name: "spec-mcp",
+			description: "CLI tool for managing spec-mcp specifications",
 			version: "0.1.0",
 		};
-		expect(expectedMetadata.name).toBe("spec-validate");
-		expect(expectedMetadata.description).toContain("validating");
+		expect(expectedMetadata.name).toBe("spec-mcp");
+		expect(expectedMetadata.description).toContain("managing");
 		expect(expectedMetadata.version).toBe("0.1.0");
 	});
 });

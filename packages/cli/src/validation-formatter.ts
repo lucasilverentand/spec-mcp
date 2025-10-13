@@ -1,3 +1,6 @@
+import type { EntityType } from "@spec-mcp/schemas";
+import { formatEntityId as formatEntityIdUtil } from "@spec-mcp/utils";
+
 /**
  * Parse and format validation errors grouped by field
  * @param errors - Array of error strings in the format "field: message" or "message"
@@ -67,11 +70,11 @@ export const colors = {
  * @returns Formatted entity ID (e.g., "requirement-001-test-req")
  */
 export function formatEntityId(
-	type: string,
+	type: EntityType,
 	number: number,
 	slug: string,
 ): string {
-	return `${type}-${number.toString().padStart(3, "0")}-${slug}`;
+	return formatEntityIdUtil({ type, number, slug });
 }
 
 /**

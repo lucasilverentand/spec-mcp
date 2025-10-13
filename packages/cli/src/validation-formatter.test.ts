@@ -123,49 +123,61 @@ describe("colors", () => {
 
 describe("formatEntityId", () => {
 	it("should format entity ID with single digit number", () => {
-		const result = formatEntityId("requirement", 1, "test-req");
-		expect(result).toBe("requirement-001-test-req");
+		const result = formatEntityId("business-requirement", 1, "test-req");
+		expect(result).toBe("brd-001-test-req");
 	});
 
 	it("should format entity ID with two digit number", () => {
 		const result = formatEntityId("plan", 42, "my-plan");
-		expect(result).toBe("plan-042-my-plan");
+		expect(result).toBe("pln-042-my-plan");
 	});
 
 	it("should format entity ID with three digit number", () => {
 		const result = formatEntityId("component", 123, "large-component");
-		expect(result).toBe("component-123-large-component");
+		expect(result).toBe("cmp-123-large-component");
 	});
 
 	it("should format entity ID with four digit number", () => {
-		const result = formatEntityId("requirement", 1234, "big-req");
-		expect(result).toBe("requirement-1234-big-req");
+		const result = formatEntityId("business-requirement", 1234, "big-req");
+		expect(result).toBe("brd-1234-big-req");
 	});
 
 	it("should handle zero as number", () => {
 		const result = formatEntityId("plan", 0, "zero-plan");
-		expect(result).toBe("plan-000-zero-plan");
+		expect(result).toBe("pln-000-zero-plan");
 	});
 
 	it("should handle different entity types", () => {
-		const types = [
-			"requirement",
-			"plan",
-			"component",
-			"constitution",
-			"decision",
+		const testCases: Array<{
+			type:
+				| "business-requirement"
+				| "technical-requirement"
+				| "plan"
+				| "component"
+				| "constitution"
+				| "decision"
+				| "milestone";
+			prefix: string;
+		}> = [
+			{ type: "business-requirement", prefix: "brd" },
+			{ type: "technical-requirement", prefix: "prd" },
+			{ type: "plan", prefix: "pln" },
+			{ type: "component", prefix: "cmp" },
+			{ type: "constitution", prefix: "con" },
+			{ type: "decision", prefix: "dec" },
+			{ type: "milestone", prefix: "mls" },
 		];
 
-		for (const type of types) {
+		for (const { type, prefix } of testCases) {
 			const result = formatEntityId(type, 1, "test");
-			expect(result).toContain(type);
-			expect(result).toMatch(new RegExp(`^${type}-\\d{3}-test$`));
+			expect(result).toContain(prefix);
+			expect(result).toMatch(new RegExp(`^${prefix}-\\d{3}-test$`));
 		}
 	});
 
 	it("should handle slugs with special characters", () => {
-		const result = formatEntityId("requirement", 1, "test-req-v2");
-		expect(result).toBe("requirement-001-test-req-v2");
+		const result = formatEntityId("business-requirement", 1, "test-req-v2");
+		expect(result).toBe("brd-001-test-req-v2");
 	});
 });
 
@@ -248,10 +260,10 @@ describe("Integration - Formatting workflow", () => {
 		];
 		const fieldErrors = parseValidationErrors(errors);
 
-		const entityId = formatEntityId("requirement", 1, "test-req");
+		const entityId = formatEntityId("business-requirement", 1, "test-req");
 		const icon = getValidationIcon(true, false);
 
-		expect(entityId).toBe("requirement-001-test-req");
+		expect(entityId).toBe("brd-001-test-req");
 		expect(icon).toContain(colors.red);
 		expect(fieldErrors.size).toBe(3);
 	});

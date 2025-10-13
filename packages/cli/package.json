@@ -1,10 +1,10 @@
 {
 	"name": "@spec-mcp/cli",
 	"version": "0.1.0",
-	"description": "CLI tool for validating spec-mcp specifications",
+	"description": "CLI tool for managing spec-mcp specifications",
 	"type": "module",
 	"bin": {
-		"spec-validate": "./dist/index.js"
+		"spec-mcp": "./dist/index.js"
 	},
 	"main": "./dist/index.js",
 	"types": "./dist/index.d.ts",
@@ -27,9 +27,11 @@
 		"test:coverage": "vitest run --coverage"
 	},
 	"dependencies": {
+		"@inquirer/prompts": "^7.8.6",
 		"@spec-mcp/core": "workspace:*",
 		"@spec-mcp/dashboard": "workspace:*",
 		"@spec-mcp/schemas": "workspace:*",
+		"@spec-mcp/utils": "workspace:*",
 		"commander": "^12.1.0"
 	},
 	"devDependencies": {
