@@ -9,9 +9,9 @@ import {
 /**
  * Configuration for a single array field that needs drafting support
  */
-export interface ArrayFieldConfig<TParent extends Base, TItem = unknown> {
+export interface ArrayFieldConfig<TItem = unknown> {
 	/** Name of the array field in the parent entity */
-	fieldName: keyof TParent;
+	fieldName: string;
 	/** Zod schema for individual items in the array */
 	itemSchema: ZodType<TItem, ZodTypeDef, unknown>;
 	/** Question to ask for the overall array (e.g., "List the user stories") */
@@ -29,7 +29,7 @@ export interface EntityDrafterConfig<T extends Base> {
 	/** Top-level questions for the entity (non-array fields) */
 	questions: DraftQuestion[];
 	/** Configuration for complex array fields that need drafting */
-	arrayFields?: ArrayFieldConfig<T, unknown>[];
+	arrayFields?: ArrayFieldConfig<unknown>[];
 }
 
 /**
@@ -48,7 +48,7 @@ export function createEntityDrafter<T extends Base>(
 				arrayConfig.collectionQuestion,
 				arrayConfig.itemQuestions,
 			);
-			arrayDrafters.set(arrayConfig.fieldName as string, arrayDrafter);
+			arrayDrafters.set(arrayConfig.fieldName, arrayDrafter);
 		}
 	}
 
@@ -75,7 +75,7 @@ export function restoreEntityDrafter<T extends Base>(
 	// Restore array drafters from state
 	if (config.arrayFields && state.arrayDrafters) {
 		for (const arrayConfig of config.arrayFields) {
-			const fieldName = arrayConfig.fieldName as string;
+			const fieldName = arrayConfig.fieldName;
 			const drafterState = state.arrayDrafters[fieldName];
 
 			if (drafterState) {
