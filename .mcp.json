@@ -2,7 +2,7 @@
 	"mcpServers": {
 		"spec-mcp": {
 			"command": "node",
-			"args": ["packages/server/dist/index.js"]
+			"args": ["apps/mcp/dist/index.js"]
 		}
 	}
 }
