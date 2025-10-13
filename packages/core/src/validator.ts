@@ -16,15 +16,14 @@ export interface ValidationResult<T extends Base = Base> {
  *
  * @param specManager - The SpecManager instance
  * @param id - Entity identifier (e.g., "pln-001", "pln-001-user-auth", "pln-001-user-auth.yml")
+ *             NOTE: Slugs are ignored - only type+number is used for lookup
  * @returns Validation result with entity if valid
  */
 export async function validateEntity(
 	specManager: SpecManager,
 	id: string,
 ): Promise<ValidationResult> {
-	const errors: string[] = [];
-
-	// Parse the ID
+	// Parse the ID (slugs will be present but ignored)
 	const parsed = parseEntityId(id);
 	if (!parsed) {
 		return {
@@ -64,23 +63,9 @@ export async function validateEntity(
 									: "decisions"
 		];
 
-	// Fetch the entity
-	let entity: Base | null = null;
-
-	// Try to get by slug first if provided
-	if (parsed.slug && "getBySlug" in manager) {
-		entity = await manager.getBySlug(parsed.slug);
-		if (entity && entity.number !== parsed.number) {
-			errors.push(
-				`Entity with slug "${parsed.slug}" exists but has number ${entity.number}, not ${parsed.number}`,
-			);
-		}
-	}
-
-	// If slug didn't work or wasn't provided, try by number
-	if (!entity) {
-		entity = await manager.get(parsed.number);
-	}
+	// Fetch the entity by number ONLY (slugs are completely ignored)
+	// This is the only lookup we perform - no slug-based lookup
+	const entity: Base | null = await manager.get(parsed.number);
 
 	// Check if entity exists
 	if (!entity) {
@@ -98,12 +83,8 @@ export async function validateEntity(
 		// but we can perform additional checks here
 		const validationErrors: string[] = [];
 
-		// Check if slug matches (if provided)
-		if (parsed.slug && entity.slug !== parsed.slug) {
-			validationErrors.push(
-				`Slug mismatch: expected "${parsed.slug}", found "${entity.slug}"`,
-			);
-		}
+		// Note: We no longer check slug matches since slugs are ignored during retrieval
+		// Only type+number is used for identification
 
 		// Validate references to other entities
 		const referenceErrors = await validateReferences(entity, specManager);

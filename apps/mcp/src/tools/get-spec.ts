@@ -1,6 +1,6 @@
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { SpecManager } from "@spec-mcp/core";
-import { validateEntity } from "@spec-mcp/core";
+import { isCompleted, isVerified, validateEntity } from "@spec-mcp/core";
 import type {
 	BusinessRequirement,
 	Component,
@@ -9,7 +9,6 @@ import type {
 	Plan,
 	TechnicalRequirement,
 } from "@spec-mcp/schemas";
-import { isCompleted, isVerified } from "@spec-mcp/schemas";
 import yaml from "yaml";
 
 type Entity =

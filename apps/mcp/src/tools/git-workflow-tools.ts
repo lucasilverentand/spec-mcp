@@ -1,8 +1,7 @@
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { SpecManager } from "@spec-mcp/core";
-import { validateEntity } from "@spec-mcp/core";
+import { canCompleteTask, canStartTask, validateEntity } from "@spec-mcp/core";
 import type { Plan } from "@spec-mcp/schemas";
-import { canCompleteTask, canStartTask } from "@spec-mcp/schemas";
 
 /**
  * Start a task by marking it as started (no git operations)

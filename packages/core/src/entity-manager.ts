@@ -14,11 +14,19 @@ interface DraftFile<T extends Base> {
 	entity_data: Partial<T>;
 }
 
+export interface ValidationWarning {
+	filePath: string;
+	fileName: string;
+	error: string;
+	details?: unknown;
+}
+
 export class EntityManager<T extends Base> extends FileManager {
 	protected entityType: EntityType;
 	protected schema: ZodType<T, ZodTypeDef, unknown>;
 	protected subFolder: string;
 	protected idPrefix = "";
+	private validationWarnings: ValidationWarning[] = [];
 
 	constructor({
 		folderPath,
@@ -44,16 +52,32 @@ export class EntityManager<T extends Base> extends FileManager {
 		return this.entityType;
 	}
 
+	/**
+	 * Get validation warnings from the last list() operation
+	 * Returns files that exist but failed schema validation
+	 */
+	getValidationWarnings(): ValidationWarning[] {
+		return [...this.validationWarnings];
+	}
+
+	/**
+	 * Check if there are any validation warnings
+	 */
+	hasValidationWarnings(): boolean {
+		return this.validationWarnings.length > 0;
+	}
+
 	private getFilePath(entity: {
 		number: number;
 		slug?: string;
 		draft?: boolean;
 	}): string {
-		const isDraft = entity.draft ?? false;
-		// For drafts, use simple number-based naming; for finalized entities, use full naming
-		if (isDraft) {
+		// Check if this is a draft by looking at the draft field
+		// Drafts use .draft.yml extension, finalized specs use .yml
+		if (entity.draft === true) {
 			return `${this.subFolder}/${this.idPrefix}-${entity.number}.draft.yml`;
 		}
+		// For finalized entities, use full naming with slug
 		if (!entity.slug) {
 			throw new Error("Slug is required for finalized entities");
 		}
@@ -106,39 +130,36 @@ export class EntityManager<T extends Base> extends FileManager {
 
 	async get(number: number): Promise<T | null> {
 		try {
-			// Find the file with this number
+			// Find ANY file with this number, regardless of slug or naming pattern
+			// File names are completely ignored - we only look at content
 			const fileNames = await this.listFiles(this.subFolder, ".yml");
-			const pattern = this.getFilePattern();
-			const draftPattern = this.getDraftFilePattern();
 
 			for (const fileName of fileNames) {
-				// Check regular pattern first
-				const match = fileName.match(pattern);
-				if (match?.[1]) {
-					const fileNumber = Number.parseInt(match[1], 10);
-					if (fileNumber === number) {
-						const data = await this.readYaml<T>(
-							`${this.subFolder}/${fileName}.yml`,
-						);
-						// Remove undefined values to allow Zod defaults to apply
-						const cleaned = this.removeUndefined(data);
-						return this.schema.parse(cleaned);
-					}
-				}
+				try {
+					// Try to read and parse the file
+					const data = await this.readYaml<T>(
+						`${this.subFolder}/${fileName}.yml`,
+					);
 
-				// Also check draft pattern
-				const draftMatch = fileName.match(draftPattern);
-				if (draftMatch?.[1]) {
-					const fileNumber = Number.parseInt(draftMatch[1], 10);
-					if (fileNumber === number) {
-						const data = await this.readYaml<T>(
-							`${this.subFolder}/${fileName}.yml`,
-						);
+					// Check if the number field matches (from content, not filename)
+					if (
+						data &&
+						typeof data === "object" &&
+						"number" in data &&
+						data.number === number
+					) {
 						// Remove undefined values to allow Zod defaults to apply
 						const cleaned = this.removeUndefined(data);
-						return this.schema.parse(cleaned);
+						const entity = this.schema.parse(cleaned);
+
+						// Set draft flag based on file extension
+						if (fileName.includes(".draft")) {
+							(entity as unknown as { draft: boolean }).draft = true;
+						}
+
+						return entity;
 					}
-				}
+				} catch {}
 			}
 			return null;
 		} catch {
@@ -334,24 +355,18 @@ export class EntityManager<T extends Base> extends FileManager {
 
 	/**
 	 * List all entities
-	 * Now loads ALL YAML files, even those with invalid naming patterns
+	 * Loads ALL YAML files regardless of naming patterns - file names are ignored
+	 * Only the content (number field) and extension (.draft.yml vs .yml) matter
 	 */
 	async list(): Promise<T[]> {
 		const fileNames = await this.listFiles(this.subFolder, ".yml");
-		const pattern = this.getFilePattern();
-		const draftPattern = this.getDraftFilePattern();
 		const entities: T[] = [];
-		const processedFiles = new Set<string>();
+		const processedNumbers = new Set<number>();
+
+		// Clear validation warnings before loading
+		this.validationWarnings = [];
 
 		for (const fileName of fileNames) {
-			if (processedFiles.has(fileName)) {
-				continue;
-			}
-
-			// Check if it matches expected patterns
-			const matchesFinalized = pattern.test(fileName);
-			const matchesDraft = draftPattern.test(fileName);
-
 			// Try to load the file regardless of naming pattern
 			try {
 				const data = await this.readYaml<T>(
@@ -360,18 +375,39 @@ export class EntityManager<T extends Base> extends FileManager {
 				const cleaned = this.removeUndefined(data);
 				const entity = this.schema.parse(cleaned);
 
-				entities.push(entity);
-				processedFiles.add(fileName);
-
-				// Log warning for invalid naming (but still include the entity)
-				if (!matchesFinalized && !matchesDraft) {
+				// Skip if we already processed this number (avoid duplicates)
+				if (processedNumbers.has(entity.number)) {
+					const warning: ValidationWarning = {
+						filePath: `${this.subFolder}/${fileName}.yml`,
+						fileName,
+						error: `Duplicate number ${entity.number} - file skipped`,
+					};
+					this.validationWarnings.push(warning);
 					console.warn(
-						`Warning: File "${this.subFolder}/${fileName}.yml" has invalid naming pattern but was loaded successfully. Expected pattern: ${this.idPrefix}-###-lowercase-slug.yml`,
+						`Warning: Duplicate number ${entity.number} found in ${this.subFolder}/${fileName}.yml, skipping`,
 					);
+					continue;
 				}
+
+				// Set draft flag based on file extension
+				if (fileName.includes(".draft")) {
+					(entity as unknown as { draft: boolean }).draft = true;
+				}
+
+				entities.push(entity);
+				processedNumbers.add(entity.number);
 			} catch (error) {
 				// File exists but couldn't be parsed or validated
-				// Log the error but continue processing other files
+				// Track the error as a validation warning
+				const warning: ValidationWarning = {
+					filePath: `${this.subFolder}/${fileName}.yml`,
+					fileName,
+					error: error instanceof Error ? error.message : String(error),
+					details: error,
+				};
+				this.validationWarnings.push(warning);
+
+				// Also log to console for backwards compatibility
 				console.error(
 					`Error loading ${this.subFolder}/${fileName}.yml: ${error instanceof Error ? error.message : String(error)}`,
 				);

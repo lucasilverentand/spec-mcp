@@ -1,5 +1,6 @@
-import type { DraftStore } from "@spec-mcp/core";
+import type { DraftStore, SpecManager } from "@spec-mcp/core";
 import { EntityTypeSchema } from "@spec-mcp/schemas";
+import { formatEntityId } from "@spec-mcp/utils";
 import { z } from "zod";
 
 /**
@@ -12,30 +13,44 @@ export const StartDraftArgsSchema = z.object({
 export type StartDraftArgs = z.infer<typeof StartDraftArgsSchema>;
 
 /**
- * Generate a unique draft ID
- */
-function generateDraftId(): string {
-	const timestamp = Date.now();
-	const random = Math.random().toString(36).substring(2, 9);
-	return `draft-${timestamp}-${random}`;
-}
-
-/**
  * Start a new draft creation workflow
  */
 export async function startDraft(
 	args: StartDraftArgs,
 	draftStore: DraftStore,
+	specManager: SpecManager,
 ): Promise<string> {
 	const { type } = args;
 
-	// Generate unique draft ID
-	const draftId = generateDraftId();
+	// Get the next available number for this entity type
+	const number = await specManager.getNextNumber(
+		type as
+			| "plan"
+			| "component"
+			| "decision"
+			| "business-requirement"
+			| "technical-requirement"
+			| "constitution"
+			| "milestone",
+	);
 
-	// Check if a draft already exists for this ID (should be extremely rare)
+	// Create unified draft ID using type+number format (no slug, no "-draft-")
+	const draftId = formatEntityId({
+		type: type as
+			| "plan"
+			| "component"
+			| "decision"
+			| "business-requirement"
+			| "technical-requirement"
+			| "constitution"
+			| "milestone",
+		number,
+	});
+
+	// Check if a draft already exists for this ID
 	if (draftStore.has(draftId)) {
 		throw new Error(
-			`Draft '${draftId}' already exists. This should not happen. Please try again.`,
+			`Draft '${draftId}' already exists. Please continue with the existing draft or delete it first.`,
 		);
 	}
 
@@ -51,6 +66,9 @@ export async function startDraft(
 			| "constitution"
 			| "milestone",
 	);
+
+	// Set the number we already allocated
+	manager.setNumber(number);
 
 	// Auto-save initial draft state
 	try {

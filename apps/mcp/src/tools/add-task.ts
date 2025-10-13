@@ -55,7 +55,6 @@ export async function addTask(
 			considerations: t.considerations ?? [],
 			references: t.references ?? [],
 			files: t.files ?? [],
-			blocked: t.blocked ?? [],
 			supersedes: t.supersedes ?? null,
 			superseded_by: t.superseded_by ?? null,
 			superseded_at: t.superseded_at ?? null,
@@ -123,7 +122,6 @@ export async function addTask(
 						verified_at: null,
 						notes: [],
 					},
-			blocked: oldTask?.blocked ?? [],
 			supersedes: options?.supersede_id ?? null,
 			superseded_by: null,
 			superseded_at: null,
@@ -144,19 +142,13 @@ export async function addTask(
 				if (t.id === options.supersede_id) {
 					return updatedOldTask;
 				}
-				// Update references in depends_on and blocked
+				// Update references in depends_on 
 				// IMPORTANT: Always set these fields explicitly to avoid undefined
 				const updatedTask = {
 					...t,
 					depends_on: (t.depends_on ?? []).map((depId) =>
 						depId === options.supersede_id ? newTaskId : depId,
 					),
-					blocked: (t.blocked ?? []).map((block) => ({
-						...block,
-						blocked_by: block.blocked_by.map((blockId) =>
-							blockId === options.supersede_id ? newTaskId : blockId,
-						),
-					})),
 				};
 				return updatedTask;
 			});
@@ -175,7 +167,6 @@ export async function addTask(
 			considerations: t.considerations ?? [],
 			references: t.references ?? [],
 			files: t.files ?? [],
-			blocked: t.blocked ?? [],
 			supersedes: t.supersedes ?? null,
 			superseded_by: t.superseded_by ?? null,
 			superseded_at: t.superseded_at ?? null,

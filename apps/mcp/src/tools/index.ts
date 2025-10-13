@@ -15,6 +15,7 @@ export * from "./delete.js";
 export * from "./finalize-entity";
 export * from "./finish-task.js";
 export * from "./get-spec.js";
+export * from "./get-validation-warnings.js";
 // Git workflow
 export * from "./git-workflow-tools.js";
 export * from "./list-drafts";

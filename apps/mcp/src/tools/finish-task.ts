@@ -1,8 +1,7 @@
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { SpecManager } from "@spec-mcp/core";
-import { validateEntity } from "@spec-mcp/core";
+import { canCompleteTask, validateEntity } from "@spec-mcp/core";
 import type { Plan } from "@spec-mcp/schemas";
-import { canCompleteTask } from "@spec-mcp/schemas";
 
 /**
  * Mark a task as completed

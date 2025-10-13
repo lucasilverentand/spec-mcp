@@ -337,47 +337,9 @@ export interface QueryResult {
 	relatedItems?: Record<string, RelatedItemRef[]>; // Keyed by item ID
 }
 
-/**
- * Helper to check if query is filtering for item types
- */
-export function isItemTypeQuery(query: Query): boolean {
-	return (
-		query.objects !== undefined &&
-		"itemTypes" in query.objects &&
-		query.objects.itemTypes !== undefined
-	);
-}
-
-/**
- * Helper to check if query is filtering for spec types
- */
-export function isSpecTypeQuery(query: Query): boolean {
-	return (
-		query.objects !== undefined &&
-		"specTypes" in query.objects &&
-		query.objects.specTypes !== undefined
-	);
-}
-
-/**
- * Helper to extract spec types from query
- */
-export function getSpecTypes(query: Query): string[] | undefined {
-	if (isSpecTypeQuery(query) && query.objects && "specTypes" in query.objects) {
-		return query.objects.specTypes;
-	}
-	return undefined;
-}
-
-/**
- * Helper to extract item types from query
- */
-export function getItemTypes(query: Query): ItemType[] | undefined {
-	if (isItemTypeQuery(query) && query.objects && "itemTypes" in query.objects) {
-		return query.objects.itemTypes;
-	}
-	return undefined;
-}
+// Note: All query utility functions have been moved to @spec-mcp/core/utils/query-utils
+// Import them from there instead:
+//   import { isItemTypeQuery, isSpecTypeQuery, getSpecTypes, getItemTypes } from "@spec-mcp/core";
 
 /**
  * Preset query builders (Feature 5 - Saved Queries/Presets)

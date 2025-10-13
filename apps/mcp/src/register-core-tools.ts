@@ -20,6 +20,8 @@ import {
 	finishTaskGitTool,
 	getSpec,
 	getSpecTool,
+	getValidationWarnings,
+	getValidationWarningsTool,
 	listDrafts,
 	querySpecs,
 	querySpecsTool,
@@ -72,7 +74,7 @@ export function registerCoreTools(
 		// biome-ignore lint/suspicious/noExplicitAny: Handler receives validated args from Zod schema
 		async (args: any) => {
 			try {
-				const result = await startDraft(args, draftStore);
+				const result = await startDraft(args, draftStore, specManager);
 				return {
 					content: [{ type: "text", text: result }],
 				};
@@ -677,6 +679,25 @@ export function registerCoreTools(
 			} catch (error) {
 				logger.error(
 					{ error, tool: "update_component" },
+					"Tool execution failed",
+				);
+				throw error;
+			}
+		},
+	);
+
+	// ========== VALIDATION & DIAGNOSTICS (1) ==========
+
+	registrar.registerTool(
+		getValidationWarningsTool.name,
+		getValidationWarningsTool.description,
+		{},
+		async () => {
+			try {
+				return await getValidationWarnings(specManager);
+			} catch (error) {
+				logger.error(
+					{ error, tool: "get_validation_warnings" },
 					"Tool execution failed",
 				);
 				throw error;

@@ -453,8 +453,23 @@ export class DraftStore {
 							// but we know they're correct because config and drafterState come from the same entity type
 							const drafter = restoreEntityDrafter(config, drafterState);
 
-							// Create session ID using type and number (no slug yet)
-							const sessionId = `${type}-draft-${number}`;
+							// Create session ID using ONLY type and number (no more "-draft-" in the ID)
+							// This is a unified ID scheme where drafts and finalized specs use the same ID format
+							const prefix =
+								type === "business-requirement"
+									? "brd"
+									: type === "technical-requirement"
+										? "prd"
+										: type === "plan"
+											? "pln"
+											: type === "component"
+												? "cmp"
+												: type === "constitution"
+													? "con"
+													: type === "decision"
+														? "dec"
+														: "mls";
+							const sessionId = `${prefix}-${String(number).padStart(3, "0")}`;
 
 							// Create manager without slug (cast drafter to Base type)
 							const manager = new DraftManager(

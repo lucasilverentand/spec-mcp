@@ -1,7 +1,6 @@
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { SpecManager } from "@spec-mcp/core";
-import { validateEntity } from "@spec-mcp/core";
-import type { Supersedable } from "@spec-mcp/schemas";
+import { validateEntity, type Supersedable } from "@spec-mcp/core";
 import { formatItemId, getItemType } from "@spec-mcp/utils";
 
 /**

@@ -139,16 +139,19 @@ export function getItemType(prefix: string): ItemType | undefined {
  * Accepts formats:
  * - typ-123
  * - typ-001 (with padding)
- * - typ-123-slug-here
- * - typ-001-slug-here (with padding)
- * - typ-123-slug-here.yml
+ * - typ-123-slug-here (slug is ignored, only type+number used)
+ * - typ-001-slug-here (slug is ignored, only type+number used)
+ * - typ-123-slug-here.yml (slug is ignored, only type+number used)
  * - typ-123.yml
+ *
+ * NOTE: Slugs are fully disregarded during retrieval. Only type + number is used.
+ * The slug field in the returned object is included for backwards compatibility but should not be used for lookups.
  */
 export function parseEntityId(id: string): ParsedEntityId | null {
 	// Remove .yml or .yaml extension if present
 	const cleanId = id.replace(/\.(yml|yaml)$/, "");
 
-	// Try matching with slug first
+	// Try matching with slug first (but we'll ignore the slug for retrieval)
 	let match = cleanId.match(ID_PATTERNS.entityIdWithSlug);
 	if (match) {
 		const [, prefix, numberStr, slug] = match;
@@ -157,10 +160,11 @@ export function parseEntityId(id: string): ParsedEntityId | null {
 		const entityType = getEntityType(prefix);
 		if (!entityType) return null;
 
+		// Return with slug for backwards compatibility, but lookups should only use type+number
 		return {
 			prefix,
 			number: Number.parseInt(numberStr, 10),
-			slug,
+			slug, // Included but should be ignored during retrieval
 			entityType,
 		};
 	}

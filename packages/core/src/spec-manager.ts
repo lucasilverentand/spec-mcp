@@ -20,16 +20,11 @@ import type {
 	TestCase,
 } from "@spec-mcp/schemas";
 import {
-	getItemTypes,
-	getPlanState,
-	getSpecTypes,
-	getTaskState,
-	isActiveTask,
-	isCompleted,
-	isItemTypeQuery,
-	isVerified,
-} from "@spec-mcp/schemas";
-import { formatEntityId, formatItemId, getEntityPrefix } from "@spec-mcp/utils";
+	formatEntityId,
+	formatItemId,
+	getEntityPrefix,
+	parseEntityId,
+} from "@spec-mcp/utils";
 import {
 	createBusinessRequirementsManager,
 	createComponentsManager,
@@ -41,6 +36,16 @@ import {
 } from "./entities/index.js";
 import type { EntityManager } from "./entity-manager.js";
 import { FileManager } from "./file-manager.js";
+import {
+	getItemTypes,
+	getPlanState,
+	getSpecTypes,
+	getTaskState,
+	isActiveTask,
+	isCompleted,
+	isItemTypeQuery,
+	isVerified,
+} from "./utils/index.js";
 
 /**
  * Centralized counter structure stored in specs.yml
@@ -97,6 +102,48 @@ export class SpecManager {
 	 */
 	getBasePath(): string {
 		return resolve(this.specsPath);
+	}
+
+	/**
+	 * Get all validation warnings from all entity managers
+	 * Returns files that exist but failed schema validation
+	 * Call this after operations that load entities (like list() or query())
+	 */
+	async getAllValidationWarnings(): Promise<
+		Array<
+			import("./entity-manager.js").ValidationWarning & {
+				entityType: EntityType;
+			}
+		>
+	> {
+		const warnings: Array<
+			import("./entity-manager.js").ValidationWarning & {
+				entityType: EntityType;
+			}
+		> = [];
+
+		// Collect warnings from each manager
+		const managers: Array<{ manager: EntityManager<any>; type: EntityType }> = [
+			{ manager: this.business_requirements, type: "business-requirement" },
+			{ manager: this.tech_requirements, type: "technical-requirement" },
+			{ manager: this.plans, type: "plan" },
+			{ manager: this.components, type: "component" },
+			{ manager: this.constitutions, type: "constitution" },
+			{ manager: this.decisions, type: "decision" },
+			{ manager: this.milestones, type: "milestone" },
+		];
+
+		for (const { manager, type } of managers) {
+			const managerWarnings = manager.getValidationWarnings();
+			for (const warning of managerWarnings) {
+				warnings.push({
+					...warning,
+					entityType: type,
+				});
+			}
+		}
+
+		return warnings;
 	}
 
 	/**
@@ -510,24 +557,35 @@ export class SpecManager {
 	 * Apply filters to a spec
 	 */
 	private applySpecFilters(spec: Spec, query: Query): boolean {
-		// ID filter (partial matching)
+		// Draft filter - filter by draft flag (set from file extension)
+		if (query.draft !== undefined) {
+			const isDraft = (spec as unknown as { draft?: boolean }).draft === true;
+			if (query.draft !== isDraft) {
+				return false;
+			}
+		}
+
+		// ID filter (partial matching) - ONLY match on type+number, slug is completely ignored
 		if (query.id !== undefined) {
 			const ids = Array.isArray(query.id) ? query.id : [query.id];
 			const specId = formatEntityId({ type: spec.type, number: spec.number });
-			const fullId = formatEntityId({
-				type: spec.type,
-				number: spec.number,
-				slug: spec.slug,
-			});
 
 			const matchesId = ids.some((id) => {
-				// Exact matches
-				if (fullId === id || specId === id) {
-					return true;
+				// Parse the query ID and extract just type+number (ignore slug)
+				const parsed = parseEntityId(id);
+				if (parsed) {
+					// Match only on type + number
+					const queryId = formatEntityId({
+						type: parsed.entityType!,
+						number: parsed.number,
+					});
+					if (specId === queryId) {
+						return true;
+					}
 				}
 
-				// Prefix matches
-				if (fullId.startsWith(id) || specId.startsWith(id)) {
+				// Also try exact match and prefix match for backwards compatibility
+				if (specId === id || specId.startsWith(id)) {
 					return true;
 				}
 
