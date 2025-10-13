@@ -139,10 +139,10 @@ describe("Supersession and Reference Updates", () => {
 			});
 
 			const updatedPlan = await specManager.plans.get(1);
-			const blockedTask = updatedPlan?.tasks.find((t) => t.id === "tsk-002");
+			const _blockedTask = updatedPlan?.tasks.find((t) => t.id === "tsk-002");
 
-// 			expect(blockedTask?.blocked[0].blocked_by).toContain("tsk-003");
-// 			expect(blockedTask?.blocked[0].blocked_by).not.toContain("tsk-001");
+			// 			expect(blockedTask?.blocked[0].blocked_by).toContain("tsk-003");
+			// 			expect(blockedTask?.blocked[0].blocked_by).not.toContain("tsk-001");
 		});
 
 		it("should prevent superseding an already superseded task", async () => {
@@ -257,8 +257,8 @@ describe("Supersession and Reference Updates", () => {
 			// Both depends_on and blocked_by should be updated
 			expect(task2Updated?.depends_on).toContain("tsk-003");
 			expect(task2Updated?.depends_on).not.toContain("tsk-001");
-// 			expect(task2Updated?.blocked[0].blocked_by).toContain("tsk-003");
-// 			expect(task2Updated?.blocked[0].blocked_by).not.toContain("tsk-001");
+			// 			expect(task2Updated?.blocked[0].blocked_by).toContain("tsk-003");
+			// 			expect(task2Updated?.blocked[0].blocked_by).not.toContain("tsk-001");
 		});
 	});
 

@@ -1,4 +1,5 @@
 import type { Base, EntityType } from "@spec-mcp/schemas";
+import { ID_NUMBER_PADDING } from "@spec-mcp/utils";
 import type { ZodType, ZodTypeDef } from "zod";
 import { EntityDrafter, type EntityDrafterState } from "./entity-drafter.js";
 import { FileManager } from "./file-manager.js";
@@ -72,16 +73,19 @@ export class EntityManager<T extends Base> extends FileManager {
 		slug?: string;
 		draft?: boolean;
 	}): string {
+		// Pad number using standard padding constant
+		const paddedNumber = String(entity.number).padStart(ID_NUMBER_PADDING, "0");
+
 		// Check if this is a draft by looking at the draft field
 		// Drafts use .draft.yml extension, finalized specs use .yml
 		if (entity.draft === true) {
-			return `${this.subFolder}/${this.idPrefix}-${entity.number}.draft.yml`;
+			return `${this.subFolder}/${this.idPrefix}-${paddedNumber}.draft.yml`;
 		}
 		// For finalized entities, use full naming with slug
 		if (!entity.slug) {
 			throw new Error("Slug is required for finalized entities");
 		}
-		return `${this.subFolder}/${this.idPrefix}-${entity.number}-${entity.slug}.yml`;
+		return `${this.subFolder}/${this.idPrefix}-${paddedNumber}-${entity.slug}.yml`;
 	}
 
 	private getFilePattern(): RegExp {

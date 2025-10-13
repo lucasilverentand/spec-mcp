@@ -279,10 +279,10 @@ describe("Supersession Core Functionality", () => {
 			});
 
 			const finalPlan = await specManager.plans.get(plan.number);
-			const blockedTask = finalPlan?.tasks.find((t) => t.id === "tsk-002");
+			const _blockedTask = finalPlan?.tasks.find((t) => t.id === "tsk-002");
 
-// 			expect(blockedTask?.blocked[0].blocked_by).toEqual(["tsk-003"]);
-// 			expect(blockedTask?.blocked[0].blocked_by).not.toContain("tsk-001");
+			// 			expect(blockedTask?.blocked[0].blocked_by).toEqual(["tsk-003"]);
+			// 			expect(blockedTask?.blocked[0].blocked_by).not.toContain("tsk-001");
 		});
 	});
 

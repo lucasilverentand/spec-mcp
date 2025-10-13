@@ -44,7 +44,9 @@ describe("File Naming", () => {
 		const files = await fs.readdir(filesDir);
 
 		expect(files).toHaveLength(1);
-		expect(files[0]).toBe(`breq-${created.number}-user-authentication.yml`);
+		// Numbers should be left-padded to 3 digits
+		const paddedNumber = String(created.number).padStart(3, "0");
+		expect(files[0]).toBe(`breq-${paddedNumber}-user-authentication.yml`);
 	});
 
 	it("should handle multiple entities with sequential numbers", async () => {
@@ -65,8 +67,9 @@ describe("File Naming", () => {
 		const files = await fs.readdir(filesDir);
 
 		expect(files).toHaveLength(2);
-		expect(files).toContain("breq-1-feature-one.yml");
-		expect(files).toContain("breq-2-feature-two.yml");
+		// Numbers should be left-padded to 3 digits
+		expect(files).toContain("breq-001-feature-one.yml");
+		expect(files).toContain("breq-002-feature-two.yml");
 	});
 
 	it("should rename file when slug is updated", async () => {
@@ -86,8 +89,10 @@ describe("File Naming", () => {
 		const files = await fs.readdir(filesDir);
 
 		expect(files).toHaveLength(1);
-		expect(files[0]).toBe(`breq-${created.number}-updated-slug.yml`);
-		expect(files).not.toContain(`breq-${created.number}-original-slug.yml`);
+		// Numbers should be left-padded to 3 digits
+		const paddedNumber = String(created.number).padStart(3, "0");
+		expect(files[0]).toBe(`breq-${paddedNumber}-updated-slug.yml`);
+		expect(files).not.toContain(`breq-${paddedNumber}-original-slug.yml`);
 	});
 
 	it("should delete file with correct name", async () => {

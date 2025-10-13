@@ -142,7 +142,7 @@ export async function addTask(
 				if (t.id === options.supersede_id) {
 					return updatedOldTask;
 				}
-				// Update references in depends_on 
+				// Update references in depends_on
 				// IMPORTANT: Always set these fields explicitly to avoid undefined
 				const updatedTask = {
 					...t,

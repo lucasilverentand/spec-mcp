@@ -1,4 +1,5 @@
 import type { Base, EntityType } from "@spec-mcp/schemas";
+import { ID_NUMBER_PADDING } from "@spec-mcp/utils";
 import {
 	createBusinessRequirementDrafterConfig,
 	createComponentDrafterConfig,
@@ -469,7 +470,7 @@ export class DraftStore {
 													: type === "decision"
 														? "dec"
 														: "mls";
-							const sessionId = `${prefix}-${String(number).padStart(3, "0")}`;
+							const sessionId = `${prefix}-${String(number).padStart(ID_NUMBER_PADDING, "0")}`;
 
 							// Create manager without slug (cast drafter to Base type)
 							const manager = new DraftManager(
