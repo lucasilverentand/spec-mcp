@@ -20,6 +20,8 @@ export * from "./git-workflow-tools.js";
 export * from "./list-drafts";
 export * from "./milestone-tools.js";
 export * from "./plan-array-tools.js";
+// Query tools
+export * from "./query-specs.js";
 // Legacy reference tools (deprecated, kept for backwards compatibility)
 export * from "./reference-tools.js";
 export * from "./skip-answer";

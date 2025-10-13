@@ -1,18 +1,19 @@
 /**
- * Resource registration for guide documents
+ * Resource registration for guide documents and JSON schemas
  */
 
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { GUIDE_RESOURCES } from "./resources/guides.js";
+import { JSON_SCHEMA_RESOURCES } from "./resources/json-schemas.js";
 import { logger } from "./utils/logger.js";
 
 /**
- * Register all guide resources with the MCP server
+ * Register all resources with the MCP server
  */
 export function registerResources(server: McpServer): void {
-	logger.info("Registering guide resources");
+	logger.info("Registering resources");
 
-	// Register each guide as a static resource
+	// Register guide resources
 	for (const guide of GUIDE_RESOURCES) {
 		server.resource(
 			guide.name,
@@ -37,8 +38,37 @@ export function registerResources(server: McpServer): void {
 		logger.debug({ uri: guide.uri, name: guide.name }, "Registered guide");
 	}
 
+	// Register JSON schema resources
+	for (const schema of JSON_SCHEMA_RESOURCES) {
+		server.resource(
+			schema.name,
+			schema.uri,
+			{
+				description: schema.description,
+				mimeType: "application/schema+json",
+			},
+			async () => {
+				return {
+					contents: [
+						{
+							uri: schema.uri,
+							mimeType: "application/schema+json",
+							text: JSON.stringify(schema.schema, null, 2),
+						},
+					],
+				};
+			},
+		);
+
+		logger.debug({ uri: schema.uri, name: schema.name }, "Registered schema");
+	}
+
 	logger.info(
-		{ count: GUIDE_RESOURCES.length },
-		"Guide resources registered successfully",
+		{
+			guides: GUIDE_RESOURCES.length,
+			schemas: JSON_SCHEMA_RESOURCES.length,
+			total: GUIDE_RESOURCES.length + JSON_SCHEMA_RESOURCES.length,
+		},
+		"Resources registered successfully",
 	);
 }

@@ -2,6 +2,7 @@ import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { SpecManager } from "@spec-mcp/core";
 import { validateEntity } from "@spec-mcp/core";
 import type { Supersedable } from "@spec-mcp/schemas";
+import { formatItemId, getItemType } from "@spec-mcp/utils";
 
 /**
  * Configuration for building array manipulation tools
@@ -120,7 +121,10 @@ export async function addItemWithId<
 		}, 0);
 
 		const prefix = config.idPrefix || "item";
-		const newId = `${prefix}-${String(maxNum + 1).padStart(3, "0")}`;
+		const itemType = getItemType(prefix);
+		const newId = itemType
+			? formatItemId({ itemType, number: maxNum + 1 })
+			: `${prefix}-${String(maxNum + 1).padStart(3, "0")}`;
 		const now = new Date().toISOString();
 
 		// Create the new item with supersession fields
@@ -453,7 +457,10 @@ export async function supersedeItemWithId<
 		}, 0);
 
 		const prefix = config.idPrefix || "item";
-		const newId = `${prefix}-${String(maxNum + 1).padStart(3, "0")}`;
+		const itemType = getItemType(prefix);
+		const newId = itemType
+			? formatItemId({ itemType, number: maxNum + 1 })
+			: `${prefix}-${String(maxNum + 1).padStart(3, "0")}`;
 		const now = new Date().toISOString();
 
 		// Create the new item, merging old and new data

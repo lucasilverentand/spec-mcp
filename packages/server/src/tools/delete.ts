@@ -8,6 +8,7 @@ import type {
 	Plan,
 	TechnicalRequirement,
 } from "@spec-mcp/schemas";
+import { getIdType, parseEntityId, parseItemId } from "@spec-mcp/utils";
 
 /**
  * Determine entity type from ID prefix
@@ -18,44 +19,32 @@ function getEntityTypeFromId(id: string): {
 	specType?: string;
 	itemType?: string;
 } {
-	// Check if it's a draft (format: {type}-draft-{number})
-	if (id.includes("-draft-")) {
+	const idType = getIdType(id);
+
+	if (idType === "draft") {
 		return { isSpec: false, isDraft: true };
 	}
 
-	const parts = id.split("-");
-	const prefix = parts[0];
-
-	if (!prefix) {
-		return { isSpec: false, isDraft: false };
+	if (idType === "entity") {
+		const parsed = parseEntityId(id);
+		if (parsed?.entityType) {
+			return {
+				isSpec: true,
+				isDraft: false,
+				specType: parsed.entityType,
+			};
+		}
 	}
 
-	// Spec types
-	const specTypes: Record<string, string> = {
-		pln: "plan",
-		brd: "business-requirement",
-		prd: "technical-requirement",
-		dec: "decision",
-		cmp: "component",
-		cst: "constitution",
-	};
-
-	if (specTypes[prefix]) {
-		return { isSpec: true, isDraft: false, specType: specTypes[prefix] };
-	}
-
-	// Item types (nested within specs)
-	const itemTypes: Record<string, string> = {
-		task: "task",
-		crit: "criteria",
-		test: "test case",
-		flow: "flow",
-		api: "API contract",
-		data: "data model",
-	};
-
-	if (itemTypes[prefix]) {
-		return { isSpec: false, isDraft: false, itemType: itemTypes[prefix] };
+	if (idType === "item") {
+		const parsed = parseItemId(id);
+		if (parsed?.itemType) {
+			return {
+				isSpec: false,
+				isDraft: false,
+				itemType: parsed.itemType,
+			};
+		}
 	}
 
 	return { isSpec: false, isDraft: false };

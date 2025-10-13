@@ -14,6 +14,18 @@ import {
 } from "./array-tool-builder.js";
 
 // ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
+
+/**
+ * Format a flow step ID with consistent padding
+ * Step IDs are internal to flows and use the format: step-001, step-002, etc.
+ */
+function formatStepId(stepNumber: number): string {
+	return `step-${String(stepNumber).padStart(3, "0")}`;
+}
+
+// ============================================================================
 // FLOW TOOLS
 // ============================================================================
 
@@ -31,7 +43,7 @@ export async function addFlow(
 		description: "Add flow to a plan",
 		specType: "plan",
 		arrayFieldName: "flows",
-		idPrefix: "flow",
+		idPrefix: "flw",
 		getArray: (spec) => spec.flows || [],
 		setArray: (_spec, items) => ({ flows: items }),
 	};
@@ -40,13 +52,10 @@ export async function addFlow(
 	const flowSteps: FlowStep[] = steps.map((step, index) => {
 		if (typeof step === "string") {
 			return {
-				id: `step-${String(index + 1).padStart(3, "0")}`,
+				id: formatStepId(index + 1),
 				name: step,
 				description: step,
-				next_steps:
-					index < steps.length - 1
-						? [`step-${String(index + 2).padStart(3, "0")}`]
-						: [],
+				next_steps: index < steps.length - 1 ? [formatStepId(index + 2)] : [],
 			};
 		}
 		return step;
@@ -119,7 +128,7 @@ export const addFlowTool = {
 			supersede_id: {
 				type: "string",
 				description:
-					"Optional: ID of an existing flow to supersede (e.g., 'flow-001'). The old flow will be marked as superseded and all references will be updated.",
+					"Optional: ID of an existing flow to supersede (e.g., 'flw-001'). The old flow will be marked as superseded and all references will be updated.",
 			},
 		},
 		required: ["plan_id", "type", "name", "steps"],
@@ -141,7 +150,7 @@ export async function supersedeFlow(
 		description: "Supersede flow in a plan",
 		specType: "plan",
 		arrayFieldName: "flows",
-		idPrefix: "flow",
+		idPrefix: "flw",
 		getArray: (spec) => spec.flows || [],
 		setArray: (_spec, items) => ({ flows: items }),
 	};
@@ -313,7 +322,7 @@ export async function addDataModel(
 		description: "Add data model to a plan",
 		specType: "plan",
 		arrayFieldName: "data_models",
-		idPrefix: "dm",
+		idPrefix: "dat",
 		getArray: (spec) => spec.data_models || [],
 		setArray: (_spec, items) => ({ data_models: items }),
 	};
@@ -371,7 +380,7 @@ export async function supersedeDataModel(
 		description: "Supersede data model in a plan",
 		specType: "plan",
 		arrayFieldName: "data_models",
-		idPrefix: "dm",
+		idPrefix: "dat",
 		getArray: (spec) => spec.data_models || [],
 		setArray: (_spec, items) => ({ data_models: items }),
 	};
@@ -407,7 +416,7 @@ export const addDataModelTool = {
 			supersede_id: {
 				type: "string",
 				description:
-					"Optional: ID of an existing data model to supersede (e.g., 'dm-001'). The old model will be marked as superseded and all references will be updated.",
+					"Optional: ID of an existing data model to supersede (e.g., 'dat-001'). The old model will be marked as superseded and all references will be updated.",
 			},
 		},
 		required: ["plan_id", "name", "description", "format", "schema"],

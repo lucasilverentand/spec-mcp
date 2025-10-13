@@ -53,7 +53,7 @@ export async function addCriteria(
 			| BusinessRequirement
 			| TechnicalRequirement
 		),
-		idPrefix: "crit",
+		idPrefix: "crt",
 		getArray: (spec) => spec.criteria || [],
 		setArray: (_spec, items) => ({ criteria: items }),
 	};
@@ -96,7 +96,7 @@ export const addCriteriaTool = {
 			supersede_id: {
 				type: "string",
 				description:
-					"Optional: ID of an existing criteria to supersede (e.g., 'crit-001'). The old criteria will be marked as superseded and all references will be updated.",
+					"Optional: ID of an existing criteria to supersede (e.g., 'crt-001'). The old criteria will be marked as superseded and all references will be updated.",
 			},
 		},
 		required: ["spec_id", "description", "rationale"],
@@ -143,7 +143,7 @@ export async function supersedeCriteria(
 			| BusinessRequirement
 			| TechnicalRequirement
 		),
-		idPrefix: "crit",
+		idPrefix: "crt",
 		getArray: (spec) => spec.criteria || [],
 		setArray: (_spec, items) => ({ criteria: items }),
 	};
@@ -189,7 +189,7 @@ export async function removeCriteria(
 			| BusinessRequirement
 			| TechnicalRequirement
 		),
-		idPrefix: "crit",
+		idPrefix: "crt",
 		getArray: (spec) => spec.criteria || [],
 		setArray: (_spec, items) => ({ criteria: items }),
 	};

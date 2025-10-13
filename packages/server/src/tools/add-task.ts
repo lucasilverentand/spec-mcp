@@ -265,7 +265,7 @@ export const addTaskTool = {
 				type: "array",
 				items: { type: "string" },
 				description:
-					"Array of task IDs this task depends on (e.g., ['task-001'])",
+					"Array of task IDs this task depends on (e.g., ['tsk-001'])",
 			},
 			considerations: {
 				type: "array",
@@ -275,7 +275,7 @@ export const addTaskTool = {
 			supersede_id: {
 				type: "string",
 				description:
-					"Optional: ID of an existing task to supersede (e.g., 'task-001'). The old task will be marked as superseded and all references will be updated to the new task.",
+					"Optional: ID of an existing task to supersede (e.g., 'tsk-001'). The old task will be marked as superseded and all references will be updated to the new task.",
 			},
 		},
 		required: ["plan_id", "task"],

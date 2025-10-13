@@ -8,10 +8,614 @@
  */
 export const GUIDE_RESOURCES = [
 	{
-		uri: "spec-mcp://guide/spec-types",
-		name: "Spec Types Guide",
+		uri: "spec-mcp://guide/plan",
+		name: "Plan Guide",
+		description: "When and how to use Plans to organize implementation work",
+		mimeType: "text/markdown",
+		content: `# Plan Guide
+
+**Goal**: Understand when and how to use Plans to organize implementation work.
+
+## What is a Plan?
+
+A Plan is an executable implementation specification that breaks down work into concrete tasks, defines test cases, documents flows, and specifies technical contracts.
+
+## When to Use a Plan
+
+✅ **Use a Plan when:**
+- You're ready to implement a feature or capability
+- You need to organize work into tasks with dependencies
+- You want to track implementation progress
+- You need to document API contracts or data models
+- You're defining test cases for a feature
+
+❌ **Don't use a Plan for:**
+- Capturing business requirements (use BRD instead)
+- Documenting technical decisions (use Decision instead)
+- Defining architecture components (use Component instead)
+
+## Key Components
+
+### Required Fields
+- **Title**: Clear name for what you're implementing
+- **Description**: What this plan accomplishes
+- **Criteria**: Links to the acceptance criteria this fulfills
+- **Scope**: What's included and excluded
+- **Tasks**: Concrete work items with dependencies
+
+### Optional But Valuable
+- **Test Cases**: How to verify it works
+- **Flows**: User/system/data flows
+- **API Contracts**: REST/GraphQL/gRPC specifications
+- **Data Models**: Database schemas or data structures
+- **References**: Supporting documentation
+
+## Common Patterns
+
+### Feature Implementation Plan
+\`\`\`yaml
+title: Implement User Authentication
+description: Add JWT-based authentication with login/logout
+criteria:
+  requirement: brd-001-auth
+  criteria: crit-001
+scope:
+  in_scope:
+    - Email/password login
+    - JWT token generation
+    - Logout endpoint
+  out_of_scope:
+    - OAuth providers
+    - Two-factor authentication
+tasks:
+  - task: Setup authentication middleware
+    priority: high
+  - task: Create login endpoint
+    depends_on: [task-001]
+    priority: high
+\`\`\`
+
+### Refactoring Plan
+\`\`\`yaml
+title: Refactor Database Layer
+description: Extract database logic into repository pattern
+scope:
+  in_scope:
+    - User repository
+    - Post repository
+  out_of_scope:
+    - Migrations
+    - Query optimization
+\`\`\`
+
+### Technical Debt Plan
+\`\`\`yaml
+title: Remove Deprecated API Endpoints
+description: Clean up v1 API endpoints after v2 migration
+scope:
+  in_scope:
+    - Remove /api/v1/* endpoints
+    - Update documentation
+  out_of_scope:
+    - V2 endpoint improvements
+\`\`\`
+
+## Task Management
+
+### Task Dependencies
+\`\`\`yaml
+tasks:
+  - id: task-001
+    task: Create database schema
+    priority: high
+    status: completed
+
+  - id: task-002
+    task: Implement API endpoints
+    depends_on: [task-001]  # Can't start until task-001 done
+    priority: high
+    status: in-progress
+\`\`\`
+
+### Task Priorities
+- **critical**: Must be done first, blocks everything
+- **high**: Important, should be done early
+- **medium**: Standard priority (default)
+- **low**: Can be deferred if needed
+- **nice-to-have**: Optional enhancement
+
+### Task Status Tracking
+- **pending**: Not started yet
+- **in-progress**: Currently being worked on
+- **completed**: Done and tested
+- **blocked**: Waiting on something else
+
+## Test Cases
+
+Document how to verify your implementation:
+
+\`\`\`yaml
+test_cases:
+  - name: Valid login with correct credentials
+    description: User can log in with email and password
+    steps:
+      - Create test user in database
+      - POST to /auth/login with valid credentials
+      - Verify 200 response
+      - Verify JWT token in response
+    expected_result: Valid JWT token and user data returned
+    implemented: true
+    passing: true
+\`\`\`
+
+## API Contracts
+
+Define your API interfaces:
+
+\`\`\`yaml
+api_contracts:
+  - name: POST /auth/login
+    description: Authenticate user and return JWT
+    contract_type: rest
+    specification: |
+      POST /auth/login
+      Request: { "email": "string", "password": "string" }
+      Response: { "token": "string", "user": { "id": "string", "email": "string" } }
+      Errors: 400 (invalid), 401 (bad credentials)
+\`\`\`
+
+## Data Models
+
+Document your schemas:
+
+\`\`\`yaml
+data_models:
+  - name: User
+    description: User account model
+    format: typescript
+    schema: |
+      interface User {
+        id: string;
+        email: string;
+        password_hash: string;
+        created_at: Date;
+        updated_at: Date;
+      }
+\`\`\`
+
+## Best Practices
+
+### Keep Plans Focused
+- One plan per feature or logical unit of work
+- Split large plans into multiple smaller ones
+- Typical plan has 3-10 tasks
+
+### Define Clear Scope
+- Explicitly state what's in and out of scope
+- Prevents scope creep
+- Helps reviewers understand boundaries
+
+### Link to Requirements
+- Always link to the BRD/PRD criteria you're fulfilling
+- Maintains traceability
+- Helps answer "why are we building this?"
+
+### Update as You Go
+- Mark tasks complete as they finish
+- Add notes about challenges or decisions
+- Keep test cases updated with implementation
+
+### Use Milestones
+\`\`\`yaml
+milestones:
+  - mls-001-v2-launch
+\`\`\`
+
+Links this plan to a release milestone for tracking.
+
+## Related Guides
+
+- See [Choosing Spec Types](spec-mcp://guide/choosing-spec-types) for when to use Plans vs other types
+- See [Spec Relationships](spec-mcp://guide/spec-relationships) for how Plans connect to BRDs/PRDs
+- View the [Plan Schema](spec-mcp://schema/plan) for complete field reference
+`,
+	},
+	{
+		uri: "spec-mcp://guide/business-requirement",
+		name: "Business Requirement Guide",
 		description:
-			"Complete guide to spec types, their purposes, relationships, and where to start",
+			"When and how to use Business Requirements (BRDs) to capture business needs",
+		mimeType: "text/markdown",
+		content: `# Business Requirement Guide
+
+**Goal**: Understand when and how to use Business Requirements (BRDs) to capture business needs.
+
+## What is a Business Requirement?
+
+A BRD captures what the business needs, why it matters, who cares about it, and what value it delivers. It's written for stakeholders and focuses on outcomes, not implementation details.
+
+## When to Use a BRD
+
+✅ **Use a BRD when:**
+- Capturing stakeholder needs and business goals
+- Defining user-facing features or capabilities
+- Justifying investment in a project
+- Documenting business value (revenue, cost savings, satisfaction)
+- Tracking multiple stakeholders with different interests
+
+❌ **Don't use a BRD for:**
+- Technical implementation details (use PRD instead)
+- Architectural decisions (use Decision instead)
+- Task breakdowns (use Plan instead)
+
+## Key Components
+
+### Required Fields
+- **Business Value**: What business benefit this delivers (revenue, cost savings, satisfaction)
+- **User Stories**: Who needs this and why ("As a..., I want..., so that...")
+- **Acceptance Criteria**: What must be true for this to be complete
+
+### Optional But Valuable
+- **Stakeholders**: Who cares about this and why
+- **References**: Market research, competitor analysis, user feedback
+
+## Common Patterns
+
+### Feature BRD
+\`\`\`yaml
+title: User Authentication System
+description: Users need secure account access for personalized experience
+business_value:
+  - type: customer-satisfaction
+    value: Reduces friction in accessing personalized features
+  - type: cost-savings
+    value: Reduces support tickets for account access by 40%
+user_stories:
+  - role: registered user
+    feature: securely log into my account
+    benefit: I can access my personalized dashboard
+stakeholders:
+  - role: product-owner
+    name: Jane Smith
+    interest: Improve user retention and security
+criteria:
+  - description: Users can log in with email and password
+    rationale: Core authentication requirement
+\`\`\`
+
+### Improvement BRD
+\`\`\`yaml
+title: Faster Page Load Times
+description: Reduce page load times to improve user experience
+business_value:
+  - type: customer-satisfaction
+    value: Every 100ms improvement increases conversion by 1%
+  - type: revenue
+    value: Estimated $50k annual revenue increase
+user_stories:
+  - role: website visitor
+    feature: see content load quickly
+    benefit: I don't get frustrated and leave
+\`\`\`
+
+### Capability BRD
+\`\`\`yaml
+title: Export Data to CSV
+description: Users need to export their data for external analysis
+business_value:
+  - type: customer-satisfaction
+    value: Power users can integrate with their own tools
+user_stories:
+  - role: power user
+    feature: export my data to CSV format
+    benefit: I can analyze it in Excel or other tools
+\`\`\`
+
+## User Stories
+
+Follow the format: **As a [role], I want [feature], so that [benefit]**
+
+Good user stories:
+- **Specific role**: "registered user" not just "user"
+- **Clear feature**: "reset my password via email"
+- **Obvious benefit**: "I can regain access to my account"
+
+Examples:
+\`\`\`yaml
+user_stories:
+  - role: admin user
+    feature: bulk update user permissions
+    benefit: I can manage access efficiently
+
+  - role: free tier user
+    feature: upgrade to paid plan
+    benefit: I can access premium features
+\`\`\`
+
+## Stakeholders
+
+Document who cares and why:
+
+\`\`\`yaml
+stakeholders:
+  - role: product-owner
+    name: Jane Smith
+    email: jane@example.com
+    interest: Drive user adoption and retention
+
+  - role: end-user
+    name: App Users
+    interest: Secure and convenient access
+
+  - role: executive
+    name: CEO
+    interest: Reduce churn and increase revenue
+\`\`\`
+
+## Acceptance Criteria
+
+What must be true for this to be complete?
+
+\`\`\`yaml
+criteria:
+  - id: crit-001
+    description: Users can log in with valid credentials within 3 seconds
+    rationale: Performance requirement for good UX
+
+  - id: crit-002
+    description: Failed login shows clear error message
+    rationale: User needs to understand what went wrong
+
+  - id: crit-003
+    description: Passwords are stored securely (bcrypt with salt)
+    rationale: Security requirement for user data protection
+\`\`\`
+
+## Best Practices
+
+### Focus on Outcomes, Not Solutions
+❌ Bad: "Use JWT tokens for authentication"
+✅ Good: "Users can securely access their accounts"
+
+### Quantify Business Value
+❌ Bad: "Improves user experience"
+✅ Good: "Reduces support tickets by 40%, saving $20k annually"
+
+### Write for Stakeholders
+- Use business language, not technical jargon
+- Explain "why" before "what"
+- Show ROI and business impact
+
+### Link to Evidence
+\`\`\`yaml
+references:
+  - type: url
+    name: User Survey Results
+    url: https://docs.example.com/survey-2024
+    description: 73% of users requested password reset feature
+\`\`\`
+
+### Keep Criteria Testable
+❌ Bad: "System should be fast"
+✅ Good: "Page loads in under 2 seconds on 3G connection"
+
+## BRD → PRD → Plan Flow
+
+1. **BRD**: "Users need to reset forgotten passwords"
+2. **PRD**: "Use email-based reset flow with time-limited tokens"
+3. **Plan**: "Task 1: Email service, Task 2: Reset endpoint, Task 3: UI"
+
+## Related Guides
+
+- See [Technical Requirement Guide](spec-mcp://guide/technical-requirement) for technical specifications
+- See [Choosing Spec Types](spec-mcp://guide/choosing-spec-types) for when to use BRDs
+- View the [Business Requirement Schema](spec-mcp://schema/business-requirement) for complete field reference
+`,
+	},
+	{
+		uri: "spec-mcp://guide/choosing-spec-types",
+		name: "Choosing Spec Types",
+		description: "Which spec types to use for different situations",
+		mimeType: "text/markdown",
+		content: `# Choosing Spec Types
+
+**Goal**: Learn which spec types to use for different situations.
+
+## Quick Decision Tree
+
+\`\`\`
+Need to capture business value and stakeholder needs?
+  → Business Requirement (BRD)
+
+Need to specify technical approach or constraints?
+  → Technical Requirement (PRD)
+
+Need to document an important choice or trade-off?
+  → Decision (DEC)
+
+Need to define system architecture or components?
+  → Component (CMP)
+
+Need to break work into executable tasks?
+  → Plan (PLN)
+
+Need to establish team standards or principles?
+  → Constitution (CST)
+
+Need to organize work into a release?
+  → Milestone (MLS)
+\`\`\`
+
+## By Situation
+
+### Starting a New Feature
+
+**Minimum:**
+1. **BRD** - What users need and why
+2. **Plan** - Tasks to implement it
+
+**Recommended:**
+1. **BRD** - Business context and value
+2. **PRD** - Technical approach
+3. **Plan** - Implementation tasks
+4. **Decision** - Any significant choices
+
+### Refactoring or Tech Debt
+
+**Minimum:**
+1. **Plan** - What needs to be refactored
+
+**Recommended:**
+1. **PRD** - Technical motivation and constraints
+2. **Decision** - Approach chosen (if alternatives exist)
+3. **Plan** - Refactoring tasks
+
+### Documenting Architecture
+
+**Minimum:**
+1. **Component** - For each major component
+
+**Recommended:**
+1. **Components** - All major pieces
+2. **Decisions** - Why this architecture
+3. **Constitution** - Architectural principles
+
+### Planning a Release
+
+**Minimum:**
+1. **Milestone** - Release container
+2. **Plans** - Linked to milestone
+
+**Recommended:**
+1. **Milestone** - With target date
+2. **BRDs** - Features in release
+3. **PRDs** - Technical requirements
+4. **Plans** - Implementation work
+
+## Common Combinations
+
+### Feature Development
+\`\`\`
+BRD (what/why)
+  ↓
+PRD (how technically)
+  ↓
+Decision (significant choices)
+  ↓
+Plan (implementation tasks)
+\`\`\`
+
+### Bug Fix
+\`\`\`
+PRD (technical context)
+  ↓
+Plan (fix tasks)
+\`\`\`
+
+### New Service/Component
+\`\`\`
+Component (architecture)
+  ↓
+Decisions (technology choices)
+  ↓
+PRD (technical requirements)
+  ↓
+Plan (implementation)
+\`\`\`
+
+### Establishing Standards
+\`\`\`
+Constitution (principles)
+  ↓
+Decisions (specific choices that follow principles)
+\`\`\`
+
+## When to Skip Spec Types
+
+### Skip BRD if:
+- Internal refactoring with no user impact
+- Bug fix with obvious value
+- Technical debt everyone agrees on
+
+### Skip PRD if:
+- Trivial implementation (< 1 day work)
+- No technical decisions to document
+- Following established patterns exactly
+
+### Skip Decision if:
+- Choice is obvious with no alternatives
+- Decision is temporary/experimental
+- Covered by existing Constitution
+
+### Skip Plan if:
+- Work is < 1 hour
+- Single, simple task
+- Exploratory spike work
+
+## Anti-Patterns
+
+### ❌ Too Many Specs
+Don't create specs for every tiny change. Use judgment.
+
+**Bad**: Separate BRD, PRD, Decision, Plan for changing a button color
+**Good**: Just make the change, or at most a simple Plan
+
+### ❌ Wrong Spec Type
+Using the wrong type creates confusion.
+
+**Bad**: Putting implementation tasks in a BRD
+**Good**: BRD for business need, Plan for tasks
+
+### ❌ Duplicate Information
+Don't repeat the same info across specs.
+
+**Bad**: Copy-paste user stories into PRD and Plan
+**Good**: Reference the BRD from PRD and Plan
+
+## Project Type Recommendations
+
+### Web Application
+- **Start**: Constitution, Components
+- **Per Feature**: BRD, PRD, Plan
+- **Per Release**: Milestone
+
+### Library/SDK
+- **Start**: Constitution, Component
+- **Per Feature**: PRD, Plan (skip BRD unless public API)
+- **Per Release**: Milestone, Decision (for breaking changes)
+
+### Microservices
+- **Start**: Constitution, Components (per service)
+- **Per Service**: BRD (capability), PRD, Plan
+- **Cross-Service**: Decisions (communication patterns)
+
+### Internal Tool
+- **Start**: Component
+- **Per Feature**: BRD (if user-facing), PRD, Plan
+- **Standards**: Constitution
+
+## Related Guides
+
+- See individual spec type guides for detailed usage
+- See [Spec Relationships](spec-mcp://guide/spec-relationships) for how specs connect
+- See [Getting Started guides](spec-mcp://guide/getting-started) for project setup
+`,
+	},
+	{
+		uri: "spec-mcp://guide/getting-started",
+		name: "Getting Started",
+		description: "Quick start guide for spec-driven development",
+		mimeType: "text/markdown",
+		content: `# Getting Started
+
+Placeholder guide.
+`,
+	},
+	{
+		uri: "spec-mcp://guide/spec-types",
+		name: "Spec Types Guide (Legacy)",
+		description:
+			"Complete guide to spec types (being replaced by focused guides)",
 		mimeType: "text/markdown",
 		content: `# Spec Types Guide
 
@@ -274,8 +878,50 @@ Update specs as implementation progresses. Keep plans in sync with code.
 
 ## Next Steps
 
-- Create additional guides as needed for planning workflow, best practices, and implementation patterns
-- See the spec types above to understand how to structure your project documentation
+- See [Planning Workflow](spec-mcp://guide/planning-workflow) for how to create and execute plans
+- See [Best Practices](spec-mcp://guide/best-practices) for tips on writing effective specs
+- See [Implementation Workflow](spec-mcp://guide/implementation-workflow) for development workflow
+`,
+	},
+	{
+		uri: "spec-mcp://guide/planning-workflow",
+		name: "Planning Workflow",
+		description: "Complete workflow for planning features with specs",
+		mimeType: "text/markdown",
+		content: `# planning-workflow
+
+Placeholder.
+`,
+	},
+	{
+		uri: "spec-mcp://guide/implementation-workflow",
+		name: "Implementation Workflow",
+		description: "Development workflow for implementing from specs",
+		mimeType: "text/markdown",
+		content: `# implementation-workflow
+
+Placeholder.
+`,
+	},
+	{
+		uri: "spec-mcp://guide/best-practices",
+		name: "Best Practices",
+		description:
+			"Patterns, anti-patterns, and tips for spec-driven development",
+		mimeType: "text/markdown",
+		content: `# best-practices
+
+Placeholder.
+`,
+	},
+	{
+		uri: "spec-mcp://guide/query-guide",
+		name: "Query Guide",
+		description: "Complete guide for querying and analyzing specs",
+		mimeType: "text/markdown",
+		content: `# query-guide
+
+Placeholder.
 `,
 	},
 ] as const;

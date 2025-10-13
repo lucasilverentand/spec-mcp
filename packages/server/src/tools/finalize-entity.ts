@@ -7,7 +7,7 @@ import type {
 	Plan,
 	TechnicalRequirement,
 } from "@spec-mcp/schemas";
-import { generateSlug } from "@spec-mcp/utils";
+import { formatEntityId, generateSlug } from "@spec-mcp/utils";
 import { z } from "zod";
 
 /**
@@ -144,8 +144,11 @@ export async function finalizeEntity(
 		await draftStore.deleteWithFile(draftId);
 
 		// Format spec ID
-		const idPrefix = getIdPrefix(type);
-		const specId = `${idPrefix}-${String(created.number).padStart(3, "0")}-${created.slug}`;
+		const specId = formatEntityId({
+			type,
+			number: created.number,
+			slug: created.slug,
+		});
 
 		response += "🎉 Spec Created Successfully!\n\n";
 		response += `Type: ${type}\n`;
@@ -224,19 +227,4 @@ export async function finalizeEntity(
 	}
 
 	return response;
-}
-
-/**
- * Get ID prefix for entity type
- */
-function getIdPrefix(type: string): string {
-	const prefixMap: Record<string, string> = {
-		"business-requirement": "brd",
-		"technical-requirement": "prd",
-		plan: "pln",
-		component: "cmp",
-		constitution: "con",
-		decision: "dec",
-	};
-	return prefixMap[type] || "unk";
 }

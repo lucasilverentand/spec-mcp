@@ -21,6 +21,8 @@ import {
 	getSpec,
 	getSpecTool,
 	listDrafts,
+	querySpecs,
+	querySpecsTool,
 	skipAnswer,
 	startDraft,
 	startTaskGit,
@@ -677,6 +679,41 @@ export function registerCoreTools(
 					{ error, tool: "update_component" },
 					"Tool execution failed",
 				);
+				throw error;
+			}
+		},
+	);
+
+	// ========== QUERY TOOLS (1) ==========
+
+	registrar.registerTool(
+		querySpecsTool.name,
+		querySpecsTool.description,
+		{
+			draft: z.boolean().optional(),
+			id: z.union([z.string(), z.array(z.string())]).optional(),
+			objects: z.any().optional(), // Complex union type, validated by QuerySchema
+			completed: z.boolean().optional(),
+			verified: z.boolean().optional(),
+			priority: z
+				.array(z.enum(["critical", "high", "medium", "low", "nice-to-have"]))
+				.optional(),
+			milestone: z.string().optional(),
+			status: z
+				.array(z.enum(["not-started", "in-progress", "completed", "verified"]))
+				.optional(),
+			orderBy: z
+				.enum(["next-to-do", "created", "updated"])
+				.optional()
+				.default("created"),
+			direction: z.enum(["asc", "desc"]).optional().default("desc"),
+		},
+		// biome-ignore lint/suspicious/noExplicitAny: Handler receives validated args from Zod schema
+		async (args: any) => {
+			try {
+				return await querySpecs(specManager, args);
+			} catch (error) {
+				logger.error({ error, tool: "query_specs" }, "Tool execution failed");
 				throw error;
 			}
 		},

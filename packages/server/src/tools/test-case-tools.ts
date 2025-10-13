@@ -29,7 +29,7 @@ export async function addTestCase(
 		description: "Add test case to a plan",
 		specType: "plan",
 		arrayFieldName: "test_cases",
-		idPrefix: "tc",
+		idPrefix: "tst",
 		getArray: (spec) => spec.test_cases || [],
 		setArray: (_spec, items) => ({ test_cases: items }),
 	};
@@ -94,7 +94,7 @@ export const addTestCaseTool = {
 			supersede_id: {
 				type: "string",
 				description:
-					"Optional: ID of an existing test case to supersede (e.g., 'tc-001'). The old test case will be marked as superseded and all references will be updated.",
+					"Optional: ID of an existing test case to supersede (e.g., 'tst-001'). The old test case will be marked as superseded and all references will be updated.",
 			},
 		},
 		required: ["plan_id", "name", "description", "steps", "expected_result"],
@@ -126,7 +126,7 @@ export async function supersedeTestCase(
 		description: "Supersede test case in a plan",
 		specType: "plan",
 		arrayFieldName: "test_cases",
-		idPrefix: "tc",
+		idPrefix: "tst",
 		getArray: (spec) => spec.test_cases || [],
 		setArray: (_spec, items) => ({ test_cases: items }),
 	};

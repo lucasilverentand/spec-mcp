@@ -20,7 +20,8 @@
 	],
 	"scripts": {
 		"embed-guides": "tsx scripts/embed-guides.ts",
-		"prebuild": "pnpm embed-guides",
+		"generate-schemas": "tsx scripts/generate-json-schemas.ts",
+		"prebuild": "pnpm embed-guides && pnpm generate-schemas",
 		"build": "tsup",
 		"dev": "tsup --watch",
 		"clean": "rm -rf dist",
@@ -32,11 +33,14 @@
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.18.2",
+		"@spec-mcp/core": "workspace:*",
+		"@spec-mcp/dashboard": "workspace:*",
+		"chokidar": "^4.0.3",
 		"pino": "^9.12.0",
+		"ws": "^8.18.0",
 		"yaml": "^2.4.5"
 	},
 	"devDependencies": {
-		"@spec-mcp/core": "workspace:*",
 		"@spec-mcp/schemas": "workspace:*",
 		"@spec-mcp/tsconfig": "workspace:*",
 		"@spec-mcp/utils": "workspace:*",
@@ -45,7 +49,8 @@
 		"tsup": "^8.5.0",
 		"tsx": "^4.20.6",
 		"typescript": "^5.9.2",
-		"vitest": "^3.2.4"
+		"vitest": "^3.2.4",
+		"zod-to-json-schema": "^3.24.6"
 	},
 	"engines": {
 		"node": ">=18.0.0"

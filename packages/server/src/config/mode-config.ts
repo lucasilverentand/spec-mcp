@@ -76,6 +76,17 @@ export const ToolCategories = {
 
 	// Array manipulation - Criteria (1)
 	CRITERIA_TOOLS: ["add_criteria"],
+
+	// Dashboard management (4)
+	DASHBOARD_TOOLS: [
+		"start_dashboard",
+		"stop_dashboard",
+		"get_dashboard_status",
+		"open_dashboard",
+	],
+
+	// Query tools (1)
+	QUERY_TOOLS: ["query_specs"],
 } as const;
 
 /**
@@ -91,6 +102,8 @@ export const ModeConfigs: Record<ServerMode, ModeConfig> = {
 			...ToolCategories.SPEC_MANAGEMENT,
 			...ToolCategories.REFERENCE_MANAGEMENT,
 			...ToolCategories.UPDATE_TOOLS,
+			...ToolCategories.DASHBOARD_TOOLS,
+			...ToolCategories.QUERY_TOOLS,
 		]),
 	},
 
@@ -109,6 +122,8 @@ export const ModeConfigs: Record<ServerMode, ModeConfig> = {
 			"add_flow",
 			"add_api_contract",
 			"add_data_model",
+			...ToolCategories.DASHBOARD_TOOLS,
+			...ToolCategories.QUERY_TOOLS,
 		]),
 	},
 
@@ -128,6 +143,8 @@ export const ModeConfigs: Record<ServerMode, ModeConfig> = {
 			...ToolCategories.DECISION_ARRAY_TOOLS,
 			...ToolCategories.COMPONENT_ARRAY_TOOLS,
 			...ToolCategories.CRITERIA_TOOLS,
+			...ToolCategories.DASHBOARD_TOOLS,
+			...ToolCategories.QUERY_TOOLS,
 		]),
 	},
 };
