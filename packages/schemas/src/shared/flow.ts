@@ -20,8 +20,8 @@ export const FlowStepSchema = z.object({
 
 export const FlowIdSchema = z
 	.string()
-	.regex(/^flow-\d{3}$/, {
-		message: "ID must follow the format flow-000",
+	.regex(/^flw-\d{3}$/, {
+		message: "ID must follow the format flw-XXX",
 	})
 	.describe("Unique identifier for a flow");
 

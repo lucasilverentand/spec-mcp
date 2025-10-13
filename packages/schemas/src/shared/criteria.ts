@@ -1,7 +1,7 @@
 import { z } from "zod";
 
-export const CriteriaIdSchema = z.string().regex(/^crit-\d{3}$/, {
-	message: "Criteria ID must follow format: crit-XXX",
+export const CriteriaIdSchema = z.string().regex(/^crt-\d{3}$/, {
+	message: "Criteria ID must follow format: crt-XXX",
 });
 
 /**

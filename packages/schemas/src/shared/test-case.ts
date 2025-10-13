@@ -3,8 +3,8 @@ import { createSupersessionSchema } from "./supersession.js";
 
 export const TestCaseIdSchema = z
 	.string()
-	.regex(/^tc-\d{3}$/, {
-		message: "Test Case ID must follow format: tc-XXX",
+	.regex(/^tst-\d{3}$/, {
+		message: "Test Case ID must follow format: tst-XXX",
 	})
 	.describe("Unique identifier for the test case");
 

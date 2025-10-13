@@ -7,7 +7,7 @@ export function createConstitutionsManager(
 	return new EntityManager<Constitution>({
 		folderPath: specsPath,
 		subFolder: "constitutions",
-		idPrefix: "cns",
+		idPrefix: "con",
 		entityType: "constitution",
 		schema: ConstitutionSchema,
 	});

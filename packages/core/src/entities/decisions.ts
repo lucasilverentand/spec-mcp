@@ -7,7 +7,7 @@ export function createDecisionsManager(
 	return new EntityManager<Decision>({
 		folderPath: specsPath,
 		subFolder: "decisions",
-		idPrefix: "dcs",
+		idPrefix: "dec",
 		entityType: "decision",
 		schema: DecisionSchema,
 	});

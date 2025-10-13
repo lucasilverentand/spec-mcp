@@ -3,8 +3,8 @@ import { createSupersessionSchema } from "./supersession.js";
 
 export const DataModelIdSchema = z
 	.string()
-	.regex(/^dm-\d{3}$/, {
-		message: "Data Model ID must follow format: dm-XXX",
+	.regex(/^dat-\d{3}$/, {
+		message: "Data Model ID must follow format: dat-XXX",
 	})
 	.describe("Unique identifier for the data model");
 

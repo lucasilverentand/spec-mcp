@@ -10,7 +10,7 @@ export function createTechRequirementsManager(
 	return new EntityManager<TechnicalRequirement>({
 		folderPath: specsPath,
 		subFolder: "requirements/technical",
-		idPrefix: "trq",
+		idPrefix: "prd",
 		entityType: "technical-requirement",
 		schema: TechnicalRequirementSchema,
 	});

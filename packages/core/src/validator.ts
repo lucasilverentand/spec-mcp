@@ -1,4 +1,5 @@
-import type { Base, EntityType } from "@spec-mcp/schemas";
+import type { Base } from "@spec-mcp/schemas";
+import { parseEntityId } from "@spec-mcp/utils";
 import type { SpecManager } from "./spec-manager.js";
 
 /**
@@ -8,65 +9,6 @@ export interface ValidationResult<T extends Base = Base> {
 	valid: boolean;
 	entity?: T;
 	errors?: string[];
-}
-
-/**
- * Parsed entity identifier
- */
-interface ParsedId {
-	prefix: string;
-	number: number;
-	slug?: string;
-}
-
-/**
- * Map of prefixes to entity types
- */
-const PREFIX_TO_TYPE: Record<string, EntityType> = {
-	brq: "business-requirement",
-	brd: "business-requirement", // Alias for brq (plan schema uses brd)
-	trq: "technical-requirement",
-	prd: "technical-requirement", // Alias for trq (plan schema uses prd)
-	pln: "plan",
-	cmp: "component",
-	cns: "constitution",
-	dcs: "decision",
-	mls: "milestone",
-};
-
-/**
- * Parse an entity identifier
- * Accepts formats:
- * - typ-123
- * - typ-001 (with padding)
- * - typ-123-slug-here
- * - typ-001-slug-here (with padding)
- * - typ-123-slug-here.yml
- * - typ-123.yml
- */
-function parseEntityId(id: string): ParsedId | null {
-	// Remove .yml or .yaml extension if present
-	const cleanId = id.replace(/\.(yml|yaml)$/, "");
-
-	// Match pattern: prefix-number or prefix-number-slug
-	// Accept 1-3 digits (with or without zero-padding)
-	const match = cleanId.match(/^([a-z]{3})-(\d{1,3})(?:-([a-z0-9-]+))?$/);
-
-	if (!match) {
-		return null;
-	}
-
-	const [, prefix, numberStr, slug] = match;
-
-	if (!prefix || !numberStr) {
-		return null;
-	}
-
-	return {
-		prefix,
-		number: Number.parseInt(numberStr, 10),
-		...(slug ? { slug } : {}),
-	};
 }
 
 /**
@@ -94,12 +36,12 @@ export async function validateEntity(
 	}
 
 	// Check if prefix is valid
-	const entityType = PREFIX_TO_TYPE[parsed.prefix];
+	const entityType = parsed.entityType;
 	if (!entityType) {
 		return {
 			valid: false,
 			errors: [
-				`Unknown entity prefix: "${parsed.prefix}". Valid prefixes: ${Object.keys(PREFIX_TO_TYPE).join(", ")}`,
+				`Unknown entity prefix: "${parsed.prefix}". Use a valid entity prefix like pln, brd, prd, etc.`,
 			],
 		};
 	}

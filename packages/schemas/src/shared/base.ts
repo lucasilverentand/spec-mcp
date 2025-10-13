@@ -60,11 +60,16 @@ export const BaseSchema = z.object({
 
 export type EntityType = z.infer<typeof EntityTypeSchema>;
 export type EntitySlug = z.infer<typeof EntitySlugSchema>;
+export type ItemPriority = z.infer<typeof ItemPrioritySchema>;
 export type Base = z.infer<typeof BaseSchema>;
 
+/**
+ * @deprecated Use ENTITY_TYPE_TO_PREFIX from @spec-mcp/utils instead
+ * This export is kept for backward compatibility
+ */
 export const EntityTypeShortMap: Record<EntityType, string> = {
-	"business-requirement": "breq",
-	"technical-requirement": "treq",
+	"business-requirement": "brd",
+	"technical-requirement": "prd",
 	plan: "pln",
 	component: "cmp",
 	constitution: "con",

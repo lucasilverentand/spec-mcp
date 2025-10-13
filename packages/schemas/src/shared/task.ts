@@ -35,8 +35,8 @@ export const TaskFileSchema = z.object({
 
 export const TaskIdSchema = z
 	.string()
-	.regex(/^task-\d{3}$/, {
-		message: "Task ID must follow format: task-XXX",
+	.regex(/^tsk-\d{3}$/, {
+		message: "Task ID must follow format: tsk-XXX",
 	})
 	.nonempty();
 

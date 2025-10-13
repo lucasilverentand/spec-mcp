@@ -32,7 +32,7 @@ export const PlanSchema = BaseSchema.extend({
 			criteria: CriteriaIdSchema.describe("ID of the acceptance criteria"),
 		})
 		.describe(
-			"The acceptance criteria ID this plan fulfills (format: req-XXX-slug/crit-XXX). Optional for orchestration/milestone plans.",
+			"The acceptance criteria ID this plan fulfills (format: req-XXX-slug/crt-XXX). Optional for orchestration/milestone plans.",
 		),
 
 	scope: ScopeSchema.describe(

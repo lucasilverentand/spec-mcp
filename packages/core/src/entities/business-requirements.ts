@@ -10,7 +10,7 @@ export function createBusinessRequirementsManager(
 	return new EntityManager<BusinessRequirement>({
 		folderPath: specsPath,
 		subFolder: "requirements/business",
-		idPrefix: "brq",
+		idPrefix: "brd",
 		entityType: "business-requirement",
 		schema: BusinessRequirementSchema,
 	});
