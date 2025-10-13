@@ -1,5 +1,6 @@
 {
 	"name": "@spec-mcp/schemas",
+	"private": true,
 	"description": "Data management, schemas, and validation for Spec MCP specifications",
 	"type": "module",
 	"main": "./dist/index.js",

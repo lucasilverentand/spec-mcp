@@ -1,5 +1,6 @@
 {
 	"name": "@spec-mcp/tsconfig",
+	"private": true,
 	"version": "0.0.1",
 	"description": "Shared TypeScript configurations for the Spec MCP monorepo",
 	"main": "package.json",

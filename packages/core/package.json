@@ -1,5 +1,6 @@
 {
 	"name": "@spec-mcp/core",
+	"private": true,
 	"description": "Core functionality for managing Spec MCP specifications",
 	"type": "module",
 	"main": "./dist/index.js",

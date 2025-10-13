@@ -1,5 +1,6 @@
 {
 	"name": "@spec-mcp/utils",
+	"private": true,
 	"version": "0.1.0",
 	"description": "Shared utilities for MCP specification management",
 	"type": "module",

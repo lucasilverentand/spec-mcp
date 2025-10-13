@@ -1,5 +1,6 @@
 {
 	"name": "@spec-mcp/dashboard",
+	"private": true,
 	"version": "1.0.0",
 	"description": "Web-based dashboard for spec-mcp server",
 	"type": "module",
