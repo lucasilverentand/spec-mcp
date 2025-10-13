@@ -44,7 +44,7 @@ description: |
   React-based web application providing the primary user interface.
   Handles user authentication, dashboard, and settings.
 component_type: app
-folder: packages/web-app
+folder: apps/web-app
 dev_port: 3000
 scope:
   in_scope:
@@ -85,7 +85,7 @@ description: |
   Core API service handling business logic and data access.
   Provides REST endpoints for web and mobile clients.
 component_type: service
-folder: packages/api
+folder: apps/api
 dev_port: 3001
 scope:
   in_scope:
@@ -124,7 +124,7 @@ description: |
   Shared React component library used across all frontend applications.
   Provides consistent design system components.
 component_type: library
-folder: packages/ui
+folder: libs/ui
 scope:
   in_scope:
     - Buttons, inputs, modals, cards
@@ -309,9 +309,9 @@ references:
 ```yaml
 dev_port: 3000
 notes: |
-  Run `pnpm dev` to start development server.
+  Run `npm dev` to start development server.
   Requires DATABASE_URL and REDIS_URL in .env file.
-  See packages/api/README.md for setup instructions.
+  See API component README for setup instructions.
 ```
 
 ## Monorepo Organization
@@ -326,7 +326,7 @@ folder: apps/web
 folder: apps/api
 
 # Shared UI library
-folder: packages/ui
+folder: libs/ui
 
 # Database (no folder, external)
 folder: null
