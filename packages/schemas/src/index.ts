@@ -5,6 +5,7 @@ export * from "./shared/criteria.js";
 export * from "./shared/data-model.js";
 export * from "./shared/draft.js";
 export * from "./shared/flow.js";
+export * from "./shared/query.js";
 export * from "./shared/reference.js";
 export * from "./shared/requirement-status.js";
 export * from "./shared/scope.js";
