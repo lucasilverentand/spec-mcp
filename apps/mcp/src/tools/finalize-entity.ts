@@ -88,8 +88,11 @@ export async function finalizeEntity(
 		const finalizedEntity = manager.build();
 		const type = manager.getType();
 
-		// Get next number from centralized counter
-		const nextNumber = await specManager.getNextNumber(type);
+		// Get number from manager if already assigned, otherwise get next number
+		let nextNumber = manager.getNumber();
+		if (nextNumber === undefined) {
+			nextNumber = await specManager.getNextNumber(type);
+		}
 
 		// Save to spec system
 		let created: { number: number; slug: string; name: string };
