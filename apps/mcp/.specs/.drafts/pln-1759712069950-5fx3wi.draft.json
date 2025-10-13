@@ -1,0 +1,23 @@
+{
+  "id": "pln-1759712069950-5fx3wi",
+  "type": "plan",
+  "current_step": 2,
+  "total_steps": 16,
+  "data": {
+    "description": "Users need a plan to implement feature X because it solves a critical problem"
+  },
+  "validation_results": [
+    {
+      "step": "context_discovery",
+      "passed": true,
+      "issues": [],
+      "suggestions": [],
+      "strengths": [
+        "Research step completed"
+      ]
+    }
+  ],
+  "created_at": "2025-10-06T00:54:29.950Z",
+  "updated_at": "2025-10-06T00:54:29.952Z",
+  "expires_at": "2025-10-07T00:54:29.950Z"
+}

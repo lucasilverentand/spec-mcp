@@ -1,0 +1,22 @@
+id: req-1759617785934-6qppkn
+type: requirement
+current_step: 3
+total_steps: 7
+data:
+  description: System must authenticate users securely
+validation_results:
+  - step: problem_identification
+    passed: true
+    issues: []
+    suggestions: []
+    strengths:
+      - Clear problem identification with rationale
+  - step: avoid_implementation
+    passed: true
+    issues: []
+    suggestions: []
+    strengths:
+      - Implementation-agnostic description
+created_at: 2025-10-04T22:43:05.934Z
+updated_at: 2025-10-04T22:43:05.935Z
+expires_at: 2025-10-05T22:43:05.934Z

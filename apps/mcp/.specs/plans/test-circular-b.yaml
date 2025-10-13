@@ -1,0 +1,14 @@
+type: plan
+number: 101
+slug: test-circular-b
+name: Test Circular Plan B
+description: Test plan B that depends on plan A needed for circular dependency testing
+priority: high
+created_at: '2025-10-05T12:00:00.000Z'
+updated_at: '2025-10-05T12:00:00.000Z'
+tasks:
+  - id: task-001
+    description: Implement feature B
+    completed: false
+dependencies:
+  - pln-100-test-circular-a

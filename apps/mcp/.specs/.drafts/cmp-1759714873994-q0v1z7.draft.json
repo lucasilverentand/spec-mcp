@@ -1,0 +1,25 @@
+{
+  "id": "cmp-1759714873994-q0v1z7",
+  "type": "component",
+  "current_step": 1,
+  "total_steps": 14,
+  "data": {
+    "description": "Satisfies req-001-auth by providing credential validation"
+  },
+  "validation_results": [
+    {
+      "step": "research_existing_components",
+      "passed": false,
+      "issues": [
+        "Component research is required"
+      ],
+      "suggestions": [
+        "Use query to search for similar components across all types"
+      ],
+      "strengths": []
+    }
+  ],
+  "created_at": "2025-10-06T01:41:13.994Z",
+  "updated_at": "2025-10-06T01:41:13.996Z",
+  "expires_at": "2025-10-07T01:41:13.994Z"
+}

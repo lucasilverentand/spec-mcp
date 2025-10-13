@@ -1,0 +1,24 @@
+id: req-1759636356623-ml562w
+type: requirement
+current_step: 1
+total_steps: 10
+data:
+  description: Use MongoDB database
+validation_results:
+  - step: research_similar_requirements
+    passed: false
+    issues:
+      - Research findings are required
+    suggestions:
+      - Use query tool to search for similar requirements and document your findings
+    strengths: []
+  - step: research_similar_requirements
+    passed: false
+    issues:
+      - Research findings are required
+    suggestions:
+      - Use query tool to search for similar requirements and document your findings
+    strengths: []
+created_at: 2025-10-05T03:52:36.623Z
+updated_at: 2025-10-05T03:52:36.624Z
+expires_at: 2025-10-06T03:52:36.623Z

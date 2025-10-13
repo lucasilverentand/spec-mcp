@@ -1,0 +1,24 @@
+{
+  "id": "pln-1759714873997-aps6xv",
+  "type": "plan",
+  "current_step": 2,
+  "total_steps": 16,
+  "data": {
+    "criteria_id": "req-001-auth/crit-001",
+    "description": "Fulfilling authentication requirement for login under 3 seconds"
+  },
+  "validation_results": [
+    {
+      "step": "context_discovery",
+      "passed": true,
+      "issues": [],
+      "suggestions": [],
+      "strengths": [
+        "Research step completed"
+      ]
+    }
+  ],
+  "created_at": "2025-10-06T01:41:13.997Z",
+  "updated_at": "2025-10-06T01:41:13.999Z",
+  "expires_at": "2025-10-07T01:41:13.997Z"
+}

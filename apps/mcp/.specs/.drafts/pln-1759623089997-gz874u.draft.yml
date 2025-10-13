@@ -1,0 +1,16 @@
+id: pln-1759623089997-gz874u
+type: plan
+current_step: 1
+total_steps: 12
+data:
+  description: Users need a plan to implement feature X because it solves a critical problem
+validation_results:
+  - step: review_context
+    passed: false
+    issues:
+      - Required
+    suggestions: []
+    strengths: []
+created_at: 2025-10-05T00:11:29.997Z
+updated_at: 2025-10-05T00:11:30.005Z
+expires_at: 2025-10-06T00:11:29.997Z

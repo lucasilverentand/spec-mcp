@@ -1,0 +1,15 @@
+id: req-1759703834742-keuy7p
+type: requirement
+current_step: 2
+total_steps: 9
+data:
+  research_findings: No similar requirements found
+validation_results:
+  - step: research_similar_requirements
+    passed: true
+    issues: []
+    suggestions: []
+    strengths: []
+created_at: 2025-10-05T22:37:14.742Z
+updated_at: 2025-10-05T22:37:14.752Z
+expires_at: 2025-10-06T22:37:14.742Z

@@ -1,0 +1,41 @@
+id: req-test-requirement-1759636281188-1759636281188
+type: requirement
+current_step: 1
+total_steps: 10
+data:
+  slug: test-requirement-1759636281188
+  name: Test Requirement for E2E Validation
+  description: A comprehensive test requirement for E2E testing. This is needed because we must
+    validate the creation flow works correctly and handles all validation steps properly. The
+    requirement should test end-to-end flow through all validation stages.
+  criteria:
+    - id: crit-001
+      description: System returns response in under 200ms
+    - id: crit-002
+      description: API returns 201 status code on success
+  priority: required
+validation_results:
+  - step: research_similar_requirements
+    passed: false
+    issues:
+      - Research findings are required
+    suggestions:
+      - Use query tool to search for similar requirements and document your findings
+    strengths: []
+  - step: research_similar_requirements
+    passed: false
+    issues:
+      - Research findings are required
+    suggestions:
+      - Use query tool to search for similar requirements and document your findings
+    strengths: []
+  - step: research_similar_requirements
+    passed: false
+    issues:
+      - Research findings are required
+    suggestions:
+      - Use query tool to search for similar requirements and document your findings
+    strengths: []
+created_at: 2025-10-05T03:51:21.188Z
+updated_at: 2025-10-05T03:51:21.196Z
+expires_at: 2025-10-06T03:51:21.188Z

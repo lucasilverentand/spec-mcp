@@ -55,14 +55,18 @@
 	},
 	"dependencies": {
 		"@inquirer/prompts": "^7.8.6",
+		"commander": "^12.1.0",
+		"yaml": "^2.4.5",
+		"chokidar": "^4.0.3",
+		"ws": "^8.18.0",
+		"pino": "^9.12.0"
+	},
+	"devDependencies": {
 		"@spec-mcp/core": "workspace:*",
 		"@spec-mcp/dashboard": "workspace:*",
 		"@spec-mcp/schemas": "workspace:*",
-		"@spec-mcp/utils": "workspace:*",
-		"commander": "^12.1.0"
-	},
-	"devDependencies": {
 		"@spec-mcp/tsconfig": "workspace:*",
+		"@spec-mcp/utils": "workspace:*",
 		"@types/node": "^24.5.2",
 		"@vitest/coverage-v8": "^3.2.4",
 		"tsup": "^8.5.0",

@@ -1,0 +1,21 @@
+{
+  "id": "req-1759716323898-4kqct4",
+  "type": "requirement",
+  "current_step": 2,
+  "total_steps": 9,
+  "data": {
+    "research_findings": "No similar requirements found"
+  },
+  "validation_results": [
+    {
+      "step": "research_similar_requirements",
+      "passed": true,
+      "issues": [],
+      "suggestions": [],
+      "strengths": []
+    }
+  ],
+  "created_at": "2025-10-06T02:05:23.898Z",
+  "updated_at": "2025-10-06T02:05:23.900Z",
+  "expires_at": "2025-10-07T02:05:23.898Z"
+}

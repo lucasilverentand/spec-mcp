@@ -1,0 +1,19 @@
+id: req-1759630880463-pgty6w
+type: requirement
+current_step: 1
+total_steps: 7
+data:
+  description: This is a description without rationale
+validation_results:
+  - step: problem_identification
+    passed: false
+    issues:
+      - Description must be at least 50 characters
+      - Description lacks rationale (should include 'because', 'needed', or 'so that')
+    suggestions:
+      - Expand the description to provide more context
+      - Explain WHY this requirement is needed
+    strengths: []
+created_at: 2025-10-05T02:21:20.463Z
+updated_at: 2025-10-05T02:21:20.465Z
+expires_at: 2025-10-06T02:21:20.463Z

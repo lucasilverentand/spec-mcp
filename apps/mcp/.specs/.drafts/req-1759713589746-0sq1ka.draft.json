@@ -1,0 +1,36 @@
+{
+  "id": "req-1759713589746-0sq1ka",
+  "type": "requirement",
+  "current_step": 1,
+  "total_steps": 9,
+  "data": {
+    "description": "Use MongoDB database"
+  },
+  "validation_results": [
+    {
+      "step": "research_similar_requirements",
+      "passed": false,
+      "issues": [
+        "Research findings are required"
+      ],
+      "suggestions": [
+        "Use query tool to search for similar requirements and document your findings"
+      ],
+      "strengths": []
+    },
+    {
+      "step": "research_similar_requirements",
+      "passed": false,
+      "issues": [
+        "Research findings are required"
+      ],
+      "suggestions": [
+        "Use query tool to search for similar requirements and document your findings"
+      ],
+      "strengths": []
+    }
+  ],
+  "created_at": "2025-10-06T01:19:49.746Z",
+  "updated_at": "2025-10-06T01:19:49.747Z",
+  "expires_at": "2025-10-07T01:19:49.746Z"
+}

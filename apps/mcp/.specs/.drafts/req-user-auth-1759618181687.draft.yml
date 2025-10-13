@@ -1,0 +1,10 @@
+id: req-user-auth-1759618181687
+type: requirement
+current_step: 1
+total_steps: 7
+data:
+  slug: user-auth
+validation_results: []
+created_at: 2025-10-04T22:49:41.687Z
+updated_at: 2025-10-04T22:49:41.687Z
+expires_at: 2025-10-05T22:49:41.687Z

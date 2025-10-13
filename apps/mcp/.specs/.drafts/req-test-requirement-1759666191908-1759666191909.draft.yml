@@ -1,0 +1,81 @@
+id: req-test-requirement-1759666191908-1759666191909
+type: requirement
+current_step: 10
+total_steps: 10
+data:
+  slug: test-requirement-1759666191908
+  name: Test Requirement for E2E Validation
+  research_findings: No similar requirements found
+  no_constitutions: true
+  technology_notes: Standard web technologies
+  description: API responds in under 200ms with 201 status code
+  criteria:
+    - id: crit-001
+      description: Response time under 200ms
+      status: active
+  priority: required
+  type: requirement
+  number: 1
+validation_results:
+  - step: research_similar_requirements
+    passed: true
+    issues: []
+    suggestions: []
+    strengths: []
+  - step: constitution_review
+    passed: true
+    issues: []
+    suggestions: []
+    strengths:
+      - Confirmed no constitutions exist
+  - step: technology_research
+    passed: true
+    issues: []
+    suggestions:
+      - For technical requirements, use context7 to research available libraries
+    strengths: []
+  - step: problem_identification
+    passed: true
+    issues: []
+    suggestions: []
+    strengths:
+      - Clear problem identification with rationale
+  - step: avoid_implementation
+    passed: true
+    issues: []
+    suggestions: []
+    strengths:
+      - Implementation-agnostic description
+  - step: measurability
+    passed: true
+    issues: []
+    suggestions: []
+    strengths:
+      - Well-defined measurable criteria
+  - step: specific_language
+    passed: true
+    issues: []
+    suggestions: []
+    strengths:
+      - Specific, quantifiable language used
+  - step: acceptance_criteria
+    passed: true
+    issues: []
+    suggestions: []
+    strengths:
+      - Acceptance criteria defined
+  - step: priority_assignment
+    passed: true
+    issues: []
+    suggestions: []
+    strengths:
+      - "Clear priority assignment: required"
+  - step: review_and_refine
+    passed: true
+    issues: []
+    suggestions: []
+    strengths:
+      - Complete requirement schema validated successfully
+created_at: 2025-10-05T12:09:51.909Z
+updated_at: 2025-10-05T12:09:51.983Z
+expires_at: 2025-10-06T12:09:51.909Z

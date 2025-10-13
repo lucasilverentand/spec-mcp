@@ -1,0 +1,15 @@
+type: requirement
+number: 101
+slug: test-uncovered
+name: Test Uncovered Requirement
+description: Test requirement with no implementing plans needed for coverage testing
+priority: critical
+created_at: '2025-10-05T12:00:00.000Z'
+updated_at: '2025-10-05T12:00:00.000Z'
+criteria:
+  - id: crit-001
+    description: Feature must be implemented fully
+    completed: false
+  - id: crit-002
+    description: Feature must pass all tests
+    completed: false

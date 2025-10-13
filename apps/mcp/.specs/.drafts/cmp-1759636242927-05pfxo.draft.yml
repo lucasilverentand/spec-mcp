@@ -1,0 +1,129 @@
+id: cmp-1759636242927-05pfxo
+type: component
+current_step: 1
+total_steps: 14
+data:
+  research_findings: No existing auth service found
+  library_notes: Evaluated passport.js, will use bcrypt and jsonwebtoken
+  no_constitutions: true
+  uniqueness_confirmation: Confirmed unique, no duplicate components
+  description: Handles user authentication
+  capabilities:
+    - Validate credentials
+    - Generate tokens
+  depends_on: []
+  external_dependencies:
+    - bcrypt@5.1.0
+    - jsonwebtoken@9.0.0
+  constraints:
+    - "Performance: under 200ms p95"
+    - "Security: bcrypt cost 12"
+  type: service
+  slug: auth-service
+  name: Authentication Service
+  tech_stack:
+    - Node.js
+    - Express
+    - bcrypt
+validation_results:
+  - step: research_existing_components
+    passed: false
+    issues:
+      - Component research is required
+    suggestions:
+      - Use query to search for similar components across all types
+    strengths: []
+  - step: research_existing_components
+    passed: false
+    issues:
+      - Component research is required
+    suggestions:
+      - Use query to search for similar components across all types
+    strengths: []
+  - step: research_existing_components
+    passed: false
+    issues:
+      - Component research is required
+    suggestions:
+      - Use query to search for similar components across all types
+    strengths: []
+  - step: research_existing_components
+    passed: false
+    issues:
+      - Component research is required
+    suggestions:
+      - Use query to search for similar components across all types
+    strengths: []
+  - step: research_existing_components
+    passed: false
+    issues:
+      - Component research is required
+    suggestions:
+      - Use query to search for similar components across all types
+    strengths: []
+  - step: research_existing_components
+    passed: false
+    issues:
+      - Component research is required
+    suggestions:
+      - Use query to search for similar components across all types
+    strengths: []
+  - step: research_existing_components
+    passed: false
+    issues:
+      - Component research is required
+    suggestions:
+      - Use query to search for similar components across all types
+    strengths: []
+  - step: research_existing_components
+    passed: false
+    issues:
+      - Component research is required
+    suggestions:
+      - Use query to search for similar components across all types
+    strengths: []
+  - step: research_existing_components
+    passed: false
+    issues:
+      - Component research is required
+    suggestions:
+      - Use query to search for similar components across all types
+    strengths: []
+  - step: research_existing_components
+    passed: false
+    issues:
+      - Component research is required
+    suggestions:
+      - Use query to search for similar components across all types
+    strengths: []
+  - step: research_existing_components
+    passed: false
+    issues:
+      - Component research is required
+    suggestions:
+      - Use query to search for similar components across all types
+    strengths: []
+  - step: research_existing_components
+    passed: false
+    issues:
+      - Component research is required
+    suggestions:
+      - Use query to search for similar components across all types
+    strengths: []
+  - step: research_existing_components
+    passed: false
+    issues:
+      - Component research is required
+    suggestions:
+      - Use query to search for similar components across all types
+    strengths: []
+  - step: research_existing_components
+    passed: false
+    issues:
+      - Component research is required
+    suggestions:
+      - Use query to search for similar components across all types
+    strengths: []
+created_at: 2025-10-05T03:50:42.927Z
+updated_at: 2025-10-05T03:50:42.948Z
+expires_at: 2025-10-06T03:50:42.927Z

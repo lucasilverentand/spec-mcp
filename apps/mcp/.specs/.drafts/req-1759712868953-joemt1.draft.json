@@ -1,0 +1,21 @@
+{
+  "id": "req-1759712868953-joemt1",
+  "type": "requirement",
+  "current_step": 2,
+  "total_steps": 9,
+  "data": {
+    "research_findings": "No similar requirements found"
+  },
+  "validation_results": [
+    {
+      "step": "research_similar_requirements",
+      "passed": true,
+      "issues": [],
+      "suggestions": [],
+      "strengths": []
+    }
+  ],
+  "created_at": "2025-10-06T01:07:48.953Z",
+  "updated_at": "2025-10-06T01:07:48.957Z",
+  "expires_at": "2025-10-07T01:07:48.953Z"
+}

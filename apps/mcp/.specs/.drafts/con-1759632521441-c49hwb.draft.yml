@@ -1,0 +1,38 @@
+id: con-1759632521441-c49hwb
+type: constitution
+current_step: 3
+total_steps: 3
+data:
+  name: Engineering Principles
+  description: Core principles guiding development decisions
+  articles:
+    - id: art-001
+      title: Test-Driven Development
+      principle: Write tests before implementation
+      rationale: Ensures quality and prevents regressions
+      examples:
+        - Unit tests for business logic
+      exceptions:
+        - Prototypes
+      status: active
+validation_results:
+  - step: basic_info
+    passed: true
+    issues: []
+    suggestions: []
+    strengths: []
+  - step: articles
+    passed: true
+    issues: []
+    suggestions: []
+    strengths:
+      - 1 principle(s) defined with rationale
+  - step: finalize
+    passed: true
+    issues: []
+    suggestions: []
+    strengths:
+      - Constitution ready for creation
+created_at: 2025-10-05T02:48:41.441Z
+updated_at: 2025-10-05T02:48:41.455Z
+expires_at: 2025-10-06T02:48:41.441Z

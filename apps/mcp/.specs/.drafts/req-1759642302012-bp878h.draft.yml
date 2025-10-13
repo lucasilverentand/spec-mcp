@@ -1,0 +1,24 @@
+id: req-1759642302012-bp878h
+type: requirement
+current_step: 1
+total_steps: 10
+data:
+  description: Use MongoDB database
+validation_results:
+  - step: research_similar_requirements
+    passed: false
+    issues:
+      - Research findings are required
+    suggestions:
+      - Use query tool to search for similar requirements and document your findings
+    strengths: []
+  - step: research_similar_requirements
+    passed: false
+    issues:
+      - Research findings are required
+    suggestions:
+      - Use query tool to search for similar requirements and document your findings
+    strengths: []
+created_at: 2025-10-05T05:31:42.012Z
+updated_at: 2025-10-05T05:31:42.013Z
+expires_at: 2025-10-06T05:31:42.012Z

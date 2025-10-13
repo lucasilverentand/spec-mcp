@@ -1,0 +1,17 @@
+id: req-1759635893791-7rrr9c
+type: requirement
+current_step: 1
+total_steps: 10
+data:
+  description: Short
+validation_results:
+  - step: research_similar_requirements
+    passed: false
+    issues:
+      - Research findings are required
+    suggestions:
+      - Use query tool to search for similar requirements and document your findings
+    strengths: []
+created_at: 2025-10-05T03:44:53.791Z
+updated_at: 2025-10-05T03:44:53.792Z
+expires_at: 2025-10-06T03:44:53.791Z

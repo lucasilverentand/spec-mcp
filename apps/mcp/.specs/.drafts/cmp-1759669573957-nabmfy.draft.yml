@@ -1,0 +1,108 @@
+id: cmp-1759669573957-nabmfy
+type: component
+current_step: 14
+total_steps: 14
+data:
+  component_research: No existing auth service found
+  library_research: Evaluated passport.js, will use bcrypt and jsonwebtoken
+  constitution_articles: []
+  justification: Confirmed unique, no duplicate components. Existing libraries don't meet our requirements.
+  description: Handles user authentication
+  capabilities:
+    - Validate credentials
+    - Generate tokens
+  depends_on: []
+  external_dependencies:
+    - bcrypt@5.1.0
+    - jsonwebtoken@9.0.0
+  constraints:
+    - "Performance: under 200ms p95"
+    - "Security: bcrypt cost 12"
+  type: service
+  slug: auth-service
+  name: Authentication Service
+  tech_stack:
+    - Node.js
+    - Express
+    - bcrypt
+validation_results:
+  - step: research_existing_components
+    passed: true
+    issues: []
+    suggestions: []
+    strengths: []
+  - step: library_research
+    passed: true
+    issues: []
+    suggestions: []
+    strengths: []
+  - step: constitution_alignment
+    passed: true
+    issues: []
+    suggestions: []
+    strengths: []
+  - step: duplicate_prevention
+    passed: true
+    issues: []
+    suggestions: []
+    strengths:
+      - Clear justification provided for new component
+  - step: analyze_requirements
+    passed: true
+    issues: []
+    suggestions: []
+    strengths:
+      - Clear requirement traceability established
+  - step: define_boundaries
+    passed: true
+    issues: []
+    suggestions: []
+    strengths:
+      - Component boundaries clearly defined
+  - step: define_responsibilities
+    passed: true
+    issues: []
+    suggestions: []
+    strengths:
+      - 3 capabilities clearly defined
+  - step: define_interfaces
+    passed: true
+    issues: []
+    suggestions: []
+    strengths: []
+  - step: map_dependencies
+    passed: true
+    issues: []
+    suggestions: []
+    strengths:
+      - "Dependencies mapped: 0 internal, 2 external"
+  - step: define_ownership
+    passed: true
+    issues: []
+    suggestions: []
+    strengths: []
+  - step: identify_patterns
+    passed: true
+    issues: []
+    suggestions: []
+    strengths: []
+  - step: quality_attributes
+    passed: true
+    issues: []
+    suggestions: []
+    strengths:
+      - 2 quality attributes defined
+  - step: trace_requirements
+    passed: true
+    issues: []
+    suggestions: []
+    strengths: []
+  - step: validate_refine
+    passed: true
+    issues: []
+    suggestions: []
+    strengths:
+      - Component type specified
+created_at: 2025-10-05T13:06:13.957Z
+updated_at: 2025-10-05T13:06:13.991Z
+expires_at: 2025-10-06T13:06:13.957Z

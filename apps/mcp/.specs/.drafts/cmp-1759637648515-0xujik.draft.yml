@@ -1,0 +1,17 @@
+id: cmp-1759637648515-0xujik
+type: component
+current_step: 1
+total_steps: 14
+data:
+  description: Satisfies req-001-auth by providing credential validation
+validation_results:
+  - step: research_existing_components
+    passed: false
+    issues:
+      - Component research is required
+    suggestions:
+      - Use query to search for similar components across all types
+    strengths: []
+created_at: 2025-10-05T04:14:08.515Z
+updated_at: 2025-10-05T04:14:08.517Z
+expires_at: 2025-10-06T04:14:08.515Z

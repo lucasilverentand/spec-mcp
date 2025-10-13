@@ -1,0 +1,18 @@
+type: requirement
+number: 100
+slug: test-broken-dep
+name: Test Broken Dependency
+description: Test requirement with broken dependency reference needed for health score testing
+priority: optional
+created_at: '2025-10-05T12:00:00.000Z'
+updated_at: '2025-10-05T12:00:00.000Z'
+criteria:
+  - id: crit-001
+    description: Dependencies are validated with 100% accuracy
+    completed: false
+  - id: crit-002
+    description: Validation completes in under 1 second
+    completed: false
+dependencies:
+  - req-999-nonexistent
+  - req-888-invalid

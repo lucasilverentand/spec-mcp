@@ -1,0 +1,15 @@
+id: req-1759666191826-fl2z77
+type: requirement
+current_step: 2
+total_steps: 10
+data:
+  research_findings: No similar requirements found
+validation_results:
+  - step: research_similar_requirements
+    passed: true
+    issues: []
+    suggestions: []
+    strengths: []
+created_at: 2025-10-05T12:09:51.826Z
+updated_at: 2025-10-05T12:09:51.833Z
+expires_at: 2025-10-06T12:09:51.826Z

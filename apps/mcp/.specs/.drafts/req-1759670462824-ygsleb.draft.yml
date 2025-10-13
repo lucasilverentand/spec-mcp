@@ -1,0 +1,15 @@
+id: req-1759670462824-ygsleb
+type: requirement
+current_step: 2
+total_steps: 10
+data:
+  research_findings: No similar requirements found
+validation_results:
+  - step: research_similar_requirements
+    passed: true
+    issues: []
+    suggestions: []
+    strengths: []
+created_at: 2025-10-05T13:21:02.824Z
+updated_at: 2025-10-05T13:21:02.832Z
+expires_at: 2025-10-06T13:21:02.824Z

@@ -1,0 +1,81 @@
+id: req-1759671817490-jnx9sd
+type: requirement
+current_step: 10
+total_steps: 10
+data:
+  research_findings: No similar requirements found
+  no_constitutions: true
+  technology_notes: Will use standard authentication libraries
+  description: Authentication completes in under 3 seconds
+  criteria:
+    - id: crit-001
+      description: User authenticates within 3 seconds
+      status: active
+  priority: critical
+  type: requirement
+  number: 1
+  slug: user-auth
+  name: User Authentication
+validation_results:
+  - step: research_similar_requirements
+    passed: true
+    issues: []
+    suggestions: []
+    strengths: []
+  - step: constitution_review
+    passed: true
+    issues: []
+    suggestions: []
+    strengths:
+      - Confirmed no constitutions exist
+  - step: technology_research
+    passed: true
+    issues: []
+    suggestions:
+      - For technical requirements, use context7 to research available libraries
+    strengths: []
+  - step: problem_identification
+    passed: true
+    issues: []
+    suggestions: []
+    strengths:
+      - Clear problem identification with rationale
+  - step: avoid_implementation
+    passed: true
+    issues: []
+    suggestions: []
+    strengths:
+      - Implementation-agnostic description
+  - step: measurability
+    passed: true
+    issues: []
+    suggestions: []
+    strengths:
+      - Well-defined measurable criteria
+  - step: specific_language
+    passed: true
+    issues: []
+    suggestions: []
+    strengths:
+      - Specific, quantifiable language used
+  - step: acceptance_criteria
+    passed: true
+    issues: []
+    suggestions: []
+    strengths:
+      - Acceptance criteria defined
+  - step: priority_assignment
+    passed: true
+    issues: []
+    suggestions: []
+    strengths:
+      - "Clear priority assignment: critical"
+  - step: review_and_refine
+    passed: true
+    issues: []
+    suggestions: []
+    strengths:
+      - Complete requirement schema validated successfully
+created_at: 2025-10-05T13:43:37.490Z
+updated_at: 2025-10-05T13:43:37.521Z
+expires_at: 2025-10-06T13:43:37.490Z

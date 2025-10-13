@@ -1,0 +1,24 @@
+id: req-1759635204936-zdigdb
+type: requirement
+current_step: 1
+total_steps: 10
+data:
+  description: System must authenticate users securely
+validation_results:
+  - step: research_similar_requirements
+    passed: false
+    issues:
+      - Research findings are required
+    suggestions:
+      - Use query tool to search for similar requirements and document your findings
+    strengths: []
+  - step: research_similar_requirements
+    passed: false
+    issues:
+      - Research findings are required
+    suggestions:
+      - Use query tool to search for similar requirements and document your findings
+    strengths: []
+created_at: 2025-10-05T03:33:24.936Z
+updated_at: 2025-10-05T03:33:24.938Z
+expires_at: 2025-10-06T03:33:24.936Z

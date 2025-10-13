@@ -45,12 +45,6 @@ jobs:
             fi
           done
 
-      - name: Prepare apps for publishing
-        run: |
-          VERSION=${{ steps.get_version.outputs.VERSION }}
-          echo "Note: Apps bundle workspace dependencies via tsup, so workspace:* deps are fine"
-          echo "The bundled apps will include all @spec-mcp/* dependencies"
-
       - name: Publish spec-mcp to npm
         run: cd apps/mcp && pnpm publish --access public --no-git-checks
         env:
@@ -89,10 +83,10 @@ jobs:
         run: |
           mkdir -p release-assets
           cd apps/mcp
-          npm pack
+          pnpm pack
           mv spec-mcp-*.tgz ../../release-assets/
           cd ../cli
-          npm pack
+          pnpm pack
           mv spec-mcp-cli-*.tgz ../../release-assets/
 
       - name: Upload release assets

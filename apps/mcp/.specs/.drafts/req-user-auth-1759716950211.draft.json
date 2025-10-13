@@ -1,0 +1,13 @@
+{
+  "id": "req-user-auth-1759716950211",
+  "type": "requirement",
+  "current_step": 1,
+  "total_steps": 9,
+  "data": {
+    "slug": "user-auth"
+  },
+  "validation_results": [],
+  "created_at": "2025-10-06T02:15:50.211Z",
+  "updated_at": "2025-10-06T02:15:50.211Z",
+  "expires_at": "2025-10-07T02:15:50.211Z"
+}
