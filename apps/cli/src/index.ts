@@ -68,6 +68,79 @@ program
 			// Ensure folders exist
 			await manager.ensureFolders();
 
+			// First, scan for ALL YAML files regardless of naming pattern
+			const { promises: fs } = await import("node:fs");
+			const path = await import("node:path");
+
+			interface UnloadableFile {
+				folder: string;
+				fileName: string;
+				reason: "invalid_name" | "parse_error" | "validation_error";
+				details: string;
+			}
+
+			const unloadableFiles: UnloadableFile[] = [];
+
+			// Scan each entity folder for files
+			const entityFolders = [
+				{
+					path: "requirements/business",
+					prefix: "brd",
+					type: "business-requirement",
+				},
+				{
+					path: "requirements/technical",
+					prefix: "prd",
+					type: "technical-requirement",
+				},
+				{ path: "plans", prefix: "pln", type: "plan" },
+				{ path: "components", prefix: "cmp", type: "component" },
+				{ path: "decisions", prefix: "dec", type: "decision" },
+				{ path: "constitutions", prefix: "cst", type: "constitution" },
+				{ path: "milestones", prefix: "mls", type: "milestone" },
+			];
+
+			for (const folder of entityFolders) {
+				const folderPath = path.join(specsPath, folder.path);
+				try {
+					const files = await fs.readdir(folderPath);
+					const ymlFiles = files.filter(
+						(f) => f.endsWith(".yml") || f.endsWith(".yaml"),
+					);
+
+					for (const file of ymlFiles) {
+						const fileName = file.replace(/\.(yml|yaml)$/, "");
+
+						// Check if it matches the expected pattern
+						const finalizedPattern = new RegExp(
+							`^${folder.prefix}-(\\d+)-([a-z0-9-]+)$`,
+						);
+						const draftPattern = new RegExp(
+							`^${folder.prefix}-(\\d+)\\.draft$`,
+						);
+
+						const isFinalizedMatch = finalizedPattern.test(fileName);
+						const isDraftMatch = draftPattern.test(fileName);
+
+						if (!isFinalizedMatch && !isDraftMatch) {
+							unloadableFiles.push({
+								folder: folder.path,
+								fileName: file,
+								reason: "invalid_name",
+								details: `File name must match pattern: ${folder.prefix}-###-lowercase-slug-with-hyphens.yml (or ${folder.prefix}-###.draft.yml for drafts)`,
+							});
+						}
+					}
+				} catch (error) {
+					// Folder doesn't exist or can't be read - that's okay
+					if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
+						console.log(
+							`${colors.yellow}Warning: Could not read folder ${folder.path}${colors.reset}`,
+						);
+					}
+				}
+			}
+
 			// Load all entities and validate them
 			const [
 				businessRequirements,
@@ -685,6 +758,27 @@ program
 			}
 			console.log("");
 
+			// Report unloadable files
+			if (unloadableFiles.length > 0) {
+				console.log(
+					`${colors.red}⚠ Unloadable Files (${unloadableFiles.length}):${colors.reset}`,
+				);
+				console.log("");
+
+				for (const file of unloadableFiles) {
+					console.log(
+						`  ${colors.red}✗${colors.reset} ${colors.dim}${file.folder}/${file.fileName}${colors.reset}`,
+					);
+					console.log(
+						`    ${colors.yellow}Reason:${colors.reset} ${file.reason === "invalid_name" ? "Invalid file name pattern" : "Parse or validation error"}`,
+					);
+					console.log(`    ${colors.dim}${file.details}${colors.reset}`);
+					console.log("");
+				}
+
+				allValid = false;
+			}
+
 			// Summary
 			console.log(`${colors.cyan}Summary:${colors.reset}`);
 			if (totalErrors > 0) {
@@ -697,8 +791,17 @@ program
 					`  ${colors.yellow}Total Warnings: ${totalWarnings}${colors.reset}`,
 				);
 			}
-			if (totalErrors === 0 && totalWarnings === 0) {
+			if (
+				totalErrors === 0 &&
+				totalWarnings === 0 &&
+				unloadableFiles.length === 0
+			) {
 				console.log(`  ${colors.green}All validations passed!${colors.reset}`);
+			}
+			if (unloadableFiles.length > 0) {
+				console.log(
+					`  ${colors.red}Unloadable Files: ${unloadableFiles.length}${colors.reset}`,
+				);
 			}
 			console.log(
 				`  Business Requirements: ${businessRequirements.length} (${businessRequirementValidations.filter((v) => v.errors.length === 0 && v.warnings.length === 0).length} valid)`,

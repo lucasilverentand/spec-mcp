@@ -273,27 +273,37 @@ export class EntityManager<T extends Base> extends FileManager {
 	/**
 	 * Get the maximum number from existing files
 	 * Used by SpecManager for counter initialization
+	 * Now scans ALL YAML files, not just those matching naming pattern
 	 */
 	async getMaxNumber(): Promise<number> {
 		const fileNames = await this.listFiles(this.subFolder, ".yml");
-		const pattern = this.getFilePattern();
-		const draftPattern = this.getDraftFilePattern();
 		let maxNumber = 0;
 
+		// Try to extract number from any file with the expected prefix
+		const numberPattern = new RegExp(`^${this.idPrefix}-(\\d+)`);
+
 		for (const fileName of fileNames) {
-			const match = fileName.match(pattern);
+			const match = fileName.match(numberPattern);
 			if (match?.[1]) {
 				const number = Number.parseInt(match[1], 10);
 				if (number > maxNumber) {
 					maxNumber = number;
 				}
-			}
-
-			const draftMatch = fileName.match(draftPattern);
-			if (draftMatch?.[1]) {
-				const number = Number.parseInt(draftMatch[1], 10);
-				if (number > maxNumber) {
-					maxNumber = number;
+			} else {
+				// Try reading the file to get the number from content
+				try {
+					const data = await this.readYaml<{ number?: number }>(
+						`${this.subFolder}/${fileName}.yml`,
+					);
+					if (
+						data.number &&
+						typeof data.number === "number" &&
+						data.number > maxNumber
+					) {
+						maxNumber = data.number;
+					}
+				} catch {
+					// Ignore files that can't be read
 				}
 			}
 		}
@@ -324,37 +334,47 @@ export class EntityManager<T extends Base> extends FileManager {
 
 	/**
 	 * List all entities
+	 * Now loads ALL YAML files, even those with invalid naming patterns
 	 */
 	async list(): Promise<T[]> {
 		const fileNames = await this.listFiles(this.subFolder, ".yml");
 		const pattern = this.getFilePattern();
 		const draftPattern = this.getDraftFilePattern();
 		const entities: T[] = [];
-		const processedNumbers = new Set<number>();
+		const processedFiles = new Set<string>();
 
 		for (const fileName of fileNames) {
-			const match = fileName.match(pattern);
-			if (match?.[1]) {
-				const number = Number.parseInt(match[1], 10);
-				if (!processedNumbers.has(number)) {
-					const entity = await this.get(number);
-					if (entity) {
-						entities.push(entity);
-						processedNumbers.add(number);
-					}
-				}
+			if (processedFiles.has(fileName)) {
+				continue;
 			}
 
-			const draftMatch = fileName.match(draftPattern);
-			if (draftMatch?.[1]) {
-				const number = Number.parseInt(draftMatch[1], 10);
-				if (!processedNumbers.has(number)) {
-					const entity = await this.get(number);
-					if (entity) {
-						entities.push(entity);
-						processedNumbers.add(number);
-					}
+			// Check if it matches expected patterns
+			const matchesFinalized = pattern.test(fileName);
+			const matchesDraft = draftPattern.test(fileName);
+
+			// Try to load the file regardless of naming pattern
+			try {
+				const data = await this.readYaml<T>(
+					`${this.subFolder}/${fileName}.yml`,
+				);
+				const cleaned = this.removeUndefined(data);
+				const entity = this.schema.parse(cleaned);
+
+				entities.push(entity);
+				processedFiles.add(fileName);
+
+				// Log warning for invalid naming (but still include the entity)
+				if (!matchesFinalized && !matchesDraft) {
+					console.warn(
+						`Warning: File "${this.subFolder}/${fileName}.yml" has invalid naming pattern but was loaded successfully. Expected pattern: ${this.idPrefix}-###-lowercase-slug.yml`,
+					);
 				}
+			} catch (error) {
+				// File exists but couldn't be parsed or validated
+				// Log the error but continue processing other files
+				console.error(
+					`Error loading ${this.subFolder}/${fileName}.yml: ${error instanceof Error ? error.message : String(error)}`,
+				);
 			}
 		}
 
