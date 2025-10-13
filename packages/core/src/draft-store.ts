@@ -4,6 +4,7 @@ import {
 	createComponentDrafterConfig,
 	createConstitutionDrafterConfig,
 	createDecisionDrafterConfig,
+	createMilestoneDrafterConfig,
 	createPlanDrafterConfig,
 	createTechnicalRequirementDrafterConfig,
 } from "./drafters/index.js";
@@ -238,6 +239,9 @@ export class DraftStore {
 			case "constitution":
 				drafter = createEntityDrafter(createConstitutionDrafterConfig());
 				break;
+			case "milestone":
+				drafter = createEntityDrafter(createMilestoneDrafterConfig());
+				break;
 			default:
 				throw new Error(`Unknown entity type: ${type}`);
 		}
@@ -358,6 +362,8 @@ export class DraftStore {
 				return this.specManager.constitutions;
 			case "decision":
 				return this.specManager.decisions;
+			case "milestone":
+				return this.specManager.milestones;
 			default:
 				throw new Error(`Unknown entity type: ${type}`);
 		}
@@ -408,6 +414,8 @@ export class DraftStore {
 				return createConstitutionDrafterConfig();
 			case "decision":
 				return createDecisionDrafterConfig();
+			case "milestone":
+				return createMilestoneDrafterConfig();
 			default:
 				throw new Error(`Unknown entity type: ${type}`);
 		}
@@ -424,6 +432,7 @@ export class DraftStore {
 			"component",
 			"constitution",
 			"decision",
+			"milestone",
 		];
 
 		for (const type of types) {
