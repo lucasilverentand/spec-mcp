@@ -12,8 +12,7 @@
 			"**/node_modules/**",
 			"**/coverage/**",
 			"**/*.tsbuildinfo",
-			"**/pnpm-lock.yaml",
-			"**/*.astro"
+			"**/pnpm-lock.yaml"
 		]
 	},
 	"formatter": {
@@ -45,5 +44,13 @@
 				"organizeImports": "on"
 			}
 		}
-	}
+	},
+	"overrides": [
+		{
+			"includes": ["**/src/components/ui/**", "**/src/hooks/**"],
+			"linter": {
+				"enabled": false
+			}
+		}
+	]
 }
