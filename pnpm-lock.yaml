@@ -48,6 +48,22 @@ importers:
       '@inquirer/prompts':
         specifier: ^7.8.6
         version: 7.8.6(@types/node@24.7.2)
+      chokidar:
+        specifier: ^4.0.3
+        version: 4.0.3
+      commander:
+        specifier: ^12.1.0
+        version: 12.1.0
+      pino:
+        specifier: ^9.12.0
+        version: 9.12.0
+      ws:
+        specifier: ^8.18.0
+        version: 8.18.3
+      yaml:
+        specifier: ^2.4.5
+        version: 2.8.1
+    devDependencies:
       '@spec-mcp/core':
         specifier: workspace:*
         version: link:../../packages/core
@@ -57,16 +73,12 @@ importers:
       '@spec-mcp/schemas':
         specifier: workspace:*
         version: link:../../packages/schemas
-      '@spec-mcp/utils':
-        specifier: workspace:*
-        version: link:../../packages/utils
-      commander:
-        specifier: ^12.1.0
-        version: 12.1.0
-    devDependencies:
       '@spec-mcp/tsconfig':
         specifier: workspace:*
         version: link:../../packages/tsconfig
+      '@spec-mcp/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
       '@types/node':
         specifier: ^24.5.2
         version: 24.7.2
@@ -88,12 +100,6 @@ importers:
       '@modelcontextprotocol/sdk':
         specifier: ^1.18.2
         version: 1.18.2
-      '@spec-mcp/core':
-        specifier: workspace:*
-        version: link:../../packages/core
-      '@spec-mcp/dashboard':
-        specifier: workspace:*
-        version: link:../../packages/dashboard
       chokidar:
         specifier: ^4.0.3
         version: 4.0.3
@@ -107,6 +113,12 @@ importers:
         specifier: ^2.4.5
         version: 2.8.1
     devDependencies:
+      '@spec-mcp/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@spec-mcp/dashboard':
+        specifier: workspace:*
+        version: link:../../packages/dashboard
       '@spec-mcp/schemas':
         specifier: workspace:*
         version: link:../../packages/schemas
