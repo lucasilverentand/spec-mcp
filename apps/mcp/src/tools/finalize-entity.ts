@@ -4,6 +4,7 @@ import type {
 	Component,
 	Constitution,
 	Decision,
+	Milestone,
 	Plan,
 	TechnicalRequirement,
 } from "@spec-mcp/schemas";
@@ -51,9 +52,23 @@ export async function finalizeEntity(
 
 	const isMainEntity = !entityId || entityId === "main";
 
-	// For main entity, generate slug from name if not provided
-	if (isMainEntity && data.name && !data.slug) {
-		data.slug = generateSlug(data.name as string);
+	// For main entity, prepare the data with slug and number
+	if (isMainEntity) {
+		// Generate slug from name if not provided
+		if (data.name && !data.slug) {
+			data.slug = generateSlug(data.name as string);
+		}
+
+		// Get number from manager if already assigned, otherwise get next number
+		if (!data.number) {
+			let nextNumber = manager.getNumber();
+			if (nextNumber === undefined) {
+				const type = manager.getType();
+				nextNumber = await specManager.getNextNumber(type);
+				manager.setNumber(nextNumber);
+			}
+			data.number = nextNumber;
+		}
 	}
 
 	// Finalize the entity
@@ -88,10 +103,10 @@ export async function finalizeEntity(
 		const finalizedEntity = manager.build();
 		const type = manager.getType();
 
-		// Get number from manager if already assigned, otherwise get next number
-		let nextNumber = manager.getNumber();
+		// Number is already set in the finalized entity
+		const nextNumber = manager.getNumber();
 		if (nextNumber === undefined) {
-			nextNumber = await specManager.getNextNumber(type);
+			throw new Error("Number should have been set during finalization");
 		}
 
 		// Save to spec system
@@ -131,6 +146,12 @@ export async function finalizeEntity(
 				case "constitution":
 					created = await specManager.constitutions.create(
 						finalizedEntity as Constitution,
+						nextNumber,
+					);
+					break;
+				case "milestone":
+					created = await specManager.milestones.create(
+						finalizedEntity as Milestone,
 						nextNumber,
 					);
 					break;
