@@ -1,228 +1,556 @@
 # Planning Workflow
 
+**Goal**: Learn the complete workflow for planning features using specs, from initial idea to ready-to-implement plans.
+
 ## Overview
 
-The planning workflow defines how to go from an idea to a structured implementation plan using spec-mcp.
+The planning workflow transforms ideas into actionable implementation plans through a structured process:
 
-## Step-by-Step Process
-
-### Phase 1: Define Requirements
-
-#### 1.1 Create a Requirement
-
-Start with **what** needs to be built, not **how** to build it.
-
-**Example**: "Create a requirement for user authentication"
-
-The guided flow will ask:
-- **Research**: Search for similar specs, review constitutions
-- **Identity**: Name and slug (e.g., "user-authentication")
-- **Description**: What problem does this solve?
-- **Priority**: critical | required | ideal | optional
-- **Criteria**: Measurable acceptance criteria
-
-#### 1.2 Write Good Acceptance Criteria
-
-Criteria should be:
-- **Measurable**: Can be verified with a test
-- **Specific**: Clear success conditions
-- **Independent**: Each criterion stands alone
-
-**Good Examples**:
-- ✅ "User can register with email/password in under 30 seconds"
-- ✅ "System enforces 8+ character passwords with mixed case and number"
-- ✅ "Failed login attempts are rate-limited (5 attempts per 15 minutes)"
-
-**Poor Examples**:
-- ❌ "Authentication should be fast" (not measurable)
-- ❌ "Secure password handling" (too vague)
-
-### Phase 2: Model Architecture (Optional)
-
-#### 2.1 Create Components
-
-If your requirement needs new system components, define them:
-
-**Example**: "Create a service component for authentication"
-
-Components define:
-- **Type**: app | service | library
-- **Capabilities**: What it does
-- **Dependencies**: What it relies on
-- **Constraints**: Technical limitations
-
-**When to create components**:
-- New microservices or apps
-- Shared libraries
-- External integrations
-- System boundaries need clarification
-
-**When to skip**:
-- Small features within existing components
-- Minor enhancements
-- Internal refactoring
-
-### Phase 3: Create Implementation Plans
-
-#### 3.1 Link Plans to Requirements
-
-Each plan should ideally fulfill **one acceptance criterion** from a requirement:
-
-**Example**: "Create a plan for requirement req-001-user-auth criterion crit-001"
-
-The `criteria_id` field creates traceability:
-```yaml
-criteria_id: "req-001-user-authentication/crit-001"
+```
+Idea/Request
+  ↓
+Business Requirement (BRD)
+  ↓
+Technical Requirement (PRD)
+  ↓
+Decisions (if needed)
+  ↓
+Implementation Plan
+  ↓
+Ready to Implement
 ```
 
-#### 3.2 Define Plan Scope
+## Complete Feature Planning Flow
 
-Plans break down into:
+### Phase 1: Capture Business Need
 
-**Required**:
-- **Tasks**: Executable steps with file changes, dependencies
-- **Acceptance Criteria**: Completion conditions
+**Create a Business Requirement (BRD)**
 
-**Optional** (add when relevant):
-- **Scope**: In/out of scope boundaries (use when complex)
-- **Flows**: User/system/data flows (use for interactions)
-- **Test Cases**: Test scenarios (use for detailed testing)
-- **API Contracts**: Endpoints (use when creating APIs)
-- **Data Models**: Schemas (use when defining data)
-
-#### 3.3 Write Effective Tasks
-
-**Good Task Structure**:
-```yaml
-id: task-001
-priority: high
-description: "Create User model with email/password fields - 2 hours"
-depends_on: []
-files:
-  - path: "src/models/User.ts"
-    change_type: create
-    reason: "User entity with validation"
-considerations:
-  - "Use bcrypt for password hashing"
-  - "Add unique constraint on email"
+```
+Create a BRD for user notifications
 ```
 
-**Task Guidelines**:
-- Include effort estimates
-- Specify file changes
-- List dependencies
-- Note implementation considerations
+Claude will guide you through:
 
-#### 3.4 Establish Dependencies
+**Questions:**
+- What's the business need?
+- Who are the stakeholders?
+- What's the business value?
+- What are the user stories?
+- What are the acceptance criteria?
 
-**Between Plans**:
+**Example Answers:**
 ```yaml
-depends_on:
-  - "pln-001-database-setup"
-  - "pln-002-auth-library"
+title: User Notifications System
+description: Users need to receive timely notifications about account activity
+
+stakeholders:
+  - role: product-owner
+    name: Jane Smith
+    interest: Increase user engagement and retention
+
+business_value:
+  - type: customer-satisfaction
+    value: Users stay informed of important events
+  - type: revenue
+    value: Increased engagement leads to 15% higher conversion
+
+user_stories:
+  - role: registered user
+    feature: receive notifications about account activity
+    benefit: I stay informed without checking the app constantly
+
+  - role: premium user
+    feature: customize notification preferences
+    benefit: I only get notifications I care about
+
+criteria:
+  - description: Users receive email notifications within 5 minutes
+    rationale: Timely notifications are critical for user experience
+
+  - description: Users can disable notifications per category
+    rationale: User control improves satisfaction
 ```
 
-**Between Tasks** (within a plan):
+**Result:** `./specs/business-requirements/brd-001-user-notifications.yml`
+
+### Phase 2: Define Technical Approach
+
+**Create a Technical Requirement (PRD)**
+
+```
+Create a PRD for implementing the notification system from brd-001
+```
+
+Claude will ask:
+
+**Questions:**
+- What's the technical context?
+- What's the implementation approach?
+- What are the technical constraints?
+- What are the technical dependencies?
+- What are the acceptance criteria?
+
+**Example Answers:**
+```yaml
+title: Push and Email Notification Infrastructure
+description: Technical implementation of notification system
+
+technical_context: |
+  Need scalable notification delivery supporting multiple channels
+  (email, push, SMS). Must handle high volume during peak hours.
+
+implementation_approach: |
+  - Use message queue (RabbitMQ) for async delivery
+  - Email via SendGrid API
+  - Push notifications via Firebase Cloud Messaging
+  - Database table for notification preferences and history
+
+constraints:
+  - type: performance
+    description: Deliver 95% of notifications within 5 minutes
+
+  - type: scalability
+    description: Handle 10,000 notifications per minute
+
+technical_dependencies:
+  - type: url
+    name: SendGrid API
+    url: https://sendgrid.com/docs
+    description: Email delivery service
+
+  - type: url
+    name: Firebase Cloud Messaging
+    url: https://firebase.google.com/docs/cloud-messaging
+    description: Push notification service
+
+criteria:
+  - description: Notification queue processes without data loss
+    rationale: Reliability is critical for user trust
+
+  - description: Failed deliveries retry with exponential backoff
+    rationale: Handle temporary service outages gracefully
+```
+
+**Result:** `./specs/technical-requirements/prd-001-notification-infrastructure.yml`
+
+### Phase 3: Document Key Decisions
+
+**Create Decisions for significant choices**
+
+```
+Create a decision for choosing Firebase over OneSignal for push notifications
+```
+
+**Example:**
+```yaml
+title: Use Firebase Cloud Messaging for Push Notifications
+decision: Implement push notifications using Firebase Cloud Messaging (FCM)
+
+context: |
+  Need a reliable push notification service for iOS and Android.
+  Evaluated Firebase, OneSignal, and AWS SNS.
+
+alternatives:
+  - OneSignal: Simpler setup but vendor lock-in concerns
+  - AWS SNS: More control but complex setup and higher cost
+
+consequences:
+  - type: positive
+    description: Free tier covers expected volume for first year
+
+  - type: positive
+    description: Excellent documentation and community support
+
+  - type: negative
+    description: Vendor lock-in to Google ecosystem
+    mitigation: Abstract notification logic behind interface
+
+  - type: risk
+    description: Future pricing changes could impact costs
+    mitigation: Monitor usage and have migration plan ready
+```
+
+**Result:** `./specs/decisions/dec-001-use-firebase-messaging.yml`
+
+### Phase 4: Create Implementation Plan
+
+**Create a Plan linking to requirements**
+
+```
+Create a plan to implement the notification system from prd-001
+```
+
+Claude will ask:
+
+**Questions:**
+- What's the scope?
+- What tasks are needed?
+- What are the dependencies?
+- What test cases verify it works?
+- What API contracts are involved?
+- What data models are needed?
+
+**Example Answers:**
+```yaml
+title: Implement Notification System
+description: Build notification infrastructure with email and push support
+
+criteria:
+  requirement: brd-001-user-notifications
+  criteria: crit-001
+
+scope:
+  - type: in-scope
+    description: Email notifications via SendGrid
+
+  - type: in-scope
+    description: Push notifications via Firebase
+
+  - type: in-scope
+    description: User preference management
+
+  - type: out-of-scope
+    description: SMS notifications (future phase)
+
+  - type: out-of-scope
+    description: In-app notification UI (separate plan)
+
+tasks:
+  - id: task-001
+    task: Setup RabbitMQ message queue infrastructure
+    priority: critical
+
+  - id: task-002
+    task: Create notification service worker
+    depends_on: [task-001]
+    priority: critical
+
+  - id: task-003
+    task: Integrate SendGrid for email delivery
+    depends_on: [task-002]
+    priority: high
+
+  - id: task-004
+    task: Integrate Firebase for push notifications
+    depends_on: [task-002]
+    priority: high
+
+  - id: task-005
+    task: Build user notification preferences API
+    priority: high
+
+  - id: task-006
+    task: Create notification templates
+    depends_on: [task-003, task-004]
+    priority: medium
+
+  - id: task-007
+    task: Implement retry logic and error handling
+    depends_on: [task-003, task-004]
+    priority: high
+
+test_cases:
+  - name: Email notification delivery
+    description: Verify emails are sent and delivered
+    steps:
+      - Trigger notification event
+      - Verify message queued
+      - Verify email sent via SendGrid
+      - Verify user receives email
+    expected_result: Email delivered within 5 minutes
+
+  - name: User preference respect
+    description: Verify preferences are honored
+    steps:
+      - User disables email notifications
+      - Trigger notification event
+      - Verify no email sent
+      - Verify push notification still sent
+    expected_result: Only enabled channels receive notification
+
+api_contracts:
+  - name: POST /api/notifications/preferences
+    contract_type: rest
+    specification: |
+      POST /api/notifications/preferences
+
+      Request:
+      {
+        "userId": "string",
+        "email": { "enabled": boolean, "categories": ["string"] },
+        "push": { "enabled": boolean, "categories": ["string"] }
+      }
+
+      Response: 200 OK
+      { "success": true }
+
+data_models:
+  - name: NotificationPreference
+    format: typescript
+    schema: |
+      interface NotificationPreference {
+        id: string;
+        userId: string;
+        email: {
+          enabled: boolean;
+          categories: string[];
+        };
+        push: {
+          enabled: boolean;
+          categories: string[];
+        };
+        updatedAt: Date;
+      }
+```
+
+**Result:** `./specs/plans/pln-001-implement-notification-system.yml`
+
+### Phase 5: Link to Milestone
+
+**Add plan to release milestone**
+
+```
+Add pln-001 to milestone mls-001-v2-launch
+```
+
+This connects the work to your release planning.
+
+## Planning Patterns by Situation
+
+### New Feature
+
+```
+1. BRD: Business need
+2. PRD: Technical approach
+3. Decision: Key technology choices
+4. Plan: Implementation tasks
+```
+
+**Example: Password Reset**
+```
+brd-002-password-reset → "Users need to reset forgotten passwords"
+prd-002-email-reset-flow → "Use email-based reset with time-limited tokens"
+dec-002-use-jwt-tokens → "Use JWT for reset tokens"
+pln-002-implement-reset → "Tasks to build reset flow"
+```
+
+### Technical Improvement
+
+```
+1. PRD: Technical motivation
+2. Decision: Approach choice
+3. Plan: Refactoring tasks
+```
+
+**Example: Database Migration**
+```
+prd-003-migrate-to-postgres → "Move from MongoDB to PostgreSQL"
+dec-003-use-prisma-orm → "Use Prisma for database access"
+pln-003-database-migration → "Migration tasks and rollback plan"
+```
+
+### Bug Fix with Context
+
+```
+1. PRD (optional): Technical context
+2. Plan: Fix tasks
+```
+
+**Example: Performance Issue**
+```
+prd-004-api-performance → "API response time > 2 seconds"
+pln-004-optimize-queries → "Add indexes and optimize queries"
+```
+
+## Iterative Planning
+
+Plans evolve as you learn more:
+
+### Add Tasks
+
+```
+Add a task to pln-001: Implement rate limiting on notification API
+```
+
+### Update Scope
+
+```
+Update pln-001 scope to exclude SMS notifications
+```
+
+### Add Dependencies
+
+```
+Make task-004 depend on task-003 in pln-001
+```
+
+### Supersede Items
+
+When requirements change:
+
+```
+Supersede task-003 in pln-001 with a new approach
+```
+
+This creates a new version while preserving history.
+
+## Planning Checklist
+
+Before marking a plan ready for implementation:
+
+**Business Alignment**
+- [ ] Links to BRD acceptance criteria
+- [ ] Business value is clear
+- [ ] Stakeholders identified
+
+**Technical Clarity**
+- [ ] PRD defines technical approach
+- [ ] Key decisions documented
+- [ ] Constraints identified
+
+**Implementation Ready**
+- [ ] Tasks are concrete and actionable
+- [ ] Dependencies are clear
+- [ ] Priorities are set
+- [ ] Scope is well-defined
+
+**Verification**
+- [ ] Test cases defined
+- [ ] Acceptance criteria testable
+- [ ] API contracts specified (if applicable)
+
+**Traceability**
+- [ ] Links to BRD/PRD
+- [ ] References supporting docs
+- [ ] Connected to milestone (if applicable)
+
+## Tips for Effective Planning
+
+### Right-Size Tasks
+
+❌ Too Large: "Build entire notification system"
+✅ Good Size: "Integrate SendGrid for email delivery"
+
+Aim for tasks that take 0.5-2 days.
+
+### Clear Dependencies
+
 ```yaml
 tasks:
   - id: task-001
-    description: "Create User model"
-    depends_on: []
+    task: Setup database schema
 
   - id: task-002
-    description: "Create AuthService using User model"
-    depends_on: ["task-001"]
+    task: Create API endpoints
+    depends_on: [task-001]  # ← Clear dependency
 ```
 
-### Phase 4: Validate and Review
+### Meaningful Scope
 
-#### 4.1 Check Coverage
+**In-Scope:** What you're building
+**Out-of-Scope:** What you're explicitly NOT building
 
-Find uncovered requirements:
-```
-query({
-  types: ["requirement"],
-  filters: { uncovered: true }
-})
-```
+This prevents scope creep and aligns expectations.
 
-#### 4.2 Validate System Health
+### Test Early Planning
 
-```
-validate({
-  check_references: true,
-  check_cycles: true,
-  include_health: true
-})
+Write test cases during planning, not after implementation.
+
+```yaml
+test_cases:
+  - name: Notification delivery
+    description: User receives notification
+    # ← Written during planning
 ```
 
-This checks:
-- **References**: No broken links between specs
-- **Cycles**: No circular dependencies
-- **Health**: Overall system score (0-100)
+### Link Everything
 
-## Planning Anti-Patterns
+```yaml
+# Plan links to BRD
+criteria:
+  requirement: brd-001-notifications
+  criteria: crit-001
 
-### ❌ Avoid These Mistakes
-
-1. **Creating plans without requirements**
-   - Plans should trace to requirements via `criteria_id`
-   - Exception: Orchestration/milestone plans
-
-2. **Vague acceptance criteria**
-   - "User authentication works" → Not measurable
-   - Use specific, testable conditions
-
-3. **Missing dependencies**
-   - Leads to blocked work
-   - Always specify `depends_on` for plans and tasks
-
-4. **Overly detailed plans**
-   - Skip optional fields if not needed
-   - Don't add flows/APIs/data models unnecessarily
-
-5. **One plan per requirement**
-   - Create one plan per **criterion**, not per requirement
-   - Enables parallel work and better traceability
-
-## Planning Best Practices
-
-### ✅ Follow These Guidelines
-
-1. **Start Small**: Create requirements first, plans later
-2. **Be Specific**: Write measurable criteria and detailed tasks
-3. **Link Everything**: Use `criteria_id` and `depends_on`
-4. **Validate Often**: Run `validate()` regularly
-5. **Check Coverage**: Ensure all criteria have plans
-6. **Use Constitutions**: Define project principles early
-
-## Example: Complete Planning Flow
-
-```
-1. Create requirement
-   → "Create a requirement for user registration"
-   → Result: req-001-user-registration with 3 criteria
-
-2. Create plans (one per criterion)
-   → "Create plan for req-001-user-registration/crit-001"
-   → "Create plan for req-001-user-registration/crit-002"
-   → "Create plan for req-001-user-registration/crit-003"
-
-3. Validate coverage
-   → query({ types: ["requirement"], filters: { uncovered: true } })
-   → Result: All criteria covered ✓
-
-4. Validate system
-   → validate({ check_references: true, check_cycles: true })
-   → Result: No errors ✓
-
-5. Start implementation
-   → query({ next_task: true })
-   → Result: task-001 from pln-001 (highest priority, unblocked)
+# References related decisions
+references:
+  - type: other
+    name: Technology Choice
+    description: See dec-001-use-firebase-messaging
 ```
 
-## Next Steps
+## Common Planning Workflows
 
-- Read [Implementation Workflow](spec-mcp://guide/implementation-workflow) for development process
-- Read [Best Practices](spec-mcp://guide/best-practices) for patterns and tips
-- Read [Query Guide](spec-mcp://guide/query-guide) for advanced searching
+### Solo Developer
+
+```
+1. Quick BRD (business context)
+2. Skip PRD for simple features
+3. Detailed Plan with tasks
+4. Start implementation
+```
+
+### Small Team
+
+```
+1. BRD (collaborate with stakeholders)
+2. PRD (technical team review)
+3. Decisions (team discusses)
+4. Plan (lead developer creates)
+5. Review and refine
+6. Start implementation
+```
+
+### Larger Team
+
+```
+1. BRD (product manager)
+2. PRD (tech lead)
+3. Decisions (architecture review)
+4. Multiple Plans (one per component)
+5. Team review and approval
+6. Assign to developers
+```
+
+## Adapting the Workflow
+
+### When to Skip Steps
+
+**Skip BRD if:**
+- Internal technical work
+- Bug fixes
+- Obvious refactoring
+
+**Skip PRD if:**
+- Trivial implementation
+- Following existing patterns
+- Very small features
+
+**Skip Decisions if:**
+- Choice is obvious
+- Following existing architecture
+- Temporary/experimental
+
+### When to Add Steps
+
+**Add more BRDs:**
+- Multiple stakeholder groups
+- Complex business requirements
+- Regulated industries
+
+**Add more PRDs:**
+- Complex technical work
+- Multiple technical approaches possible
+- High-risk implementation
+
+**Add more Decisions:**
+- New technology choices
+- Architectural changes
+- Trade-offs between options
+
+## Related Guides
+
+- See [Implementation Workflow](spec-mcp://guide/implementation-workflow) for executing plans
+- See [Choosing Spec Types](spec-mcp://guide/choosing-spec-types) for when to use each type
+- See [Best Practices](spec-mcp://guide/best-practices) for planning tips
+- See [Spec Relationships](spec-mcp://guide/spec-relationships) for how specs connect

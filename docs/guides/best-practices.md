@@ -1,464 +1,570 @@
 # Best Practices
 
-## Overview
+**Goal**: Learn patterns, anti-patterns, and tips for effective spec-driven development.
 
-Proven patterns and anti-patterns for effective spec-driven development.
+## Core Principles
 
-## Requirements
+### 1. Documentation as Code
 
-### ✅ Do This
+Treat specs like code:
+- Version control everything
+- Review changes
+- Keep them up-to-date
+- Refactor when needed
 
-**Write Implementation-Agnostic Requirements**
-```yaml
-# Good
-description: "Users need to securely authenticate to access their data"
-
-# Bad
-description: "Implement JWT-based authentication using OAuth2"
-```
-Requirements focus on **what** and **why**, not **how**.
-
-**Use Measurable Acceptance Criteria**
-```yaml
-# Good
-criteria:
-  - id: crit-001
-    description: "User can complete registration in under 30 seconds with valid email/password"
-
-# Bad
-criteria:
-  - id: crit-001
-    description: "Registration should be fast and easy"
+```bash
+# Commit specs with code
+git add specs/plans/pln-001-auth.yml src/auth/
+git commit -m "feat: implement authentication (pln-001)"
 ```
 
-**One Requirement Per Feature**
-```yaml
-# Good: Focused requirement
-name: "User Authentication"
-description: "Users need secure authentication to access the system"
+### 2. Just Enough Documentation
 
-# Bad: Multiple unrelated features
-name: "User Management"
-description: "Authentication, profiles, settings, preferences"
+❌ **Over-Documentation**
+```yaml
+# Don't: Excessive detail for simple tasks
+task: Create user model
+considerations:
+  - Use TypeScript for type safety
+  - Follow naming conventions from style guide section 3.2
+  - Ensure compatibility with ORM version 2.1.5+
+  - Consider future extensibility for profile fields
+  - ... (10 more considerations)
 ```
 
-**Choose Appropriate Priority**
-- **critical**: Launch blocker, system broken without it
-- **required**: Needed soon, important for success
-- **ideal**: Nice to have, enhances experience
-- **optional**: Future consideration, low priority
-
-### ❌ Avoid This
-
-- Mixing multiple features in one requirement
-- Implementation details in requirements
-- Vague or unmeasurable criteria
-- Skipping research phase (creates duplicates)
-
-## Plans
-
-### ✅ Do This
-
-**Link Plans to Requirement Criteria**
+✅ **Right Amount**
 ```yaml
-criteria_id: "req-001-user-auth/crit-001"
+# Do: Essential information only
+task: Create user model with email, password, timestamps
+considerations:
+  - Hash passwords with bcrypt
+  - Add unique index on email
 ```
-One plan per criterion enables parallel work and clear traceability.
 
-**Break Down Tasks Granularly**
+### 3. Living Documentation
+
+Specs evolve with your project:
+
+```
+# During planning
+Create plan for authentication
+
+# During implementation
+Add task: Implement password reset
+Mark task-001 as completed
+
+# After shipping
+Add reference to pln-001: Production metrics dashboard
+```
+
+## Spec Type Best Practices
+
+### Business Requirements (BRD)
+
+**Focus on outcomes, not solutions**
+
+❌ **Bad**: "Use JWT tokens for authentication"
+✅ **Good**: "Users need secure account access"
+
+**Quantify business value**
+
+❌ **Bad**: "Improves user experience"
+✅ **Good**: "Reduces support tickets by 40%, saving $20k annually"
+
+**Write for stakeholders**
 ```yaml
-# Good: Specific, single-responsibility
+business_value:
+  - type: revenue
+    value: "15% increase in conversions = $50k annual revenue"
+  # Not: "Better database performance"
+```
+
+### Technical Requirements (PRD)
+
+**Be specific about constraints**
+
+❌ **Bad**: "System should be fast"
+✅ **Good**: "API response time < 200ms for 95th percentile"
+
+**Document the "why"**
+```yaml
+technical_context: |
+  Current authentication is session-based, causing scalability
+  issues with horizontal scaling. Need stateless auth for
+  multi-region deployment.
+```
+
+**List real dependencies**
+```yaml
+technical_dependencies:
+  - type: url
+    name: Auth0 API
+    url: https://auth0.com/docs/api
+    description: Used for social login integration
+```
+
+### Plans
+
+**Keep tasks atomic**
+
+❌ **Too Large**: "Build entire authentication system"
+✅ **Good Size**: "Implement JWT token generation"
+✅ **Good Size**: "Create login API endpoint"
+✅ **Good Size**: "Add password hashing with bcrypt"
+
+**Clear dependencies**
+```yaml
 tasks:
   - id: task-001
-    description: "Create User model with email/password fields - 2 hours"
+    task: Create database schema
 
   - id: task-002
-    description: "Add password hashing with bcrypt - 1 hour"
+    task: Create API endpoints
+    depends_on: [task-001]  # ← Explicit
+```
 
-# Bad: Too broad
+**Meaningful scope**
+```yaml
+scope:
+  - type: in-scope
+    description: Email/password authentication
+    rationale: Core MVP feature
+
+  - type: out-of-scope
+    description: OAuth providers
+    rationale: Phase 2 after MVP validation
+```
+
+### Decisions
+
+**Document alternatives**
+
+❌ **Incomplete**:
+```yaml
+decision: Use PostgreSQL
+```
+
+✅ **Complete**:
+```yaml
+decision: Use PostgreSQL for primary database
+
+alternatives:
+  - MongoDB: Flexible schema but weak transactions
+  - MySQL: Mature but limited JSON support
+
+consequences:
+  - type: positive
+    description: Strong ACID guarantees for financial data
+  - type: negative
+    description: Schema migrations require more planning
+    mitigation: Use migration tool (e.g., Prisma)
+```
+
+## Naming Conventions
+
+### Spec IDs
+
+**Use descriptive slugs**
+
+❌ **Bad**: `pln-001-stuff`, `brd-002-thing`
+✅ **Good**: `pln-001-user-authentication`, `brd-002-password-reset`
+
+### Task Descriptions
+
+**Action-oriented, specific**
+
+❌ **Bad**: "Database stuff", "Fix the API"
+✅ **Good**: "Add unique index on users.email", "Fix 500 error in /api/login"
+
+### Criteria Descriptions
+
+**Testable and measurable**
+
+❌ **Bad**: "System works well"
+✅ **Good**: "Page loads in < 2 seconds on 3G connection"
+
+## Linking and References
+
+### Always Link Forward
+
+```yaml
+# BRD
+title: User Authentication
+
+# PRD references BRD
+title: JWT-Based Authentication
+description: Technical implementation of brd-001-user-authentication
+
+# Plan references both
+criteria:
+  requirement: brd-001-user-authentication
+  criteria: crit-001
+```
+
+### Use References for Context
+
+```yaml
+references:
+  # Link to designs
+  - type: url
+    name: Auth UI Mockups
+    url: https://figma.com/file/abc123
+
+  # Link to existing code
+  - type: file
+    name: Current Auth Implementation
+    path: src/legacy-auth/README.md
+
+  # Link to decisions
+  - type: other
+    name: Technology Choice
+    description: See dec-001-use-jwt for authentication approach
+```
+
+## Task Management
+
+### Priority Guidelines
+
+**Critical**: Blocks all other work
+```yaml
+- task: Setup database connection
+  priority: critical  # Nothing works without this
+```
+
+**High**: Important for core functionality
+```yaml
+- task: Implement login endpoint
+  priority: high  # Core feature
+```
+
+**Medium**: Standard work (default)
+```yaml
+- task: Add password strength indicator
+  priority: medium
+```
+
+**Low**: Nice to have
+```yaml
+- task: Add remember-me checkbox
+  priority: low
+```
+
+### Dependency Patterns
+
+**Linear dependencies:**
+```yaml
 tasks:
   - id: task-001
-    description: "Build authentication system"
+    task: Create schema
+  - id: task-002
+    task: Create API
+    depends_on: [task-001]
+  - id: task-003
+    task: Create UI
+    depends_on: [task-002]
 ```
 
-**Include Effort Estimates**
+**Parallel work:**
 ```yaml
-description: "Create User model with validation - 2 hours"
+tasks:
+  - id: task-001
+    task: Backend API
+  - id: task-002
+    task: Frontend UI
+    # Independent - work in parallel
 ```
-Helps with planning and tracking velocity.
 
-**Specify File Changes**
+**Converging dependencies:**
 ```yaml
-files:
-  - path: "src/models/User.ts"
-    change_type: create
-    reason: "User entity with email/password validation"
+tasks:
+  - id: task-001
+    task: Email service
+  - id: task-002
+    task: Push notification service
+  - id: task-003
+    task: Notification UI
+    depends_on: [task-001, task-002]  # Needs both
 ```
 
-**Document Implementation Considerations**
-```yaml
-considerations:
-  - "Use bcrypt with minimum 10 rounds"
-  - "Add unique constraint on email field"
-  - "Validate email format with regex"
-```
+## Testing Best Practices
 
-**Use Optional Fields Wisely**
-- **Add flows**: When user interactions or system processes need documentation
-- **Add test cases**: When specific test scenarios need detailed documentation
-- **Add API contracts**: When creating or consuming APIs
-- **Add data models**: When defining database schemas
-- **Skip when**: Simple backend tasks, internal refactoring, or well-defined small plans
+### Write Test Cases Early
 
-### ❌ Avoid This
-
-- Plans without `criteria_id` (except orchestration/milestone plans)
-- Vague tasks without file changes or estimates
-- Missing `depends_on` relationships
-- Adding unnecessary optional fields (flows, APIs, etc.)
-- Overly detailed plans that constrain implementation
-
-## Components
-
-### ✅ Do This
-
-**Use Component Types Appropriately**
-- **app**: User-facing applications (web, mobile)
-- **service**: Backend services, microservices, APIs
-- **library**: Shared code, packages, utilities
-
-**Define Clear Capabilities**
-```yaml
-capabilities:
-  - "User authentication (JWT tokens)"
-  - "Password hashing and validation"
-  - "Session management"
-```
-
-**Document Technical Constraints**
-```yaml
-constraints:
-  - "Must support 10,000 concurrent users"
-  - "Session tokens expire after 24 hours"
-  - "Rate limiting: 100 requests/minute per user"
-```
-
-**Specify Dependencies**
-```yaml
-depends_on:
-  - "lib-001-database"
-  - "lib-002-validation"
-```
-
-### ❌ Avoid This
-
-- Components without clear boundaries
-- Missing dependencies
-- Overly granular components (creates noise)
-
-## Constitutions
-
-### ✅ Do This
-
-**Create Early or As Needed**
-- Define principles at project start, or
-- Evolve principles as patterns emerge
-
-**Write Specific, Actionable Principles**
-```yaml
-# Good
-principle: "Prefer libraries over services when functionality can be shared as code"
-
-# Bad
-principle: "Write good code and use best practices"
-```
-
-**Include Concrete Examples**
-```yaml
-examples:
-  - "Use @company/auth-lib for shared authentication logic"
-  - "Use @company/validation-lib for common validation rules"
-```
-
-**Document Exceptions**
-```yaml
-exceptions:
-  - "When service needs independent deployment lifecycle"
-  - "When functionality requires separate scaling"
-```
-
-**Use Article Status**
-- `needs-review`: Draft, not yet approved
-- `active`: Approved and in effect
-- `archived`: No longer applicable
-
-### ❌ Avoid This
-
-- Too many articles initially (start with 3-7 core principles)
-- Vague or obvious principles
-- No examples (makes principles hard to apply)
-- Never updating articles as project evolves
-
-## Querying
-
-### ✅ Do This
-
-**Use `next_task` for Discovery**
-```
-query({ next_task: true })
-```
-Gets highest priority unblocked task automatically.
-
-**Expand Dependencies When Needed**
-```
-query({
-  entity_id: "pln-001-auth",
-  expand: {
-    dependencies: true,
-    dependency_metrics: true,
-    depth: 2
-  }
-})
-```
-
-**Filter for Uncovered Work**
-```
-query({
-  types: ["requirement"],
-  filters: { uncovered: true }
-})
-```
-
-**Use Facets for Overview**
-```
-query({
-  types: ["plan"],
-  include_facets: true,
-  facet_fields: ["priority", "status"]
-})
-```
-
-**Sort Meaningfully**
-```
-query({
-  types: ["plan"],
-  filters: { plan_completed: false },
-  sort_by: [
-    { field: "priority", order: "desc" },
-    { field: "created_at", order: "asc" }
-  ]
-})
-```
-
-### ❌ Avoid This
-
-- Manually tracking next tasks (use `next_task`)
-- Not using filters to find gaps (uncovered, orphaned)
-- Ignoring dependency metrics (fan-in, fan-out, coupling)
-
-## Validation
-
-### ✅ Do This
-
-**Validate Regularly**
-```
-validate({
-  check_references: true,
-  check_cycles: true,
-  include_health: true
-})
-```
-
-**Fix Issues Immediately**
-- Broken references → Spec drift
-- Circular dependencies → Blocked work
-- Low health score → Systemic problems
-
-**Validate After Major Changes**
-- Creating multiple specs
-- Refactoring dependencies
-- Deleting specs
-
-### ❌ Avoid This
-
-- Ignoring validation errors
-- Waiting until system is broken
-- Not running validation after bulk changes
-
-## Progress Tracking
-
-### ✅ Do This
-
-**Update As You Work**
-```
-update_spec({
-  id: "pln-001-auth",
-  updates: {
-    tasks: [
-      { id: "task-001", completed: true, verified: true }
-    ]
-  }
-})
-```
-
-**Mark Verified After Testing**
-- `completed: true` → Work done
-- `verified: true` → Tested and reviewed
-
-**Complete Plans When Done**
-```
-update_spec({
-  id: "pln-001-auth",
-  updates: {
-    completed: true,
-    approved: true
-  }
-})
-```
-
-### ❌ Avoid This
-
-- Batch updates at end of day (lose progress visibility)
-- Marking tasks verified without testing
-- Completing plans with unfinished tasks
-
-## Common Patterns
-
-### Pattern: Feature Development
-
-```
-1. Create requirement with criteria
-   → req-001-user-auth (3 criteria)
-
-2. Create plan per criterion
-   → pln-001-auth-impl (crit-001)
-   → pln-002-session-impl (crit-002)
-   → pln-003-oauth-impl (crit-003)
-
-3. Implement tasks sequentially
-   → query({ next_task: true })
-   → Implement → Test → Complete
-   → Repeat
-
-4. Validate and verify
-   → All tasks complete and verified
-   → All test cases pass
-   → Mark plan complete/approved
-
-5. Check requirement coverage
-   → All criteria have completed plans
-   → Requirement is complete
-```
-
-### Pattern: Multi-Team Work
-
-```
-1. Create requirement with clear criteria
-2. Create plans for each criterion
-3. Assign plans to teams via priority/dependencies
-4. Teams work independently on their plans
-5. Use `depends_on` to coordinate between plans
-6. Validate regularly to catch integration issues
-```
-
-### Pattern: Technical Debt
-
-```
-1. Create requirement for improvement
-   → priority: "ideal" or "optional"
-
-2. Create plan with refactoring tasks
-   → Link to affected components
-
-3. Track in backlog
-   → query({ types: ["plan"], filters: { plan_completed: false, plan_priority: ["low"] } })
-```
-
-## Common Anti-Patterns
-
-### ❌ Big Bang Planning
-
-Creating all specs upfront leads to:
-- Stale specs (requirements change)
-- Over-specification (too much detail)
-- Analysis paralysis
-
-**Instead**: Create just-in-time, iteratively.
-
-### ❌ Implementation Details in Requirements
+**During planning, not after:**
 
 ```yaml
-# Bad
-requirement:
-  description: "Implement JWT authentication with bcrypt password hashing"
+test_cases:
+  - name: Valid login
+    description: User logs in with correct credentials
+    steps:
+      - Create test user
+      - POST /auth/login with valid credentials
+      - Verify 200 response with JWT token
+    expected_result: JWT token and user data returned
+```
 
-# Good
-requirement:
-  description: "Users need secure authentication to access their data"
+### Cover Happy and Error Paths
+
+```yaml
+test_cases:
+  - name: Valid login (happy path)
+    # ...
+
+  - name: Invalid password (error path)
+    expected_result: 401 error with message "Invalid credentials"
+
+  - name: Account locked (edge case)
+    expected_result: 403 error with message "Account locked"
+```
+
+### Update Test Status
+
+```yaml
+test_cases:
+  - id: test-001
+    implemented: true   # ✓ Test code written
+    passing: true       # ✓ Test passes
+```
+
+## Scope Management
+
+### Define Clear Boundaries
+
+**In-Scope**: What you're building
+```yaml
+scope:
+  - type: in-scope
+    description: User login with email/password
+  - type: in-scope
+    description: Password reset via email
+```
+
+**Out-of-Scope**: What you're NOT building
+```yaml
+scope:
+  - type: out-of-scope
+    description: Social login (OAuth)
+    rationale: Phase 2 after MVP validation
+  - type: out-of-scope
+    description: Two-factor authentication
+    rationale: Security enhancement for future release
+```
+
+### Update Scope as Needed
+
+```
+# Requirements changed
+Update pln-001 scope: Add social login (stakeholder request)
+
+# Add corresponding tasks
+Add task to pln-001: Implement OAuth with Google
+```
+
+## Traceability
+
+### Maintain Links
+
+**BRD → PRD → Plan flow:**
+```
+brd-001-notifications (business need)
+  ↓
+prd-001-notification-system (technical approach)
+  ↓
+pln-001-implement-notifications (implementation)
   criteria:
-    - "Passwords are securely stored and cannot be recovered in plain text"
+    requirement: brd-001-notifications
+    criteria: crit-001
 ```
 
-**Instead**: Keep requirements implementation-agnostic.
+### Reference in Commits
 
-### ❌ Orphaned Specs
+```bash
+git commit -m "feat(auth): implement login endpoint
 
-Specs with no references or dependencies become stale.
+Implements task-002 from pln-001-user-authentication
+Fulfills crit-001 from brd-001-user-authentication
 
-**Instead**:
-- Link plans to requirements via `criteria_id`
-- Use `depends_on` for relationships
-- Run `query({ filters: { orphaned: true } })` regularly
+- Added POST /auth/login
+- JWT token generation
+- Password verification with bcrypt"
+```
 
-### ❌ Circular Dependencies
+## Anti-Patterns to Avoid
+
+### 1. Stale Documentation
+
+❌ **Don't**: Create specs and never update them
+✅ **Do**: Update as implementation progresses
+
+```
+# During implementation
+Add note to task-002: Using Redis for session storage instead of JWT
+Update prd-001 technical approach: Changed to Redis sessions
+```
+
+### 2. Over-Planning
+
+❌ **Don't**: Spec every detail for 6 months
+✅ **Do**: Plan 1-2 weeks ahead, adjust as you learn
+
+### 3. Under-Planning
+
+❌ **Don't**: Start coding with no plan
+✅ **Do**: At minimum, create a plan with tasks and scope
+
+### 4. Ignoring Dependencies
+
+❌ **Bad**:
+```yaml
+tasks:
+  - task: Build UI
+  - task: Build API
+  # No dependencies - UI will break!
+```
+
+✅ **Good**:
+```yaml
+tasks:
+  - id: task-001
+    task: Build API
+  - id: task-002
+    task: Build UI
+    depends_on: [task-001]
+```
+
+### 5. Vague Acceptance Criteria
+
+❌ **Bad**: "System works well"
+✅ **Good**: "Login responds in < 500ms for 95% of requests"
+
+### 6. Missing Business Context
+
+❌ **Bad**: Jump straight to PRD
+✅ **Good**: Start with BRD to capture "why"
+
+## Team Collaboration
+
+### Code Reviews
+
+**Reference specs in PRs:**
+```markdown
+## Implements
+- pln-001-user-authentication
+- Tasks: task-001, task-002, task-003
+
+## Acceptance Criteria
+- [x] crit-001: Users can log in with email/password
+- [x] crit-002: Invalid credentials show clear error
+- [ ] crit-003: Account lockout after 5 failed attempts (follow-up)
+```
+
+### Standups
+
+**Use specs for status updates:**
+```
+Yesterday: Completed task-002 (login endpoint)
+Today: Working on task-003 (password reset)
+Blocked: task-004 waiting on API access (see blocker note)
+```
+
+### Sprint Planning
+
+**Query for available work:**
+```
+Show high-priority pending tasks
+What's ready to start in pln-001?
+Which tasks have no dependencies?
+```
+
+## Maintenance
+
+### Regular Reviews
+
+**Weekly:**
+- Update task status
+- Resolve completed plans
+- Add new tasks discovered
+
+**Monthly:**
+- Review decision status
+- Update outdated references
+- Archive superseded specs
+
+### Cleanup
+
+**Archive completed work:**
+```yaml
+# Plan completed
+status: completed
+completed_at: 2025-01-15T16:00:00Z
+
+# Keep for history, not active work
+```
+
+**Supersede outdated specs:**
+```
+Create decision to replace MongoDB with PostgreSQL
+  supersedes: dec-001-use-mongodb
+```
+
+## Tooling Integration
+
+### Git Hooks
+
+```bash
+# Pre-commit: Validate spec format
+#!/bin/bash
+for file in specs/**/*.yml; do
+  npx @spec-mcp/cli validate $file
+done
+```
+
+### CI/CD
 
 ```yaml
-# pln-001
-depends_on: ["pln-002"]
-
-# pln-002
-depends_on: ["pln-001"]  # Circular!
+# .github/workflows/specs.yml
+name: Validate Specs
+on: [push, pull_request]
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: npx @spec-mcp/cli validate-all
 ```
 
-**Instead**: Run `validate({ check_cycles: true })` regularly.
+### Editor Integration
 
-### ❌ Skipping Validation
+Many editors support YAML schema validation. Configure for spec-mcp schemas.
 
-Not validating leads to:
-- Broken references
-- Circular dependencies
-- Spec drift
+## Metrics and Reporting
 
-**Instead**: Validate frequently, fix issues immediately.
+### Track Progress
 
-## Tips and Tricks
+```
+# Plan completion
+Show completion status for all plans
 
-### Quick Reference
+# Task velocity
+How many tasks completed this week?
 
-**Find Next Work**: `query({ next_task: true })`
-**Find Gaps**: `query({ types: ["requirement"], filters: { uncovered: true } })`
-**Health Check**: `validate({ check_references: true, check_cycles: true, include_health: true })`
-**Progress Summary**: `query({ types: ["plan"], include_facets: true, facet_fields: ["status", "priority"] })`
+# Blockers
+Show all blocked tasks
+```
 
-### Keyboard Shortcuts (Conceptual)
+### Visualize Work
 
-Think of these as mental shortcuts:
-- "What's next?" → `next_task`
-- "What's broken?" → `validate`
-- "What's missing?" → `uncovered` filter
-- "What's blocked?" → Check `depends_on` + completion status
+```
+# Milestone progress
+Show plans in milestone mls-001-v2-launch
 
-### Integration with Development
+# Dependency graph
+Show task dependencies for pln-001
+```
 
-1. **Before coding**: `query({ next_task: true })`
-2. **During coding**: Reference task file changes and considerations
-3. **After coding**: Update task completion status
-4. **Before commit**: Run validation
-5. **Daily standup**: Review plan progress
+## Related Guides
 
-## Next Steps
-
-- Read [Getting Started](spec-mcp://guide/getting-started) for quick setup
-- Read [Planning Workflow](spec-mcp://guide/planning-workflow) for detailed planning
-- Read [Implementation Workflow](spec-mcp://guide/implementation-workflow) for development
-- Read [Query Guide](spec-mcp://guide/query-guide) for advanced queries
+- See [Planning Workflow](spec-mcp://guide/planning-workflow) for planning process
+- See [Implementation Workflow](spec-mcp://guide/implementation-workflow) for execution
+- See [Choosing Spec Types](spec-mcp://guide/choosing-spec-types) for when to use each type
+- See individual spec guides for detailed usage

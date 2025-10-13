@@ -24,7 +24,8 @@
 		"rules": {
 			"recommended": true,
 			"suspicious": {
-				"noControlCharactersInRegex": "off"
+				"noControlCharactersInRegex": "off",
+				"noUnknownAtRules": "off"
 			},
 			"style": {
 				"noNonNullAssertion": "off"
@@ -43,5 +44,13 @@
 				"organizeImports": "on"
 			}
 		}
-	}
+	},
+	"overrides": [
+		{
+			"includes": ["**/src/components/ui/**", "**/src/hooks/**"],
+			"linter": {
+				"enabled": false
+			}
+		}
+	]
 }

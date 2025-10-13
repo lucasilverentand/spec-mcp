@@ -1,10 +1,10 @@
 {
 	"name": "@spec-mcp/cli",
 	"version": "0.1.0",
-	"description": "CLI tool for validating spec-mcp specifications",
+	"description": "CLI tool for managing spec-mcp specifications",
 	"type": "module",
 	"bin": {
-		"spec-validate": "./dist/index.js"
+		"spec-mcp": "./dist/index.js"
 	},
 	"main": "./dist/index.js",
 	"types": "./dist/index.d.ts",
@@ -15,22 +15,58 @@
 		}
 	},
 	"files": [
-		"dist"
+		"dist",
+		"README.md",
+		"LICENSE"
 	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/lucapug/spec-mcp.git",
+		"directory": "packages/cli"
+	},
+	"keywords": [
+		"spec",
+		"mcp",
+		"cli",
+		"specifications",
+		"requirements",
+		"planning",
+		"architecture",
+		"documentation"
+	],
+	"author": "Spec MCP Server Contributors",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/lucapug/spec-mcp/issues"
+	},
+	"homepage": "https://github.com/lucapug/spec-mcp#readme",
+	"publishConfig": {
+		"access": "public"
+	},
 	"scripts": {
 		"build": "tsc",
 		"dev": "tsc --watch",
 		"clean": "rm -rf dist",
-		"typecheck": "tsc --noEmit"
+		"typecheck": "tsc --noEmit",
+		"test": "vitest run",
+		"test:watch": "vitest watch",
+		"test:coverage": "vitest run --coverage",
+		"prepublishOnly": "pnpm run clean && pnpm run build && pnpm run test"
 	},
 	"dependencies": {
+		"@inquirer/prompts": "^7.8.6",
 		"@spec-mcp/core": "workspace:*",
+		"@spec-mcp/dashboard": "workspace:*",
+		"@spec-mcp/schemas": "workspace:*",
+		"@spec-mcp/utils": "workspace:*",
 		"commander": "^12.1.0"
 	},
 	"devDependencies": {
 		"@spec-mcp/tsconfig": "workspace:*",
 		"@types/node": "^24.5.2",
-		"typescript": "^5.9.2"
+		"@vitest/coverage-v8": "^3.2.4",
+		"typescript": "^5.9.2",
+		"vitest": "^3.2.4"
 	},
 	"engines": {
 		"node": ">=18.0.0"

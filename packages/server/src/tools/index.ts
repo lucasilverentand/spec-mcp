@@ -1,34 +1,36 @@
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { SpecOperations } from "@spec-mcp/core";
-import type { ServerConfig } from "../config/index.js";
-import { registerDeleteSpecTool } from "./delete-spec.js";
-import { registerFinalizeDraftTool } from "./finalize-draft.js";
-import { registerQueryTool } from "./query.js";
-import { registerStartDraftTool } from "./start-draft.js";
-import { registerUpdateDraftTool } from "./update-draft.js";
-import { registerUpdateSpecTool } from "./update-spec.js";
-import { registerValidateTool } from "./validate.js";
+// Core API tools
 
-/**
- * Register all MCP tools for the spec server
- */
-export function registerAllTools(
-	server: McpServer,
-	operations: SpecOperations,
-	config: ServerConfig,
-) {
-	// Creation flow tools (Q&A-based guided creation)
-	registerStartDraftTool(server, operations, config); // start_draft - start Q&A flow
-	registerUpdateDraftTool(server, config); // update_draft - answer questions, collect data
-	registerFinalizeDraftTool(server, operations, config); // finalize_draft - finalize draft and create spec
-
-	// Spec management tools
-	registerUpdateSpecTool(server, operations, config); // update_spec - update finalized specs with validation
-	registerDeleteSpecTool(server, operations, config); // delete_spec - delete draft or finalized spec
-
-	// Validation tool (includes reference checking, cycle detection, health scoring)
-	registerValidateTool(server, operations, config);
-
-	// Unified query tool (includes dependency analysis, orphan/coverage filters, next task)
-	registerQueryTool(server, operations, config); // query (read-only queries)
-}
+// Task management
+export * from "./add-task.js";
+// Draft workflow
+export * from "./answer-question";
+// Array manipulation tools
+export * from "./business-requirement-tools.js";
+export * from "./component-tools.js";
+export * from "./continue-draft";
+export * from "./criteria-tools.js";
+export * from "./decision-tools.js";
+// Spec management
+export * from "./delete.js";
+export * from "./finalize-entity";
+export * from "./finish-task.js";
+export * from "./get-spec.js";
+// Git workflow
+export * from "./git-workflow-tools.js";
+export * from "./list-drafts";
+export * from "./milestone-tools.js";
+export * from "./plan-array-tools.js";
+// Query tools
+export * from "./query-specs.js";
+// Legacy reference tools (deprecated, kept for backwards compatibility)
+export * from "./reference-tools.js";
+export * from "./skip-answer";
+export * from "./start-draft";
+export * from "./start-task.js";
+export * from "./technical-requirement-tools.js";
+export * from "./test-case-tools.js";
+// Unified reference tool (new optimized API)
+export * from "./unified-reference-tools.js";
+// Update tools (kept separate for better type safety and schema documentation)
+export * from "./update-spec-tools.js";
+export * from "./validate-entity";

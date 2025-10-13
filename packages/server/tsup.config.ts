@@ -18,6 +18,8 @@ export default defineConfig({
 		"glob",
 		"pino",
 		"pino-pretty",
+		"ws",
+		"chokidar",
 	],
 	treeshake: true,
 	splitting: false,

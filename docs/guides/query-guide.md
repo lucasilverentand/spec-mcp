@@ -1,732 +1,667 @@
 # Query Guide
 
+**Goal**: Learn how to query, filter, and analyze specs to find information and track progress.
+
 ## Overview
 
-The `query` tool is a powerful unified interface for searching, filtering, and analyzing specs. This guide covers all query capabilities.
+The `query_specs` tool provides powerful filtering and searching capabilities across all your specs.
+
+```typescript
+query_specs({
+  objects: ["plan", "task"],
+  priority: ["high", "critical"],
+  status: ["pending", "in-progress"],
+  orderBy: "next-to-do"
+})
+```
 
 ## Basic Queries
 
-### Get Spec by ID
+### List All Specs
 
+**All plans:**
 ```
-query({
-  entity_id: "req-001-user-auth"
-})
-```
-
-**Response**: Full spec details.
-
-### Get Multiple Specs by IDs
-
-```
-query({
-  entity_ids: ["req-001-user-auth", "req-002-data-storage"]
-})
+Show me all plans
 ```
 
-**Response**: Array of specs.
-
-### Get Sub-Entity (Task, Test Case, Flow, etc.)
-
+**All business requirements:**
 ```
-query({
-  entity_id: "pln-001-auth-impl",
-  sub_entity_id: "task-001"
-})
+Show me all BRDs
 ```
 
-**Sub-entity IDs**:
-- `task-XXX` - Tasks
-- `tc-XXX` - Test cases
-- `flow-XXX` - Flows
-- `api-XXX` - API contracts
-- `dm-XXX` - Data models
-- `crit-XXX` - Acceptance criteria
-
-## Search Queries
-
-### Full-Text Search
-
+**All specs:**
 ```
-query({
-  search_terms: "authentication security",
-  types: ["requirement", "plan"]
-})
+Show me all specs
 ```
 
-**Search fields** (default): `name`, `description`
+### Get Specific Spec
 
-**Customize search fields**:
+**By ID:**
 ```
-query({
-  search_terms: "oauth",
-  search_fields: ["name", "description"]
-})
-```
-
-### Fuzzy Search
-
-```
-query({
-  search_terms: "authetication",  // Typo
-  fuzzy: true
-})
+Show me pln-001
+Show me brd-002-user-auth
+Get spec pln-001
 ```
 
-Uses Levenshtein distance to find close matches.
-
-### Search with Sorting
-
+**With relationships:**
 ```
-query({
-  search_terms: "user",
-  sort_by: [
-    { field: "relevance", order: "desc" },  // Best matches first
-    { field: "created_at", order: "desc" }
-  ]
-})
+Show me pln-001 with all related specs
+What requirements does pln-001 fulfill?
 ```
-
-**Sort fields**:
-- `relevance` - Search score (only for searches)
-- `created_at` - Creation date
-- `updated_at` - Last update
-- `priority` - Priority level
-- `name` - Alphabetical
-- `type` - Spec type
 
 ## Filtering
 
-### By Type
+### By Object Type
 
-```
-query({
-  types: ["requirement", "plan"]
+**Single type:**
+```typescript
+query_specs({
+  objects: ["plan"]
 })
 ```
 
-**Available types**: `requirement`, `plan`, `app`, `service`, `library`, `constitution`, `decision`
+**Multiple types:**
+```typescript
+query_specs({
+  objects: ["plan", "business-requirement"]
+})
+```
+
+**Sub-items:**
+```typescript
+query_specs({
+  objects: ["task", "test-case", "criterion"]
+})
+```
+
+### By Status
+
+**Completion status:**
+```typescript
+query_specs({
+  completed: false  // Only incomplete
+})
+
+query_specs({
+  completed: true  // Only completed
+})
+```
+
+**Verification status:**
+```typescript
+query_specs({
+  verified: true  // Only verified work
+})
+```
+
+**Task status:**
+```typescript
+query_specs({
+  objects: ["task"],
+  status: ["pending", "in-progress"]
+})
+```
+
+**Status values:**
+- `not-started`: Not begun
+- `in-progress`: Currently working
+- `completed`: Finished
+- `verified`: Tested and confirmed
 
 ### By Priority
 
-**Requirements**:
-```
-query({
-  types: ["requirement"],
-  filters: {
-    requirement_priority: ["critical", "required"]
-  }
+```typescript
+query_specs({
+  priority: ["critical", "high"]
 })
 ```
 
-**Plans**:
-```
-query({
-  types: ["plan"],
-  filters: {
-    plan_priority: ["critical", "high"]
-  }
+**Priority levels:**
+- `critical`: Blocks everything
+- `high`: Important
+- `medium`: Standard (default)
+- `low`: Can defer
+- `nice-to-have`: Optional
+
+### By Milestone
+
+```typescript
+query_specs({
+  milestone: "mls-001-v2-launch"
 })
 ```
 
-### By Completion Status
+Returns all specs linked to that milestone.
 
-**Incomplete plans**:
-```
-query({
-  types: ["plan"],
-  filters: {
-    plan_completed: false
-  }
+### By ID
+
+**Single ID:**
+```typescript
+query_specs({
+  id: "pln-001-user-auth"
 })
 ```
 
-**Completed and approved plans**:
-```
-query({
-  types: ["plan"],
-  filters: {
-    plan_completed: true,
-    plan_approved: true
-  }
+**Multiple IDs:**
+```typescript
+query_specs({
+  id: ["pln-001", "pln-002", "brd-001"]
 })
 ```
 
-**Incomplete requirements**:
-```
-query({
-  types: ["requirement"],
-  filters: {
-    requirement_completed: false
-  }
+### By Draft Status
+
+**Only drafts:**
+```typescript
+query_specs({
+  draft: true
 })
 ```
 
-### By Date Range
-
-**Created after date**:
-```
-query({
-  filters: {
-    created_after: "2025-01-01T00:00:00Z"
-  }
+**Only finalized:**
+```typescript
+query_specs({
+  draft: false
 })
 ```
 
-**Updated in date range**:
-```
-query({
-  filters: {
-    updated_after: "2025-01-01T00:00:00Z",
-    updated_before: "2025-01-31T23:59:59Z"
-  }
+## Sorting
+
+### Next-To-Do (Priority-Based)
+
+```typescript
+query_specs({
+  orderBy: "next-to-do",
+  direction: "asc"
 })
 ```
 
-### By Folder
+Returns work ordered by:
+1. Priority (critical → high → medium → low → nice-to-have)
+2. Within same priority, by created date
 
-```
-query({
-  filters: {
-    folder: "authentication"
-  }
+**Best for:** "What should I work on next?"
+
+### By Creation Date
+
+```typescript
+query_specs({
+  orderBy: "created",
+  direction: "desc"  // Newest first
 })
 ```
 
-Matches folder and all subfolders hierarchically.
+**Best for:** "What was added recently?"
 
-### By Criteria ID
+### By Update Date
 
-**Plans for specific criterion**:
-```
-query({
-  types: ["plan"],
-  filters: {
-    criteria_id: "req-001-user-auth/crit-001"
-  }
+```typescript
+query_specs({
+  orderBy: "updated",
+  direction: "desc"  // Most recently changed
 })
 ```
 
-**Plans linked to any requirement criteria**:
-```
-query({
-  types: ["plan"],
-  filters: {
-    has_criteria_id: true
-  }
-})
-```
-
-### Find Gaps: Uncovered and Orphaned
-
-**Uncovered requirements** (no plans):
-```
-query({
-  types: ["requirement"],
-  filters: {
-    uncovered: true
-  }
-})
-```
-
-**Orphaned specs** (no references):
-```
-query({
-  filters: {
-    orphaned: true
-  }
-})
-```
-
-## Output Modes
-
-### Summary Mode (Default)
-
-```
-query({
-  entity_id: "req-001-user-auth",
-  mode: "summary"
-})
-```
-
-**Returns**: id, type, name, description, priority, status, dates
-
-### Full Mode
-
-```
-query({
-  entity_id: "req-001-user-auth",
-  mode: "full"
-})
-```
-
-**Returns**: All fields including tasks, flows, test cases, etc.
-
-### Custom Mode
-
-```
-query({
-  entity_id: "req-001-user-auth",
-  mode: "custom",
-  include_fields: ["id", "name", "criteria", "priority"]
-})
-```
-
-**Or exclude fields**:
-```
-query({
-  entity_id: "req-001-user-auth",
-  mode: "custom",
-  exclude_fields: ["created_at", "updated_at"]
-})
-```
-
-## Pagination
-
-### Offset and Limit
-
-```
-query({
-  types: ["plan"],
-  limit: 20,
-  offset: 40  // Skip first 40, get next 20
-})
-```
-
-**Response includes pagination metadata**:
-```json
-{
-  "results": [...],
-  "pagination": {
-    "total": 156,
-    "limit": 20,
-    "offset": 40,
-    "has_more": true
-  }
-}
-```
-
-### Return All Results
-
-```
-query({
-  types: ["requirement"],
-  return_all: true
-})
-```
-
-**Warning**: Use cautiously for large datasets.
-
-## Facets
-
-### Get Facet Counts
-
-```
-query({
-  types: ["plan"],
-  include_facets: true,
-  facet_fields: ["priority", "status"]
-})
-```
-
-**Response**:
-```json
-{
-  "results": [...],
-  "facets": {
-    "priority": {
-      "critical": 5,
-      "high": 12,
-      "medium": 23,
-      "low": 8
-    },
-    "status": {
-      "completed": 15,
-      "in_progress": 18,
-      "pending": 15
-    }
-  }
-}
-```
-
-**Available facet fields**: `type`, `priority`, `status`, `folder`
-
-## Dependency Expansion
-
-### Include Dependencies
-
-```
-query({
-  entity_id: "pln-001-auth-impl",
-  expand: {
-    dependencies: true
-  }
-})
-```
-
-**Returns**: Full dependency specs inline.
-
-### Include Dependency Metrics
-
-```
-query({
-  entity_id: "pln-001-auth-impl",
-  expand: {
-    dependency_metrics: true
-  }
-})
-```
-
-**Metrics**:
-- **fan_in**: How many specs depend on this
-- **fan_out**: How many specs this depends on
-- **coupling**: Total dependencies (fan_in + fan_out)
-- **stability**: Resistance to change (fan_in / coupling)
-
-### Multi-Level Expansion
-
-```
-query({
-  entity_id: "pln-001-auth-impl",
-  expand: {
-    dependencies: true,
-    dependency_metrics: true,
-    depth: 2  // Expand 2 levels deep
-  }
-})
-```
-
-**Depth options**: 1-3 (default: 1)
-
-### Include References
-
-```
-query({
-  entity_id: "pln-001-auth-impl",
-  expand: {
-    references: true
-  }
-})
-```
-
-**Returns**: Specs that reference this spec.
-
-### Include Parent
-
-```
-query({
-  entity_id: "pln-001-auth-impl",
-  sub_entity_id: "task-001",
-  expand: {
-    parent: true
-  }
-})
-```
-
-**Returns**: Parent plan for the task.
-
-## Next Task Detection
-
-### Get Next Recommended Task
-
-```
-query({
-  next_task: true
-})
-```
-
-**Returns**: Highest priority unblocked task across all plans.
-
-**Algorithm**:
-1. Filter to incomplete, unverified tasks
-2. Check task dependencies (must be unblocked)
-3. Check plan dependencies (plan must be unblocked)
-4. Sort by: task priority > plan priority > creation date
-5. Return first task
-
-**Response**:
-```json
-{
-  "task": {
-    "id": "task-001",
-    "priority": "high",
-    "description": "Create User model - 2 hours",
-    "completed": false,
-    "verified": false,
-    "depends_on": [],
-    "files": [...]
-  },
-  "plan": {
-    "id": "pln-001-auth-impl",
-    "name": "Authentication Implementation",
-    "priority": "critical",
-    "criteria_id": "req-001-user-auth/crit-001"
-  },
-  "requirement": {
-    "id": "req-001-user-auth",
-    "name": "User Authentication",
-    "priority": "critical"
-  }
-}
-```
-
-## Multi-Field Sorting
-
-### Sort by Multiple Fields
-
-```
-query({
-  types: ["plan"],
-  filters: { plan_completed: false },
-  sort_by: [
-    { field: "priority", order: "desc" },    // Highest priority first
-    { field: "created_at", order: "asc" }    // Then oldest first
-  ]
-})
-```
-
-**Default sorting**:
-- Search queries: `relevance desc`
-- List queries: `created_at desc`
-
-## Advanced Query Examples
-
-### Find High-Priority Incomplete Work
-
-```
-query({
-  types: ["plan"],
-  filters: {
-    plan_priority: ["critical", "high"],
-    plan_completed: false
-  },
-  sort_by: [
-    { field: "priority", order: "desc" }
-  ],
-  mode: "summary"
-})
-```
-
-### Find Recent Changes
-
-```
-query({
-  filters: {
-    updated_after: "2025-01-15T00:00:00Z"
-  },
-  sort_by: [
-    { field: "updated_at", order: "desc" }
-  ],
-  limit: 10
-})
-```
-
-### Find Orphaned High-Priority Items
-
-```
-query({
-  filters: {
-    orphaned: true,
-    requirement_priority: ["critical", "required"]
-  }
-})
-```
-
-### Deep Dependency Analysis
-
-```
-query({
-  entity_id: "req-001-user-auth",
-  mode: "full",
-  expand: {
-    dependencies: true,
-    dependency_metrics: true,
-    references: true,
-    depth: 3
-  }
-})
-```
-
-### Search with Filters and Facets
-
-```
-query({
-  search_terms: "authentication",
-  types: ["requirement", "plan"],
-  filters: {
-    plan_priority: ["critical", "high"],
-    created_after: "2025-01-01T00:00:00Z"
-  },
-  include_facets: true,
-  facet_fields: ["type", "priority"],
-  sort_by: [
-    { field: "relevance", order: "desc" },
-    { field: "priority", order: "desc" }
-  ],
-  limit: 20
-})
-```
-
-### Find Work by Component Type
-
-```
-query({
-  types: ["service", "library"],
-  filters: {
-    component_type: ["service"]
-  }
-})
-```
-
-### Find Active Constitutions
-
-```
-query({
-  types: ["constitution"],
-  filters: {
-    constitution_status: ["active"]
-  }
-})
-```
-
-## Query Performance Tips
-
-### Use Specific Filters
-
-```
-# Faster
-query({
-  types: ["plan"],
-  filters: { plan_priority: ["critical"] },
-  limit: 10
-})
-
-# Slower
-query({
-  return_all: true
-})
-```
-
-### Limit Expansion Depth
-
-```
-# Faster
-expand: { dependencies: true, depth: 1 }
-
-# Slower
-expand: { dependencies: true, depth: 3 }
-```
-
-### Use Summary Mode When Possible
-
-```
-# Faster
-mode: "summary"
-
-# Slower
-mode: "full"
-```
-
-### Use Pagination
-
-```
-# Better for large datasets
-limit: 50,
-offset: 0
-
-# Avoid for large datasets
-return_all: true
-```
+**Best for:** "What changed recently?"
 
 ## Common Query Patterns
 
-### Daily Workflow
+### Work Planning
 
-**Morning**: What should I work on?
-```
-query({ next_task: true })
-```
-
-**Mid-day**: How's my progress?
-```
-query({
-  types: ["plan"],
-  filters: { plan_completed: false },
-  include_facets: true,
-  facet_fields: ["priority", "status"]
+**What can I start now?**
+```typescript
+query_specs({
+  objects: ["task"],
+  status: ["pending"],
+  priority: ["critical", "high"],
+  orderBy: "next-to-do"
 })
 ```
 
-**Evening**: What did I complete?
-```
-query({
-  types: ["plan"],
-  filters: {
-    updated_after: "2025-01-20T00:00:00Z",
-    plan_completed: true
-  },
-  sort_by: [{ field: "updated_at", order: "desc" }]
+**What's in progress?**
+```typescript
+query_specs({
+  status: ["in-progress"]
 })
+```
+
+**What's blocked?**
+```typescript
+query_specs({
+  objects: ["task"],
+  // Tasks with active blockers
+})
+```
+
+### Progress Tracking
+
+**Completion rate:**
+```typescript
+// All tasks
+query_specs({ objects: ["task"] })
+
+// Completed tasks
+query_specs({
+  objects: ["task"],
+  completed: true
+})
+```
+
+**Milestone progress:**
+```typescript
+query_specs({
+  milestone: "mls-001-v2-launch",
+  completed: false  // Remaining work
+})
+```
+
+**This week's completions:**
+```typescript
+query_specs({
+  completed: true,
+  orderBy: "updated",
+  direction: "desc"
+})
+```
+
+### Quality Assurance
+
+**Unverified work:**
+```typescript
+query_specs({
+  completed: true,
+  verified: false
+})
+```
+
+**Test cases:**
+```typescript
+query_specs({
+  objects: ["test-case"],
+  // Filter by implemented/passing status
+})
+```
+
+**High-priority criteria:**
+```typescript
+query_specs({
+  objects: ["criterion"],
+  priority: ["high", "critical"]
+})
+```
+
+### Team Coordination
+
+**High-priority pending work:**
+```typescript
+query_specs({
+  priority: ["critical", "high"],
+  status: ["pending"]
+})
+```
+
+**Work by milestone:**
+```typescript
+query_specs({
+  milestone: "mls-001-v2-launch",
+  orderBy: "next-to-do"
+})
+```
+
+**Recently updated specs:**
+```typescript
+query_specs({
+  orderBy: "updated",
+  direction: "desc"
+})
+```
+
+## Natural Language Queries
+
+You can also ask in natural language:
+
+```
+"Show me all high-priority pending tasks"
+"What work is in the v2.0 milestone?"
+"Which plans are incomplete?"
+"Show me recently completed work"
+"What's the next task I should work on?"
+"Which tests are failing?"
+```
+
+Claude translates these to `query_specs` calls.
+
+## Example Workflows
+
+### Daily Standup
+
+```
+1. "What did I complete yesterday?"
+   query_specs({
+     completed: true,
+     orderBy: "updated",
+     direction: "desc"
+   })
+
+2. "What am I working on today?"
+   query_specs({
+     status: ["in-progress"]
+   })
+
+3. "What's blocked?"
+   query_specs({
+     objects: ["task"],
+     // Filter for blocked tasks
+   })
 ```
 
 ### Sprint Planning
 
-**What's in the backlog?**
 ```
-query({
-  types: ["requirement"],
-  filters: { requirement_completed: false },
-  sort_by: [{ field: "priority", order: "desc" }]
+1. "Show available work for next sprint"
+   query_specs({
+     status: ["pending"],
+     priority: ["high", "medium"],
+     orderBy: "next-to-do"
+   })
+
+2. "What's the milestone progress?"
+   query_specs({
+     milestone: "mls-002-sprint-5"
+   })
+
+3. "Any dependencies to resolve?"
+   query_specs({
+     objects: ["task"],
+     // Check dependency chains
+   })
+```
+
+### Status Reports
+
+```
+1. "Completion metrics"
+   query_specs({ completed: true })   // Done
+   query_specs({ completed: false })  // Remaining
+
+2. "High-priority work status"
+   query_specs({
+     priority: ["critical", "high"]
+   })
+
+3. "What changed this week?"
+   query_specs({
+     orderBy: "updated",
+     direction: "desc"
+   })
+```
+
+### Quality Review
+
+```
+1. "Unverified completed work"
+   query_specs({
+     completed: true,
+     verified: false
+   })
+
+2. "Test coverage"
+   query_specs({
+     objects: ["test-case"]
+   })
+
+3. "Acceptance criteria status"
+   query_specs({
+     objects: ["criterion"]
+   })
+```
+
+## Combining Filters
+
+Filters combine with AND logic:
+
+```typescript
+query_specs({
+  objects: ["task"],              // Tasks only
+  priority: ["high"],             // AND high priority
+  status: ["pending"],            // AND pending status
+  milestone: "mls-001-v2-launch"  // AND in milestone
 })
 ```
 
-**What's uncovered?**
-```
-query({
-  types: ["requirement"],
-  filters: { uncovered: true }
-})
-```
+Returns: High-priority pending tasks in the v2 launch milestone.
 
-**What's the team velocity?**
-```
-query({
-  types: ["plan"],
-  filters: {
-    plan_completed: true,
-    completed_after: "2025-01-01T00:00:00Z"
-  },
-  include_facets: true,
-  facet_fields: ["priority"]
-})
-```
+## Pagination
 
-### Code Review
+Results are automatically paginated if there are many matches.
 
-**What changed recently?**
-```
-query({
-  filters: {
-    updated_after: "2025-01-19T00:00:00Z"
-  },
-  sort_by: [{ field: "updated_at", order: "desc" }]
-})
-```
+## Query Response Format
 
-**What's been completed but not approved?**
-```
-query({
-  types: ["plan"],
-  filters: {
-    plan_completed: true,
-    plan_approved: false
+```typescript
+{
+  specs: [
+    {
+      id: "pln-001-user-auth",
+      type: "plan",
+      name: "Implement User Authentication",
+      priority: "high",
+      status: {
+        completed: false,
+        verified: false,
+        ...
+      },
+      ...
+    },
+    // More specs
+  ],
+  stats: {
+    total: 15,
+    completed: 8,
+    verified: 5
   }
+}
+```
+
+## Tips for Effective Querying
+
+### Start Broad, Then Narrow
+
+```
+1. "Show all plans"
+2. "Show incomplete plans"
+3. "Show high-priority incomplete plans"
+4. "Show high-priority incomplete plans in milestone mls-001"
+```
+
+### Use Sorting Strategically
+
+**For planning:**
+```typescript
+orderBy: "next-to-do"  // Priority-based
+```
+
+**For status:**
+```typescript
+orderBy: "updated"  // Recently changed
+```
+
+**For history:**
+```typescript
+orderBy: "created"  // Chronological
+```
+
+### Combine Object Types
+
+```typescript
+query_specs({
+  objects: ["plan", "business-requirement", "decision"]
 })
 ```
 
-## Next Steps
+Returns all specs involved in planning a feature.
 
-- Read [Getting Started](spec-mcp://guide/getting-started) for quick setup
-- Read [Planning Workflow](spec-mcp://guide/planning-workflow) for creating specs
-- Read [Implementation Workflow](spec-mcp://guide/implementation-workflow) for development
-- Read [Best Practices](spec-mcp://guide/best-practices) for patterns and tips
+### Check Related Items
+
+```
+"Show me pln-001 with all its tasks"
+"What BRD does pln-001 fulfill?"
+"Which decisions influenced pln-001?"
+```
+
+## Common Query Examples
+
+### Find Next Work
+
+```
+Show me next tasks to work on
+```
+```typescript
+query_specs({
+  objects: ["task"],
+  status: ["pending"],
+  orderBy: "next-to-do"
+})
+```
+
+### Milestone Status
+
+```
+Show all work in milestone mls-001
+```
+```typescript
+query_specs({
+  milestone: "mls-001-v2-launch"
+})
+```
+
+### Recent Activity
+
+```
+What changed in the last week?
+```
+```typescript
+query_specs({
+  orderBy: "updated",
+  direction: "desc"
+})
+```
+
+### High-Priority Items
+
+```
+Show all critical and high-priority work
+```
+```typescript
+query_specs({
+  priority: ["critical", "high"]
+})
+```
+
+### Incomplete Work
+
+```
+What's not done yet?
+```
+```typescript
+query_specs({
+  completed: false
+})
+```
+
+### Specific Types
+
+```
+Show all decisions
+Show all BRDs
+Show all components
+```
+```typescript
+query_specs({ objects: ["decision"] })
+query_specs({ objects: ["business-requirement"] })
+query_specs({ objects: ["component"] })
+```
+
+## Advanced Patterns
+
+### Dependency Analysis
+
+```
+Which tasks depend on task-001?
+Which plans depend on pln-001?
+```
+
+Query a spec and examine its `depends_on` and related specs.
+
+### Test Coverage
+
+```typescript
+query_specs({
+  objects: ["test-case"]
+})
+```
+
+Then analyze:
+- `implemented: true/false`
+- `passing: true/false`
+
+### Criteria Fulfillment
+
+```
+What criteria is pln-001 fulfilling?
+Which plans fulfill crit-001?
+```
+
+Check `criteria` field in plans.
+
+### Blocked Work
+
+```
+Show all blocked tasks
+```
+
+Query tasks and check `blocked` array for active blockers.
+
+## Performance Tips
+
+### Limit Scope
+
+```typescript
+// More efficient
+query_specs({
+  objects: ["task"],
+  milestone: "mls-001"
+})
+
+// Less efficient
+query_specs({})  // Returns everything
+```
+
+### Use Appropriate Sorting
+
+```typescript
+// Fast
+orderBy: "created"
+
+// Slower (calculates priority)
+orderBy: "next-to-do"
+```
+
+### Filter Early
+
+```typescript
+// Better
+query_specs({
+  objects: ["task"],
+  priority: ["high"]
+})
+
+// Worse
+query_specs({})  // Then filter in code
+```
+
+## Related Guides
+
+- See [Getting Started](spec-mcp://guide/getting-started) for basic usage
+- See [Implementation Workflow](spec-mcp://guide/implementation-workflow) for tracking work
+- See [Planning Workflow](spec-mcp://guide/planning-workflow) for creating specs
+- See [Best Practices](spec-mcp://guide/best-practices) for query patterns

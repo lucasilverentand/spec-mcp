@@ -1,364 +1,658 @@
 # Implementation Workflow
 
+**Goal**: Learn the workflow for implementing features from plans, tracking progress, and keeping specs synchronized with code.
+
 ## Overview
 
-The implementation workflow describes how to execute work defined in specs and track progress.
-
-## Step-by-Step Process
-
-### Phase 1: Find What to Work On
-
-#### 1.1 Get Next Recommended Task
+The implementation workflow takes you from a ready plan to shipped code:
 
 ```
-query({ next_task: true })
+Ready Plan
+  ↓
+Select Task
+  ↓
+Start Task
+  ↓
+Implement Code
+  ↓
+Update Progress
+  ↓
+Complete Task
+  ↓
+Verify & Test
+  ↓
+Ship
 ```
 
-This returns the highest priority unblocked task across all plans, considering:
-- Task priority (critical > high > medium > low)
-- Plan priority
-- Dependencies (only returns unblocked tasks)
-- Completion status
+## Step-by-Step Implementation
 
-**Response**:
-```json
-{
-  "task": {
-    "id": "task-001",
-    "priority": "high",
-    "description": "Create User model with email/password fields - 2 hours",
-    "files": [...]
-  },
-  "plan": {
-    "id": "pln-001-auth-impl",
-    "name": "Authentication Implementation",
-    "criteria_id": "req-001-user-auth/crit-001"
-  }
-}
-```
+### Step 1: Review the Plan
 
-#### 1.2 Get Full Plan Context
+**Get familiar with what you're building**
 
 ```
-query({
-  entity_id: "pln-001-auth-impl",
-  mode: "full",
-  expand: {
-    dependencies: true,
-    dependency_metrics: true
-  }
-})
+Show me pln-001
 ```
 
-This shows:
-- All tasks with dependencies
-- Flows, test cases, APIs, data models
-- Dependency graph and metrics
-- Linked requirement criteria
+Review:
+- **Scope**: What's included and excluded
+- **Tasks**: All work items and their dependencies
+- **Test Cases**: How to verify it works
+- **API Contracts**: Interfaces to implement
+- **Data Models**: Schemas to create
+- **References**: Supporting documentation
 
-### Phase 2: Implement the Task
+**Check acceptance criteria:**
 
-#### 2.1 Review Task Details
+```
+Show me the criteria for pln-001
+```
 
-Check the task structure:
-- **description**: What to do and effort estimate
-- **files**: Files to create/modify and reasons
-- **depends_on**: Prerequisite tasks
-- **considerations**: Implementation notes
-- **references**: External docs or links
+This tells you what "done" looks like.
 
-#### 2.2 Follow File Changes
+### Step 2: Find Next Task
 
-Each task specifies file changes:
+**Query for available work**
+
+```
+Show me next tasks I can work on in pln-001
+```
+
+The system returns tasks that:
+- Are not started or in-progress
+- Have no unsatisfied dependencies
+- Are not blocked
+- Ordered by priority
+
+**Example response:**
+```
+Available tasks:
+- task-001: Setup database schema (priority: critical)
+- task-005: Build user preferences API (priority: high)
+```
+
+### Step 3: Start a Task
+
+**Mark task as started**
+
+```
+Start task-001 in pln-001
+```
+
+This:
+- Sets `status.started_at` timestamp
+- Validates dependencies are met
+- Adds a timestamped note
+- Marks task as `in-progress`
+
+**Dependency validation:**
+
 ```yaml
-files:
-  - path: "src/models/User.ts"
-    change_type: create
-    reason: "User entity with validation"
-
-  - path: "src/config/database.ts"
-    change_type: modify
-    reason: "Add User model to exports"
+# This will fail if task-001 isn't completed
+Start task-002 in pln-001
+# Error: Cannot start task-002. Depends on task-001 (pending)
 ```
 
-**Change Types**:
-- `create`: New file
-- `modify`: Update existing file
-- `delete`: Remove file
+### Step 4: Implement
 
-#### 2.3 Apply Implementation Considerations
+**Write the code**
 
-Tasks often include important notes:
+Refer to the plan's specifications:
+
+**API Contracts:**
 ```yaml
-considerations:
-  - "Use bcrypt for password hashing (min 10 rounds)"
-  - "Add unique constraint on email field"
-  - "Validate email format before saving"
+api_contracts:
+  - name: POST /api/auth/login
+    specification: |
+      POST /api/auth/login
+      Request: { "email": "string", "password": "string" }
+      Response: { "token": "string", "user": {...} }
 ```
 
-### Phase 3: Test Your Changes
+**Data Models:**
+```yaml
+data_models:
+  - name: User
+    format: typescript
+    schema: |
+      interface User {
+        id: string;
+        email: string;
+        password_hash: string;
+      }
+```
 
-#### 3.1 Run Test Cases
-
-If the plan defines test cases, verify them:
+**Test Cases:**
 ```yaml
 test_cases:
-  - id: tc-001
-    type: unit
-    description: "User model validates email format"
-
-  - id: tc-002
-    type: integration
-    description: "User can be created and retrieved from database"
+  - name: Valid login
+    steps:
+      - Create test user
+      - POST to /auth/login
+      - Verify 200 response
+    expected_result: JWT token returned
 ```
 
-#### 3.2 Verify Acceptance Criteria
+### Step 5: Track Progress
 
-Check the plan's acceptance criteria:
+**Add notes to tasks**
+
+```
+Add note to task-001: Completed database schema, added indexes
+```
+
+This helps:
+- Document progress
+- Remember decisions
+- Communicate with team
+- Debug issues later
+
+**Handle blockers:**
+
+```
+Block task-003 in pln-001: Waiting for API access credentials
+```
+
+Documents what's preventing progress.
+
+### Step 6: Complete Task
+
+**Mark task as done**
+
+```
+Finish task-001 in pln-001: Implemented and tested database schema
+```
+
+This:
+- Sets `status.completed_at` timestamp
+- Validates dependencies were met
+- Adds completion summary
+- Marks task as `completed`
+
+**Unblocks dependent tasks:**
+
 ```yaml
-acceptance_criteria: "User model is created with email/password validation, passwords are hashed, and all tests pass"
+# After completing task-001
+tasks:
+  - id: task-001
+    status: completed  # ✓
+
+  - id: task-002
+    depends_on: [task-001]
+    status: pending  # ← Now available to start
 ```
 
-### Phase 4: Track Progress
+### Step 7: Verify with Tests
 
-#### 4.1 Mark Task Complete
-
-When task is done and tested:
-```
-update_spec({
-  id: "pln-001-auth-impl",
-  updates: {
-    tasks: [
-      { id: "task-001", completed: true, verified: true }
-    ]
-  }
-})
-```
-
-**Fields**:
-- `completed`: Work is done
-- `verified`: Testing/review completed
-
-#### 4.2 Update Test Case Status
+**Run test cases**
 
 ```
-update_spec({
-  id: "pln-001-auth-impl",
-  updates: {
-    test_cases: [
-      { id: "tc-001", status: "passed", notes: "All validations working" }
-    ]
-  }
-})
+Show me test cases for pln-001
 ```
 
-#### 4.3 Mark Plan Complete
-
-When all tasks are done:
-```
-update_spec({
-  id: "pln-001-auth-impl",
-  updates: {
-    completed: true,
-    approved: true
-  }
-})
-```
-
-### Phase 5: Validate and Continue
-
-#### 5.1 Check System Health
+Execute each test case and update status:
 
 ```
-validate({
-  check_references: true,
-  check_cycles: true,
-  include_health: true
-})
+Mark test case test-001 as passing in pln-001
+Mark test case test-002 as implemented in pln-001
 ```
 
-Fix any broken references or circular dependencies.
+**Track test coverage:**
+```yaml
+test_cases:
+  - id: test-001
+    implemented: true  # ✓ Code written
+    passing: true      # ✓ Test passes
+```
 
-#### 5.2 Get Next Task
+### Step 8: Complete the Plan
+
+Once all tasks are done:
 
 ```
-query({ next_task: true })
+Show plan pln-001 completion status
 ```
 
-Continue the cycle!
+**Ready to ship when:**
+- All tasks completed
+- All test cases passing
+- No active blockers
+- Acceptance criteria met
 
-## Working with Dependencies
+## Working with Task Dependencies
 
-### Task Dependencies
+### Dependency Chains
 
-Tasks can depend on other tasks within the same plan:
 ```yaml
 tasks:
   - id: task-001
-    description: "Setup database schema"
-    depends_on: []
+    task: Create database schema
+    status: completed  # ✓
 
   - id: task-002
-    description: "Create User model"
-    depends_on: ["task-001"]  # Blocked until task-001 is complete
+    task: Build API layer
+    depends_on: [task-001]
+    status: in-progress  # ← Working on this
+
+  - id: task-003
+    task: Add caching layer
+    depends_on: [task-002]
+    status: pending  # ← Blocked until task-002 done
 ```
 
-**Rule**: You cannot mark a task complete if it depends on incomplete tasks.
+**Query dependencies:**
 
-### Plan Dependencies
+```
+What tasks does task-003 depend on?
+Which tasks are blocked by task-002?
+```
 
-Plans can depend on other plans:
+### Parallel Work
+
+Tasks without dependencies can run in parallel:
+
 ```yaml
-depends_on:
-  - "pln-001-database-setup"
-  - "pln-002-auth-library"
+tasks:
+  - id: task-001
+    task: Backend API
+
+  - id: task-005
+    task: Frontend UI
+    # No depends_on - can work simultaneously
 ```
 
-**Best Practice**: Complete dependency plans before starting dependent work.
+### Changing Dependencies
 
-## Tracking Progress
-
-### View Plan Progress
+If you discover new dependencies:
 
 ```
-query({
-  entity_id: "pln-001-auth-impl",
-  mode: "summary"
-})
+Make task-004 depend on task-003 in pln-001
 ```
 
-Shows completion percentage and status.
+This updates the plan to reflect reality.
 
-### Find Blocked Work
+## Handling Blockers
 
+### Types of Blockers
+
+**Task Dependencies:**
 ```
-query({
-  types: ["plan"],
-  filters: {
-    plan_completed: false
-  },
-  sort_by: [
-    { field: "priority", order: "desc" }
-  ]
-})
+Block task-005: Depends on task-003 which is blocked
 ```
 
-### Find Incomplete Requirements
-
+**External Dependencies:**
 ```
-query({
-  types: ["requirement"],
-  filters: {
-    requirement_completed: false
-  }
-})
+Block task-006: Waiting for third-party API access
 ```
 
-A requirement is complete when all its criteria have completed, approved plans.
-
-## Implementation Anti-Patterns
-
-### ❌ Avoid These Mistakes
-
-1. **Skipping task verification**
-   - Mark tasks as `verified: true` only after testing
-   - Unverified tasks may have bugs
-
-2. **Completing tasks out of order**
-   - Respect `depends_on` relationships
-   - Dependencies exist for a reason
-
-3. **Not updating progress**
-   - Stale task status causes confusion
-   - Update as you work, not at the end
-
-4. **Ignoring validation errors**
-   - Broken references indicate spec drift
-   - Fix immediately to maintain consistency
-
-5. **Marking plans complete prematurely**
-   - Verify all tasks and test cases first
-   - Get approval if needed
-
-## Implementation Best Practices
-
-### ✅ Follow These Guidelines
-
-1. **Use `next_task`**: Let the system guide you
-2. **Update frequently**: Mark tasks complete as you finish
-3. **Test thoroughly**: Verify before marking tasks verified
-4. **Check dependencies**: Review dependency graph before starting
-5. **Validate often**: Run validation to catch issues early
-6. **Document as you go**: Add notes to tasks for future reference
-
-## Example: Complete Implementation Flow
-
+**Technical Issues:**
 ```
-1. Find next task
-   → query({ next_task: true })
-   → Result: task-001 from pln-001-auth-impl
-
-2. Get plan context
-   → query({ entity_id: "pln-001-auth-impl", mode: "full" })
-   → Review tasks, flows, test cases
-
-3. Implement task
-   → Create src/models/User.ts
-   → Follow considerations (bcrypt, validation, etc.)
-
-4. Test changes
-   → Run unit tests for User model
-   → Run integration tests
-
-5. Mark task complete
-   → update_spec({ id: "pln-001-auth-impl", updates: { tasks: [{ id: "task-001", completed: true, verified: true }] } })
-
-6. Validate system
-   → validate({ check_references: true })
-
-7. Get next task
-   → query({ next_task: true })
-   → Result: task-002 from pln-001-auth-impl
+Block task-007: Performance issue needs architecture review
 ```
 
-## Working with Flows
+### Resolving Blockers
 
-Plans may define flows to guide implementation:
-
-### User Flows
-Step-by-step user interactions:
+Document the blocker:
 ```yaml
-flows:
-  - id: flow-001
-    type: user
-    name: "User Registration"
-    steps:
-      - "User navigates to /register"
-      - "User fills email and password"
-      - "User submits form"
-      - "System validates input"
-      - "System creates user account"
-      - "System redirects to dashboard"
+blocked:
+  - reason: Waiting for API credentials from vendor
+    blocked_at: 2025-01-15T10:00:00Z
+    external_dependency: SendGrid API access
 ```
 
-### System Flows
-Technical process flows:
+When resolved:
+```
+Unblock task-006 in pln-001: Received API credentials
+```
+
+## Task Lifecycle
+
+### Status Flow
+
+```
+pending
+  ↓ (start_task)
+in-progress
+  ↓ (finish_task)
+completed
+  ↓ (verify)
+verified
+```
+
+### Status Meanings
+
+- **pending**: Not started, waiting for dependencies or assignment
+- **in-progress**: Actively being worked on
+- **completed**: Implementation done
+- **verified**: Tested and confirmed working
+- **blocked**: Can't proceed (temporary state)
+
+### Timestamps
+
+Every task tracks:
 ```yaml
-flows:
-  - id: flow-002
-    type: system
-    name: "Password Hashing"
-    steps:
-      - "Receive plain password from input"
-      - "Generate salt (bcrypt, 10 rounds)"
-      - "Hash password with salt"
-      - "Store hashed password in database"
+status:
+  created_at: 2025-01-10T09:00:00Z
+  started_at: 2025-01-12T10:00:00Z
+  completed_at: 2025-01-15T16:00:00Z
+  verified_at: 2025-01-15T17:00:00Z
+  notes:
+    - "[2025-01-12T10:00:00Z] Started implementation"
+    - "[2025-01-13T14:00:00Z] Completed database layer"
+    - "[2025-01-15T16:00:00Z] Finished: All tests passing"
 ```
 
-Use flows to understand the complete picture before implementing tasks.
+## Updating Plans During Implementation
 
-## Next Steps
+### Add Missing Tasks
 
-- Read [Planning Workflow](spec-mcp://guide/planning-workflow) for creating better specs
-- Read [Best Practices](spec-mcp://guide/best-practices) for patterns and tips
-- Read [Query Guide](spec-mcp://guide/query-guide) for advanced querying
+```
+Add task to pln-001: Add rate limiting middleware
+  priority: high
+  depends_on: [task-002]
+```
+
+Plans evolve as you discover work.
+
+### Update Scope
+
+When scope changes:
+
+```
+Update pln-001 scope: Remove mobile push notifications (moved to pln-002)
+```
+
+### Supersede Tasks
+
+When approach changes:
+
+```
+Supersede task-003 with new implementation approach
+```
+
+Creates new task version, preserving history.
+
+### Add Files to Tasks
+
+Track code changes per task:
+
+```yaml
+tasks:
+  - id: task-001
+    task: Implement user authentication
+    files:
+      - path: src/auth/service.ts
+        action: create
+        applied: true
+      - path: src/auth/routes.ts
+        action: create
+        applied: true
+```
+
+## Progress Tracking Patterns
+
+### Daily Standup
+
+```
+What tasks am I working on?
+What did I complete yesterday?
+What's blocked?
+```
+
+### Sprint Planning
+
+```
+Show available tasks for pln-001
+Show high-priority pending tasks
+What's the next task after task-003?
+```
+
+### Status Reports
+
+```
+Show completion status for pln-001
+How many tasks are completed vs pending?
+What's blocking progress on pln-001?
+```
+
+## Testing Integration
+
+### Test-Driven Development
+
+1. **Read test cases from plan**
+   ```
+   Show test cases for pln-001
+   ```
+
+2. **Write tests first**
+   ```yaml
+   test_cases:
+     - name: User login with valid credentials
+       implemented: false  # ← Not written yet
+       passing: false
+   ```
+
+3. **Implement until passing**
+   ```yaml
+   test_cases:
+     - name: User login with valid credentials
+       implemented: true  # ✓ Test written
+       passing: true      # ✓ Test passes
+   ```
+
+### Updating Test Cases
+
+Add tests discovered during implementation:
+
+```
+Add test case to pln-001:
+  name: Login with expired credentials
+  description: Verify expired credentials are rejected
+  expected_result: 401 error with clear message
+```
+
+## Common Implementation Patterns
+
+### Feature Branch Per Plan
+
+```bash
+# Create branch from plan ID
+git checkout -b feat/pln-001-notifications
+
+# Work on tasks
+# ...
+
+# Reference plan in commits
+git commit -m "feat: implement email notifications
+
+Completes task-003 from pln-001-notification-system
+
+- Integrated SendGrid API
+- Added email templates
+- Implemented retry logic"
+```
+
+### Task-Based Commits
+
+```bash
+# One commit per task
+git commit -m "feat(auth): add JWT middleware (task-001)"
+git commit -m "feat(auth): implement login endpoint (task-002)"
+git commit -m "test(auth): add login test cases (task-003)"
+```
+
+### Continuous Updates
+
+Update specs as you implement:
+
+```
+1. Start task-001
+2. Implement code
+3. Add notes: "Used bcrypt for password hashing"
+4. Complete task-001
+5. Update test case status
+6. Move to next task
+```
+
+## Team Collaboration
+
+### Task Assignment
+
+Track who's working on what:
+
+```yaml
+tasks:
+  - id: task-001
+    task: Backend API
+    assigned_to: alice
+    status: in-progress
+
+  - id: task-002
+    task: Frontend UI
+    assigned_to: bob
+    status: pending
+```
+
+### Code Reviews
+
+Reference specs in PR descriptions:
+
+```markdown
+## Implements
+
+- pln-001-notification-system
+- Completes tasks: task-001, task-002, task-003
+
+## Test Coverage
+
+- test-001: Email delivery ✓
+- test-002: Preference respect ✓
+- test-003: Retry logic ✓
+
+## Acceptance Criteria
+
+- [x] Users receive emails within 5 minutes (crit-001)
+- [x] Users can disable per category (crit-002)
+```
+
+### Pair Programming
+
+Update specs together:
+
+```
+# Navigator: Check what's next
+Show next available tasks in pln-001
+
+# Driver: Start the task
+Start task-005 in pln-001
+
+# Implement together
+# ...
+
+# Driver: Mark complete
+Finish task-005: Implemented with pair programming
+```
+
+## Handling Issues
+
+### Bugs Found During Implementation
+
+Create PRD for context:
+
+```
+Create PRD for API performance issue discovered in pln-001
+```
+
+Then plan the fix:
+
+```
+Create plan to fix API performance (references prd-005)
+```
+
+### Scope Changes
+
+When requirements change mid-implementation:
+
+```
+1. Update BRD with new criteria
+2. Update PRD with technical changes
+3. Update Plan with new tasks
+4. Continue implementation
+```
+
+### Technical Debt
+
+Document shortcuts:
+
+```
+Add note to task-003: Used quick solution, needs refactoring
+  Reference: TODO in src/auth/service.ts line 45
+```
+
+Create follow-up plan:
+
+```
+Create plan: Refactor authentication service (tech debt from pln-001)
+```
+
+## Completion Checklist
+
+Before marking a plan complete:
+
+- [ ] All tasks completed
+- [ ] All test cases passing
+- [ ] No active blockers
+- [ ] Acceptance criteria verified
+- [ ] Code reviewed
+- [ ] Documentation updated
+- [ ] Deployed to staging
+- [ ] Stakeholders notified
+
+## Tips for Smooth Implementation
+
+### Update Frequently
+
+Don't wait until tasks are done:
+
+```
+# Throughout implementation
+Add note to task-002: Completed email service integration
+Add note to task-002: Added error handling
+Add note to task-002: Performance testing looks good
+Complete task-002: Email service ready for production
+```
+
+### Use Notes Liberally
+
+Document decisions and discoveries:
+
+```
+Add note to task-003: Chose Redis over in-memory cache for scalability
+Add note to task-004: API rate limit set to 100/min per user
+```
+
+### Keep Plans Current
+
+If reality diverges from plan:
+
+```
+Update pln-001 scope: Added SMS notifications (requested by stakeholders)
+Add task to pln-001: Implement SMS via Twilio
+```
+
+### Communicate Progress
+
+Share updates:
+
+```
+Show completion percentage for pln-001
+Show tasks completed this week in pln-001
+Show remaining high-priority tasks
+```
+
+## Related Guides
+
+- See [Planning Workflow](spec-mcp://guide/planning-workflow) for creating plans
+- See [Best Practices](spec-mcp://guide/best-practices) for implementation tips
+- See [Query Guide](spec-mcp://guide/query-guide) for tracking progress
+- See [Plan Guide](spec-mcp://guide/plan) for plan structure details

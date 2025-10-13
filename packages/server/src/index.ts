@@ -2,11 +2,13 @@
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { SpecOperations } from "@spec-mcp/core";
-import { loadConfig } from "./config/index.js";
-import { registerPrompts } from "./prompts/index.js";
-import { registerResources } from "./resources/index.js";
-import { registerAllTools } from "./tools/index.js";
+import { DraftStore, SpecManager } from "@spec-mcp/core";
+import { getModeConfig, getServerMode } from "./config/mode-config.js";
+import { registerArrayManipulationTools } from "./register-array-tools.js";
+import { registerCoreTools } from "./register-core-tools.js";
+import { registerPrompts } from "./register-prompts.js";
+import { registerResources } from "./register-resources.js";
+import { ConditionalToolRegistrar } from "./utils/conditional-tool-registration.js";
 import { ErrorCode, McpError } from "./utils/error-codes.js";
 import { logger } from "./utils/logger.js";
 import { VERSION } from "./utils/version.js";
@@ -150,28 +152,46 @@ async function main() {
 	const shutdownHandler = new ShutdownHandler();
 
 	try {
-		// Load and validate configuration
-		const config = await loadConfig();
+		// Determine server mode from environment variable
+		const mode = getServerMode();
+		const modeConfig = getModeConfig(mode);
+
+		logger.info({ mode, description: modeConfig.description }, "Server mode");
 
 		// Initialize the MCP server
 		const server = new McpServer({
 			name: "spec-mcp",
 			version: VERSION,
-			capabilities: {
-				resources: {},
-				prompts: {},
-			},
 		});
 
-		// Initialize spec operations
-		const operations = new SpecOperations({
-			specsPath: config.specsPath,
-		});
+		// Initialize core managers
+		const projectRoot = process.cwd();
+		const specManager = new SpecManager("./specs");
+		const draftStore = new DraftStore(specManager);
 
-		// Register all tools, resources, and prompts
-		registerAllTools(server, operations, config);
-		registerResources(server, config);
-		registerPrompts(server, config);
+		// Ensure spec folders exist
+		await specManager.ensureFolders();
+
+		// Load existing drafts from disk
+		await draftStore.loadAll();
+
+		// Register tools with mode-based filtering
+		const registrar = new ConditionalToolRegistrar(server, mode);
+
+		// Register core tools (draft workflow, spec management, git workflow, etc.)
+		registerCoreTools(registrar, draftStore, specManager, projectRoot);
+
+		// Register array manipulation tools (add_criteria, add_user_story, etc.)
+		registerArrayManipulationTools(registrar, specManager);
+
+		// Log registration summary
+		registrar.logSummary();
+
+		// Register guide resources
+		registerResources(server);
+
+		// Register prompts
+		registerPrompts(server);
 
 		// Set up connection with retry logic
 		const transport = new StdioServerTransport();
@@ -187,8 +207,8 @@ async function main() {
 
 		logger.info(
 			{
-				specsPath: config.specsPath,
 				version: VERSION,
+				mode,
 			},
 			"Spec MCP Server running",
 		);

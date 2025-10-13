@@ -1,93 +1,103 @@
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import type { SpecOperations } from "@spec-mcp/core";
+import type { DraftStore } from "@spec-mcp/core";
+import { EntityTypeSchema } from "@spec-mcp/schemas";
 import { z } from "zod";
-import type { ServerConfig } from "../config/index.js";
-import { getCreationFlowHelper } from "../utils/creation-flow-helper.js";
-import { wrapToolHandler } from "../utils/tool-wrapper.js";
-
-const SpecTypeSchema = z.enum([
-	"requirement",
-	"component",
-	"plan",
-	"constitution",
-	"decision",
-]);
 
 /**
- * Register start_draft tool - initiates a new spec draft
+ * Schema for start_draft tool arguments
  */
-export function registerStartDraftTool(
-	server: McpServer,
-	_operations: SpecOperations,
-	config: ServerConfig,
-) {
-	server.registerTool(
-		"start_draft",
-		{
-			title: "Start Draft",
-			description:
-				"Begin creating a specification through a guided Q&A workflow. Returns the draft ID and first question.\n\n" +
-				"Response format: { draft_id: 'draft-id', question: 'first question', guidance: 'how to answer', step: 1, total_steps: N }\n\n" +
-				"The creation flow guides you through a series of questions to gather information. The first steps focus on RESEARCH:\n" +
-				"- Search for similar/existing specs to prevent duplicates\n" +
-				"- Review constitution articles for alignment with project principles\n" +
-				"- Research libraries using context7 (for third-party docs) and WebFetch (for best practices)\n" +
-				"- Use query tool to search internal specifications\n\n" +
-				"After research steps, you'll define the specification details. Finally, you'll receive schema instructions to map " +
-				"the collected data and call create_spec.\n\n" +
-				"Example: To create a requirement, call start_draft with type='requirement', then use update_draft to answer each question.",
-			inputSchema: {
-				type: SpecTypeSchema.describe(
-					"Type of specification to create: requirement, component, plan, constitution, or decision",
-				),
-				name: z
-					.string()
-					.optional()
-					.describe("Optional name for the specification"),
-				slug: z
-					.string()
-					.optional()
-					.describe(
-						"Optional slug (URL-friendly identifier) for the specification",
-					),
-			},
-		},
-		wrapToolHandler("start_draft", async ({ type, name, slug }) => {
-			// Get shared helper instance with resolved specs path
-			const helper = getCreationFlowHelper(config.specsPath);
+export const StartDraftArgsSchema = z.object({
+	type: EntityTypeSchema.describe("Type of spec to create"),
+});
 
-			// Start creation flow session
-			const response = await helper.start(
-				type as
-					| "requirement"
-					| "component"
-					| "plan"
-					| "constitution"
-					| "decision",
-				slug,
-				name,
-			);
+export type StartDraftArgs = z.infer<typeof StartDraftArgsSchema>;
 
-			return {
-				content: [
-					{
-						type: "text",
-						text: JSON.stringify(
-							{
-								draft_id: response.draft_id,
-								step: response.step,
-								total_steps: response.total_steps,
-								current_step_name: response.current_step_name,
-								question: response.question,
-								guidance: response.guidance,
-								progress_summary: response.progress_summary,
-							},
-							null,
-							2,
-						),
-					},
-				],
-			};
-		}),
-	);
+/**
+ * Generate a unique draft ID
+ */
+function generateDraftId(): string {
+	const timestamp = Date.now();
+	const random = Math.random().toString(36).substring(2, 9);
+	return `draft-${timestamp}-${random}`;
+}
+
+/**
+ * Start a new draft creation workflow
+ */
+export async function startDraft(
+	args: StartDraftArgs,
+	draftStore: DraftStore,
+): Promise<string> {
+	const { type } = args;
+
+	// Generate unique draft ID
+	const draftId = generateDraftId();
+
+	// Check if a draft already exists for this ID (should be extremely rare)
+	if (draftStore.has(draftId)) {
+		throw new Error(
+			`Draft '${draftId}' already exists. This should not happen. Please try again.`,
+		);
+	}
+
+	// Create new draft manager (no slug needed yet)
+	const manager = draftStore.create(draftId, type);
+
+	// Auto-save initial draft state
+	try {
+		await draftStore.save(draftId);
+	} catch (error) {
+		// Log but don't fail - saving is best-effort
+		console.error(`Warning: Failed to save new draft ${draftId}:`, error);
+	}
+
+	// Get continuation context for the first question
+	const continueCtx = manager.getContinueInstructions();
+
+	if (continueCtx.stage !== "questions") {
+		throw new Error("Failed to start draft: no initial question");
+	}
+
+	const nextAction = continueCtx.nextAction as {
+		questionId: string;
+		question: string;
+	};
+	const { questionId, question } = nextAction;
+
+	// Check if the first question is optional
+	const drafter = manager.getDrafter();
+	const questionResult = drafter.findQuestionById(questionId);
+	const isOptional = questionResult?.question.optional === true;
+
+	// Format response
+	let response = "✓ Draft Created\n";
+	response += `${"=".repeat(70)}\n\n`;
+	response += `Draft ID: ${draftId}\n`;
+	response += `Type: ${type}\n`;
+	response += `Stage: Questions\n\n`;
+
+	response += "First Question:\n";
+	response += `${"-".repeat(70)}\n`;
+	response += `ID: ${questionId}\n`;
+	response += `Question: ${question}\n`;
+	if (isOptional) {
+		response += `Type: Optional\n`;
+	}
+	response += "\n";
+
+	response += "Next Action:\n";
+	response += `${"-".repeat(70)}\n`;
+	response += `Use answer_question with:\n`;
+	response += `  draftId: "${draftId}"\n`;
+	response += `  questionId: "${questionId}"\n`;
+	response += `  answer: <your_answer>\n`;
+
+	if (isOptional) {
+		response +=
+			"\n⚠️  OPTIONAL QUESTION: This question can be skipped using skip_answer.\n";
+		response +=
+			"However, ONLY skip if you are absolutely certain the information is not needed.\n";
+		response += "When in doubt, ask the user for input rather than skipping.\n";
+	}
+
+	return response;
 }
