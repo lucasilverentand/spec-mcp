@@ -1,11 +1,9 @@
 {
 	"name": "@spec-mcp/cli",
-	"version": "1.0.3",
+	"version": "1.0.4",
 	"description": "CLI tool for managing spec-mcp specifications",
 	"type": "module",
-	"bin": {
-		"spec-mcp": "./dist/index.js"
-	},
+	"bin": "./dist/index.js",
 	"main": "./dist/index.js",
 	"types": "./dist/index.d.ts",
 	"exports": {
