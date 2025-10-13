@@ -1,6 +1,6 @@
 {
-	"name": "@spec-mcp/server",
-	"version": "0.6.5",
+	"name": "spec-mcp",
+	"version": "1.0.0",
 	"mcpName": "io.github.lucasilverentand/spec-mcp",
 	"description": "Model Context Protocol server for managing software project specifications",
 	"type": "module",
@@ -66,7 +66,7 @@
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/lucasilverentand/spec-mcp.git",
-		"directory": "packages/server"
+		"directory": "apps/mcp"
 	},
 	"publishConfig": {
 		"registry": "https://registry.npmjs.org",

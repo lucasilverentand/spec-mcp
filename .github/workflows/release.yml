@@ -38,59 +38,26 @@ jobs:
       - name: Update package versions
         run: |
           VERSION=${{ steps.get_version.outputs.VERSION }}
-          # Update all workspace package versions
-          for pkg in packages/*/package.json; do
+          # Update app versions (apps are what we publish)
+          for pkg in apps/*/package.json; do
             if [ -f "$pkg" ]; then
               npm pkg set version=$VERSION --prefix=$(dirname "$pkg")
             fi
           done
 
-      - name: Convert workspace dependencies
+      - name: Prepare apps for publishing
         run: |
           VERSION=${{ steps.get_version.outputs.VERSION }}
-          # Replace workspace:* with actual versions in packages that depend on workspace packages
-          for pkg in packages/server packages/cli packages/dashboard; do
-            if [ -f "$pkg/package.json" ]; then
-              cd $pkg
-              jq --arg ver "$VERSION" '
-                (.dependencies // {}) |= with_entries(
-                  if .value == "workspace:*" then .value = "^" + $ver else . end
-                ) |
-                (.devDependencies // {}) |= with_entries(
-                  if .value == "workspace:*" then .value = "^" + $ver else . end
-                )
-              ' package.json > package.json.tmp && mv package.json.tmp package.json
-              cd ../..
-            fi
-          done
+          echo "Note: Apps bundle workspace dependencies via tsup, so workspace:* deps are fine"
+          echo "The bundled apps will include all @spec-mcp/* dependencies"
 
-      - name: Publish @spec-mcp/core to npm
-        run: cd packages/core && pnpm publish --access public --no-git-checks
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Publish @spec-mcp/schemas to npm
-        run: cd packages/schemas && pnpm publish --access public --no-git-checks
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Publish @spec-mcp/utils to npm
-        run: cd packages/utils && pnpm publish --access public --no-git-checks
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Publish @spec-mcp/dashboard to npm
-        run: cd packages/dashboard && pnpm publish --access public --no-git-checks
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Publish @spec-mcp/server to npm
-        run: cd packages/server && pnpm publish --access public --no-git-checks
+      - name: Publish spec-mcp to npm
+        run: cd apps/mcp && pnpm publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish @spec-mcp/cli to npm
-        run: cd packages/cli && pnpm publish --access public --no-git-checks
+        run: cd apps/cli && pnpm publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -121,9 +88,9 @@ jobs:
       - name: Create release archives
         run: |
           mkdir -p release-assets
-          cd packages/server
+          cd apps/mcp
           npm pack
-          mv spec-mcp-server-*.tgz ../../release-assets/
+          mv spec-mcp-*.tgz ../../release-assets/
           cd ../cli
           npm pack
           mv spec-mcp-cli-*.tgz ../../release-assets/

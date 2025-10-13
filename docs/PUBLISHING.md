@@ -4,10 +4,12 @@ This guide explains how to publish new versions of the Spec MCP packages to npm.
 
 ## Packages
 
-The monorepo contains two publishable packages:
+The monorepo contains two publishable apps:
 
-- `@spec-mcp/server` - MCP server for specification management
-- `@spec-mcp/cli` - CLI tool for managing specifications
+- `spec-mcp` - MCP server for specification management (located in `apps/mcp`)
+- `@spec-mcp/cli` - CLI tool for managing specifications (located in `apps/cli`)
+
+Both apps bundle their workspace dependencies (`@spec-mcp/core`, `@spec-mcp/schemas`, etc.) to avoid the need for separate package publishing.
 
 ## Automated Publishing (Recommended)
 
@@ -41,9 +43,9 @@ Packages are automatically published to npm when a new GitHub release is created
 4. **Monitor the release workflow**
 
    The GitHub Actions workflow will automatically:
-   - Build both packages
+   - Build both apps (and their bundled dependencies)
    - Update version numbers in package.json files
-   - Publish `@spec-mcp/server` to npm
+   - Publish `spec-mcp` to npm
    - Publish `@spec-mcp/cli` to npm
    - Create release archives (.tgz files)
    - Attach archives to the GitHub release
@@ -75,17 +77,17 @@ If you need to publish manually (not recommended):
 
 2. **Update versions**
    ```bash
-   cd packages/server
+   cd apps/mcp
    npm version {major|minor|patch}
 
    cd ../cli
    npm version {major|minor|patch}
    ```
 
-3. **Publish packages**
+3. **Publish apps**
    ```bash
    # From the monorepo root
-   cd packages/server
+   cd apps/mcp
    pnpm publish --access public
 
    cd ../cli
@@ -106,7 +108,7 @@ We follow [Semantic Versioning](https://semver.org/):
 - **MINOR** (0.x.0) - New features, backward compatible
 - **PATCH** (0.0.x) - Bug fixes, backward compatible
 
-Both packages should generally be published with the same version number.
+Both apps should generally be published with the same version number.
 
 ## Pre-publish Checks
 
@@ -120,17 +122,17 @@ If any step fails, the publish will be aborted.
 
 ## Published Files
 
-Each package publishes only the necessary files (configured in `package.json` `files` field):
+Each app publishes only the necessary files (configured in `package.json` `files` field):
 
-**@spec-mcp/server:**
-- `dist/` - Compiled JavaScript and type definitions
-- `README.md` - Package documentation
-- `LICENSE` - MIT License
+**spec-mcp:**
+- `dist/` - Bundled JavaScript including all `@spec-mcp/*` dependencies and type definitions
+- External dependencies required at runtime: `@modelcontextprotocol/sdk`, `yaml`, `pino`, `ws`, `chokidar`
 
 **@spec-mcp/cli:**
-- `dist/` - Compiled JavaScript including CLI entry point
+- `dist/` - Bundled JavaScript including all `@spec-mcp/*` dependencies and CLI entry point
 - `README.md` - CLI usage documentation
 - `LICENSE` - MIT License
+- External dependencies required at runtime: `@inquirer/prompts`, `commander`, `yaml`, `chokidar`, `ws`, `pino`
 
 ## Troubleshooting
 
@@ -167,7 +169,7 @@ After publishing, verify the packages:
 
 1. **Check npm registry**
    ```bash
-   npm view @spec-mcp/server
+   npm view spec-mcp
    npm view @spec-mcp/cli
    ```
 
@@ -176,7 +178,7 @@ After publishing, verify the packages:
    # In a temporary directory
    mkdir test-install && cd test-install
    npm init -y
-   npm install @spec-mcp/server
+   npm install spec-mcp
    npm install -g @spec-mcp/cli
    spec-mcp --version
    ```
@@ -188,7 +190,7 @@ After publishing, verify the packages:
 
 ## Links
 
-- [npm registry - @spec-mcp/server](https://www.npmjs.com/package/@spec-mcp/server)
+- [npm registry - spec-mcp](https://www.npmjs.com/package/spec-mcp)
 - [npm registry - @spec-mcp/cli](https://www.npmjs.com/package/@spec-mcp/cli)
-- [GitHub Repository](https://github.com/lucapug/spec-mcp)
-- [GitHub Actions](https://github.com/lucapug/spec-mcp/actions)
+- [GitHub Repository](https://github.com/lucasilverentand/spec-mcp)
+- [GitHub Actions](https://github.com/lucasilverentand/spec-mcp/actions)

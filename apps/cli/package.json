@@ -1,6 +1,6 @@
 {
 	"name": "@spec-mcp/cli",
-	"version": "0.1.0",
+	"version": "1.0.0",
 	"description": "CLI tool for managing spec-mcp specifications",
 	"type": "module",
 	"bin": {
@@ -21,8 +21,8 @@
 	],
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/lucapug/spec-mcp.git",
-		"directory": "packages/cli"
+		"url": "https://github.com/lucasilverentand/spec-mcp.git",
+		"directory": "apps/cli"
 	},
 	"keywords": [
 		"spec",
@@ -37,15 +37,15 @@
 	"author": "Spec MCP Server Contributors",
 	"license": "MIT",
 	"bugs": {
-		"url": "https://github.com/lucapug/spec-mcp/issues"
+		"url": "https://github.com/lucasilverentand/spec-mcp/issues"
 	},
-	"homepage": "https://github.com/lucapug/spec-mcp#readme",
+	"homepage": "https://github.com/lucasilverentand/spec-mcp#readme",
 	"publishConfig": {
 		"access": "public"
 	},
 	"scripts": {
-		"build": "tsc",
-		"dev": "tsc --watch",
+		"build": "tsup",
+		"dev": "tsup --watch",
 		"clean": "rm -rf dist",
 		"typecheck": "tsc --noEmit",
 		"test": "vitest run",
@@ -65,6 +65,7 @@
 		"@spec-mcp/tsconfig": "workspace:*",
 		"@types/node": "^24.5.2",
 		"@vitest/coverage-v8": "^3.2.4",
+		"tsup": "^8.5.0",
 		"typescript": "^5.9.2",
 		"vitest": "^3.2.4"
 	},

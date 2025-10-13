@@ -22,7 +22,7 @@
 		"test:watch": "turbo run test:watch",
 		"test:coverage": "turbo run test:coverage",
 		"pre-commit": "biome check --write --unsafe && turbo run build && turbo run typecheck && turbo run test",
-		"inspector": "cd packages/server && pnpm inspector",
+		"inspector": "cd apps/mcp && pnpm inspector",
 		"workspace:list": "pnpm list -r --depth=-1",
 		"workspace:graph": "pnpm list -r --depth=-1 --json",
 		"version:sync": "node scripts/sync-versions.js",

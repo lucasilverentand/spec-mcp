@@ -9,18 +9,10 @@ export default defineConfig({
 	bundle: true,
 	platform: "node",
 	target: "node18",
-	// Bundle workspace dependencies and zod (to avoid version conflicts)
-	noExternal: [/@spec-mcp\/.*/, "zod"],
-	// Keep external dependencies that have CommonJS issues
-	external: [
-		"@modelcontextprotocol/sdk",
-		"yaml",
-		"glob",
-		"pino",
-		"pino-pretty",
-		"ws",
-		"chokidar",
-	],
+	// Bundle workspace dependencies
+	noExternal: [/@spec-mcp\/.*/],
+	// Keep external dependencies that have issues with bundling
+	external: ["@modelcontextprotocol/sdk", "yaml", "pino", "ws", "chokidar"],
 	treeshake: true,
 	splitting: false,
 	minify: false, // Keep readable for debugging
