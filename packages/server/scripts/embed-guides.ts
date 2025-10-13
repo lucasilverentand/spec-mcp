@@ -67,19 +67,12 @@ const guides = [
 		file: "spec-relationships.md",
 	},
 
-	// Legacy/Placeholder Guides
+	// Workflow Guides
 	{
 		uri: "spec-mcp://guide/getting-started",
 		name: "Getting Started",
 		description: "Quick start guide for spec-driven development",
 		file: "getting-started.md",
-	},
-	{
-		uri: "spec-mcp://guide/spec-types",
-		name: "Spec Types Guide (Legacy)",
-		description:
-			"Complete guide to spec types (being replaced by focused guides)",
-		file: "spec-types.md",
 	},
 	{
 		uri: "spec-mcp://guide/planning-workflow",

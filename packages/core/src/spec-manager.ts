@@ -559,7 +559,11 @@ export class SpecManager {
 		}
 
 		// Milestone filter (for specs that have milestones field)
-		if (query.milestone && "milestones" in spec) {
+		if (query.milestone) {
+			// Only plans have milestones, so exclude non-plan specs
+			if (spec.type !== "plan") {
+				return false;
+			}
 			const plan = spec as Plan;
 			if (!plan.milestones?.includes(query.milestone)) {
 				return false;
@@ -567,7 +571,11 @@ export class SpecManager {
 		}
 
 		// Status filter (computed from spec state)
-		if (query.status && spec.type === "plan") {
+		if (query.status) {
+			// Only plans have a status, so exclude non-plan specs
+			if (spec.type !== "plan") {
+				return false;
+			}
 			const plan = spec as Plan;
 			const planState = getPlanState(plan);
 			if (!query.status.includes(planState)) {

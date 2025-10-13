@@ -692,7 +692,36 @@ export function registerCoreTools(
 		{
 			draft: z.boolean().optional(),
 			id: z.union([z.string(), z.array(z.string())]).optional(),
-			objects: z.any().optional(), // Complex union type, validated by QuerySchema
+			objects: z
+				.object({
+					specTypes: z
+						.array(
+							z.enum([
+								"business-requirement",
+								"technical-requirement",
+								"plan",
+								"component",
+								"constitution",
+								"decision",
+								"milestone",
+							]),
+						)
+						.optional(),
+					itemTypes: z
+						.array(
+							z.enum([
+								"task",
+								"test-case",
+								"criteria",
+								"flow",
+								"api-contract",
+								"data-model",
+								"user-story",
+							]),
+						)
+						.optional(),
+				})
+				.optional(),
 			completed: z.boolean().optional(),
 			verified: z.boolean().optional(),
 			priority: z
@@ -702,6 +731,29 @@ export function registerCoreTools(
 			status: z
 				.array(z.enum(["not-started", "in-progress", "completed", "verified"]))
 				.optional(),
+			textSearch: z.string().optional(),
+			searchFields: z.array(z.enum(["title", "description", "all"])).optional(),
+			createdAfter: z.string().datetime().optional(),
+			createdBefore: z.string().datetime().optional(),
+			updatedAfter: z.string().datetime().optional(),
+			updatedBefore: z.string().datetime().optional(),
+			dependencyStatus: z
+				.array(
+					z.enum([
+						"blocked",
+						"blocking",
+						"no-dependencies",
+						"has-dependencies",
+					]),
+				)
+				.optional(),
+			limit: z.number().int().positive().max(1000).optional(),
+			offset: z.number().int().nonnegative().optional(),
+			includeRelated: z.boolean().optional(),
+			relatedTypes: z
+				.array(z.enum(["dependencies", "blocking", "linked-specs"]))
+				.optional(),
+			includeStats: z.boolean().optional(),
 			orderBy: z
 				.enum(["next-to-do", "created", "updated"])
 				.optional()
