@@ -96,5 +96,14 @@
 	},
 	"engines": {
 		"node": ">=18.0.0"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/lucasilverentand/spec-mcp.git",
+		"directory": "packages/dashboard"
+	},
+	"publishConfig": {
+		"registry": "https://registry.npmjs.org",
+		"access": "public"
 	}
 }

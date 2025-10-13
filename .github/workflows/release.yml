@@ -48,15 +48,21 @@ jobs:
       - name: Convert workspace dependencies
         run: |
           VERSION=${{ steps.get_version.outputs.VERSION }}
-          # Replace workspace:* with actual versions in server
-          cd packages/server
-          jq --arg ver "$VERSION" '.dependencies |= with_entries(
-            if .value == "workspace:*" then .value = "^" + $ver else . end
-          )' package.json > package.json.tmp && mv package.json.tmp package.json
-          cd ../cli
-          jq --arg ver "$VERSION" '.dependencies |= with_entries(
-            if .value == "workspace:*" then .value = "^" + $ver else . end
-          )' package.json > package.json.tmp && mv package.json.tmp package.json
+          # Replace workspace:* with actual versions in packages that depend on workspace packages
+          for pkg in packages/server packages/cli packages/dashboard; do
+            if [ -f "$pkg/package.json" ]; then
+              cd $pkg
+              jq --arg ver "$VERSION" '
+                (.dependencies // {}) |= with_entries(
+                  if .value == "workspace:*" then .value = "^" + $ver else . end
+                ) |
+                (.devDependencies // {}) |= with_entries(
+                  if .value == "workspace:*" then .value = "^" + $ver else . end
+                )
+              ' package.json > package.json.tmp && mv package.json.tmp package.json
+              cd ../..
+            fi
+          done
 
       - name: Publish @spec-mcp/core to npm
         run: cd packages/core && pnpm publish --access public --no-git-checks
@@ -70,6 +76,11 @@ jobs:
 
       - name: Publish @spec-mcp/utils to npm
         run: cd packages/utils && pnpm publish --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish @spec-mcp/dashboard to npm
+        run: cd packages/dashboard && pnpm publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
