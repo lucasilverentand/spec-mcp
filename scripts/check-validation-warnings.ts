@@ -58,12 +58,14 @@ async function main() {
 
 		// If details are available and it's a Zod error with issues array
 		if (warning.details && typeof warning.details === "object") {
-			const details = warning.details as any;
+			const details = warning.details as Record<string, unknown>;
 			if (details.issues && Array.isArray(details.issues)) {
 				console.log(`\n📋 Validation Details:`);
 				for (const issue of details.issues) {
-					const path = issue.path?.join(".") || "root";
-					console.log(`   • ${path}: ${issue.message}`);
+					const path = (issue as { path?: string[] }).path?.join(".") || "root";
+					const message =
+						(issue as { message?: string }).message || "Unknown error";
+					console.log(`   • ${path}: ${message}`);
 				}
 			}
 		}

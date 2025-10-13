@@ -42,12 +42,14 @@ export async function getValidationWarnings(specManager: SpecManager): Promise<{
 
 		// If details are available and it's a Zod error with issues array
 		if (warning.details && typeof warning.details === "object") {
-			const details = warning.details as any;
+			const details = warning.details as Record<string, unknown>;
 			if (details.issues && Array.isArray(details.issues)) {
 				report += `**Validation Details:**\n`;
 				for (const issue of details.issues) {
-					const path = issue.path?.join(".") || "root";
-					report += `  - \`${path}\`: ${issue.message}\n`;
+					const path = (issue as { path?: string[] }).path?.join(".") || "root";
+					const message =
+						(issue as { message?: string }).message || "Unknown error";
+					report += `  - \`${path}\`: ${message}\n`;
 				}
 				report += "\n";
 			}

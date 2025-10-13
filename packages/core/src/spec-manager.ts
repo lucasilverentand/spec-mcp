@@ -123,7 +123,18 @@ export class SpecManager {
 		> = [];
 
 		// Collect warnings from each manager
-		const managers: Array<{ manager: EntityManager<any>; type: EntityType }> = [
+		const managers: Array<{
+			manager: EntityManager<
+				| BusinessRequirement
+				| TechnicalRequirement
+				| Plan
+				| Component
+				| Constitution
+				| Decision
+				| Milestone
+			>;
+			type: EntityType;
+		}> = [
 			{ manager: this.business_requirements, type: "business-requirement" },
 			{ manager: this.tech_requirements, type: "technical-requirement" },
 			{ manager: this.plans, type: "plan" },
