@@ -35,13 +35,20 @@ jobs:
         id: get_version
         run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
 
-      - name: Update package version
+      - name: Update package versions
         run: |
           cd packages/server
+          npm pkg set version=${{ steps.get_version.outputs.VERSION }}
+          cd ../cli
           npm pkg set version=${{ steps.get_version.outputs.VERSION }}
 
       - name: Publish @spec-mcp/server to npm
         run: cd packages/server && pnpm publish --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish @spec-mcp/cli to npm
+        run: cd packages/cli && pnpm publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -69,12 +76,15 @@ jobs:
       - name: Build packages
         run: pnpm build
 
-      - name: Create release archive
+      - name: Create release archives
         run: |
           mkdir -p release-assets
           cd packages/server
           npm pack
           mv spec-mcp-server-*.tgz ../../release-assets/
+          cd ../cli
+          npm pack
+          mv spec-mcp-cli-*.tgz ../../release-assets/
 
       - name: Upload release assets
         uses: softprops/action-gh-release@v2

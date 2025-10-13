@@ -15,8 +15,34 @@
 		}
 	},
 	"files": [
-		"dist"
+		"dist",
+		"README.md",
+		"LICENSE"
 	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/lucapug/spec-mcp.git",
+		"directory": "packages/cli"
+	},
+	"keywords": [
+		"spec",
+		"mcp",
+		"cli",
+		"specifications",
+		"requirements",
+		"planning",
+		"architecture",
+		"documentation"
+	],
+	"author": "Spec MCP Server Contributors",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/lucapug/spec-mcp/issues"
+	},
+	"homepage": "https://github.com/lucapug/spec-mcp#readme",
+	"publishConfig": {
+		"access": "public"
+	},
 	"scripts": {
 		"build": "tsc",
 		"dev": "tsc --watch",
@@ -24,7 +50,8 @@
 		"typecheck": "tsc --noEmit",
 		"test": "vitest run",
 		"test:watch": "vitest watch",
-		"test:coverage": "vitest run --coverage"
+		"test:coverage": "vitest run --coverage",
+		"prepublishOnly": "pnpm run clean && pnpm run build && pnpm run test"
 	},
 	"dependencies": {
 		"@inquirer/prompts": "^7.8.6",
