@@ -1,12 +1,14 @@
 {
 	"name": "@spec-mcp/mcp",
-	"version": "1.0.4",
+	"version": "1.0.5",
 	"mcpName": "io.github.lucasilverentand/spec-mcp",
 	"description": "Model Context Protocol server for managing software project specifications",
 	"type": "module",
 	"main": "./dist/index.js",
 	"types": "./dist/index.d.ts",
-	"bin": "./dist/index.js",
+	"bin": {
+		"spec-mcp-server": "./dist/index.js"
+	},
 	"exports": {
 		".": {
 			"import": "./dist/index.js",
