@@ -27,14 +27,21 @@
 		"workspace:graph": "pnpm list -r --depth=-1 --json",
 		"version:sync": "node scripts/sync-versions.js",
 		"knip": "knip",
-		"generate:test-data": "tsx scripts/generate-test-data.ts"
+		"generate:test-data": "tsx scripts/generate-test-data.ts",
+		"changeset": "changeset",
+		"version-packages": "changeset version",
+		"publish:mcp": "cd apps/mcp && npm publish",
+		"publish:cli": "cd apps/cli && npm publish",
+		"publish:all": "pnpm run publish:mcp && pnpm run publish:cli",
+		"release": "turbo run build test --filter=\"@spec-mcp/mcp\" --filter=\"@spec-mcp/cli\" && pnpm run publish:all"
 	},
 	"dependencies": {
 		"glob": "^11.0.3",
-		"zod": "^4.1.12"
+		"zod": "^3.23.8"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.2.5",
+		"@changesets/cli": "^2.29.7",
 		"@types/node": "^24.7.2",
 		"@vitest/coverage-v8": "^3.2.4",
 		"knip": "^5.64.3",
