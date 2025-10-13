@@ -86,7 +86,7 @@ export function createTestBusinessRequirement(
 		],
 		criteria: [
 			{
-				id: "crit-001",
+				id: "crt-001",
 				description: "Test criterion",
 				rationale: "This criterion is essential for validating the requirement",
 				supersedes: null,
@@ -116,7 +116,7 @@ export function createTestTechnicalRequirement(
 		technical_context: "Technical context for the requirement",
 		criteria: [
 			{
-				id: "crit-001",
+				id: "crt-001",
 				description: "Test criterion",
 				rationale: "This criterion is essential for validating the requirement",
 				supersedes: null,
@@ -148,7 +148,7 @@ export function createTestPlan(
 		description: "A test plan",
 		criteria: overrides?.criteria || {
 			requirement: "brd-001-placeholder",
-			criteria: "crit-001",
+			criteria: "crt-001",
 		},
 		scope: [
 			{ type: "in-scope" as const, description: "Feature implementation" },

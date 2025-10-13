@@ -1,4 +1,5 @@
 import { SpecManager } from "@spec-mcp/core";
+import { formatEntityId } from "@spec-mcp/utils";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
 	cleanupTempDir,
@@ -39,7 +40,11 @@ describe("Update Spec Tools", () => {
 			const brd = await specManager.business_requirements.create(
 				createTestBusinessRequirement({ slug: "test-req" }),
 			);
-			brdId = `brd-${String(brd.number).padStart(3, "0")}-test-req`;
+			brdId = formatEntityId({
+				type: "business-requirement",
+				number: brd.number,
+				slug: "test-req",
+			});
 		});
 
 		it("should update plan title", async () => {
@@ -49,7 +54,7 @@ describe("Update Spec Tools", () => {
 					name: "Original Title",
 					criteria: {
 						requirement: brdId,
-						criteria: "crit-001",
+						criteria: "crt-001",
 					},
 				}),
 			);
@@ -71,7 +76,7 @@ describe("Update Spec Tools", () => {
 					description: "Original description",
 					criteria: {
 						requirement: brdId,
-						criteria: "crit-001",
+						criteria: "crt-001",
 					},
 				}),
 			);
@@ -92,11 +97,11 @@ describe("Update Spec Tools", () => {
 					slug: "test-plan",
 					criteria: {
 						requirement: brdId,
-						criteria: "crit-001",
+						criteria: "crt-001",
 					},
 					flows: [
 						{
-							id: "flow-001",
+							id: "flw-001",
 							name: "Test Flow",
 							description: "Test",
 							type: "user",

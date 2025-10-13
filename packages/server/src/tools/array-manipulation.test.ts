@@ -69,7 +69,7 @@ describe("Array Manipulation Tools", () => {
 			);
 
 			expect(result.content[0].text).toContain("Success");
-			expect(result.content[0].text).toContain("crit-002");
+			expect(result.content[0].text).toContain("crt-002");
 
 			const brd = await specManager.business_requirements.get(1);
 			expect(brd?.criteria).toHaveLength(2);
@@ -80,7 +80,7 @@ describe("Array Manipulation Tools", () => {
 
 		it("should remove a criteria", async () => {
 			await addCriteria(specManager, brdId, "Test criteria", "Test rationale");
-			const result = await removeCriteria(specManager, brdId, "crit-001");
+			const result = await removeCriteria(specManager, brdId, "crt-001");
 
 			expect(result.content[0].text).toContain("Success");
 
@@ -96,21 +96,21 @@ describe("Array Manipulation Tools", () => {
 				"Original rationale",
 			);
 
-			const result = await supersedeCriteria(specManager, brdId, "crit-001", {
+			const result = await supersedeCriteria(specManager, brdId, "crt-001", {
 				description: "Updated description",
 			});
 
 			expect(result.content[0].text).toContain("Success");
-			expect(result.content[0].text).toContain("crit-003");
+			expect(result.content[0].text).toContain("crt-003");
 
 			const brd = await specManager.business_requirements.get(1);
 			expect(brd?.criteria).toHaveLength(3);
 
-			const oldCriteria = brd?.criteria.find((c) => c.id === "crit-001");
-			expect(oldCriteria?.superseded_by).toBe("crit-003");
+			const oldCriteria = brd?.criteria.find((c) => c.id === "crt-001");
+			expect(oldCriteria?.superseded_by).toBe("crt-003");
 
-			const newCriteria = brd?.criteria.find((c) => c.id === "crit-003");
-			expect(newCriteria?.supersedes).toBe("crit-001");
+			const newCriteria = brd?.criteria.find((c) => c.id === "crt-003");
+			expect(newCriteria?.supersedes).toBe("crt-001");
 			expect(newCriteria?.description).toBe("Updated description");
 		});
 	});
@@ -203,7 +203,7 @@ describe("Array Manipulation Tools", () => {
 			);
 
 			expect(result.content[0].text).toContain("Success");
-			expect(result.content[0].text).toContain("tc-001");
+			expect(result.content[0].text).toContain("tst-001");
 
 			const plan = await specManager.plans.get(1);
 			expect(plan?.test_cases).toHaveLength(1);
@@ -220,7 +220,7 @@ describe("Array Manipulation Tools", () => {
 				"Result 1",
 			);
 
-			const result = await supersedeTestCase(specManager, planId, "tc-001", {
+			const result = await supersedeTestCase(specManager, planId, "tst-001", {
 				name: "Updated Name",
 				implemented: true,
 			});
@@ -228,7 +228,7 @@ describe("Array Manipulation Tools", () => {
 			expect(result.content[0].text).toContain("Success");
 
 			const plan = await specManager.plans.get(1);
-			const newCase = plan?.test_cases.find((t) => t.id === "tc-002");
+			const newCase = plan?.test_cases.find((t) => t.id === "tst-002");
 			expect(newCase?.name).toBe("Updated Name");
 			expect(newCase?.implemented).toBe(true);
 		});
@@ -306,16 +306,16 @@ describe("Array Manipulation Tools", () => {
 				"Step 1",
 			]);
 
-			const result = await supersedeFlow(specManager, planId, "flow-001", {
+			const result = await supersedeFlow(specManager, planId, "flw-001", {
 				name: "Updated Flow Name",
 			});
 
 			expect(result.content[0].text).toContain("Success");
 
 			const plan = await specManager.plans.get(1);
-			const newFlow = plan?.flows.find((f) => f.id === "flow-002");
+			const newFlow = plan?.flows.find((f) => f.id === "flw-002");
 			expect(newFlow?.name).toBe("Updated Flow Name");
-			expect(newFlow?.supersedes).toBe("flow-001");
+			expect(newFlow?.supersedes).toBe("flw-001");
 		});
 	});
 

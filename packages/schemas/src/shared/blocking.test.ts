@@ -35,12 +35,12 @@ describe("Task Blocking", () => {
 
 	describe("isTaskBlocked", () => {
 		it("should return false for task with no blocks", () => {
-			const task = createTask("task-001");
+			const task = createTask("tsk-001");
 			expect(isTaskBlocked(task)).toBe(false);
 		});
 
 		it("should return true for task with active block", () => {
-			const task = createTask("task-001", [
+			const task = createTask("tsk-001", [
 				{
 					reason: "Waiting for API access credentials",
 					blocked_by: [],
@@ -52,7 +52,7 @@ describe("Task Blocking", () => {
 		});
 
 		it("should return false for task with only resolved blocks", () => {
-			const task = createTask("task-001", [
+			const task = createTask("tsk-001", [
 				{
 					reason: "Waiting for API access credentials",
 					blocked_by: [],
@@ -64,7 +64,7 @@ describe("Task Blocking", () => {
 		});
 
 		it("should return true if any block is unresolved", () => {
-			const task = createTask("task-001", [
+			const task = createTask("tsk-001", [
 				{
 					reason: "Waiting for API access credentials",
 					blocked_by: [],
@@ -84,7 +84,7 @@ describe("Task Blocking", () => {
 
 	describe("getActiveBlocks", () => {
 		it("should return empty array for task with no blocks", () => {
-			const task = createTask("task-001");
+			const task = createTask("tsk-001");
 			expect(getActiveBlocks(task)).toEqual([]);
 		});
 
@@ -96,7 +96,7 @@ describe("Task Blocking", () => {
 				resolved_at: null,
 			};
 
-			const task = createTask("task-001", [
+			const task = createTask("tsk-001", [
 				{
 					reason: "Waiting for API access credentials",
 					blocked_by: [],
@@ -114,7 +114,7 @@ describe("Task Blocking", () => {
 
 	describe("getResolvedBlocks", () => {
 		it("should return empty array for task with no resolved blocks", () => {
-			const task = createTask("task-001", [
+			const task = createTask("tsk-001", [
 				{
 					reason: "Legal review in progress",
 					blocked_by: [],
@@ -133,7 +133,7 @@ describe("Task Blocking", () => {
 				resolved_at: "2025-01-01T11:00:00Z",
 			};
 
-			const task = createTask("task-001", [
+			const task = createTask("tsk-001", [
 				resolvedBlock,
 				{
 					reason: "Legal review in progress",
@@ -151,7 +151,7 @@ describe("Task Blocking", () => {
 
 	describe("canStartTaskWithBlocking", () => {
 		it("should not allow starting a blocked task", () => {
-			const task = createTask("task-001", [
+			const task = createTask("tsk-001", [
 				{
 					reason: "Waiting for API access credentials",
 					blocked_by: [],
@@ -167,7 +167,7 @@ describe("Task Blocking", () => {
 		});
 
 		it("should allow starting a task with only resolved blocks", () => {
-			const task = createTask("task-001", [
+			const task = createTask("tsk-001", [
 				{
 					reason: "Waiting for API access credentials",
 					blocked_by: [],
@@ -181,10 +181,10 @@ describe("Task Blocking", () => {
 		});
 
 		it("should handle task blocked by other tasks", () => {
-			const task = createTask("task-002", [
+			const task = createTask("tsk-002", [
 				{
-					reason: "Waiting for task-001 to be completed",
-					blocked_by: ["task-001"],
+					reason: "Waiting for tsk-001 to be completed",
+					blocked_by: ["tsk-001"],
 					blocked_at: "2025-01-01T10:00:00Z",
 					resolved_at: null,
 				},
@@ -200,7 +200,7 @@ describe("Task Blocking", () => {
 		it("should not allow completing a blocked task", () => {
 			const now = "2025-01-01T10:00:00Z";
 			const task: Task = {
-				id: "task-001",
+				id: "tsk-001",
 				priority: "medium",
 				depends_on: [],
 				task: "Task 001",
@@ -238,7 +238,7 @@ describe("Task Blocking", () => {
 			const now = "2025-01-01T10:00:00Z";
 			const later = "2025-01-01T12:00:00Z";
 			const task: Task = {
-				id: "task-001",
+				id: "tsk-001",
 				priority: "medium",
 				depends_on: [],
 				task: "Task 001",
@@ -272,7 +272,7 @@ describe("Task Blocking", () => {
 
 	describe("External dependencies blocking", () => {
 		it("should handle external dependency blocks", () => {
-			const task = createTask("task-001", [
+			const task = createTask("tsk-001", [
 				{
 					reason: "Waiting for legal team approval",
 					blocked_by: [],
@@ -290,7 +290,7 @@ describe("Task Blocking", () => {
 
 	describe("Multiple blockers", () => {
 		it("should handle multiple simultaneous blockers", () => {
-			const task = createTask("task-001", [
+			const task = createTask("tsk-001", [
 				{
 					reason: "Waiting for infrastructure provisioning",
 					blocked_by: [],

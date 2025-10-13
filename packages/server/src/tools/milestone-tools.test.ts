@@ -33,7 +33,7 @@ describe("Milestone Tools", () => {
 			priority: "high",
 			criteria: [
 				{
-					id: "crit-001",
+					id: "crt-001",
 					description: "System should support user authentication",
 					rationale: "Security requirement",
 					supersedes: null,
@@ -41,7 +41,7 @@ describe("Milestone Tools", () => {
 					superseded_at: null,
 				},
 				{
-					id: "crit-002",
+					id: "crt-002",
 					description: "System should support user registration",
 					rationale: "User acquisition requirement",
 					supersedes: null,
@@ -95,7 +95,7 @@ describe("Milestone Tools", () => {
 			priority: "high",
 			criteria: {
 				requirement: "brd-001-user-management",
-				criteria: "crit-001",
+				criteria: "crt-001",
 			},
 			scope: [
 				{
@@ -118,7 +118,7 @@ describe("Milestone Tools", () => {
 			milestones: [milestoneId],
 			tasks: [
 				{
-					id: "task-001",
+					id: "tsk-001",
 					priority: "high",
 					depends_on: [],
 					task: "Implement user login",
@@ -229,7 +229,7 @@ describe("Milestone Tools", () => {
 				tasks: [
 					{
 						...plan1.tasks[0],
-						id: "task-002",
+						id: "tsk-002",
 						task: "Implement API endpoints",
 						status: {
 							created_at: "2025-01-01T00:00:00Z",
@@ -261,7 +261,7 @@ describe("Milestone Tools", () => {
 				tasks: [
 					{
 						...plan1.tasks[0],
-						id: "task-002",
+						id: "tsk-002",
 						status: {
 							created_at: "2025-01-01T00:00:00Z",
 							started_at: "2025-01-02T00:00:00Z",
@@ -431,7 +431,7 @@ describe("Milestone Tools", () => {
 				priority: "high",
 				criteria: {
 					requirement: "brd-001-user-management",
-					criteria: "crit-002",
+					criteria: "crt-002",
 				},
 				scope: [
 					{
@@ -449,7 +449,7 @@ describe("Milestone Tools", () => {
 				milestones: [milestoneId],
 				tasks: [
 					{
-						id: "task-002",
+						id: "tsk-002",
 						priority: "high",
 						depends_on: [],
 						task: "Implement API endpoints",

@@ -336,7 +336,7 @@ describe("Entity Drafter LLM-Driven Finalization", () => {
 			);
 			drafter.submitAnswer(""); // cr-q-002: research (optional)
 			criteriaDrafter?.finalizeItemWithData(0, {
-				id: "crit-001",
+				id: "crt-001",
 				description: "Users with valid credentials can login successfully",
 				rationale: "This ensures security and prevents unauthorized access",
 				status: "needs-review" as const,

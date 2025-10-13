@@ -129,58 +129,58 @@ describe("Task State Management", () => {
 		};
 
 		it("should allow starting a task with no dependencies", () => {
-			const task = createTask("task-001", "not-started");
+			const task = createTask("tsk-001", "not-started");
 			const { canStart } = canStartTask(task, [task]);
 			expect(canStart).toBe(true);
 		});
 
 		it("should not allow starting an already started task", () => {
-			const task = createTask("task-001", "in-progress");
+			const task = createTask("tsk-001", "in-progress");
 			const { canStart, reason } = canStartTask(task, [task]);
 			expect(canStart).toBe(false);
 			expect(reason).toContain("already in-progress");
 		});
 
 		it("should not allow starting a completed task", () => {
-			const task = createTask("task-001", "completed");
+			const task = createTask("tsk-001", "completed");
 			const { canStart, reason } = canStartTask(task, [task]);
 			expect(canStart).toBe(false);
 			expect(reason).toContain("already completed");
 		});
 
 		it("should allow starting a task when dependencies are completed", () => {
-			const task1 = createTask("task-001", "completed");
-			const task2 = createTask("task-002", "not-started", ["task-001"]);
+			const task1 = createTask("tsk-001", "completed");
+			const task2 = createTask("tsk-002", "not-started", ["tsk-001"]);
 			const { canStart } = canStartTask(task2, [task1, task2]);
 			expect(canStart).toBe(true);
 		});
 
 		it("should not allow starting a task when dependencies are not completed", () => {
-			const task1 = createTask("task-001", "in-progress");
-			const task2 = createTask("task-002", "not-started", ["task-001"]);
+			const task1 = createTask("tsk-001", "in-progress");
+			const task2 = createTask("tsk-002", "not-started", ["tsk-001"]);
 			const { canStart, reason } = canStartTask(task2, [task1, task2]);
 			expect(canStart).toBe(false);
 			expect(reason).toContain("uncompleted tasks");
-			expect(reason).toContain("task-001");
+			expect(reason).toContain("tsk-001");
 		});
 
 		it("should allow starting when dependency is verified", () => {
-			const task1 = createTask("task-001", "verified");
-			const task2 = createTask("task-002", "not-started", ["task-001"]);
+			const task1 = createTask("tsk-001", "verified");
+			const task2 = createTask("tsk-002", "not-started", ["tsk-001"]);
 			const { canStart } = canStartTask(task2, [task1, task2]);
 			expect(canStart).toBe(true);
 		});
 
 		it("should handle multiple dependencies correctly", () => {
-			const task1 = createTask("task-001", "completed");
-			const task2 = createTask("task-002", "in-progress");
-			const task3 = createTask("task-003", "not-started", [
-				"task-001",
-				"task-002",
+			const task1 = createTask("tsk-001", "completed");
+			const task2 = createTask("tsk-002", "in-progress");
+			const task3 = createTask("tsk-003", "not-started", [
+				"tsk-001",
+				"tsk-002",
 			]);
 			const { canStart, reason } = canStartTask(task3, [task1, task2, task3]);
 			expect(canStart).toBe(false);
-			expect(reason).toContain("task-002");
+			expect(reason).toContain("tsk-002");
 		});
 	});
 
@@ -252,53 +252,53 @@ describe("Task State Management", () => {
 		};
 
 		it("should allow completing a task with no dependencies", () => {
-			const task = createTask("task-001", "in-progress");
+			const task = createTask("tsk-001", "in-progress");
 			const { canComplete } = canCompleteTask(task, [task]);
 			expect(canComplete).toBe(true);
 		});
 
 		it("should allow completing a not-started task (direct completion)", () => {
-			const task = createTask("task-001", "not-started");
+			const task = createTask("tsk-001", "not-started");
 			const { canComplete } = canCompleteTask(task, [task]);
 			expect(canComplete).toBe(true);
 		});
 
 		it("should not allow completing an already completed task", () => {
-			const task = createTask("task-001", "completed");
+			const task = createTask("tsk-001", "completed");
 			const { canComplete, reason } = canCompleteTask(task, [task]);
 			expect(canComplete).toBe(false);
 			expect(reason).toContain("already completed");
 		});
 
 		it("should not allow completing a verified task", () => {
-			const task = createTask("task-001", "verified");
+			const task = createTask("tsk-001", "verified");
 			const { canComplete, reason } = canCompleteTask(task, [task]);
 			expect(canComplete).toBe(false);
 			expect(reason).toContain("already verified");
 		});
 
 		it("should allow completing when dependencies are completed", () => {
-			const task1 = createTask("task-001", "completed");
-			const task2 = createTask("task-002", "in-progress", ["task-001"]);
+			const task1 = createTask("tsk-001", "completed");
+			const task2 = createTask("tsk-002", "in-progress", ["tsk-001"]);
 			const { canComplete } = canCompleteTask(task2, [task1, task2]);
 			expect(canComplete).toBe(true);
 		});
 
 		it("should not allow completing when dependencies are not completed", () => {
-			const task1 = createTask("task-001", "in-progress");
-			const task2 = createTask("task-002", "in-progress", ["task-001"]);
+			const task1 = createTask("tsk-001", "in-progress");
+			const task2 = createTask("tsk-002", "in-progress", ["tsk-001"]);
 			const { canComplete, reason } = canCompleteTask(task2, [task1, task2]);
 			expect(canComplete).toBe(false);
 			expect(reason).toContain("uncompleted tasks");
-			expect(reason).toContain("task-001");
+			expect(reason).toContain("tsk-001");
 		});
 
 		it("should handle multiple dependencies correctly", () => {
-			const task1 = createTask("task-001", "completed");
-			const task2 = createTask("task-002", "completed");
-			const task3 = createTask("task-003", "in-progress", [
-				"task-001",
-				"task-002",
+			const task1 = createTask("tsk-001", "completed");
+			const task2 = createTask("tsk-002", "completed");
+			const task3 = createTask("tsk-003", "in-progress", [
+				"tsk-001",
+				"tsk-002",
 			]);
 			const { canComplete } = canCompleteTask(task3, [task1, task2, task3]);
 			expect(canComplete).toBe(true);

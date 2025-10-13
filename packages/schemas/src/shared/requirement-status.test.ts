@@ -78,8 +78,8 @@ describe("Requirement State Tracking", () => {
 		it("should return 'not-started' when all tasks are not started", () => {
 			const plan = {
 				tasks: [
-					createTask("task-001", "not-started"),
-					createTask("task-002", "not-started"),
+					createTask("tsk-001", "not-started"),
+					createTask("tsk-002", "not-started"),
 				],
 			};
 			expect(getPlanState(plan)).toBe("not-started");
@@ -88,8 +88,8 @@ describe("Requirement State Tracking", () => {
 		it("should return 'in-progress' when any task is started", () => {
 			const plan = {
 				tasks: [
-					createTask("task-001", "not-started"),
-					createTask("task-002", "in-progress"),
+					createTask("tsk-001", "not-started"),
+					createTask("tsk-002", "in-progress"),
 				],
 			};
 			expect(getPlanState(plan)).toBe("in-progress");
@@ -98,8 +98,8 @@ describe("Requirement State Tracking", () => {
 		it("should return 'completed' when all tasks are completed", () => {
 			const plan = {
 				tasks: [
-					createTask("task-001", "completed"),
-					createTask("task-002", "completed"),
+					createTask("tsk-001", "completed"),
+					createTask("tsk-002", "completed"),
 				],
 			};
 			expect(getPlanState(plan)).toBe("completed");
@@ -108,8 +108,8 @@ describe("Requirement State Tracking", () => {
 		it("should return 'verified' when all tasks are verified", () => {
 			const plan = {
 				tasks: [
-					createTask("task-001", "verified"),
-					createTask("task-002", "verified"),
+					createTask("tsk-001", "verified"),
+					createTask("tsk-002", "verified"),
 				],
 			};
 			expect(getPlanState(plan)).toBe("verified");
@@ -118,8 +118,8 @@ describe("Requirement State Tracking", () => {
 		it("should return 'completed' when mix of completed and verified", () => {
 			const plan = {
 				tasks: [
-					createTask("task-001", "completed"),
-					createTask("task-002", "verified"),
+					createTask("tsk-001", "completed"),
+					createTask("tsk-002", "verified"),
 				],
 			};
 			expect(getPlanState(plan)).toBe("completed");
@@ -128,18 +128,18 @@ describe("Requirement State Tracking", () => {
 
 	describe("getCriterionState", () => {
 		it("should return 'not-started' when no plans implement the criterion", () => {
-			const state = getCriterionState("crit-001", "req-001", []);
+			const state = getCriterionState("crt-001", "req-001", []);
 			expect(state).toBe("not-started");
 		});
 
 		it("should return state from single implementing plan", () => {
 			const plans = [
 				{
-					criteria: { requirement: "req-001", criteria: "crit-001" },
-					tasks: [createTask("task-001", "in-progress")],
+					criteria: { requirement: "req-001", criteria: "crt-001" },
+					tasks: [createTask("tsk-001", "in-progress")],
 				},
 			];
-			expect(getCriterionState("crit-001", "req-001", plans)).toBe(
+			expect(getCriterionState("crt-001", "req-001", plans)).toBe(
 				"in-progress",
 			);
 		});
@@ -147,40 +147,40 @@ describe("Requirement State Tracking", () => {
 		it("should aggregate state from multiple implementing plans", () => {
 			const plans = [
 				{
-					criteria: { requirement: "req-001", criteria: "crit-001" },
-					tasks: [createTask("task-001", "completed")],
+					criteria: { requirement: "req-001", criteria: "crt-001" },
+					tasks: [createTask("tsk-001", "completed")],
 				},
 				{
-					criteria: { requirement: "req-001", criteria: "crit-001" },
-					tasks: [createTask("task-002", "verified")],
+					criteria: { requirement: "req-001", criteria: "crt-001" },
+					tasks: [createTask("tsk-002", "verified")],
 				},
 			];
 			// All plans are completed or verified
-			expect(getCriterionState("crit-001", "req-001", plans)).toBe("completed");
+			expect(getCriterionState("crt-001", "req-001", plans)).toBe("completed");
 		});
 
 		it("should return 'verified' when all implementing plans are verified", () => {
 			const plans = [
 				{
-					criteria: { requirement: "req-001", criteria: "crit-001" },
-					tasks: [createTask("task-001", "verified")],
+					criteria: { requirement: "req-001", criteria: "crt-001" },
+					tasks: [createTask("tsk-001", "verified")],
 				},
 				{
-					criteria: { requirement: "req-001", criteria: "crit-001" },
-					tasks: [createTask("task-002", "verified")],
+					criteria: { requirement: "req-001", criteria: "crt-001" },
+					tasks: [createTask("tsk-002", "verified")],
 				},
 			];
-			expect(getCriterionState("crit-001", "req-001", plans)).toBe("verified");
+			expect(getCriterionState("crt-001", "req-001", plans)).toBe("verified");
 		});
 
 		it("should ignore plans for different requirements", () => {
 			const plans = [
 				{
-					criteria: { requirement: "req-002", criteria: "crit-001" },
-					tasks: [createTask("task-001", "completed")],
+					criteria: { requirement: "req-002", criteria: "crt-001" },
+					tasks: [createTask("tsk-001", "completed")],
 				},
 			];
-			expect(getCriterionState("crit-001", "req-001", plans)).toBe(
+			expect(getCriterionState("crt-001", "req-001", plans)).toBe(
 				"not-started",
 			);
 		});
@@ -188,11 +188,11 @@ describe("Requirement State Tracking", () => {
 		it("should ignore plans for different criteria", () => {
 			const plans = [
 				{
-					criteria: { requirement: "req-001", criteria: "crit-002" },
-					tasks: [createTask("task-001", "completed")],
+					criteria: { requirement: "req-001", criteria: "crt-002" },
+					tasks: [createTask("tsk-001", "completed")],
 				},
 			];
-			expect(getCriterionState("crit-001", "req-001", plans)).toBe(
+			expect(getCriterionState("crt-001", "req-001", plans)).toBe(
 				"not-started",
 			);
 		});
@@ -207,7 +207,7 @@ describe("Requirement State Tracking", () => {
 		it("should return 'not-started' when no plans implement any criteria", () => {
 			const requirement = {
 				id: "req-001",
-				criteria: [createCriterion("crit-001"), createCriterion("crit-002")],
+				criteria: [createCriterion("crt-001"), createCriterion("crt-002")],
 			};
 			expect(getRequirementState(requirement, [])).toBe("not-started");
 		});
@@ -215,12 +215,12 @@ describe("Requirement State Tracking", () => {
 		it("should return 'in-progress' when any criterion is in progress", () => {
 			const requirement = {
 				id: "req-001",
-				criteria: [createCriterion("crit-001"), createCriterion("crit-002")],
+				criteria: [createCriterion("crt-001"), createCriterion("crt-002")],
 			};
 			const plans = [
 				{
-					criteria: { requirement: "req-001", criteria: "crit-001" },
-					tasks: [createTask("task-001", "in-progress")],
+					criteria: { requirement: "req-001", criteria: "crt-001" },
+					tasks: [createTask("tsk-001", "in-progress")],
 				},
 			];
 			expect(getRequirementState(requirement, plans)).toBe("in-progress");
@@ -229,16 +229,16 @@ describe("Requirement State Tracking", () => {
 		it("should return 'completed' when all criteria are completed", () => {
 			const requirement = {
 				id: "req-001",
-				criteria: [createCriterion("crit-001"), createCriterion("crit-002")],
+				criteria: [createCriterion("crt-001"), createCriterion("crt-002")],
 			};
 			const plans = [
 				{
-					criteria: { requirement: "req-001", criteria: "crit-001" },
-					tasks: [createTask("task-001", "completed")],
+					criteria: { requirement: "req-001", criteria: "crt-001" },
+					tasks: [createTask("tsk-001", "completed")],
 				},
 				{
-					criteria: { requirement: "req-001", criteria: "crit-002" },
-					tasks: [createTask("task-002", "completed")],
+					criteria: { requirement: "req-001", criteria: "crt-002" },
+					tasks: [createTask("tsk-002", "completed")],
 				},
 			];
 			expect(getRequirementState(requirement, plans)).toBe("completed");
@@ -247,16 +247,16 @@ describe("Requirement State Tracking", () => {
 		it("should return 'verified' when all criteria are verified", () => {
 			const requirement = {
 				id: "req-001",
-				criteria: [createCriterion("crit-001"), createCriterion("crit-002")],
+				criteria: [createCriterion("crt-001"), createCriterion("crt-002")],
 			};
 			const plans = [
 				{
-					criteria: { requirement: "req-001", criteria: "crit-001" },
-					tasks: [createTask("task-001", "verified")],
+					criteria: { requirement: "req-001", criteria: "crt-001" },
+					tasks: [createTask("tsk-001", "verified")],
 				},
 				{
-					criteria: { requirement: "req-001", criteria: "crit-002" },
-					tasks: [createTask("task-002", "verified")],
+					criteria: { requirement: "req-001", criteria: "crt-002" },
+					tasks: [createTask("tsk-002", "verified")],
 				},
 			];
 			expect(getRequirementState(requirement, plans)).toBe("verified");
@@ -281,28 +281,28 @@ describe("Requirement State Tracking", () => {
 			const requirement = {
 				id: "req-001",
 				criteria: [
-					createCriterion("crit-001"),
-					createCriterion("crit-002"),
-					createCriterion("crit-003"),
-					createCriterion("crit-004"),
+					createCriterion("crt-001"),
+					createCriterion("crt-002"),
+					createCriterion("crt-003"),
+					createCriterion("crt-004"),
 				],
 			};
 			const plans = [
 				{
-					criteria: { requirement: "req-001", criteria: "crit-001" },
+					criteria: { requirement: "req-001", criteria: "crt-001" },
 					tasks: [], // not started
 				},
 				{
-					criteria: { requirement: "req-001", criteria: "crit-002" },
-					tasks: [createTask("task-001", "in-progress")],
+					criteria: { requirement: "req-001", criteria: "crt-002" },
+					tasks: [createTask("tsk-001", "in-progress")],
 				},
 				{
-					criteria: { requirement: "req-001", criteria: "crit-003" },
-					tasks: [createTask("task-002", "completed")],
+					criteria: { requirement: "req-001", criteria: "crt-003" },
+					tasks: [createTask("tsk-002", "completed")],
 				},
 				{
-					criteria: { requirement: "req-001", criteria: "crit-004" },
-					tasks: [createTask("task-003", "verified")],
+					criteria: { requirement: "req-001", criteria: "crt-004" },
+					tasks: [createTask("tsk-003", "verified")],
 				},
 			];
 
@@ -319,16 +319,16 @@ describe("Requirement State Tracking", () => {
 		it("should calculate 100% when all criteria are completed or verified", () => {
 			const requirement = {
 				id: "req-001",
-				criteria: [createCriterion("crit-001"), createCriterion("crit-002")],
+				criteria: [createCriterion("crt-001"), createCriterion("crt-002")],
 			};
 			const plans = [
 				{
-					criteria: { requirement: "req-001", criteria: "crit-001" },
-					tasks: [createTask("task-001", "completed")],
+					criteria: { requirement: "req-001", criteria: "crt-001" },
+					tasks: [createTask("tsk-001", "completed")],
 				},
 				{
-					criteria: { requirement: "req-001", criteria: "crit-002" },
-					tasks: [createTask("task-002", "verified")],
+					criteria: { requirement: "req-001", criteria: "crt-002" },
+					tasks: [createTask("tsk-002", "verified")],
 				},
 			];
 
