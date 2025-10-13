@@ -3,7 +3,7 @@
  */
 
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { GUIDE_RESOURCES } from "./resources/guides.js";
+import { GUIDE_RESOURCES } from "./resources/guides/index.js";
 import { JSON_SCHEMA_RESOURCES } from "./resources/json-schemas.js";
 import { logger } from "./utils/logger.js";
 
