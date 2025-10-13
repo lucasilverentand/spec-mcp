@@ -116,9 +116,7 @@ export class DashboardWebSocketClient {
 export function createWebSocketClient(): DashboardWebSocketClient {
 	// Determine WebSocket URL based on current location
 	const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-	const host = window.location.hostname;
-	const port = Number.parseInt(window.location.port, 10) + 1; // WS server runs on port+1
-	const url = `${protocol}//${host}:${port}`;
+	const url = `${protocol}//${window.location.host}/ws`;
 
 	return new DashboardWebSocketClient(url);
 }

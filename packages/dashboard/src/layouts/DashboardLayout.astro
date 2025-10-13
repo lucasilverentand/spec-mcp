@@ -12,27 +12,40 @@ const { title } = Astro.props as { title: string };
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>{title}</title>
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<script is:inline>
+			// Prevent flash of unstyled content
+			const theme = localStorage.getItem('theme') ||
+				(window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+			document.documentElement.classList.toggle('dark', theme === 'dark');
+		</script>
 	</head>
-	<body class="min-h-screen bg-background">
-		<header class="border-b">
+	<body class="min-h-screen bg-background relative flex flex-col">
+		<!-- Gradient Background -->
+		<div class="fixed inset-0 -z-10 bg-background">
+			<div class="absolute inset-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-950/20 dark:via-indigo-950/20 dark:to-purple-950/20"></div>
+			<div class="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-cyan-400/20 to-blue-500/20 dark:from-cyan-600/10 dark:to-blue-700/10 rounded-full blur-3xl"></div>
+			<div class="absolute bottom-0 left-0 w-[500px] h-[500px] bg-gradient-to-tr from-purple-400/20 to-pink-500/20 dark:from-purple-600/10 dark:to-pink-700/10 rounded-full blur-3xl"></div>
+		</div>
+
+		<header class="border-b backdrop-blur-sm bg-background/80">
 			<div class="container mx-auto px-6 py-4">
 				<div class="flex items-center justify-between">
 					<div>
 						<h1 class="text-2xl font-bold">Spec MCP Dashboard</h1>
 						<p class="text-sm text-muted-foreground">Monitor and manage your specifications</p>
 					</div>
-					<nav class="flex items-center gap-4">
-						<a href="/" class="text-sm font-medium hover:underline">Dashboard</a>
-						<a href="/drafts" class="text-sm font-medium hover:underline">Drafts</a>
-						<a href="/specs" class="text-sm font-medium hover:underline">Specs</a>
+					<nav class="flex items-center gap-6">
+						<a href="/dashboard" class="text-sm font-medium hover:underline transition-colors">Dashboard</a>
+						<a href="/" class="text-sm font-medium hover:underline transition-colors">Browse</a>
+						<ThemeToggle client:load />
 					</nav>
 				</div>
 			</div>
 		</header>
-		<main class="container mx-auto px-6 py-8">
+		<main class="container mx-auto px-6 py-8 flex-1">
 			<slot />
 		</main>
-		<footer class="border-t mt-auto">
+		<footer class="border-t backdrop-blur-sm bg-background/80">
 			<div class="container mx-auto px-6 py-4">
 				<p class="text-sm text-muted-foreground text-center">
 					Spec MCP Dashboard v0.1.0

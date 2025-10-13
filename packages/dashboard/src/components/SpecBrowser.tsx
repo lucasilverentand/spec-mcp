@@ -1,8 +1,22 @@
-import { AlertCircle, CheckCircle2, FileCode, Folder } from "lucide-react";
+import {
+	BookOpen,
+	FileCode,
+	FileText,
+	Folder,
+	GitBranch,
+	Lightbulb,
+	ScrollText,
+	Target,
+} from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
 import { createWebSocketClient } from "@/lib/websocket-client";
 
 interface Spec {
@@ -20,10 +34,53 @@ interface SpecsByType {
 	[type: string]: Spec[];
 }
 
-export function SpecBrowser() {
+interface SpecTypeInfo {
+	name: string;
+	description: string;
+	icon: typeof FileCode;
+}
+
+const specTypeInfo: Record<string, SpecTypeInfo> = {
+	"business-requirements": {
+		name: "Business Requirements",
+		description: "High-level business goals and objectives",
+		icon: Target,
+	},
+	"tech-requirements": {
+		name: "Technical Requirements",
+		description: "Technical specifications and constraints",
+		icon: FileCode,
+	},
+	plans: {
+		name: "Plans",
+		description: "Implementation plans and strategies",
+		icon: GitBranch,
+	},
+	components: {
+		name: "Components",
+		description: "System components and architecture",
+		icon: FileText,
+	},
+	decisions: {
+		name: "Decisions",
+		description: "Architectural and design decisions",
+		icon: Lightbulb,
+	},
+	constitutions: {
+		name: "Constitutions",
+		description: "Project principles and guidelines",
+		icon: BookOpen,
+	},
+	milestones: {
+		name: "Milestones",
+		description: "Project milestones and goals",
+		icon: ScrollText,
+	},
+};
+
+function SpecBrowser() {
 	const [specs, setSpecs] = useState<SpecsByType>({});
 	const [loading, setLoading] = useState(true);
-	const [expandedTypes, setExpandedTypes] = useState<Set<string>>(new Set());
 
 	const fetchSpecs = useCallback(() => {
 		fetch("/api/specs")
@@ -42,9 +99,6 @@ export function SpecBrowser() {
 				}
 				setSpecs(grouped);
 				setLoading(false);
-
-				// Expand all types by default
-				setExpandedTypes(new Set(Object.keys(grouped)));
 			})
 			.catch((error) => {
 				console.error("Failed to fetch specs:", error);
@@ -77,18 +131,6 @@ export function SpecBrowser() {
 		};
 	}, [fetchSpecs]);
 
-	const toggleType = (type: string) => {
-		setExpandedTypes((prev) => {
-			const next = new Set(prev);
-			if (next.has(type)) {
-				next.delete(type);
-			} else {
-				next.add(type);
-			}
-			return next;
-		});
-	};
-
 	if (loading) {
 		return (
 			<Card>
@@ -115,63 +157,60 @@ export function SpecBrowser() {
 		);
 	}
 
+	// Get all possible spec types
+	const allSpecTypes = Object.keys(specTypeInfo);
+
 	return (
-		<div className="space-y-4">
-			{Object.entries(specs).map(([type, typeSpecs]) => (
-				<Card key={type}>
-					<CardHeader
-						className="pb-3 cursor-pointer"
-						onClick={() => toggleType(type)}
+		<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+			{allSpecTypes.map((type) => {
+				const info = specTypeInfo[type];
+				const typeSpecs = specs[type] || [];
+				const Icon = info?.icon || FileCode;
+				const displayName = info?.name || type.replace(/-/g, " ").toUpperCase();
+				const description = info?.description || "";
+
+				return (
+					<Card
+						key={type}
+						className="hover:shadow-lg transition-shadow cursor-pointer group"
 					>
-						<div className="flex items-center justify-between">
-							<CardTitle className="text-lg flex items-center gap-2">
-								<Folder className="h-4 w-4" />
-								{type.replace(/-/g, " ").toUpperCase()}
-							</CardTitle>
-							<Badge variant="secondary">{typeSpecs.length}</Badge>
-						</div>
-					</CardHeader>
-					{expandedTypes.has(type) && (
-						<CardContent className="pt-0">
-							<div className="space-y-2">
-								{typeSpecs.map((spec) => (
-									<div
-										key={spec.id}
-										className="flex items-center justify-between p-3 rounded-md border hover:bg-accent transition-colors"
-									>
-										<div className="flex items-center gap-3 flex-1 min-w-0">
-											<FileCode className="h-4 w-4 text-muted-foreground shrink-0" />
-											<div className="flex-1 min-w-0">
-												<p className="font-medium truncate">
-													{spec.name || spec.slug}
-												</p>
-												<p className="text-xs text-muted-foreground">
-													{spec.id}
-												</p>
-											</div>
+						<a href={`/specs/${type}`} className="block">
+							<CardHeader>
+								<div className="flex items-start justify-between">
+									<div className="flex items-center gap-3">
+										<div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+											<Icon className="h-5 w-5 text-primary" />
 										</div>
-										<div className="flex items-center gap-2 shrink-0">
-											{spec.draft && (
-												<Badge variant="outline" className="text-xs">
-													Draft
-												</Badge>
-											)}
-											{spec.valid ? (
-												<CheckCircle2 className="h-4 w-4 text-green-500" />
-											) : (
-												<AlertCircle className="h-4 w-4 text-yellow-500" />
-											)}
-											<Button variant="ghost" size="sm" asChild>
-												<a href={`/specs/${spec.id}`}>View</a>
-											</Button>
+										<div>
+											<CardTitle className="text-lg">{displayName}</CardTitle>
+											<CardDescription className="text-sm mt-1">
+												{description}
+											</CardDescription>
 										</div>
 									</div>
-								))}
-							</div>
-						</CardContent>
-					)}
-				</Card>
-			))}
+								</div>
+							</CardHeader>
+							<CardContent>
+								<div className="flex items-center justify-between">
+									<div className="text-sm text-muted-foreground">
+										{typeSpecs.length === 0 ? (
+											"No specs yet"
+										) : (
+											<span className="font-medium text-foreground">
+												{typeSpecs.length}{" "}
+												{typeSpecs.length === 1 ? "spec" : "specs"}
+											</span>
+										)}
+									</div>
+									<Badge variant="secondary">{typeSpecs.length}</Badge>
+								</div>
+							</CardContent>
+						</a>
+					</Card>
+				);
+			})}
 		</div>
 	);
 }
+
+export default SpecBrowser;

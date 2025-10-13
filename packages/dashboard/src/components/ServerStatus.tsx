@@ -10,7 +10,7 @@ interface ServerStatusData {
 	uptime: number;
 }
 
-export function ServerStatus() {
+function ServerStatus() {
 	const [status, setStatus] = useState<ServerStatusData>({
 		running: false,
 		clients: 0,
@@ -101,3 +101,5 @@ export function ServerStatus() {
 		</Card>
 	);
 }
+
+export default ServerStatus;

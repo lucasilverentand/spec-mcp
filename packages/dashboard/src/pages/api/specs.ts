@@ -1,48 +1,36 @@
 import type { APIRoute } from "astro";
-import { getDashboardContext } from "@/lib/context";
+import { getSpecManager } from "@/lib/fs-reader";
 
 export const GET: APIRoute = async () => {
 	try {
-		const { specManager } = getDashboardContext();
+		const specManager = getSpecManager();
 
-		// Load all spec types
-		const [
-			businessRequirements,
-			techRequirements,
-			plans,
-			components,
-			decisions,
-			constitutions,
-			milestones,
-		] = await Promise.all([
-			specManager.business_requirements.list(),
-			specManager.tech_requirements.list(),
-			specManager.plans.list(),
-			specManager.components.list(),
-			specManager.decisions.list(),
-			specManager.constitutions.list(),
-			specManager.milestones.list(),
-		]);
+		// Use SpecManager.query() to get all specs
+		const result = await specManager.query({
+			orderBy: "updated",
+			direction: "desc",
+			objects: {
+				specTypes: [
+					"business-requirement",
+					"technical-requirement",
+					"plan",
+					"component",
+					"constitution",
+					"decision",
+					"milestone",
+				],
+			},
+		});
 
-		const allSpecs = [
-			...businessRequirements,
-			...techRequirements,
-			...plans,
-			...components,
-			...decisions,
-			...constitutions,
-			...milestones,
-		];
-
-		const specs = allSpecs.map((spec) => ({
-			id: `${spec.type}-${spec.number}`,
-			type: spec.type,
-			slug: spec.slug,
-			name: "name" in spec ? spec.name : undefined,
-			draft: "draft" in spec ? spec.draft : false,
-			valid: true, // Assume valid if it loaded successfully
-			created_at: spec.created_at,
-			updated_at: spec.updated_at,
+		const specs = result.items.map((item) => ({
+			id: item.id,
+			type: item.type,
+			slug: item.resultType === "spec" ? item.slug : "",
+			name: item.name,
+			draft: false,
+			valid: true,
+			created_at: item.created_at,
+			updated_at: item.updated_at,
 		}));
 
 		return new Response(JSON.stringify({ specs }), {

@@ -15,7 +15,7 @@ interface Draft {
 	totalQuestions: number;
 }
 
-export function DraftList() {
+function DraftList() {
 	const [drafts, setDrafts] = useState<Draft[]>([]);
 	const [loading, setLoading] = useState(true);
 
@@ -141,3 +141,5 @@ export function DraftList() {
 		</div>
 	);
 }
+
+export default DraftList;

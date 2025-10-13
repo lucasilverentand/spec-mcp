@@ -1,9 +1,27 @@
+import { DraftStore, SpecManager } from "@spec-mcp/core";
 import type { APIRoute } from "astro";
-import { getDashboardContext } from "@/lib/context";
+import { getSpecsDirectory } from "@/lib/fs-reader";
+
+let draftStoreInstance: DraftStore | null = null;
+let specManagerInstance: SpecManager | null = null;
+
+function getSpecManager() {
+	if (!specManagerInstance) {
+		specManagerInstance = new SpecManager(getSpecsDirectory());
+	}
+	return specManagerInstance;
+}
+
+function getDraftStore() {
+	if (!draftStoreInstance) {
+		draftStoreInstance = new DraftStore(getSpecManager());
+	}
+	return draftStoreInstance;
+}
 
 export const GET: APIRoute = async () => {
 	try {
-		const { draftStore } = getDashboardContext();
+		const draftStore = getDraftStore();
 
 		const allDrafts = draftStore.list();
 

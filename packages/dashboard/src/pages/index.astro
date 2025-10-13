@@ -1,31 +1,15 @@
 ---
 ---
 
-<DashboardLayout title="Dashboard - Spec MCP">
+<DashboardLayout title="Browse - Spec MCP">
 	<div class="space-y-8">
 		<div>
-			<h2 class="text-3xl font-bold tracking-tight">Dashboard</h2>
+			<h2 class="text-3xl font-bold tracking-tight">Browse & Query</h2>
 			<p class="text-muted-foreground mt-2">
-				Overview of your specifications and drafts
+				Browse specs and drafts, or use advanced queries to find exactly what you need
 			</p>
 		</div>
 
-		<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-			<div class="lg:col-span-1">
-				<ServerStatus client:load />
-			</div>
-		</div>
-
-		<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-			<section>
-				<h3 class="text-xl font-semibold mb-4">Active Drafts</h3>
-				<DraftList client:load />
-			</section>
-
-			<section>
-				<h3 class="text-xl font-semibold mb-4">Specifications</h3>
-				<SpecBrowser client:load />
-			</section>
-		</div>
+		<BrowseWithQuery client:load />
 	</div>
 </DashboardLayout>
