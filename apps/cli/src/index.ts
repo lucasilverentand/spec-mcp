@@ -228,6 +228,134 @@ program
 				});
 			}
 
+			// Filter out files from unloadableFiles that were actually successfully loaded
+			// Build a map of entity numbers by folder to check which files were loaded
+			const allEntities: AnyEntity[] = [
+				...businessRequirements,
+				...techRequirements,
+				...plans,
+				...components,
+				...decisions,
+				...constitutions,
+				...milestones,
+			];
+
+			// Map: folder path -> Set of entity numbers that were successfully loaded
+			const loadedEntityNumbers = new Map<string, Set<number>>();
+			for (const folder of entityFolders) {
+				loadedEntityNumbers.set(folder.path, new Set());
+			}
+
+			for (const entity of allEntities) {
+				// Determine which folder this entity belongs to based on its type
+				let folderPath = "";
+				switch (entity.type) {
+					case "business-requirement":
+						folderPath = "requirements/business";
+						break;
+					case "technical-requirement":
+						folderPath = "requirements/technical";
+						break;
+					case "plan":
+						folderPath = "plans";
+						break;
+					case "component":
+						folderPath = "components";
+						break;
+					case "decision":
+						folderPath = "decisions";
+						break;
+					case "constitution":
+						folderPath = "constitutions";
+						break;
+					case "milestone":
+						folderPath = "milestones";
+						break;
+				}
+				if (folderPath) {
+					loadedEntityNumbers.get(folderPath)?.add(entity.number);
+				}
+			}
+
+			// Remove successfully loaded files from unloadableFiles
+			// by checking if a file's entity number was loaded
+			const actuallyUnloadableFiles = unloadableFiles.filter((file) => {
+				const fileNameWithoutExt = file.fileName.replace(/\.(yml|yaml)$/, "");
+				// Extract entity number from filename (format: prefix-NUMBER-...)
+				const match = fileNameWithoutExt.match(/^[a-z]{3}-(\d+)/);
+				if (match?.[1]) {
+					const entityNumber = Number.parseInt(match[1], 10);
+					const loadedNumbers = loadedEntityNumbers.get(file.folder);
+					if (loadedNumbers?.has(entityNumber)) {
+						// This file's entity was loaded successfully
+						return false;
+					}
+				}
+				return true;
+			});
+
+			// For entities that were loaded but have invalid file names, add warnings
+			// We need to check each loaded entity against the original unloadableFiles list
+			for (const validation of [
+				...businessRequirementValidations,
+				...techRequirementValidations,
+				...planValidations,
+				...componentValidations,
+				...decisionValidations,
+				...constitutionValidations,
+				...milestoneValidations,
+			]) {
+				const entity = validation.entity;
+				// Check if this entity's file was in the original unloadableFiles list
+				// by finding a file with matching entity number and folder
+				let folderPath = "";
+				switch (entity.type) {
+					case "business-requirement":
+						folderPath = "requirements/business";
+						break;
+					case "technical-requirement":
+						folderPath = "requirements/technical";
+						break;
+					case "plan":
+						folderPath = "plans";
+						break;
+					case "component":
+						folderPath = "components";
+						break;
+					case "decision":
+						folderPath = "decisions";
+						break;
+					case "constitution":
+						folderPath = "constitutions";
+						break;
+					case "milestone":
+						folderPath = "milestones";
+						break;
+				}
+
+				const matchingUnloadableFile = unloadableFiles.find((file) => {
+					if (file.folder !== folderPath) {
+						return false;
+					}
+					const fileNameWithoutExt = file.fileName.replace(/\.(yml|yaml)$/, "");
+					const match = fileNameWithoutExt.match(/^[a-z]{3}-(\d+)/);
+					if (match?.[1]) {
+						const fileNumber = Number.parseInt(match[1], 10);
+						return fileNumber === entity.number;
+					}
+					return false;
+				});
+
+				if (matchingUnloadableFile) {
+					validation.warnings.push(
+						`File name "${matchingUnloadableFile.fileName}" has invalid naming pattern. ${matchingUnloadableFile.details}`,
+					);
+				}
+			}
+
+			// Update unloadableFiles to only include files that truly couldn't be loaded
+			const unloadableFilesFiltered = actuallyUnloadableFiles;
+
 			// Display grouped results
 			let totalErrors = 0;
 			let totalWarnings = 0;
@@ -759,13 +887,13 @@ program
 			console.log("");
 
 			// Report unloadable files
-			if (unloadableFiles.length > 0) {
+			if (unloadableFilesFiltered.length > 0) {
 				console.log(
-					`${colors.red}⚠ Unloadable Files (${unloadableFiles.length}):${colors.reset}`,
+					`${colors.red}⚠ Unloadable Files (${unloadableFilesFiltered.length}):${colors.reset}`,
 				);
 				console.log("");
 
-				for (const file of unloadableFiles) {
+				for (const file of unloadableFilesFiltered) {
 					console.log(
 						`  ${colors.red}✗${colors.reset} ${colors.dim}${file.folder}/${file.fileName}${colors.reset}`,
 					);
@@ -794,13 +922,13 @@ program
 			if (
 				totalErrors === 0 &&
 				totalWarnings === 0 &&
-				unloadableFiles.length === 0
+				unloadableFilesFiltered.length === 0
 			) {
 				console.log(`  ${colors.green}All validations passed!${colors.reset}`);
 			}
-			if (unloadableFiles.length > 0) {
+			if (unloadableFilesFiltered.length > 0) {
 				console.log(
-					`  ${colors.red}Unloadable Files: ${unloadableFiles.length}${colors.reset}`,
+					`  ${colors.red}Unloadable Files: ${unloadableFilesFiltered.length}${colors.reset}`,
 				);
 			}
 			console.log(
