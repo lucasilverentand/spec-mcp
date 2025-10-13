@@ -12,7 +12,14 @@ export default defineConfig({
 	// Bundle workspace dependencies
 	noExternal: [/@spec-mcp\/.*/],
 	// Keep external dependencies that have issues with bundling
-	external: ["@inquirer/prompts", "commander", "yaml", "chokidar", "ws", "pino"],
+	external: [
+		"@inquirer/prompts",
+		"commander",
+		"yaml",
+		"chokidar",
+		"ws",
+		"pino",
+	],
 	treeshake: true,
 	splitting: false,
 	minify: false, // Keep readable for debugging
