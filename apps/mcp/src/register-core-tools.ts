@@ -124,7 +124,7 @@ export function registerCoreTools(
 					"Entity ID: omit/'main' for main entity, 'fieldName[index]' for array items (e.g., 'business_value[0]')",
 				),
 			data: z
-				.record(z.any())
+				.record(z.string(), z.any())
 				.describe(
 					"JSON object for entity/item. Main entity: ONLY non-array fields (arrays auto-merged from finalized items). Array items: complete item data.",
 				),

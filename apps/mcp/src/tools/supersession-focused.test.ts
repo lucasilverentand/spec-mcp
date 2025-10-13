@@ -1,11 +1,11 @@
 import { SpecManager } from "@spec-mcp/core";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
 	cleanupTempDir,
 	createTempDir,
 	createTestBusinessRequirement,
 	createTestPlan,
 } from "@spec-mcp/core/tests/helpers";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { addCriteria, addTask } from "./index.js";
 
 /**

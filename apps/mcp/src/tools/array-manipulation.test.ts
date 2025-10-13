@@ -1,5 +1,4 @@
 import { SpecManager } from "@spec-mcp/core";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
 	cleanupTempDir,
 	createTempDir,
@@ -8,6 +7,7 @@ import {
 	createTestDecision,
 	createTestPlan,
 } from "@spec-mcp/core/tests/helpers";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
 	// Decision tools
 	addAlternative,

@@ -22,7 +22,7 @@ export const FinalizeEntityArgsSchema = z.object({
 			"Entity ID to finalize. Omit or use 'main' for main entity, use 'fieldName[index]' for array items (e.g., 'business_value[0]')",
 		),
 	data: z
-		.record(z.any())
+		.record(z.string(), z.any())
 		.describe(
 			"JSON object for the entity/item. For main entity: provide ONLY non-array fields (array fields auto-merged from finalized items). For array items: provide complete item data.",
 		),

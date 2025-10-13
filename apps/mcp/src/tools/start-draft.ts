@@ -40,7 +40,17 @@ export async function startDraft(
 	}
 
 	// Create new draft manager (no slug needed yet)
-	const manager = draftStore.create(draftId, type);
+	const manager = draftStore.create(
+		draftId,
+		type as
+			| "plan"
+			| "component"
+			| "decision"
+			| "business-requirement"
+			| "technical-requirement"
+			| "constitution"
+			| "milestone",
+	);
 
 	// Auto-save initial draft state
 	try {

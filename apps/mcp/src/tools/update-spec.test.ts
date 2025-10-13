@@ -1,6 +1,4 @@
 import { SpecManager } from "@spec-mcp/core";
-import { formatEntityId } from "@spec-mcp/utils";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
 	cleanupTempDir,
 	createTempDir,
@@ -10,6 +8,8 @@ import {
 	createTestPlan,
 	createTestTechnicalRequirement,
 } from "@spec-mcp/core/tests/helpers";
+import { formatEntityId } from "@spec-mcp/utils";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
 	updateBusinessRequirement,
 	updateComponent,
