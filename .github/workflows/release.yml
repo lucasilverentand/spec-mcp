@@ -39,11 +39,24 @@ jobs:
         run: |
           VERSION=${{ steps.get_version.outputs.VERSION }}
           # Update app versions (apps are what we publish)
-          for pkg in apps/*/package.json; do
-            if [ -f "$pkg" ]; then
-              npm pkg set version=$VERSION --prefix=$(dirname "$pkg")
-            fi
-          done
+          cd apps/mcp && pnpm pkg set version=$VERSION && cd ../..
+          cd apps/cli && pnpm pkg set version=$VERSION && cd ../..
+
+      - name: Remove workspace dependencies
+        run: |
+          # Remove workspace devDependencies that are bundled
+          cd apps/mcp
+          pnpm pkg delete devDependencies.@spec-mcp/core
+          pnpm pkg delete devDependencies.@spec-mcp/dashboard
+          pnpm pkg delete devDependencies.@spec-mcp/schemas
+          pnpm pkg delete devDependencies.@spec-mcp/tsconfig
+          pnpm pkg delete devDependencies.@spec-mcp/utils
+          cd ../cli
+          pnpm pkg delete devDependencies.@spec-mcp/core
+          pnpm pkg delete devDependencies.@spec-mcp/dashboard
+          pnpm pkg delete devDependencies.@spec-mcp/schemas
+          pnpm pkg delete devDependencies.@spec-mcp/tsconfig
+          pnpm pkg delete devDependencies.@spec-mcp/utils
 
       - name: Publish spec-mcp to npm
         run: cd apps/mcp && pnpm publish --access public --no-git-checks
@@ -78,6 +91,22 @@ jobs:
 
       - name: Build packages
         run: pnpm build
+
+      - name: Remove workspace dependencies
+        run: |
+          # Remove workspace devDependencies that are bundled
+          cd apps/mcp
+          pnpm pkg delete devDependencies.@spec-mcp/core
+          pnpm pkg delete devDependencies.@spec-mcp/dashboard
+          pnpm pkg delete devDependencies.@spec-mcp/schemas
+          pnpm pkg delete devDependencies.@spec-mcp/tsconfig
+          pnpm pkg delete devDependencies.@spec-mcp/utils
+          cd ../cli
+          pnpm pkg delete devDependencies.@spec-mcp/core
+          pnpm pkg delete devDependencies.@spec-mcp/dashboard
+          pnpm pkg delete devDependencies.@spec-mcp/schemas
+          pnpm pkg delete devDependencies.@spec-mcp/tsconfig
+          pnpm pkg delete devDependencies.@spec-mcp/utils
 
       - name: Create release archives
         run: |
