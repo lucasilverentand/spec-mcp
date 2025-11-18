@@ -36,7 +36,7 @@
 		"release": "turbo run build test --filter=\"@spec-mcp/mcp\" --filter=\"@spec-mcp/cli\" && pnpm run publish:all"
 	},
 	"dependencies": {
-		"glob": "^11.0.3",
+		"glob": "^11.1.0",
 		"zod": "^3.23.8"
 	},
 	"devDependencies": {
